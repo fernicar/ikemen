@@ -895,6 +895,35 @@ public &Script
       re.new(0);
       ret .mac.RetState::OK;
     }
+    *sig_t _aenc(arg, re=)
+    {
+      index si = .s.find(";", arg);
+      if(si < 0){
+        re = arg;
+        ret .mac.RetState::OK;
+      }
+      ^char tmp1 = arg[0..si], tmp2 = arg[si+1..-1];
+      loop{
+        index i = 0;
+        ^char tmp3.new(2);
+        tmp3[1] = ';';
+        %char mainbuf, buf2;
+        while;
+      do:
+        tmp3[0] = tmp1[i];
+        mainbuf.new(0);
+        mainbuf .= tmp3;
+        buf2.new(0);
+        mainbuf .=
+          .s.join(buf2 .= tmp1[i] .= tmp3 .= tmp3 .= ';')<,
+          .s.split(tmp3, tmp2);
+        tmp2 = (mainbuf .= tmp3);
+        i++;
+      while i < #tmp1:
+      }
+      re = tmp2;
+      ret .mac.RetState::OK;
+    }
     method sig_t met = dummy;
     branch{
     cond #name >= 1 && name[0] == '=':
