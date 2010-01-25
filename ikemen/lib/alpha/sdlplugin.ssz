@@ -24,8 +24,14 @@ public bool playBGM(^/char pldir, ^/char fn)
 
 public void pauseBGM(bool pause)
 {
-  plugin bool PauseBGM(:bool:) = <dll/sdlplugin.dll>;
+  plugin void PauseBGM(:bool:) = <dll/sdlplugin.dll>;
   PauseBGM(:pause:);
+}
+
+public void setVolume(int vol)
+{
+  plugin void SetVolume(:int:) = <dll/sdlplugin.dll>;
+  SetVolume(:vol:);
 }
 
 const ubyte RELEASED = 0;
