@@ -306,8 +306,7 @@ public &Sound
   public void mix(^int buf, float left, float right)
   {
     if(#`sound == 0) ret;
-    float fidxadd =
-      (float)`sound~samplesPerSec * `freqmul * `frametime;
+    float fidxadd = (float)`sound~samplesPerSec * `freqmul * `frametime;
     if(!.mat.isfinite(fidxadd) || fidxadd <= 0.0){
       `sound.new(0);
       ret;

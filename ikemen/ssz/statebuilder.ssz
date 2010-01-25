@@ -422,7 +422,7 @@ public &StateBuilder
       i++;
     while i < #text:
     }
-    ^/char tok = text[0..i];
+    ^/char tok = .s.toLower(text[0..i]);
     text = text[i..-1];
     ret tok;
   }
@@ -679,7 +679,7 @@ public &StateBuilder
     cond .s.equ("random", token):
       out .= ".v.setI(.m.rand(0,999))";
     cond .s.equ("gametime", token):
-      out .= ".v.setI(.gametime)";
+      out .= ".v.setI(.com.gametime)";
     cond .s.equ("matchover", token):
       out .= "`trMatchOver()";
     cond .s.equ("matchno", token):
@@ -850,10 +850,10 @@ public &StateBuilder
     cond .s.equ("powermax", token):
       out .= ".v.setI(" .= obj .= "sysivar[.iPOWERMAX])";
     cond .s.equ("pos", token):
-      token = .s.toLower()<, `tokenizer(in=);
+      token = `tokenizer(in=);
       branch{
       cond .s.equ("x", token):
-        out .= ".v.setF(" .= obj .= "sysfvar[.fX]-.camerax)";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fX]-.com.camerax)";
       cond .s.equ("y", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fY])";
       cond .s.equ("z", token):///////////////
@@ -862,12 +862,12 @@ public &StateBuilder
         break, else;
       }
     cond .s.equ("screenpos", token):
-      token = .s.toLower()<, `tokenizer(in=);
+      token = `tokenizer(in=);
       branch{
       cond .s.equ("x", token):
-        out .= ".v.setF((" .= obj .= "sysfvar[.fX]-.screenx)*.scale)";
+        out .= ".v.setF((" .= obj .= "sysfvar[.fX]-.com.screenx)*.com.scale)";
       cond .s.equ("y", token):
-        out .= ".v.setF((" .= obj .= "sysfvar[.fY]-.screeny)*.scale)";
+        out .= ".v.setF((" .= obj .= "sysfvar[.fY]-.com.screeny)*.com.scale)";
       else:
         break, else;
       }
@@ -888,7 +888,7 @@ public &StateBuilder
         bool p = token[1] == 'a';
         bool b = token[2] == 'b';
         ^/char oldin = in;
-        token = .s.toLower()<, `tokenizer(in=);
+        token = `tokenizer(in=);
       cond .s.equ("y", token):
         branch{
         cond r:
@@ -914,7 +914,7 @@ public &StateBuilder
         }
       }
     cond .s.equ("vel", token):
-      token = .s.toLower()<, `tokenizer(in=);
+      token = `tokenizer(in=);
       branch{
       cond .s.equ("x", token):
         out .= obj .= "trVelX()";
@@ -924,7 +924,7 @@ public &StateBuilder
         break, else;
       }
     cond .s.equ("hitvel", token):
-      token = .s.toLower()<, `tokenizer(in=);
+      token = `tokenizer(in=);
       branch{
       cond .s.equ("x", token):
         out .= obj .= "trHitVelX()";
@@ -987,7 +987,7 @@ public &StateBuilder
         `lasterror = (buf .= token .= "の次に(がありません");
         ret false;
       }
-      token = .s.toLower()<, `tokenizer(in=);
+      token = `tokenizer(in=);
       branch{
       cond .s.equ("velocity.walk.fwd.x", token):
         out .= ".v.setI(.fWALK_FWD)$" .= obj .= "trSysFVar()";
@@ -1130,7 +1130,7 @@ public &StateBuilder
         bool p2 = token[0] == 'p';
         ^/char sty;
         int re = eqneq(out=, in=)<, [int(){
-          token = .s.toLower()<, `tokenizer(in=);
+          token = `tokenizer(in=);
           switch(token[0]){
           case 's':
             sty = ".StTy::S";
@@ -1159,7 +1159,7 @@ public &StateBuilder
         bool p2 = token[0] == 'p';
         ^/char tmp;
         int re = eqneq(out=, in=)<, [int(){
-          token = .s.toLower()<, `tokenizer(in=);
+          token = `tokenizer(in=);
           switch(token[0]){
           case 'i':
             tmp = ".MovTy::I";
@@ -1185,7 +1185,7 @@ public &StateBuilder
       {
         ^/char pty;
         int re = eqneq(out=, in=)<, [int(){
-          token = .s.toLower()<, `tokenizer(in=);
+          token = `tokenizer(in=);
           switch(token[0]){
           case 's':
             pty = ".StTy::S";
@@ -1214,14 +1214,14 @@ public &StateBuilder
       {
         ^/char pty;
         int re = eqneq(out=, in=)<, [int(){
-          token = .s.toLower()<, `tokenizer(in=);
+          token = `tokenizer(in=);
           branch{
           cond .s.equ("single", token):
-            pty = ".TeamMode::Single";
+            pty = ".com.TeamMode::Single";
           cond .s.equ("simul", token):
-            pty = ".TeamMode::Simul";
+            pty = ".com.TeamMode::Simul";
           cond .s.equ("turns", token):
-            pty = ".TeamMode::Turns";
+            pty = ".com.TeamMode::Turns";
           else:
             if(.cfg.IgnoreMostErrors) ret 0;
             {
@@ -1242,7 +1242,7 @@ public &StateBuilder
         `lasterror = (buf .= token .= "の次に(がありません");
         ret false;
       }
-      token = .s.toLower()<, `tokenizer(in=);
+      token = `tokenizer(in=);
       branch{
       cond .s.equ("xveladd", token):
         out .= ".v.setF(0.0)";////////////////////////////////////////
@@ -1531,8 +1531,7 @@ public &StateBuilder
     cond .s.equ("roundstate", token):
       out .= "`trRoundState()";
     cond .s.equ("ishometeam", token):
-      out .=
-        ".v.setB((" .= .s.iToS(`playerno&1) .= ")==.home)";
+      out .= ".v.setB((" .= .s.iToS(`playerno&1) .= ")==.com.home)";
     else:
       branch{
       cond .cfg.IgnoreMostErrors:
@@ -1554,7 +1553,7 @@ public &StateBuilder
   }
   bool expValue(%char out=, ^/char in=)
   {
-    ^/char token = .s.toLower()<, `tokenizer(in=);
+    ^/char token = `tokenizer(in=);
     branch{
     cond .s.equ("playerid", token):
       if(!`expValue(out=, in=)) ret false;
@@ -1563,9 +1562,7 @@ public &StateBuilder
         `lasterror = ",がありません";
         ret false;
       }
-      if(
-        !`expRedirectable(
-          ".c~", .s.toLower(`tokenizer(in=)), out=, in=)) ret false;
+      if(!`expRedirectable(".c~", `tokenizer(in=), out=, in=)) ret false;
       out .= ":.v.setSF())";
     cond
       .s.equ("enemy", token) || .s.equ("enemynear", token)
@@ -1609,9 +1606,7 @@ public &StateBuilder
         ret false;
       }
       out .= "$(#.c>0?";
-      if(
-        !`expRedirectable(
-          ".c~", .s.toLower(`tokenizer(in=)), out=, in=)) ret false;
+      if(!`expRedirectable(".c~", `tokenizer(in=), out=, in=)) ret false;
       out .= ":.v.setSF())";
     cond
       .s.equ("root", token) || .s.equ("parent", token)
@@ -1625,9 +1620,7 @@ public &StateBuilder
         ret false;
       }
       out .= "$(#.c>0?";
-      if(
-        !`expRedirectable(
-          ".c~", .s.toLower(`tokenizer(in=)), out=, in=)) ret false;
+      if(!`expRedirectable(".c~", `tokenizer(in=), out=, in=)) ret false;
       out .= ":.v.setSF())";
     cond true:
       if(!`expRedirectable("`", token, out=, in=)) ret false;
@@ -1788,7 +1781,8 @@ public &StateBuilder
     branch{
       %char buf2;
     cond .s.equ(",", token):
-      buf2 .= "`trRange(" .= buf .= (not ? "$.v,true," : "$.v,false,")
+      buf2 .=
+        "`trRange(" .= buf .= (not ? "$.v,true," : "$.v,false,")
         .= (openkaku ? "true," : "false,") .= buf3 .= "$.v,";
       if(!`expBoolOr(buf2=, in=)) ret false;
       buf2 .= "$.v,";
@@ -1979,8 +1973,7 @@ public &StateBuilder
       comm:
         {
           %char buf2;
-          buf2 .=
-            "`trBoolAnd(" .= buf .= "$.v,";
+          buf2 .= "`trBoolAnd(" .= buf .= "$.v,";
           buf = buf2;
           if(!`expOr(buf=, in=)) ret false;
           buf .= "$.v)";
@@ -2008,8 +2001,7 @@ public &StateBuilder
       comm:
         {
           %char buf2;
-          buf2 .=
-            ".v.setB(" .= buf .= "$.v.isTrue()^";
+          buf2 .= ".v.setB(" .= buf .= "$.v.isTrue()^";
           buf = buf2;
           if(!`expBoolAnd(buf=, in=)) ret false;
           buf .= "$.v.isTrue())";
@@ -2037,8 +2029,7 @@ public &StateBuilder
       comm:
         {
           %char buf2;
-          buf2 .=
-            "`trBoolOr(" .= buf .= "$.v,";
+          buf2 .= "`trBoolOr(" .= buf .= "$.v,";
           buf = buf2;
           if(!`expBoolXor(buf=, in=)) ret false;
           buf .= "$.v)";
@@ -2052,7 +2043,7 @@ public &StateBuilder
   {
     if(!`expBoolOr(out=, in=)) ret false;
     ^/char oldin = in;
-    ^/char token = .s.toLower()<, `tokenizer(in=);
+    ^/char token = `tokenizer(in=);
     if(#token > 0) branch{
     cond .s.equ(token, ","):
       in = oldin;
@@ -2389,8 +2380,7 @@ public &StateBuilder
           `state.ctrlList[-1].task=, text=,
           ".ground_hittime=", "$.v.toInt();")) ret false;
     cond .s.equ(name, "ground.velocity"):
-      `state.ctrlList[-1].task .=
-        obj .= ".ground_velocityx=";
+      `state.ctrlList[-1].task .= obj .= ".ground_velocityx=";
       if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
       `state.ctrlList[-1].task .= "$.v.toFloat();";
       if(.s.equ(",")<, `tokenizer(text=)){
@@ -2401,8 +2391,7 @@ public &StateBuilder
             ".ground_velocityy=", "$.v.toFloat();")) ret false;
       }
     cond .s.equ(name, "airguard.velocity"):
-      `state.ctrlList[-1].task .=
-        obj .= ".airguard_velocityx=";
+      `state.ctrlList[-1].task .= obj .= ".airguard_velocityx=";
       if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
       `state.ctrlList[-1].task .= "$.v.toFloat();";
       if(.s.equ(",")<, `tokenizer(text=)){
@@ -2639,8 +2628,7 @@ public &StateBuilder
           `state.ctrlList[-1].task=, text=,
           ".airguard_ctrltime=", "$.v.toInt();")) ret false;
     cond .s.equ(name, "down.velocity"):
-      `state.ctrlList[-1].task .=
-        obj .= ".down_velocityx=";
+      `state.ctrlList[-1].task .= obj .= ".down_velocityx=";
       if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
       `state.ctrlList[-1].task .= "$.v.toFloat();";
       if(.s.equ(",")<, `tokenizer(text=)){
@@ -2666,8 +2654,7 @@ public &StateBuilder
       `state.ctrlList[-1].task .= obj;
       if(
         !`fullExpression(
-          `state.ctrlList[-1].task=, text=,
-          ".id=", "$.v.toInt();")) ret false;
+          `state.ctrlList[-1].task=, text=, ".id=", "$.v.toInt();")) ret false;
     cond .s.equ(name, "sprpriority") || .s.equ(name, "p1sprpriority"):
       `state.ctrlList[-1].task .= obj;
       if(
@@ -3013,8 +3000,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, text=,
-              "pr~prioritypoint=pr~priority=",
-              "$.v.toInt();")) ret false;
+              "pr~prioritypoint=pr~priority=", "$.v.toInt();")) ret false;
         cond .s.equ(name, "projsprpriority"):
           if(
             !`fullExpression(
@@ -3318,7 +3304,7 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::HitDef;
           `state.ctrlList[-1].task .=
             "`stVal.hit.clear();"
-            "`stVal.hit.sparkno=!`sysivar[.iSPARKNO];";
+            "`stVal.hit.sparkno=!`sysivar[.iSPARKNO];"
             "`stVal.hit.guard_sparkno=!`sysivar[.iGUARD_SPARKNO];";
         cond .s.equ(s, "projectile"):
           `state.ctrlList[-1].typ = .CtrlTy::Projectile;
@@ -3339,8 +3325,7 @@ public &StateBuilder
         cond .s.equ(s, "superpause"):
           `state.ctrlList[-1].typ = .CtrlTy::SuperPause;
           `state.ctrlList[-1].task .=
-            .sndstart .=
-            ".superplayer=" .= .s.iToS(`playerno) .=
+            .sndstart .= ".superplayer=" .= .s.iToS(`playerno) .=
             ";.superanim=.fight~getAction(30);.superfacing=`facing;"
             ".superposx=`sysfvar[.fX];.superposy=`sysfvar[.fY];"
             "`sysivar[.iMOVETIMESUPER]=0;"
@@ -3400,8 +3385,7 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::PlayerPush;
         cond .s.equ(s, "gravity"):
           `state.ctrlList[-1].typ = .CtrlTy::Gravity;
-          `state.ctrlList[-1].task .=
-            "`sysivar[.iSPECIALFLAG]|=.lsGRAVITY;";
+          `state.ctrlList[-1].task .= "`sysivar[.iSPECIALFLAG]|=.lsGRAVITY;";
         cond .s.equ(s, "bindtoparent"):
           `state.ctrlList[-1].typ = .CtrlTy::BindToParent;
           `state.ctrlList[-1].task .=
@@ -3463,8 +3447,7 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::MakeDust;
         cond .s.equ(s, "angledraw"):
           `state.ctrlList[-1].typ = .CtrlTy::AngleDraw;
-          `state.ctrlList[-1].task .=
-            "`sysivar[.iSPECIALFLAG]|=.lsANGLEDRAW;";
+          `state.ctrlList[-1].task .= "`sysivar[.iSPECIALFLAG]|=.lsANGLEDRAW;";
         cond .s.equ(s, "angleadd"):
           `state.ctrlList[-1].typ = .CtrlTy::AngleAdd;
         cond .s.equ(s, "anglemul"):
@@ -3583,8 +3566,7 @@ public &StateBuilder
           %char buf;
           if(
             !`fullExpression(
-              buf=, text=, "",
-              "$`trSetPersistent(`stVal.ps[")) ret false;
+              buf=, text=, "", "$`trSetPersistent(`stVal.ps[")) ret false;
           buf .= .s.iToS(#`state.ctrlList-1) .= "].p=)";
           `state.persist = buf;
         }
@@ -3626,9 +3608,7 @@ public &StateBuilder
               `state.ctrlList[-1].task = buf;
             }
           cond .s.equ(name, "anim"):
-            if(#text > 0 && .s.toLowerChar(text[0]) == 's'){
-              text = text[1..-1];
-            }
+            if(#text > 0 && .s.toLowerChar(text[0]) == 's') text = text[1..-1];
             {
               %char buf;
               if(
@@ -3679,8 +3659,7 @@ public &StateBuilder
               buf .= `state.ctrlList[-1].task;
               `state.ctrlList[-1].task = buf;
             }
-            `state.value =
-              "if(#`ani>0)`ani~ani.setAnimElem(e);";
+            `state.value = "if(#`ani>0)`ani~ani.setAnimElem(e);";
           else:
             break, default;
           }
@@ -3690,8 +3669,8 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fX)$.v,`trAdd(.v.setF(.camerax)$.v,",
-                "$.v)$.v);")) ret false;
+                "`trSetSysFVar(.v.setI(.fX)$.v,"
+                "`trAdd(.v.setF(.com.camerax)$.v,", "$.v)$.v);")) ret false;
           cond .s.equ(name, "y"):
             if(
               !`fullExpression(
@@ -3790,16 +3769,14 @@ public &StateBuilder
             }
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetIVar(" : "`trSetIVar(";
-            if(
-              !`expValue(`state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             if(!.s.equ("=")<, `tokenizer(text=)){
               `lasterror = "'='がありません";
               ret false;
             }
             if(
               !`fullExpression(
-                `state.ctrlList[-1].task=, text=,
-                "$.v,", "$.v);")) ret false;
+                `state.ctrlList[-1].task=, text=, "$.v,", "$.v);")) ret false;
           cond .s.equ(name[0..4], "fvar"):
             if(name[4] != '(' && .cfg.IgnoreMostErrors) break;
             {
@@ -3809,16 +3786,14 @@ public &StateBuilder
             }
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetFVar(" : "`trSetFVar(";
-            if(
-              !`expValue(`state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             if(!.s.equ("=")<, `tokenizer(text=)){
               `lasterror = "'='がありません";
               ret false;
             }
             if(
               !`fullExpression(
-                `state.ctrlList[-1].task=, text=,
-                "$.v,", "$.v);")) ret false;
+                `state.ctrlList[-1].task=, text=, "$.v,", "$.v);")) ret false;
           cond .s.equ(name[0..6], "sysvar"):
             if(name[6] != '(' && .cfg.IgnoreMostErrors) break;
             {
@@ -3828,16 +3803,14 @@ public &StateBuilder
             }
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetSysIVar(" : "`trSetSysIVar(";
-            if(
-              !`expValue(`state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             if(!.s.equ("=")<, `tokenizer(text=)){
               `lasterror = "'='がありません";
               ret false;
             }
             if(
               !`fullExpression(
-                `state.ctrlList[-1].task=, text=,
-                "$.v,", "$.v);")) ret false;
+                `state.ctrlList[-1].task=, text=, "$.v,", "$.v);")) ret false;
           cond .s.equ(name[0..7], "sysfvar"):
             if(name[7] != '(' && .cfg.IgnoreMostErrors) break;
             {
@@ -3847,16 +3820,14 @@ public &StateBuilder
             }
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetSysFVar(" : "`trSetSysFVar(";
-            if(
-              !`expValue(`state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             if(!.s.equ("=")<, `tokenizer(text=)){
               `lasterror = "'='がありません";
               ret false;
             }
             if(
               !`fullExpression(
-                `state.ctrlList[-1].task=, text=,
-                "$.v,", "$.v);")) ret false;
+                `state.ctrlList[-1].task=, text=, "$.v,", "$.v);")) ret false;
           else:
             break, default;
           }
@@ -3881,15 +3852,13 @@ public &StateBuilder
             }
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetIVar(" : "`trSetIVar(";
-            if(
-              !`expValue(`state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             if(!.s.equ("=")<, `tokenizer(text=)){
               `lasterror = "'='がありません";
               ret false;
             }
             `state.ctrlList[-1].task .=
-              "$.v,`trAdd(" .= (
-                `state.flag != 0 ? "p~trIVar()" : "`trIVar()");
+              "$.v,`trAdd(" .= (`state.flag != 0 ? "p~trIVar()" : "`trIVar()");
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
@@ -3903,15 +3872,13 @@ public &StateBuilder
             }
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetFVar(" : "`trSetFVar(";
-            if(
-              !`expValue(`state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             if(!.s.equ("=")<, `tokenizer(text=)){
               `lasterror = "'='がありません";
               ret false;
             }
             `state.ctrlList[-1].task .=
-              "$.v,`trAdd(" .= (
-                `state.flag != 0 ? "p~trFVar()" : "`trFVar()");
+              "$.v,`trAdd(" .= (`state.flag != 0 ? "p~trFVar()" : "`trFVar()");
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
@@ -3925,8 +3892,7 @@ public &StateBuilder
             }
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetSysIVar(" : "`trSetSysIVar(";
-            if(
-              !`expValue(`state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             if(!.s.equ("=")<, `tokenizer(text=)){
               `lasterror = "'='がありません";
               ret false;
@@ -3946,8 +3912,7 @@ public &StateBuilder
             }
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetSysFVar(" : "`trSetSysFVar(";
-            if(
-              !`expValue(`state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             if(!.s.equ("=")<, `tokenizer(text=)){
               `lasterror = "'='がありません";
               ret false;
@@ -3996,9 +3961,7 @@ public &StateBuilder
               ^/char tmp = `tokenizer(text=);
             cond .s.equ(tmp, ","):
               buf.new(0);
-              if(
-                !`fullExpression(
-                  buf=, text=, "", "$.v.toInt()")) ret false;
+              if(!`fullExpression(buf=, text=, "", "$.v.toInt()")) ret false;
               `state.fv = buf;
             cond #tmp == 0:
               `state.fv = `state.v;
@@ -4017,8 +3980,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`sysivar[.iCTRL]=(int)(",
-                "$.v.isTrue());")) ret false;
+                "`sysivar[.iCTRL]=(int)(", "$.v.isTrue());")) ret false;
           else:
             break, default;
           }
@@ -4187,8 +4149,7 @@ public &StateBuilder
             `state.ctrlList[-1].task .=
               "`sysivar[.iSPECIALFLAG]|=.lsINVISIBLE;";
           cond .s.equ(text, "globalnoshadow"):
-            `state.ctrlList[-1].task .=
-              ".specialFlag|=.gsGLOBALNOSHADOW;";
+            `state.ctrlList[-1].task .= ".specialFlag|=.gsGLOBALNOSHADOW;";
           cond .s.equ(text, "timerfreeze"):
             `state.ctrlList[-1].task .= ".specialFlag|=.gsTIMERFREEZE;";
           cond .s.equ(text, "nokoslow"):
@@ -4202,8 +4163,7 @@ public &StateBuilder
           cond .s.equ(text, "noko"):
             `state.ctrlList[-1].task .= ".specialFlag|=.gsNOKO;";
           cond .s.equ(text, "guard"):
-            `state.ctrlList[-1].task .=
-              "`sysivar[.iSPECIALFLAG]|=.lsGUARD;";
+            `state.ctrlList[-1].task .= "`sysivar[.iSPECIALFLAG]|=.lsGUARD;";
           else:
             if(!.cfg.IgnoreMostErrors){
               %char buf;
@@ -4250,8 +4210,7 @@ public &StateBuilder
               !`fullExpression(
                 buf=, text=, "branch{cond ",
                 "$.v.isTrue():`sysivar[.iSPECIALFLAG]|=.lsPLAYERPUSH;"
-                "else:`sysivar[.iSPECIALFLAG]&="
-                "!.lsPLAYERPUSH;}")) ret false;
+                "else:`sysivar[.iSPECIALFLAG]&=!.lsPLAYERPUSH;}")) ret false;
             `state.value = buf;
           else:
             break, default;
@@ -4261,9 +4220,7 @@ public &StateBuilder
           cond .s.equ(name, "edge") || .s.equ(name, "value"):
             {
               `state.ctrlList[-1].task .= "f=";
-              if(
-                !`expression(`state.ctrlList[-1].task=, text=))
-              {
+              if(!`expression(`state.ctrlList[-1].task=, text=)){
                 ret false;
               }
               `state.ctrlList[-1].task .= "$.v.toFloat();";
@@ -4368,8 +4325,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`addPower(",
-                "$.v.toInt()-`getSharePower());")) ret false;
+                "`addPower(", "$.v.toInt()-`getSharePower());")) ret false;
           else:
             break, default;
           }
@@ -4411,8 +4367,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                ".superanim=.fight~getAction(",
-                "$.v.toInt());")) ret false;
+                ".superanim=.fight~getAction(", "$.v.toInt());")) ret false;
           cond .s.equ(name, "sound"):
             branch{
             cond text[0] == 'F' || text[0] == 'f':
@@ -4446,8 +4401,7 @@ public &StateBuilder
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, text=,
-                  ".superposy=`sysfvar[.fY]+",
-                  "$.v.toFloat();")) ret false;
+                  ".superposy=`sysfvar[.fY]+", "$.v.toFloat();")) ret false;
             }
           cond .s.equ(name, "movetime"):
             if(
@@ -4686,14 +4640,12 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "h~trSetSysFVar(.v.setI(.fXSCALE)$.v,",
-                "$.v);")) ret false;
+                "h~trSetSysFVar(.v.setI(.fXSCALE)$.v,", "$.v);")) ret false;
           cond .s.equ(name, "size.yscale"):
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "h~trSetSysFVar(.v.setI(.fYSCALE)$.v,",
-                "$.v);")) ret false;
+                "h~trSetSysFVar(.v.setI(.fYSCALE)$.v,", "$.v);")) ret false;
           cond .s.equ(name, "size.ground.back"):
             if(
               !`fullExpression(
@@ -4710,20 +4662,17 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "h~trSetSysIVar(.v.setI(.iAIR_BACK)$.v,",
-                "$.v);")) ret false;
+                "h~trSetSysIVar(.v.setI(.iAIR_BACK)$.v,", "$.v);")) ret false;
           cond .s.equ(name, "size.air.front"):
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "h~trSetSysIVar(.v.setI(.iAIR_FRONT)$.v,",
-                "$.v);")) ret false;
+                "h~trSetSysIVar(.v.setI(.iAIR_FRONT)$.v,", "$.v);")) ret false;
           cond .s.equ(name, "size.height"):
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "h~trSetSysIVar(.v.setI(.iHEIGHT)$.v,",
-                "$.v);")) ret false;
+                "h~trSetSysIVar(.v.setI(.iHEIGHT)$.v,", "$.v);")) ret false;
           cond .s.equ(name, "size.proj.doscale"):
             if(
               !`fullExpression(
@@ -4733,9 +4682,7 @@ public &StateBuilder
           cond .s.equ(name, "size.head.pos"):
             `state.ctrlList[-1].task .=
               "h~trSetSysIVar(.v.setI(.iHEAD_POSX)$.v,";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v);";
             if(.s.equ(",")<, `tokenizer(text=)){
               if(
@@ -4747,9 +4694,7 @@ public &StateBuilder
           cond .s.equ(name, "size.mid.pos"):
             `state.ctrlList[-1].task .=
               "h~trSetSysIVar(.v.setI(.iMID_POSX)$.v,";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v);";
             if(.s.equ(",")<, `tokenizer(text=)){
               if(
@@ -4775,14 +4720,12 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysIVar(.v.setI(.iBINDTIME)$.v,",
-                "$.v);")) ret false;
+                "`trSetSysIVar(.v.setI(.iBINDTIME)$.v,", "$.v);")) ret false;
           cond .s.equ(name, "facing"):
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysIVar(.v.setI(.iBINDFACING)$.v,",
-                "$.v);")) ret false;
+                "`trSetSysIVar(.v.setI(.iBINDFACING)$.v,", "$.v);")) ret false;
           cond .s.equ(name, "pos"):
             `state.ctrlList[-1].task .=
               "`trSetSysFVar(.v.setI(.fBINDPOSX)$.v,";
@@ -4886,14 +4829,10 @@ public &StateBuilder
           branch{
             %char buf;
           cond .s.equ(name, "x"):
-            if(
-              !`fullExpression(
-                buf=, text=, "", "$.v.toFloat()")) ret false;
+            if(!`fullExpression(buf=, text=, "", "$.v.toFloat()")) ret false;
             `state.v = buf;
           cond .s.equ(name, "y"):
-            if(
-              !`fullExpression(
-                buf=, text=, "", "$.v.toFloat()")) ret false;
+            if(!`fullExpression(buf=, text=, "", "$.v.toFloat()")) ret false;
             `state.fv = buf;
           cond .s.equ(name, "id"):
             if(
@@ -5106,9 +5045,7 @@ public &StateBuilder
               "if(" .= exp .= ".bindtime>0)" .= exp .= ".bindtime++;";
           cond .s.equ(name, "vel") || .s.equ(name, "velocity"):
             `state.ctrlList[-1].task .= exp .= ".velocityx=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toFloat();";
             if(.s.equ(",")<, `tokenizer(text=)){
               `state.ctrlList[-1].task .= exp;
@@ -5119,9 +5056,7 @@ public &StateBuilder
             }
           cond .s.equ(name, "accel"):
             `state.ctrlList[-1].task .= exp .= ".accelx=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toFloat();";
             if(.s.equ(",")<, `tokenizer(text=)){
               `state.ctrlList[-1].task .= exp;
@@ -5132,9 +5067,7 @@ public &StateBuilder
             }
           cond .s.equ(name, "random"):
             `state.ctrlList[-1].task .= "rx=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toFloat();";
             if(.s.equ(",")<, `tokenizer(text=)){
               if(
@@ -5168,9 +5101,7 @@ public &StateBuilder
                 ".pausemovetime=", "$.v.toInt();")) ret false;
           cond .s.equ(name, "scale"):
             `state.ctrlList[-1].task .= exp .= ".scalex=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toFloat();";
             if(.s.equ(",")<, `tokenizer(text=)){
               `state.ctrlList[-1].task .= exp;
@@ -5193,9 +5124,7 @@ public &StateBuilder
                 ".ontop=(int)(", "$.v.isTrue());")) ret false;
           cond .s.equ(name, "shadow"):
             `state.ctrlList[-1].task .= exp .= ".shadowr=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toInt();";
             if(.s.equ(",")<, `tokenizer(text=)){
               `state.ctrlList[-1].task .= exp .= ".shadowg=";
@@ -5241,9 +5170,7 @@ public &StateBuilder
             }
           cond .s.equ(name, "alpha"):
             `state.ctrlList[-1].task .= exp .= ".alphas=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toInt();";
             if(.s.equ(",")<, `tokenizer(text=)){
               `state.ctrlList[-1].task .= exp;
@@ -5312,22 +5239,18 @@ public &StateBuilder
             break, default;
           }
         case .CtrlTy::HitDef, .CtrlTy::ReversalDef, .CtrlTy::Projectile:
-          if(
-            !`hitdef(name, text=, `state.ctrlList[-1].typ)) ret false;
+          if(!`hitdef(name, text=, `state.ctrlList[-1].typ)) ret false;
         case .CtrlTy::AngleDraw:
           branch{
           cond .s.equ(name, "value"):
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fANGLE)$.v,",
-                "$.v);")) ret false;
+                "`trSetSysFVar(.v.setI(.fANGLE)$.v,", "$.v);")) ret false;
           cond .s.equ(name, "scale"):
             `state.ctrlList[-1].task .=
               "`trSetSysFVar(.v.setI(.fANGLESCALEX)$.v,";
-            if(!`expression(`state.ctrlList[-1].task=, text=)){
-              ret false;
-            }
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v);";
             branch{
               ^/char tmp = `tokenizer(text=);
@@ -5390,8 +5313,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fANGLE)$.v,",
-                "$.v);")) ret false;
+                "`trSetSysFVar(.v.setI(.fANGLE)$.v,", "$.v);")) ret false;
           else:
             break, default;
           }
@@ -5426,18 +5348,14 @@ public &StateBuilder
               }
             }
           cond .s.equ(name, "alpha"):
-            `state.ctrlList[-1].task .=
-              "`trSetSysIVar(.v.setI(.iALPHAS)$.v,";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            `state.ctrlList[-1].task .= "`trSetSysIVar(.v.setI(.iALPHAS)$.v,";
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v);";
             if(.s.equ(",")<, `tokenizer(text=)){
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, text=,
-                  "`trSetSysIVar(.v.setI(.iALPHAD)$.v,",
-                  "$.v);")) ret false;
+                  "`trSetSysIVar(.v.setI(.iALPHAD)$.v,", "$.v);")) ret false;
             }
           else:
             break, default;
@@ -5461,9 +5379,7 @@ public &StateBuilder
           branch{
           cond .s.equ(name, "value"):
             `state.ctrlList[-1].task .= ".envcol_r=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toInt();";
             if(!.s.equ(",")<, `tokenizer(text=)){
               `lasterror = ",がありません";
@@ -5555,8 +5471,7 @@ public &StateBuilder
                 if(
                   !`fullExpression(
                     `state.ctrlList[-1].task=, text=,
-                    "`aimg.palfx~mulb=",
-                    "$.v.toFloat()/256.0;")) ret false;
+                    "`aimg.palfx~mulb=", "$.v.toFloat()/256.0;")) ret false;
               }
             }
           cond .s.equ(name, "palpostbright"):
@@ -5632,14 +5547,11 @@ public &StateBuilder
             cond .s.equ(text, "none"):
               `state.ctrlList[-1].task .= "`aimg.alphas=-1;";
             cond .s.equ(text, "add"):
-              `state.ctrlList[-1].task .=
-                "`aimg.alphas=255;`aimg.alphad=255;";
+              `state.ctrlList[-1].task .= "`aimg.alphas=255;`aimg.alphad=255;";
            cond .s.equ(text, "add1"):
-              `state.ctrlList[-1].task .=
-                "`aimg.alphas=255;`aimg.alphad=128;";
+              `state.ctrlList[-1].task .= "`aimg.alphas=255;`aimg.alphad=128;";
             cond .s.equ(text, "sub"):
-              `state.ctrlList[-1].task .=
-                "`aimg.alphas=1;`aimg.alphad=255;";
+              `state.ctrlList[-1].task .= "`aimg.alphas=1;`aimg.alphad=255;";
             else:
               if(!.cfg.IgnoreMostErrors){
                 %char buf;
@@ -5663,8 +5575,8 @@ public &StateBuilder
         case .CtrlTy::PalFX, .CtrlTy::AllPalFX, .CtrlTy::BGPalFX:
           branch{
             ^/char pf =
-              `state.ctrlList[-1].typ == .CtrlTy::PalFX ? "fx~"
-              : (
+              `state.ctrlList[-1].typ == .CtrlTy::PalFX
+              ? "fx~" : (
                 `state.ctrlList[-1].typ == .CtrlTy::BGPalFX
                 ? ".stage.bgPalFX~" : ".com.allPalFX~");
           cond .s.equ(name, "time"):
@@ -5675,15 +5587,11 @@ public &StateBuilder
                 "time=", "$.v.toInt();")) ret false;
           cond .s.equ(name, "add"):
             `state.ctrlList[-1].task .= pf .= "addr=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toInt();";
             if(.s.equ(",")<, `tokenizer(text=)){
               `state.ctrlList[-1].task .= pf .= "addg=";
-              if(
-                !`expression(
-                  `state.ctrlList[-1].task=, text=)) ret false;
+              if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
               `state.ctrlList[-1].task .= "$.v.toInt();";
               if(.s.equ(",")<, `tokenizer(text=)){
                 `state.ctrlList[-1].task .= pf;
@@ -5949,8 +5857,7 @@ public &StateBuilder
           }
           if(#`state.persist > 0){
             buf .=
-              "--`stVal.ps[" .= .s.iToS(#`state.ctrlList-1)
-              .= "].p<=0&&";
+              "--`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p<=0&&";
           }
           branch{
           cond
@@ -6132,8 +6039,7 @@ public &StateBuilder
             cond #`state.value > 0:
               dbuf .= `state.value;
             else:
-              dbuf .=
-                "`sysivar[.iSPECIALFLAG]|=.lsPOSFREEZEX|.lsPOSFREEZEY;";
+              dbuf .= "`sysivar[.iSPECIALFLAG]|=.lsPOSFREEZEX|.lsPOSFREEZEY;";
             }
           case .CtrlTy::PlayerPush:
             branch{
@@ -6166,8 +6072,7 @@ public &StateBuilder
               }
             else:
               dbuf .=
-                "`sysivar[.iSPECIALFLAG]&="
-                "!(.lsSCREENBOUNDX|.lsSCREENBOUNDY);";
+                "`sysivar[.iSPECIALFLAG]&=!(.lsSCREENBOUNDX|.lsSCREENBOUNDY);";
             }
           case .CtrlTy::SuperPause:
             if(`state.flag == 0){
@@ -6302,8 +6207,7 @@ public &StateBuilder
           comm:
             buf .=
               '`' .= item<> .= (
-                `state.ctrlList[-1].typ == .CtrlTy::Explod
-                ? "(ih);" : "();");
+                `state.ctrlList[-1].typ == .CtrlTy::Explod ? "(ih);" : "();");
           diff<cs>:
              buf .= "ret;}";
           comm:

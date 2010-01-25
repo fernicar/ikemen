@@ -6,7 +6,18 @@ lib sdl = <alpha/sdlplugin.ssz>;
 lib cfg = "config.ssz";
 lib mes = <alpha/mesdialog.ssz>;
 
+
+//チームモードの種類
+|TeamMode
+{
+  Single, Simul, Turns
+}
+
+//Simulでのパワーの共有フラグ
 public bool powershare = true;
+
+//コリジョン表示フラグ
+public bool clsndraw = false;
 
 public ^bool com;
 com.new(4);
@@ -44,6 +55,44 @@ public float tickCountF = 0.0;
 
 public int brightness = 256;
 
+public float screenleft = 0.0, screenright = 0.0;
+public float xmin = 0.0, xmax = 0.0;
+public float camerax = 0.0, cameray = 0.0;
+public float screenx = 0.0, screeny = 0.0;
+public float scrxmin = 0.0, scrxmax = 0.0;
+public float zoffset = 0.0;
+public float yoffset = 0.0;
+public float xoffset = 0.0;
+public float scale = 1.0;
+public float turbo = Speed;
+public int gametime = 0, time = 0;
+public int intro = 20;
+
+//ホームチーム 1P:0, 2P:1
+public int home = 0;
+
+public int p1mw = 2, p2mw = 2;
+
+//ラウンドNo.
+public int round = 1;
+
+//チームモード
+public ^int tmode;
+tmode.new(2);
+tmode[0] = tmode[1] = (int)TeamMode::Single;
+
+//Turnsの人数
+public ^int numturns;
+numturns.new(2);
+numturns[0] = numturns[1] = 2;
+
+public ^int rexisted;
+rexisted.new(2);
+rexisted[0] = rexisted[1] = 0;
+
+public int p1wins = 0, p2wins = 0, draws = 0;
+
+public int win = -1;
 
 public int nextLine(index i=, ^/char str)
 {
@@ -204,9 +253,7 @@ public &PalFX
   public void step()
   {
     if(`time > 0) `time--;
-    if(`time != 0 && `cycletime > 0){
-      `sintime = (`sintime+1) % `cycletime;
-    }
+    if(`time != 0 && `cycletime > 0) `sintime = (`sintime+1) % `cycletime;
   }
   public ^uint getFxPal(^uint pal, bool neg)
   {
@@ -255,8 +302,7 @@ public &PalFX
           .m.sin(
             (
               .m.PI*2.0*(double)`sintime + (neg ? .m.PI : 0.0)
-              + (`cycletime == 2 ? .m.PI/2.0 : 0.0))
-            / (double)`cycletime);
+              + (`cycletime == 2 ? .m.PI/2.0 : 0.0)) / (double)`cycletime);
         adr += (int)(sin*(float)`amplr);
         adg += (int)(sin*(float)`amplg);
         adb += (int)(sin*(float)`amplb);
@@ -270,9 +316,7 @@ public &PalFX
       c = pal[i];
       if(`invertall != 0) c = !c;
       ac = (float)((c&0xff)+(c>>0d8&0xff)+(c>>0d16&0xff)) * (1.0/3.0);
-      tmp =
-        (uint)(
-          ((float)(c&0xff) + (ac-(float)(c&0xff))*(1.0-`color)) * mb);
+      tmp = (uint)(((float)(c&0xff) + (ac-(float)(c&0xff))*(1.0-`color)) * mb);
       tmp =
         ((tmp | (uint)(((int)tmp<<23)>>31)) & 0xff)
         | (
@@ -370,9 +414,7 @@ public &ParseMethod<_t>
         if(#name > 0){
           ^/char data = @s.trim(line[f+1..-1]);
           if(#data == 0) break;
-          if(data[0] == '"'){
-            data = data[1..@s.find(\", data[1..-1])+1];
-          }
+          if(data[0] == '"') data = data[1..@s.find(\", data[1..-1])+1];
           func_t(sec, name, data);
         }
       }
@@ -402,8 +444,7 @@ public &FrameActionMethod<_t>
         ani.repeatcnt = 0;
       else:
         ani.current =
-          @m.max!index?(0)<, @m.min!index?(#ani.frames-1)<,
-          ani.loopstart;
+          @m.max!index?(0)<, @m.min!index?(#ani.frames-1)<, ani.loopstart;
       comm:
         ani.loopend = true;
       }

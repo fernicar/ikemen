@@ -187,8 +187,7 @@ public &Buffer
   {
     ret
       (`stat&`A) != 0 || (`stat&`B) != 0 || (`stat&`C) != 0
-      || (`stat&`X) != 0 || (`stat&`Y) != 0
-      || (`stat&`Z) != 0;
+      || (`stat&`X) != 0 || (`stat&`Y) != 0 || (`stat&`Z) != 0;
   }
 }
 
@@ -978,27 +977,25 @@ public &CommandList
   public void step(int input, int facing, bool ai)
   {
     `input(input, facing);
-    `cTable~each()<,
-      [void(^%&.Command cl){
-        loop{index i = 0; while; do:
-          cl<>[i].step(`buffer, ai);
-          i++;
-        while i < #cl<>:
-        }
-      }];
+    `cTable~each()<, [void(^%&.Command cl){
+      loop{index i = 0; while; do:
+        cl<>[i].step(`buffer, ai);
+        i++;
+      while i < #cl<>:
+      }
+    }];
   }
   public void bufReset(int in)
   {
     if(#`buffer == 0) ret;
     `buffer~reset();
-    `cTable~each()<,
-      [void(^%&.Command cl){
-        loop{index i = 0; while; do:
-          cl<>[i].clear();
-          i++;
-        while i < #cl<>:
-        }
-      }];
+    `cTable~each()<, [void(^%&.Command cl){
+      loop{index i = 0; while; do:
+        cl<>[i].clear();
+        i++;
+      while i < #cl<>:
+      }
+    }];
     `step(in, 1, false);
     `step(in, 1, false);
   }

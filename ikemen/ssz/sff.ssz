@@ -410,9 +410,7 @@ public &Anim<frame_t>
   {
     if(#`frames == 0) ret;
     if(`newframe){
-      `spr =
-        `sff~getSprite(
-          `frames[`current].group, `frames[`current].number);
+      `spr = `sff~getSprite(`frames[`current].group, `frames[`current].number);
     }
     `newframe = false;
     `drawidx = `current;
@@ -481,8 +479,7 @@ public &Anim<frame_t>
       if(rx != 0.0) y2 += ys;
     }
     .sdl.screen.renderMugenZoom(
-      rect=, rx*.com.WidthScale, 0.0, `spr~pxl,
-      `palFoo(fx), `mask, `spr~rct=,
+      rect=, rx*.com.WidthScale, 0.0, `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
       (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,
       `tile=, xs*.com.WidthScale,
       cscalex*xbscale*(float)h*.com.WidthScale, ys*.com.HeightScale,

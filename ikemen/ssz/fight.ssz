@@ -178,8 +178,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       branch{
       cond `mlifetime <= 0 && life < `midlifelim:
         `midlifelim +=
-          (life - `midlifelim)
-          * (1.0 / (12.0 - (life - `midlifelim)*144.0));
+          (life - `midlifelim) * (1.0 / (12.0 - (life - `midlifelim)*144.0));
       else:
         `midlifelim = life;
       }
@@ -212,31 +211,23 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     {
       branch{
       cond `range_xz < `range_xm:
-        r.x =
-          (short)(
-            (float)(`posx + `range_xz)*.com.WidthScale + 0.5);
+        r.x = (short)((float)(`posx + `range_xz)*.com.WidthScale + 0.5);
         r.w =
-          (ushort)(
-            (float)(`range_xm-`range_xz+1)*life*.com.WidthScale + 0.5);
+          (ushort)((float)(`range_xm-`range_xz+1)*life*.com.WidthScale + 0.5);
       else:
         r.x =
-          (short)(
-            (float)(`posx + `range_xz+1)*.com.WidthScale + 0.5)
-          - (short)(
-            (float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
+          (short)((float)(`posx + `range_xz+1)*.com.WidthScale + 0.5)
+          - (short)((float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
         r.w =
-          (ushort)(
-            (float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
+          (ushort)((float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
       }
     }
     setLifeWidth(lrct=, life);
     setLifeWidth(mrct=, `midlife);
     .laydraw(
-      mrct=, (float)`posx, (float)`posy, 1.0,
-      layerno, `mid=, `mid_lay=);
+      mrct=, (float)`posx, (float)`posy, 1.0, layerno, `mid=, `mid_lay=);
     .laydraw(
-      lrct=, (float)`posx, (float)`posy, 1.0,
-      layerno, `front=, `front_lay=);
+      lrct=, (float)`posx, (float)`posy, 1.0, layerno, `front=, `front_lay=);
   }
   public void setup(^&.sff.Sff sf)
   {
@@ -356,15 +347,13 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     branch{
     cond power < `midpowerlim:
       `midpowerlim +=
-        (power - `midpowerlim)
-        * (1.0 / (12.0 - (power - `midpowerlim)*144.0));
+        (power - `midpowerlim) * (1.0 / (12.0 - (power - `midpowerlim)*144.0));
     else:
       `midpowerlim = power;
     }
     if(`midpower < `midpowerlim) `midpower = `midpowerlim;
     if(level > `prevlevel){
-      snd.sound =
-        `sn~getSound(`level_snd[level-1].x, `level_snd[level-1].y);
+      snd.sound = `sn~getSound(`level_snd[level-1].x, `level_snd[level-1].y);
       snd.setDefaultParameter();
     }
     `prevlevel = level;
@@ -394,36 +383,27 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     {
       branch{
       cond `range_xz < `range_xm:
-        r.x =
-          (short)(
-            (float)(`posx + `range_xz)*.com.WidthScale + 0.5);
+        r.x = (short)((float)(`posx + `range_xz)*.com.WidthScale + 0.5);
         r.w =
-          (ushort)(
-            (float)(`range_xm-`range_xz+1)*power*.com.WidthScale + 0.5);
+          (ushort)((float)(`range_xm-`range_xz+1)*power*.com.WidthScale + 0.5);
       else:
         r.x =
-          (short)(
-            (float)(`posx + `range_xz+1)*.com.WidthScale + 0.5)
-          - (short)(
-            (float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
+          (short)((float)(`posx + `range_xz+1)*.com.WidthScale + 0.5)
+          - (short)((float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
         r.w =
-          (ushort)(
-            (float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
+          (ushort)((float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
       }
     }
     setPowerWidth(lrct=, power);
     setPowerWidth(mrct=, `midpower);
     .laydraw(
-      mrct=, (float)`posx, (float)`posy, 1.0,
-      layerno, `mid=, `mid_lay=);
+      mrct=, (float)`posx, (float)`posy, 1.0, layerno, `mid=, `mid_lay=);
     .laydraw(
-      lrct=, (float)`posx, (float)`posy, 1.0,
-      layerno, `front=, `front_lay=);
+      lrct=, (float)`posx, (float)`posy, 1.0, layerno, `front=, `front_lay=);
     if(`counter_fontn >= 0){
       .laytext(
         (float)`posx, (float)`posy, 1.0, layerno, .s.iToS(level),
-        f[`counter_fontn]=, `counter_fontb, `counter_fonta,
-        `counter_lay=);
+        f[`counter_fontn]=, `counter_fontb, `counter_fonta, `counter_lay=);
     }
   }
   public void setup(^&.sff.Sff sf, ^&.snd.Snd s)
@@ -528,8 +508,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public void bgDraw(int layerno)
   {
     .laydraw(
-      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
-      layerno, `bg=, `bg_lay=);
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0, layerno, `bg=, `bg_lay=);
   }
   public void draw(int layerno)
   {
@@ -542,14 +521,12 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     do:
       if(i == `numko) continue;
       .laydraw(
-        .com.scrrect=, x, y, 1.0, layerno,
-        `teammate_bg=, `teammate_bg_lay=);
+        .com.scrrect=, x, y, 1.0, layerno, `teammate_bg=, `teammate_bg_lay=);
       .layspr(
         x, y, layerno, `teammate_face_spr[i], `teammate_face_lay=);
       if(i < `numko){
         .laydraw(
-          .com.scrrect=, x, y, 1.0, layerno,
-          `teammate_ko=, `teammate_ko_lay=);
+          .com.scrrect=, x, y, 1.0, layerno, `teammate_ko=, `teammate_ko_lay=);
       }
       x += (float)`teammate_spacingx;
       y += (float)`teammate_spacingy;
@@ -626,8 +603,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public void bgDraw(int layerno)
   {
     .laydraw(
-      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
-      layerno, `bg=, `bg_lay=);
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0, layerno, `bg=, `bg_lay=);
   }
   public void draw(int layerno, ^&.fnt.Font f, ^/char name)
   {
@@ -731,8 +707,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     {
       ret
         `counter_fontn >= 0
-        ? (float)f[`counter_fontn].textWidth(.s.iToS(n))
-        * `counter_lay.scale.x
+        ? (float)f[`counter_fontn].textWidth(.s.iToS(n)) * `counter_lay.scale.x
         : 0.0;
     }
     loop{
@@ -852,8 +827,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       .laydraw(.com.scrrect=, 0.0, 0.0, 1.0, layerno, `anim=, `lay=);
     cond `fontn >= 0 && #`text > 0:
       .laytext(
-        0.0, 0.0, 1.0, layerno, `text,
-        f[`fontn]=, `fontb, `fonta, `lay=);
+        0.0, 0.0, 1.0, layerno, `text, f[`fontn]=, `fontb, `fonta, `lay=);
     }
   }
   public bool noSound()
@@ -868,8 +842,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     ret
       `lay.displaytime < 0
-      ? #`anim.frames == 0 || `anim.loopend
-      : dt >= `lay.displaytime;
+      ? #`anim.frames == 0 || `anim.loopend : dt >= `lay.displaytime;
   }
   public void setup(^&.sff.Sff sf)
   {
@@ -1032,12 +1005,10 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       case 0:
         if(`swt-- == 0) branch{
         cond round <= #`round:
-          snd.sound =
-            `sn~getSound(`round[round-1].sndg, `round[round-1].sndi);
+          snd.sound = `sn~getSound(`round[round-1].sndg, `round[round-1].sndi);
           snd.setDefaultParameter();
         else:
-          snd.sound =
-            `sn~getSound(`round_default.sndg, `round_default.sndi);
+          snd.sound = `sn~getSound(`round_default.sndg, `round_default.sndi);
           snd.setDefaultParameter();
         }
         if(`wt-- <= 0) branch{
@@ -1107,10 +1078,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
           `to.action();
         }
       }
-      if(
-        roundState
-        < -(`over_hittime + `over_waittime + `over_wintime))
-      {
+      if(roundState < -(`over_hittime + `over_waittime + `over_wintime)){
         branch{
         cond ko == .KOTy::DKO || ko == .KOTy::TODraw:
           if(`swt2-- == 0){
@@ -1147,28 +1115,26 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     }
     ret true;
   }
-  public void draw(
-    int layerno, int roundState, int round, |.KOTy ko, ^/^/char name)
+  public void draw(int layerno, |.KOTy ko, ^/^/char name)
   {
     int ob = .com.brightness;
     .com.brightness = 256;
     switch(`cur){
     case 0:
-      if(`wt >= 0 || roundState > `ctrl_time) break;
+      if(`wt >= 0 || .com.intro > `ctrl_time) break;
       branch{
         ^/char tmp;
-      cond round <= #`round:
-        tmp = `round[round-1].text;
-        `round[round-1].text =
-          .s.join(.s.iToS(round))<,
-          .s.split("%i")<, `round[round-1].text;
-        `round[round-1].draw(layerno, `fnt);
-        `round[round-1].text = tmp;
+      cond .com.round <= #`round:
+        tmp = `round[.com.round-1].text;
+        `round[.com.round-1].text =
+          .s.join(.s.iToS(.com.round))<,
+          .s.split("%i")<, `round[.com.round-1].text;
+        `round[.com.round-1].draw(layerno, `fnt);
+        `round[.com.round-1].text = tmp;
       else:
         tmp = `round_default.text;
         `round_default.text =
-          .s.join(.s.iToS(round))<,
-          .s.split("%i")<, `round_default.text;
+          .s.join(.s.iToS(.com.round))<, .s.split("%i")<, `round_default.text;
         `round_default.draw(layerno, `fnt);
         `round_default.text = tmp;
       }
@@ -1389,10 +1355,8 @@ public void setPerfect(|.WinTy wt=)
     cond #`wins > `useiconupto:
       if(`counter_fontn < 0) break;
       .laytext(
-        (float)`posx, (float)`posy, 1.0,
-        layerno, .s.iToS(#`wins),
-        f[`counter_fontn]=, `counter_fontb, `counter_fonta,
-        `counter_lay=);
+        (float)`posx, (float)`posy, 1.0, layerno, .s.iToS(#`wins),
+        f[`counter_fontn]=, `counter_fontb, `counter_fonta, `counter_lay=);
     else:
       loop{
         index i = 0;
@@ -1500,8 +1464,7 @@ public void setPerfect(|.WinTy wt=)
       .laytext(
         (float)`posx, (float)`posy, 1.0, layerno,
         time >= 0 ? .s.iToS(time/`framespercount) : "o",
-        f[`counter_fontn]=, `counter_fontb, `counter_fonta,
-        `counter_lay=);
+        f[`counter_fontn]=, `counter_fontb, `counter_fonta, `counter_lay=);
     }
   }
   public void setup(^&.sff.Sff sf)
@@ -1845,9 +1808,9 @@ public &Fight
     }
     ^char mainbuf;
     if(
-      !.com.loadFile(sysdef, def=)<, [
-        bool(^/char f){
-          ret #(mainbuf = .file.loadAsciiText(f)) > 0;}]) ret false;
+      !.com.loadFile(sysdef, def=)<, [bool(^/char f){
+        ret #(mainbuf = .file.loadAsciiText(f)) > 0;
+      }]) ret false;
     ^^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `clear();
@@ -1891,10 +1854,10 @@ public &Fight
       !.com.loadFile(def, `fightfx_sff=)<,
       [bool(^/char f){ret `fsf~loadFile(f);}]) ret false;
     if(
-      !.com.loadFile(def, `fightfx_air=)<, [
-        bool(^/char f){
-          ret
-            (mainbuf = .file.loadAsciiText(f)) $ #mainbuf > 0;}]) ret false;
+      !.com.loadFile(def, `fightfx_air=)<, [bool(^/char f){
+        ret
+          (mainbuf = .file.loadAsciiText(f)) $ #mainbuf > 0;
+      }]) ret false;
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `actionList.new(0);
@@ -1988,81 +1951,81 @@ public &Fight
     `ti.step();
     `co.step(combo);
   }
-  public void draw(
-    ^/int tm, int layerno, ^/&.LifePower life, ^/^/char name,
-    int time, bool nbd)
+  public void draw(int layerno, ^/&.LifePower life, ^/^/char name, bool nbd)
   {
     int ob = .com.brightness;
     .com.brightness = 256;
     if(!nbd){
       loop{index i = 0; while; do:
-        `lb[tm[0]][i].bgDraw(layerno);
+        `lb[.com.tmode[0]][i].bgDraw(layerno);
         i += 2;
-      while i < #`lb[tm[0]]:
+      while i < #`lb[.com.tmode[0]]:
       }
       loop{index i = 1; while; do:
-        `lb[tm[1]][i].bgDraw(layerno);
+        `lb[.com.tmode[1]][i].bgDraw(layerno);
         i += 2;
-      while i < #`lb[tm[1]]:
+      while i < #`lb[.com.tmode[1]]:
       }
       `pb[0].bgDraw(layerno);
       `pb[1].bgDraw(layerno);
-      loop{index i = #`fa[tm[0]]-2; while; do:
-        `fa[tm[0]][i].bgDraw(layerno);
+      loop{index i = #`fa[.com.tmode[0]]-2; while; do:
+        `fa[.com.tmode[0]][i].bgDraw(layerno);
         i -= 2;
       while i >= 0:
       }
-      loop{index i = #`fa[tm[1]]-1; while; do:
-        `fa[tm[1]][i].bgDraw(layerno);
+      loop{index i = #`fa[.com.tmode[1]]-1; while; do:
+        `fa[.com.tmode[1]][i].bgDraw(layerno);
         i -= 2;
       while i >= 0:
       }
       loop{index i = 0; while; do:
-        `nm[tm[0]][i].bgDraw(layerno);
+        `nm[.com.tmode[0]][i].bgDraw(layerno);
         i += 2;
-      while i < #`nm[tm[0]]:
+      while i < #`nm[.com.tmode[0]]:
       }
       loop{index i = 1; while; do:
-        `nm[tm[1]][i].bgDraw(layerno);
+        `nm[.com.tmode[1]][i].bgDraw(layerno);
         i += 2;
-      while i < #`nm[tm[1]]:
+      while i < #`nm[.com.tmode[1]]:
       }
       `ti.bgDraw(layerno);
       loop{index i = 0; while; do:
-        `lb[tm[0]][i].draw(layerno, life[i].l);
+        `lb[.com.tmode[0]][i].draw(layerno, life[i].l);
         i += 2;
-      while i < #`lb[tm[0]]:
+      while i < #`lb[.com.tmode[0]]:
       }
       loop{index i = 1; while; do:
-        `lb[tm[1]][i].draw(layerno, life[i].l);
+        `lb[.com.tmode[1]][i].draw(layerno, life[i].l);
         i += 2;
-      while i < #`lb[tm[1]]:
+      while i < #`lb[.com.tmode[1]]:
       }
-      `pb[0].draw(layerno, life[0].p, life[tm[0] != 1 ? 0 : 2].lv, `fnt);
-      `pb[1].draw(layerno, life[1].p, life[tm[1] != 1 ? 1 : 3].lv, `fnt);
-      loop{index i = #`fa[tm[0]]-2; while; do:
-        `fa[tm[0]][i].draw(layerno);
+      `pb[0].draw(
+        layerno, life[0].p, life[.com.tmode[0] != 1 ? 0 : 2].lv, `fnt);
+      `pb[1].draw(
+        layerno, life[1].p, life[.com.tmode[1] != 1 ? 1 : 3].lv, `fnt);
+      loop{index i = #`fa[.com.tmode[0]]-2; while; do:
+        `fa[.com.tmode[0]][i].draw(layerno);
         i -= 2;
       while i >= 0:
       }
-      loop{index i = #`fa[tm[1]]-1; while; do:
-        `fa[tm[1]][i].draw(layerno);
+      loop{index i = #`fa[.com.tmode[1]]-1; while; do:
+        `fa[.com.tmode[1]][i].draw(layerno);
         i -= 2;
       while i >= 0:
       }
       loop{index i = 0; while; do:
-        `nm[tm[0]][i].draw(layerno, `fnt, name[i]);
+        `nm[.com.tmode[0]][i].draw(layerno, `fnt, name[i]);
         i += 2;
-      while i < #`nm[tm[0]]:
+      while i < #`nm[.com.tmode[0]]:
       }
       loop{index i = 1; while; do:
-        `nm[tm[1]][i].draw(layerno, `fnt, name[i]);
+        `nm[.com.tmode[1]][i].draw(layerno, `fnt, name[i]);
         i += 2;
-      while i < #`nm[tm[1]]:
+      while i < #`nm[.com.tmode[1]]:
       }
       `wi[0].draw(layerno, `fnt);
       `wi[1].draw(layerno, `fnt);
-      `ti.draw(layerno, time, `fnt);
+      `ti.draw(layerno, .com.time, `fnt);
     }
     `co.draw(layerno, `fnt);
     .com.brightness = ob;

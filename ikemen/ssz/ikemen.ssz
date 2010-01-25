@@ -114,15 +114,13 @@ void addFunc(^/char name, func .sc.fsig_t f)
   cond #mess < 2:
   cond !consteval(pn=, mess[0]) || !.m.inRange!int?(1, 2, pn):
   cond !consteval(tm=, mess[1]) || !.m.inRange!int?(0, 2, tm):
-  cond
-    #mess >= 3 && (!consteval(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt))
-    :
+  cond #mess >= 3 && (!consteval(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt)):
   else:
     branch{
     cond #mess >= 3:
       if(!consteval(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt)) break;
     else:
-      nt = .chr.numturns[pn-1];
+      nt = .com.numturns[pn-1];
     comm:
       break, break;
     }
@@ -131,8 +129,8 @@ void addFunc(^/char name, func .sc.fsig_t f)
     ret .mac.RetState::ERROR;
   }
   .syst.selinf.p[pn-1].selchr.new(0);
-  .chr.tmode[pn-1] = tm;
-  .chr.numturns[pn-1] = nt;
+  .com.tmode[pn-1] = tm;
+  .com.numturns[pn-1] = nt;
   re.new(0);
   ret .mac.RetState::OK;
 }
@@ -254,14 +252,13 @@ void addFunc(^/char name, func .sc.fsig_t f)
   %char buf;
   branch{
   cond pl > 0 && .syst.selinf.addSelchr(pn-1, cn, pl):
-    switch(.chr.tmode[pn-1]){
-    case (int).chr.TeamMode::Single:
+    switch(.com.tmode[pn-1]){
+    case (int).com.TeamMode::Single:
       buf .= '2';
-    case (int).chr.TeamMode::Simul:
+    case (int).com.TeamMode::Simul:
       buf .= #.syst.selinf.p[pn-1].selchr >= 2 ? '2' : '1';
-    case (int).chr.TeamMode::Turns:
-      buf .=
-        #.syst.selinf.p[pn-1].selchr >= .chr.numturns[pn-1] ? '2' : '1';
+    case (int).com.TeamMode::Turns:
+      buf .= #.syst.selinf.p[pn-1].selchr >= .com.numturns[pn-1] ? '2' : '1';
     }
   else:
     buf .= '0';
@@ -323,9 +320,7 @@ void addFunc(^/char name, func .sc.fsig_t f)
   }
   if(!.se.fskip){
     ^&.sys.Select::Char c = .syst.selinf.sel.getChar(n);
-    if(#c > 0 && #c~lportrait > 0){
-      c~lportrait~draw(x, y, xscl, yscl);
-    }
+    if(#c > 0 && #c~lportrait > 0) c~lportrait~draw(x, y, xscl, yscl);
   }
   re.new(0);
   ret .mac.RetState::OK;
@@ -411,11 +406,11 @@ int game()
   pal[0] = .syst.selinf.p[0].selchr[0].pal;
   cha[1] = .syst.selinf.sel.charlist[.syst.selinf.p[1].selchr[0].i].def;
   pal[1] = .syst.selinf.p[1].selchr[0].pal;
-  if(.chr.tmode[0] == (int).chr.TeamMode::Simul){
+  if(.com.tmode[0] == (int).com.TeamMode::Simul){
     cha[2] = .syst.selinf.sel.charlist[.syst.selinf.p[0].selchr[1].i].def;
     pal[2] = .syst.selinf.p[0].selchr[1].pal;
   }
-  if(.chr.tmode[1] == (int).chr.TeamMode::Simul){
+  if(.com.tmode[1] == (int).com.TeamMode::Simul){
     cha[3] = .syst.selinf.sel.charlist[.syst.selinf.p[1].selchr[1].i].def;
     pal[3] = .syst.selinf.p[1].selchr[1].pal;
   }
@@ -449,15 +444,15 @@ int game()
   {
     branch{
     cond #p > 0:
-      .chr.fight~fa[.chr.tmode[pn]][pn+2].face_spr =
+      .chr.fight~fa[.com.tmode[pn]][pn+2].face_spr =
         p~sf~getSprite(
-          .chr.fight~fa[.chr.tmode[pn]][pn+2].face_sprg,
-          .chr.fight~fa[.chr.tmode[pn]][pn+2].face_spri);
-    cond .chr.tmode[pn] == (int).chr.TeamMode::Turns:
-      .chr.fight~fa[.chr.tmode[pn]][pn].numko = 0;
+          .chr.fight~fa[.com.tmode[pn]][pn+2].face_sprg,
+          .chr.fight~fa[.com.tmode[pn]][pn+2].face_spri);
+    cond .com.tmode[pn] == (int).com.TeamMode::Turns:
+      .chr.fight~fa[.com.tmode[pn]][pn].numko = 0;
       loop{
         index i = 0;
-        .chr.fight~fa[.chr.tmode[pn]][pn].teammate_face_spr.new(
+        .chr.fight~fa[.com.tmode[pn]][pn].teammate_face_spr.new(
           #.syst.selinf.p[pn].selchr);
         ^/char tmp;
         while;
@@ -472,13 +467,13 @@ int game()
               if(
                 !s~loadFromSff(
                   f, .chr.fight<>
-                    .fa[(int).chr.TeamMode::Turns][pn].teammate_face_sprg,
+                    .fa[(int).com.TeamMode::Turns][pn].teammate_face_sprg,
                   .chr.fight<>
-                    .fa[(int).chr.TeamMode::Turns][pn].teammate_face_spri))
+                    .fa[(int).com.TeamMode::Turns][pn].teammate_face_spri))
               {
                 ret false;
               }
-              .chr.fight~fa[.chr.tmode[pn]][pn].teammate_face_spr[i] = s;
+              .chr.fight~fa[.com.tmode[pn]][pn].teammate_face_spr[i] = s;
               ret true;
             }]);
         i++;
@@ -492,7 +487,7 @@ int game()
     .mes.SetSharedString(:ss:);
     bool b = .ssz.run("ssz/fighting.ssz");
     .sdl.shareScreen();
-    .chr.clsndraw = share~clsndw;
+    .com.clsndraw = share~clsndw;
     bool w1 = share~chr_p1w >= share~chr_p1mw;
     bool w2 = share~chr_p2w >= share~chr_p2mw;
     `winp = 0;
@@ -519,11 +514,11 @@ int game()
     .chr.id = .cfg.HelperMax;
     .chr.players.clear();
     .chr.chars.new(4);
-    .chr.rexisted[0] = .chr.rexisted[1] = 0;
+    .com.rexisted[0] = .com.rexisted[1] = 0;
     pset(p[0]=, 0);
     pset(p[1]=, 1);
-    if(.chr.tmode[0] == (int).chr.TeamMode::Simul) pset(p[2]=, 2);
-    if(.chr.tmode[1] == (int).chr.TeamMode::Simul) pset(p[3]=, 3);
+    if(.com.tmode[0] == (int).com.TeamMode::Simul) pset(p[2]=, 2);
+    if(.com.tmode[1] == (int).com.TeamMode::Simul) pset(p[3]=, 3);
     if(!loadChar(p[0], cha[0], pal[0])) ret -1;
     if(!loadChar(p[1], cha[1], pal[1])) ret -1;
     branch{
@@ -561,14 +556,14 @@ int game()
     while ldend<> >= 0 && .se.event():
       ret -1;
     }
-    .chr.fight~fa[.chr.tmode[0]][0].face_spr =
+    .chr.fight~fa[.com.tmode[0]][0].face_spr =
       p[0]~sf~getSprite(
-        .chr.fight~fa[.chr.tmode[0]][0].face_sprg,
-        .chr.fight~fa[.chr.tmode[0]][0].face_spri);
-    .chr.fight~fa[.chr.tmode[1]][1].face_spr =
+        .chr.fight~fa[.com.tmode[0]][0].face_sprg,
+        .chr.fight~fa[.com.tmode[0]][0].face_spri);
+    .chr.fight~fa[.com.tmode[1]][1].face_spr =
       p[1]~sf~getSprite(
-        .chr.fight~fa[.chr.tmode[1]][1].face_sprg,
-        .chr.fight~fa[.chr.tmode[1]][1].face_spri);
+        .chr.fight~fa[.com.tmode[1]][1].face_sprg,
+        .chr.fight~fa[.com.tmode[1]][1].face_spri);
     foo(p[2], 0);
     foo(p[3], 1);
     .chr.fight~wi[0].clear();
@@ -578,24 +573,24 @@ int game()
     share~f = .chr.fight;
     share~st = stg;
     share~stt = 0;
-    share~tm = .chr.tmode;
-    share~nt = .chr.numturns;
-    share~re = .chr.rexisted;
+    share~tm = .com.tmode;
+    share~nt = .com.numturns;
+    share~re = .com.rexisted;
     share~chr_home = 0;
     share~chr_round = 1;
     share~chr_p1mw =
-      .chr.tmode[1] == (int).chr.TeamMode::Turns
-      ? .chr.numturns[1] : .chr.fight~ro.match_wins;
+      .com.tmode[1] == (int).com.TeamMode::Turns
+      ? .com.numturns[1] : .chr.fight~ro.match_wins;
     share~chr_p2mw =
-      .chr.tmode[0] == (int).chr.TeamMode::Turns
-      ? .chr.numturns[0] : .chr.fight~ro.match_wins;
+      .com.tmode[0] == (int).com.TeamMode::Turns
+      ? .com.numturns[0] : .chr.fight~ro.match_wins;
     share~chr_p1w = 0;
     share~chr_p2w = 0;
     share~chr_drw = 0;
     share~com = .com.com;
     share~net = .cmd.net;
     share~rep = .cmd.replay;
-    share~clsndw = .chr.clsndraw;
+    share~clsndw = .com.clsndraw;
     share~powsh = .com.powershare;
     share~alvl = .com.autolevel;
     &.com.SuperDangerousRef sdr;
@@ -604,42 +599,42 @@ int game()
     ^char ss = buf;
     if(!fight(ss=, share) || .s.equ(ss, "esc")) ret -1;
     if(
-      .chr.tmode[0] == (int).chr.TeamMode::Turns
-      || .chr.tmode[1] == (int).chr.TeamMode::Turns)
+      .com.tmode[0] == (int).com.TeamMode::Turns
+      || .com.tmode[1] == (int).com.TeamMode::Turns)
     {
       loop{while; do:
         if(p[0]~sysivar[.chr.iLIFE] <= 0){
           if(winp == 2) break, break;
-          if(.chr.tmode[0] == (int).chr.TeamMode::Turns){
-            share~f~fa[.chr.tmode[0]][0].numko++;
+          if(.com.tmode[0] == (int).com.TeamMode::Turns){
+            share~f~fa[.com.tmode[0]][0].numko++;
             cha[0] =
               .syst.selinf.sel.charlist[
                 .syst.selinf.p[0].selchr[share~chr_p2w].i].def;
             pal[0] = .syst.selinf.p[0].selchr[share~chr_p2w].pal;
             p[0]~sf.new(0);
             if(!loadChar(p[0], cha[0], pal[0])) ret -1;
-            .chr.fight~fa[.chr.tmode[0]][0].face_spr =
+            .chr.fight~fa[.com.tmode[0]][0].face_spr =
               p[0]~sf~getSprite(
-                .chr.fight~fa[.chr.tmode[0]][0].face_sprg,
-                .chr.fight~fa[.chr.tmode[0]][0].face_spri);
-            .chr.rexisted[0] = 0;
+                .chr.fight~fa[.com.tmode[0]][0].face_sprg,
+                .chr.fight~fa[.com.tmode[0]][0].face_spri);
+            .com.rexisted[0] = 0;
           }
         }
         if(p[1]~sysivar[.chr.iLIFE] <= 0){
           if(winp == 1) break, break;
-          if(.chr.tmode[1] == (int).chr.TeamMode::Turns){
-            share~f~fa[.chr.tmode[1]][1].numko++;
+          if(.com.tmode[1] == (int).com.TeamMode::Turns){
+            share~f~fa[.com.tmode[1]][1].numko++;
             cha[1] =
               .syst.selinf.sel.charlist[
                 .syst.selinf.p[1].selchr[share~chr_p1w].i].def;
             pal[1] = .syst.selinf.p[1].selchr[share~chr_p1w].pal;
             p[1]~sf.new(0);
             if(!loadChar(p[1], cha[1], pal[1])) ret -1;
-            .chr.fight~fa[.chr.tmode[1]][1].face_spr =
+            .chr.fight~fa[.com.tmode[1]][1].face_spr =
               p[1]~sf~getSprite(
-                .chr.fight~fa[.chr.tmode[1]][1].face_sprg,
-                .chr.fight~fa[.chr.tmode[1]][1].face_spri);
-            .chr.rexisted[1] = 0;
+                .chr.fight~fa[.com.tmode[1]][1].face_sprg,
+                .chr.fight~fa[.com.tmode[1]][1].face_spri);
+            .com.rexisted[1] = 0;
           }
         }
         ss = buf;

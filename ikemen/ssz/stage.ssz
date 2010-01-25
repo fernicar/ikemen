@@ -456,22 +456,22 @@ public &Stage
     case .bg.BgcType::Anim:
       {
         ^&.bg.Action act = `getAction((int)bgc.x);
-        if(#act > 0) bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+        if(#act > 0) bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
           bg.actionno = (int)bgc.x;
           bg.anim.setFrames(act~frames, act~loopstart, act~nrepeat);
           bg.anim.current = 0;
         }];
       }
     case .bg.BgcType::Visible:
-      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+      bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
         bg.visible = (int)bgc.x != 0;
       }];
     case .bg.BgcType::Enable:
-      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+      bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
         bg.visible = bg.active = (int)bgc.x != 0;
       }];
     case .bg.BgcType::PosSet:
-      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+      bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
         if(bgc.setx) bg.bga.x = bgc.x;
         if(bgc.sety) bg.bga.y = bgc.y;
       }];
@@ -480,7 +480,7 @@ public &Stage
         if(bgc.sety) `bga.y = bgc.y;
       }
     case .bg.BgcType::PosAdd:
-      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+      bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
         if(bgc.setx) bg.bga.x += bgc.x;
         if(bgc.sety) bg.bga.y += bgc.y;
       }];
@@ -489,7 +489,7 @@ public &Stage
         if(bgc.sety) `bga.y += bgc.y;
       }
     case .bg.BgcType::SinX:
-      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+      bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
         bg.bga.xradius = bgc.x;
         bg.bga.sinxlooptime = (int)bgc.y;
         if(bg.bga.sinxlooptime > 0){
@@ -508,7 +508,7 @@ public &Stage
         }
       }
     case .bg.BgcType::SinY:
-      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+      bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
         bg.bga.yradius = bgc.x;
         bg.bga.sinylooptime = (int)bgc.y;
         if(bg.bga.sinylooptime > 0){
@@ -527,7 +527,7 @@ public &Stage
         }
       }
     case .bg.BgcType::VelSet:
-      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+      bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
         if(bgc.setx) bg.bga.vx = bgc.x;
         if(bgc.sety) bg.bga.vy = bgc.y;
       }];
@@ -536,7 +536,7 @@ public &Stage
         if(bgc.sety) `bga.vy = bgc.y;
       }
     case .bg.BgcType::VelAdd:
-      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+      bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
         if(bgc.setx) bg.bga.vx += bgc.x;
         if(bgc.sety) bg.bga.vy += bgc.y;
       }];
@@ -563,10 +563,7 @@ public &Stage
       index i = 0;
       while;
     do:
-      if(
-        `bg[i].visible && `bg[i].toplayer == t
-        && #`bg[i].anim.spr > 0)
-      {
+      if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){
         `bg[i].draw(
           x, y + .envShake.getOffset(),
           scl, .bgPalFX~time != 0 ? .bgPalFX : .com.allPalFX);

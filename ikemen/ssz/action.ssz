@@ -1,5 +1,6 @@
 ﻿
 lib s = <string.ssz>;
+lib sdl = <alpha/sdlplugin.ssz>;
 lib sff = "sff.ssz";
 lib com = "common.ssz";
 
@@ -173,4 +174,49 @@ public &Action
     }
   }
 }
+
+public &DrawnClsn
+{
+  public ^&.Rect clsn;
+  public float x, y, xscale, yscale;
+  public void set(^&.Rect cl, float x, float y, float xs, float ys)
+  {
+    `clsn = cl;
+    `x = (x - .com.camerax) * .com.scale;
+    `y = (y - .com.cameray) * .com.scale + .com.zoffset;
+    `xscale = xs * .com.scale;
+    `yscale = ys * .com.scale;
+  }
+  public void draw(^ubyte pxl, ^uint pal, int alpha)
+  {
+    %byte dammy;
+    &.sdl.Rect onedot.set(0, 0, 0d1, 0d1), til.set(0, 0, 0d0, 0d0);
+    loop{
+      index i = 0;
+      float x, y, w, h;
+      while;
+    do:
+      x = `x + `xscale*(float)`clsn[i].l + 160.0;
+      y = `y + `yscale*(float)(`clsn[i].t-1);
+      w = (float)((`clsn[i].r+1) - `clsn[i].l);
+      h = (float)(`clsn[i].b - (`clsn[i].t-1));
+      if(`xscale < 0.0){
+        x *= -1.0;
+        x += 160.0*2.0;
+      }
+      if(`yscale < 0.0){
+        y *= -1.0;
+        y += 240.0;
+      }
+      .sdl.screen.renderMugenZoom(
+        .com.scrrect=, .com.WidthScale*160.0, 0.0, pxl, pal, -1, onedot=,
+        (-x+160.0)*.com.WidthScale, -y*.com.HeightScale, til=,
+        `xscale*.com.WidthScale*w, `xscale*.com.WidthScale*w,
+        `yscale*.com.WidthScale*h, 0.0, 0d0, alpha, 0, dammy=);
+      i++;
+    while i < #`clsn:
+    }
+  }
+}
+
 

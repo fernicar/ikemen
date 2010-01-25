@@ -96,8 +96,7 @@ public &Macro
   fn.data.cast(mc=);
   re =
     mc~getBlock()<,
-    .s.each!^/char?([void(^/char s=){s = fn.block~esc(s);}])<,
-    .splitArgs(arg);
+    .s.each!^/char?([void(^/char s=){s = fn.block~esc(s);}])<, .splitArgs(arg);
   ret .mac.RetState::OK;
 }
 
