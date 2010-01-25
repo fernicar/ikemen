@@ -1,0 +1,673 @@
+﻿
+lib mes = <alpha/mesdialog.ssz>;
+lib sdl = <alpha/sdlplugin.ssz>;
+lib ssz = <ssz.ssz>;
+lib s = <string.ssz>;
+lib m = <math.ssz>;
+lib file = <file.ssz>;
+lib se = <alpha/sdlevent.ssz>;
+lib al = <alert.ssz>;
+lib mac = <macro.ssz>;
+lib stb = "statebuilder.ssz";
+lib cfg = "config.ssz";
+lib chr = "char.ssz";
+lib com = "common.ssz";
+lib stage = "stage.ssz";
+lib sys = "system.ssz";
+lib sha = "share.ssz";
+lib sff = "sff.ssz";
+lib sc = "script.ssz";
+lib cmd = "command.ssz";
+
+
+^&sc.Script script = sc.newRoot();
+&sys.System syst;
+
+void addFunc(^/char name, func .sc.fsig_t f)
+{
+  ^&.sc.Function fn.new(1);
+  fn~f = f;
+  fn~block = .script;
+  .script~setFunction(name, fn);
+}
+
+|.mac.RetState scGame(^char arg, ^char re=, &.sc.Function fn=)
+{
+  re = .s.iToS(.game());
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scAddChar(^char arg, ^char re=, &.sc.Function fn=)
+{
+  .syst.selinf.sel.addChar(arg);
+  re.new(0);
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scAddStage(^char arg, ^char re=, &.sc.Function fn=)
+{
+  .syst.selinf.sel.addStage(arg);
+  re.new(0);
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scSetSelColRow(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  int c = .syst.selinf.sel.columns, r = .syst.selinf.sel.rows;
+  branch{
+  cond #mess >= 1 && !consteval(c=, mess[0]):
+  cond #mess >= 2 && !consteval(r=, mess[1]):
+  else:
+    break;
+  comm:
+    .mac.errormes .= "エラー(setSelColRow): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  .syst.selinf.sel.columns = c;
+  .syst.selinf.sel.rows = r;
+  re.new(0);
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scSetSelCellSize(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  float x = .syst.selinf.sel.cellsizex, y = .syst.selinf.sel.cellsizey;
+  branch{
+  cond #mess >= 1 && !consteval(x=, mess[0]):
+  cond #mess >= 2 && !consteval(y=, mess[1]):
+  else:
+    break;
+  comm:
+    .mac.errormes .= "エラー(setSelCellSize): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  .syst.selinf.sel.cellsizex = x;
+  .syst.selinf.sel.cellsizey = y;
+  re.new(0);
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scSetSelCellScale(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  float x = .syst.selinf.sel.cellscalex, y = .syst.selinf.sel.cellscaley;
+  branch{
+  cond #mess >= 1 && !consteval(x=, mess[0]):
+  cond #mess >= 2 && !consteval(y=, mess[1]):
+  else:
+    break;
+  comm:
+    .mac.errormes .= "エラー(setSelCellScale): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  .syst.selinf.sel.cellscalex = x;
+  .syst.selinf.sel.cellscaley = y;
+  re.new(0);
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scSetTeamMode(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  int pn, tm, nt;
+  branch{
+  cond #mess < 2:
+  cond !consteval(pn=, mess[0]) || !.m.inRange!int?(1, 2, pn):
+  cond !consteval(tm=, mess[1]) || !.m.inRange!int?(0, 2, tm):
+  cond
+    #mess >= 3 && (!consteval(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt))
+    :
+  else:
+    branch{
+    cond #mess >= 3:
+      if(!consteval(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt)) break;
+    else:
+      nt = .chr.numturns[pn-1];
+    comm:
+      break, break;
+    }
+  comm:
+    .mac.errormes .= "エラー(setTeamMode): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  .syst.selinf.p[pn-1].selchr.new(0);
+  .chr.tmode[pn-1] = tm;
+  .chr.numturns[pn-1] = nt;
+  re.new(0);
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scSetRandomSpr(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  float xs = .syst.selinf.sel.randxscl, ys = .syst.selinf.sel.randyscl;
+  branch{
+  cond #mess < 3:
+  cond #mess >= 4 && !consteval(xs=, mess[3]):
+  cond #mess >= 5 && !consteval(ys=, mess[4]):
+  else:
+    {
+      ^&.sc.Function f = fn.block~getObj(mess[0]);
+      ^&.sc.Sff sf;
+      int g, n;
+      if(
+        #f == 0 || !f~data.cast(sf=)
+        || !consteval(g=, mess[1]) || !consteval(n=, mess[2])) break;
+      ^&.sff.Sff sff = sf~getSff();
+      if(#sff > 0) .syst.selinf.sel.randomspr = sff~getSprite(g, n);
+      break, break;
+    }
+  comm:
+    .mac.errormes .= "エラー(setRandomSpr): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  .syst.selinf.sel.randxscl = xs;
+  .syst.selinf.sel.randyscl = ys;
+  re.new(0);
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scDrawFace(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  float x = 0.0, y = 0.0;
+  index offset = 0;
+  branch{
+  cond #mess >= 1 && !consteval(x=, mess[0]):
+  cond #mess >= 2 && !consteval(y=, mess[1]):
+  cond #mess >= 3 && !consteval(offset=, mess[2]):
+  else:
+    break;
+  comm:
+    .mac.errormes .= "エラー(drawFace): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  if(!.se.fskip) loop{
+    int j = 0;
+    ^&.sys.Select::Char c;
+    while;
+  do:
+    loop{int i = 0; while; do:
+      c = .syst.selinf.sel.getChar(offset++);
+      if(#c > 0) branch{
+      cond #c~sportrait > 0:
+        c~sportrait~draw(
+          x + (float)i*.syst.selinf.sel.cellsizex,
+          y + (float)j*.syst.selinf.sel.cellsizey,
+          .syst.selinf.sel.cellscalex, .syst.selinf.sel.cellscaley);
+      cond .s.equ(c~def, "randomselect") && #.syst.selinf.sel.randomspr > 0:
+        .syst.selinf.sel.randomspr~draw(
+          x + (float)i*.syst.selinf.sel.cellsizex,
+          y + (float)j*.syst.selinf.sel.cellsizey,
+          .syst.selinf.sel.randxscl, .syst.selinf.sel.randxscl);
+      }
+      i++;
+    while i < .syst.selinf.sel.columns:
+    }
+    j++;
+  while j < .syst.selinf.sel.rows:
+  }
+  re.new(0);
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scGetCharName(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  index n = 0;
+  branch{
+  cond #mess >= 1 && !consteval(n=, mess[0]):
+  else:
+    break;
+  comm:
+    .mac.errormes .= "エラー(getCharName): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  ^&.sys.Select::Char c = .syst.selinf.sel.getChar(n);
+  branch{
+  cond #c > 0:
+    {
+      %char buf .= c~dname;
+      re = buf;
+    }
+  else:
+    re.new(0);
+  }
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scSelectChar(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  int pn, cn, pl;
+  branch{
+  cond #mess < 3:
+  cond !consteval(pn=, mess[0]) || !.m.inRange!int?(1, 2, pn):
+  cond !consteval(cn=, mess[1]):
+  cond !consteval(pl=, mess[2]) || !.m.inRange!int?(0, 12, pl):
+  else:
+    break;
+  comm:
+    .mac.errormes .= "エラー(selectChar): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  %char buf;
+  branch{
+  cond pl > 0 && .syst.selinf.addSelchr(pn-1, cn, pl):
+    switch(.chr.tmode[pn-1]){
+    case (int).chr.TeamMode::Single:
+      buf .= '2';
+    case (int).chr.TeamMode::Simul:
+      buf .= #.syst.selinf.p[pn-1].selchr >= 2 ? '2' : '1';
+    case (int).chr.TeamMode::Turns:
+      buf .=
+        #.syst.selinf.p[pn-1].selchr >= .chr.numturns[pn-1] ? '2' : '1';
+    }
+  else:
+    buf .= '0';
+  }
+  re = buf;
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scSetStage(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  index n = .syst.selinf.sel.curStageNo;
+  branch{
+  cond #mess >= 1 && !consteval(n=, mess[0]):
+  else:
+    break;
+  comm:
+    .mac.errormes .= "エラー(setStage): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  %char buf .= .s.iToS(.syst.selinf.sel.setStageNo(n));
+  re = buf;
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scGetStageName(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  index n = .syst.selinf.sel.curStageNo;
+  branch{
+  cond #mess >= 1 && !consteval(n=, mess[0]):
+  else:
+    break;
+  comm:
+    .mac.errormes .= "エラー(getStageName): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  %char buf .= .syst.selinf.sel.getStageName(n);
+  re = buf;
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scDrawPortrait(^char arg, ^char re=, &.sc.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
+  index n = 0;
+  float x = 0.0, y = 0.0, xscl = 1.0, yscl = 1.0;
+  branch{
+  cond #mess >= 1 && !consteval(n=, mess[0]):
+  cond #mess >= 2 && !consteval(x=, mess[1]):
+  cond #mess >= 3 && !consteval(y=, mess[2]):
+  cond #mess >= 4 && !consteval(xscl=, mess[3]):
+  cond #mess >= 5 && !consteval(yscl=, mess[4]):
+  else:
+    break;
+  comm:
+    .mac.errormes .= "エラー(drawPortrait): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  if(!.se.fskip){
+    ^&.sys.Select::Char c = .syst.selinf.sel.getChar(n);
+    if(#c > 0 && #c~lportrait > 0){
+      c~lportrait~draw(x, y, xscl, yscl);
+    }
+  }
+  re.new(0);
+  ret .mac.RetState::OK;
+}
+|.mac.RetState scRefresh(^char arg, ^char re=, &.sc.Function fn=)
+{
+  if(!.se.fskip){
+    .sdl.screen.flip();
+    .sdl.screen.fill(.com.scrrect=, 0x00000000);
+  }
+  .sc.playSound();
+  if(!.cmd.update()) .se.end = true;
+  re.new(0);
+  ret .se.end ? .mac.RetState::END : .mac.RetState::OK;
+}
+
+
+
+bool init()
+{
+  if(!.syst.init()){
+    .al.alert!.self?("system初期化に失敗");
+    ret false;
+  }
+  .addFunc("game", .scGame);
+  .addFunc("addChar", .scAddChar);
+  .addFunc("addStage", .scAddStage);
+  .addFunc("setSelColRow", .scSetSelColRow);
+  .addFunc("setSelCellSize", .scSetSelCellSize);
+  .addFunc("setSelCellScale", .scSetSelCellScale);
+  .addFunc("setTeamMode", .scSetTeamMode);
+  .addFunc("setRandomSpr", .scSetRandomSpr);
+  .addFunc("drawFace", .scDrawFace);
+  .addFunc("getCharName", .scGetCharName);
+  .addFunc("selectChar", .scSelectChar);
+  .addFunc("setStage", .scSetStage);
+  .addFunc("getStageName", .scGetStageName);
+  .addFunc("drawPortrait", .scDrawPortrait);
+  .addFunc("refresh", .scRefresh);
+  ret true;
+}
+
+void loadCharacter(^&.chr.Char p, ^/char file, ^int end)
+{
+  &.stb.StateBuilder chara;
+  if(!chara.build(p~playerno, file) || !p~load(file)){
+    %char buf .= file .= ": キャラ初期化に失敗";
+    .al.alert!.self?(buf);
+    end<> = -1;
+    ret;
+  }
+  end<> = 1;
+}
+
+void loadStage(^&.stage.Stage stg, ^/char file, ^int end)
+{
+  if(!stg~load(file)){
+    %char buf .= file .= ": ステージ初期化に失敗";
+    .al.alert!.self?(buf);
+    end<> = -1;
+    ret;
+  }
+  end<> = 1;
+}
+
+int game()
+{
+  int winp = 0;
+  if(.se.end) ret -1;
+  ^/char stag;
+  ^^/char cha.new(4);
+  ^int pal.new(4);
+  ^int ldend.new(1);
+  branch{
+  cond .syst.selinf.sel.curStageNo == 0:
+    stag =
+      .syst.selinf.sel.stagelist[
+        .m.rand(0, #.syst.selinf.sel.stagelist-1)].def;
+  else:
+    stag = .syst.selinf.sel.stagelist[.syst.selinf.sel.curStageNo-1].def;
+  }
+  cha[0] = .syst.selinf.sel.charlist[.syst.selinf.p[0].selchr[0].i].def;
+  pal[0] = .syst.selinf.p[0].selchr[0].pal;
+  cha[1] = .syst.selinf.sel.charlist[.syst.selinf.p[1].selchr[0].i].def;
+  pal[1] = .syst.selinf.p[1].selchr[0].pal;
+  if(.chr.tmode[0] == (int).chr.TeamMode::Simul){
+    cha[2] = .syst.selinf.sel.charlist[.syst.selinf.p[0].selchr[1].i].def;
+    pal[2] = .syst.selinf.p[0].selchr[1].pal;
+  }
+  if(.chr.tmode[1] == (int).chr.TeamMode::Simul){
+    cha[3] = .syst.selinf.sel.charlist[.syst.selinf.p[1].selchr[1].i].def;
+    pal[3] = .syst.selinf.p[1].selchr[1].pal;
+  }
+  .chr.fight = .syst.fig;
+  bool loadChar(^&.chr.Char p, ^/char cha, int pal)
+  {
+    if(#p~sf == 0){
+      `ldend<> = 0;
+      thread!.loadCharacter? lcha..(p, cha, `ldend);
+      loop{do:
+        if(`ldend<> > 0) break;
+      while `ldend<> >= 0 && .se.event():
+        ret false;
+      }
+    }
+    p~loadPallet(cha, pal);
+    ret true;
+  }
+  void pset(^&.chr.Char p=, int no)
+  {
+    branch{
+    cond #p == 0:
+      p = .chr.create(no);
+    else:
+      p~id = .chr.id++;
+      .chr.chars[no].new[0] = p;
+      .chr.players.add(p);
+    }
+  }
+  bool foo(^&.chr.Char p, int pn)
+  {
+    branch{
+    cond #p > 0:
+      .chr.fight~fa[.chr.tmode[pn]][pn+2].face_spr =
+        p~sf~getSprite(
+          .chr.fight~fa[.chr.tmode[pn]][pn+2].face_sprg,
+          .chr.fight~fa[.chr.tmode[pn]][pn+2].face_spri);
+    cond .chr.tmode[pn] == (int).chr.TeamMode::Turns:
+      .chr.fight~fa[.chr.tmode[pn]][pn].numko = 0;
+      loop{
+        index i = 0;
+        .chr.fight~fa[.chr.tmode[pn]][pn].teammate_face_spr.new(
+          #.syst.selinf.p[pn].selchr);
+        ^/char tmp;
+        while;
+      do:
+        tmp =
+          .syst.selinf.sel.charlist[.syst.selinf.p[pn].selchr[i].i].sprite;
+        .com.loadFile(
+          .syst.selinf.sel.charlist[.syst.selinf.p[pn].selchr[i].i].def,
+          tmp=, [
+            bool(^/char f){
+              ^&.sff.Sprite s.new(1);
+              if(
+                !s~loadFromSff(
+                  f, .chr.fight<>
+                    .fa[(int).chr.TeamMode::Turns][pn].teammate_face_sprg,
+                  .chr.fight<>
+                    .fa[(int).chr.TeamMode::Turns][pn].teammate_face_spri))
+              {
+                ret false;
+              }
+              .chr.fight~fa[.chr.tmode[pn]][pn].teammate_face_spr[i] = s;
+              ret true;
+            }]);
+        i++;
+      while i < #.syst.selinf.p[pn].selchr:
+      }
+    }
+    ret true;
+  }
+  bool fight(^char ss=, ^&.sha.Share share)
+  {
+    .mes.SetSharedString(:ss:);
+    bool b = .ssz.run("ssz/fighting.ssz");
+    .sdl.shareScreen();
+    .chr.clsndraw = share~clsndw;
+    bool w1 = share~chr_p1w >= share~chr_p1mw;
+    bool w2 = share~chr_p2w >= share~chr_p2mw;
+    `winp = 0;
+    if(w1 != w2){
+      `winp++;
+      if(w2) `winp++;
+    }
+    .mes.GetSharedString(:ss=:);
+    if(.s.equ(ss, "end")) .se.end = true;
+    ret b;
+  }
+  {
+    if(#.cmd.net > 0) .cmd.net~stop();
+    ^^&.chr.Char p;
+    p.new(4);
+    loop{index i = 0; while; do:
+      if(#.chr.chars[i] > 0 && .s.equ(cha[i], .chr.chars[i][0]~def)){
+        p[i] = .chr.chars[i][0];
+        p[i]~key = .com.com[i] ? !i : i;
+      }
+      i++;
+    while i < #p:
+    }
+    .chr.id = .cfg.HelperMax;
+    .chr.players.clear();
+    .chr.chars.new(4);
+    .chr.rexisted[0] = .chr.rexisted[1] = 0;
+    pset(p[0]=, 0);
+    pset(p[1]=, 1);
+    if(.chr.tmode[0] == (int).chr.TeamMode::Simul) pset(p[2]=, 2);
+    if(.chr.tmode[1] == (int).chr.TeamMode::Simul) pset(p[3]=, 3);
+    if(!loadChar(p[0], cha[0], pal[0])) ret -1;
+    if(!loadChar(p[1], cha[1], pal[1])) ret -1;
+    branch{
+    cond #p[2] > 0:
+      if(!loadChar(p[2], cha[2], pal[2])) ret -1;
+    else:
+      {
+        &.file.File f;
+        f.open("ssz/state2p.ssz", "wb");
+        f.writeAry!ubyte?(
+          .s.sToU8(
+            \xfeff
+            "lib c="\""char.ssz"\"";public void c.Char::stateInit2P(){}"));
+      }
+    }
+    branch{
+    cond #p[3] > 0:
+      if(!loadChar(p[3], cha[3], pal[3])) ret -1;
+    else:
+      {
+        &.file.File f;
+        f.open("ssz/state3p.ssz", "wb");
+        f.writeAry!ubyte?(
+          .s.sToU8(
+            \xfeff
+            "lib c="\""char.ssz"\"";public void c.Char::stateInit3P(){}"));
+      }
+    }
+    ^&.stage.Stage stg.new(1);
+    thread!.loadStage? lstage;
+    ldend<> = 0;
+    lstage..(stg, stag, ldend);
+    loop{do:
+      if(ldend<> > 0) break;
+    while ldend<> >= 0 && .se.event():
+      ret -1;
+    }
+    .chr.fight~fa[.chr.tmode[0]][0].face_spr =
+      p[0]~sf~getSprite(
+        .chr.fight~fa[.chr.tmode[0]][0].face_sprg,
+        .chr.fight~fa[.chr.tmode[0]][0].face_spri);
+    .chr.fight~fa[.chr.tmode[1]][1].face_spr =
+      p[1]~sf~getSprite(
+        .chr.fight~fa[.chr.tmode[1]][1].face_sprg,
+        .chr.fight~fa[.chr.tmode[1]][1].face_spri);
+    foo(p[2], 0);
+    foo(p[3], 1);
+    .chr.fight~wi[0].clear();
+    .chr.fight~wi[1].clear();
+    ^&.sha.Share share.new(1);
+    share~c = .chr.chars;
+    share~f = .chr.fight;
+    share~st = stg;
+    share~stt = 0;
+    share~tm = .chr.tmode;
+    share~nt = .chr.numturns;
+    share~re = .chr.rexisted;
+    share~chr_home = 0;
+    share~chr_round = 1;
+    share~chr_p1mw =
+      .chr.tmode[1] == (int).chr.TeamMode::Turns
+      ? .chr.numturns[1] : .chr.fight~ro.match_wins;
+    share~chr_p2mw =
+      .chr.tmode[0] == (int).chr.TeamMode::Turns
+      ? .chr.numturns[0] : .chr.fight~ro.match_wins;
+    share~chr_p1w = 0;
+    share~chr_p2w = 0;
+    share~chr_drw = 0;
+    share~com = .com.com;
+    share~net = .cmd.net;
+    share~rep = .cmd.replay;
+    share~clsndw = .chr.clsndraw;
+    share~powsh = .com.powershare;
+    share~alvl = .com.autolevel;
+    &.com.SuperDangerousRef sdr;
+    sdr.copyRef!&.sha.Share?(share=);
+    %char buf .= "gt<>" .= .s.iToS(sdr.p);
+    ^char ss = buf;
+    if(!fight(ss=, share) || .s.equ(ss, "esc")) ret -1;
+    if(
+      .chr.tmode[0] == (int).chr.TeamMode::Turns
+      || .chr.tmode[1] == (int).chr.TeamMode::Turns)
+    {
+      loop{while; do:
+        if(p[0]~sysivar[.chr.iLIFE] <= 0){
+          if(winp == 2) break, break;
+          if(.chr.tmode[0] == (int).chr.TeamMode::Turns){
+            share~f~fa[.chr.tmode[0]][0].numko++;
+            cha[0] =
+              .syst.selinf.sel.charlist[
+                .syst.selinf.p[0].selchr[share~chr_p2w].i].def;
+            pal[0] = .syst.selinf.p[0].selchr[share~chr_p2w].pal;
+            p[0]~sf.new(0);
+            if(!loadChar(p[0], cha[0], pal[0])) ret -1;
+            .chr.fight~fa[.chr.tmode[0]][0].face_spr =
+              p[0]~sf~getSprite(
+                .chr.fight~fa[.chr.tmode[0]][0].face_sprg,
+                .chr.fight~fa[.chr.tmode[0]][0].face_spri);
+            .chr.rexisted[0] = 0;
+          }
+        }
+        if(p[1]~sysivar[.chr.iLIFE] <= 0){
+          if(winp == 1) break, break;
+          if(.chr.tmode[1] == (int).chr.TeamMode::Turns){
+            share~f~fa[.chr.tmode[1]][1].numko++;
+            cha[1] =
+              .syst.selinf.sel.charlist[
+                .syst.selinf.p[1].selchr[share~chr_p1w].i].def;
+            pal[1] = .syst.selinf.p[1].selchr[share~chr_p1w].pal;
+            p[1]~sf.new(0);
+            if(!loadChar(p[1], cha[1], pal[1])) ret -1;
+            .chr.fight~fa[.chr.tmode[1]][1].face_spr =
+              p[1]~sf~getSprite(
+                .chr.fight~fa[.chr.tmode[1]][1].face_sprg,
+                .chr.fight~fa[.chr.tmode[1]][1].face_spri);
+            .chr.rexisted[1] = 0;
+          }
+        }
+        ss = buf;
+        if(!fight(ss=, share) || .s.equ(ss, "esc")) ret -1;
+      while !.se.end:
+      }
+    }
+  break:
+    .cmd.synchronize();
+  }
+  ret winp;
+}
+
+void main()
+{//Itumademo Kanseishinai Eienni Mikansei ENgine
+  if(!.sdl.init("I.K.E.M.E.N", .cfg.Width, .cfg.Height)){
+    .al.alert!.self?("初期化に失敗");
+    ret;
+  }
+  .sdl.showCursor(false);
+  if(!.init()) ret;
+  %char tmp;
+  .script~init(tmp .= .cfg.system .= "#loadFile#!");
+  ^char out;
+  if(.script~run(out=) == .mac.RetState::ERROR){
+    .al.alert!.script<>.self?(.mac.errormes);
+  }
+}
+
+main();
+.sdl.End(::);

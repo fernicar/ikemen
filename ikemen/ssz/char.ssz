@@ -1,0 +1,6400 @@
+﻿
+lib file = <file.ssz>;
+lib s = <string.ssz>;
+lib sdl = <alpha/sdlplugin.ssz>;
+lib consts = <consts.ssz>;
+lib m = <math.ssz>;
+lib se = <alpha/sdlevent.ssz>;
+lib sff = "sff.ssz";
+lib cmd = "command.ssz";
+lib stage = "stage.ssz";
+lib com = "common.ssz";
+lib cfg = "config.ssz";
+lib snd = "sound.ssz";
+lib fgt = "fight.ssz";
+lib act = "action.ssz";
+
+
+
+
+float screenleft = 0.0, screenright = 0.0;
+float xmin = 0.0, xmax = 0.0;
+float camerax = 0.0, cameray = 0.0;
+float scrxmin = 0.0, scrxmax = 0.0;
+float zoffset = 0.0;
+float yoffset = 0.0;
+float xoffset = 0.0;
+float scale = 1.0;
+/float speed = .com.Speed;
+/int gametime = 0, time = 0;
+int intro = 20;
+public int home = 0;
+public int p1mw = 2, p2mw = 2;
+public int round = 1, p1wins = 0, p2wins = 0, draws = 0;
+
+|fgt.KOTy ko = fgt.KOTy::NotYet;
+^|fgt.WinTy winty.new(2);
+winty[0] = fgt.WinTy::N;
+winty[1] = fgt.WinTy::N;
+
+int win = -1;
+
+int changeStateNest = 0;
+
+float zoomdelay = 0.0;
+
+^uint tmppl.new(256);
+
+
+
+public bool clsndraw = false;
+
+&DrawnClsn
+{
+  public ^&.act.Rect clsn;
+  public float x, y, xscale, yscale;
+  public void set(^&.act.Rect cl, float x, float y, float xs, float ys)
+  {
+    `clsn = cl;
+    `x = (x - .camerax) * .scale;
+    `y = (y - .cameray) * .scale + .zoffset;
+    `xscale = xs * .scale;
+    `yscale = ys * .scale;
+  }
+  public void draw(^ubyte pxl, ^uint pal, int alpha)
+  {
+    %byte dammy;
+    &.sdl.Rect onedot.set(0, 0, 0d1, 0d1), til.set(0, 0, 0d0, 0d0);
+    loop{
+      index i = 0;
+      float x, y, w, h;
+      while;
+    do:
+      x = `x + `xscale*(float)`clsn[i].l + 160.0;
+      y = `y + `yscale*(float)(`clsn[i].t-1);
+      w = (float)((`clsn[i].r+1) - `clsn[i].l);
+      h = (float)(`clsn[i].b - (`clsn[i].t-1));
+      if(`xscale < 0.0){
+        x *= -1.0;
+        x += 160.0*2.0;
+      }
+      if(`yscale < 0.0){
+        y *= -1.0;
+        y += 240.0;
+      }
+      .sdl.screen.renderMugenZoom(
+        .com.scrrect=, .com.WidthScale*160.0, 0.0, pxl, pal, -1, onedot=,
+        (-x+160.0)*.com.WidthScale, -y*.com.HeightScale, til=,
+        `xscale*.com.WidthScale*w, `xscale*.com.WidthScale*w,
+        `yscale*.com.WidthScale*h, 0.0, 0d0, alpha, 0, dammy=);
+      i++;
+    while i < #`clsn:
+    }
+  }
+}
+%&DrawnClsn drawc1, drawc2, drawc2sp, drawwh;
+void resetDrawnClsnList()
+{
+  .drawc1.new(0);
+  .drawc2.new(0);
+  .drawc2sp.new(0);
+  .drawwh.new(0);
+}
+void drawClsn()
+{
+  ^ubyte pxl;
+  ^uint pal;
+  pxl.new(1);
+  pxl<> = 0x0;
+  pal.new(256);
+  pal<> = 0xff0000;
+  loop{index i = 0; while; do:
+    .drawc1[i].draw(pxl, pal, (int)0x3feff);
+    i++;
+  while i < #.drawc1:
+  }
+  pal<> = 0x0000ff;
+  loop{index i = 0; while; do:
+    .drawc2[i].draw(pxl, pal, (int)0x3feff);
+    i++;
+  while i < #.drawc2:
+  }
+  pal<> = 0x00ff00;
+  loop{index i = 0; while; do:
+    .drawc2sp[i].draw(pxl, pal, (int)0x3feff);
+    i++;
+  while i < #.drawc2sp:
+  }
+  pal<> = 0x404040;
+  loop{index i = 0; while; do:
+    .drawwh[i].draw(pxl, pal, (int)0x3feff);
+    i++;
+  while i < #.drawwh:
+  }
+}
+
+&AnimList
+{
+  public ^&.act.Action anim;
+  public int priority = 0;
+  public float x = 0.0, y = 0.0, cscl = 1.0;
+  public float xscl = 1.0, yscl = 1.0, angle = 0.0;
+  public int salpha = -1, dalpha = 0, bright = 256;
+  public ^&.com.PalFX fx;
+  public ^self next;
+}
+
+^&AnimList anims, topanims;
+
+&ShadowList
+{
+  public ^&.AnimList al;
+  public int color;
+  public float offsety = 0.0;
+  public ^self next;
+}
+
+^&ShadowList shadows;
+
+public void addAnimList(
+  ^&.AnimList al=, ^&.act.Action a, int p,
+  float x, float y, float cs, float xs, float ys, float an,
+  int sa, int da, int b, ^&.com.PalFX fx, int sc, float so)
+{
+  void newdainyuu(^&.AnimList anl=)
+  {
+    anl.new(1);
+    anl~anim = `a;
+    anl~priority = `p;
+    anl~x = `x;
+    anl~y = `y;
+    anl~cscl = `cs;
+    anl~xscl = `xs;
+    anl~yscl = `ys;
+    anl~angle = `an;
+    anl~salpha = `sa;
+    anl~dalpha = `da;
+    anl~bright = `b;
+    anl~fx = `fx;
+    if(`sc != 0){
+      .addShadowList(anl, `sc, `so);
+    }
+  }
+  ^&.AnimList tmp = al;
+  branch{
+  cond<a> #al == 0:
+  cond<b> p <= al~priority:
+  else:
+    break;
+  comm:
+    newdainyuu(al=);
+  diff<b>:
+    al~next = tmp;
+  comm:
+    ret;
+  }
+  loop{while; do:
+    if(p <= tmp~next~priority){
+      ^&.AnimList tmp2 = tmp~next;
+      newdainyuu(tmp~next=);
+      tmp~next~next = tmp2;
+      break, break;
+    }
+    tmp = tmp~next;
+  while #tmp~next > 0:
+    newdainyuu(tmp~next=);
+  }
+}
+
+public void drawAnimList(
+  ^&.AnimList al=, &.stage.Stage stg=, float x, float y)
+{
+  loop{while; do:
+    if(#al~anim > 0){
+      al~anim~ani.salpha = al~salpha;
+      al~anim~ani.dalpha = al~dalpha;
+      branch{
+        int ob = .com.brightness;
+        .com.brightness = al~bright;
+        float cs = al~cscl;
+      cond al~angle != 0.0:
+        al~anim~ani.angleDraw(
+          .xoffset-(x-al~x)*cs,
+          .zoffset+.yoffset-(y-al~y)*cs,
+          cs*al~xscl, cs*al~yscl, al~angle*(.m.PI/180.0),
+          #al~fx != 0 && al~fx~time != 0 ? al~fx : .com.allPalFX);
+      else:
+        al~anim~ani.draw(
+          .com.scrrect=, .xoffset/cs - (x-al~x),
+          (.zoffset+.yoffset)/cs - (y-al~y), cs, cs,
+          al~xscl, al~xscl, al~yscl, 0.0, 160.0,
+          #al~fx != 0 && al~fx~time != 0 ? al~fx : .com.allPalFX);
+      break:
+        .com.brightness = ob;
+      }
+    }
+    al = al~next;
+  while #al > 0:
+  }
+}
+
+public void addShadowList(^&.AnimList al, int sc, float so)
+{
+  void newdainyuu(^&.ShadowList shl=)
+  {
+    shl.new(1);
+    shl~al = `al;
+    shl~color = `sc;
+    shl~offsety = `so;
+  }
+  int p = al~priority;
+  ^&.ShadowList tmp = .shadows;
+  branch{
+  cond<a> #.shadows == 0:
+  cond<b> p <= .shadows~al~priority:
+  else:
+    break;
+  comm:
+    newdainyuu(.shadows=);
+  diff<b>:
+    .shadows~next = tmp;
+  comm:
+    ret;
+  }
+  loop{while; do:
+    if(p <= tmp~next~al~priority){
+      ^&.ShadowList tmp2 = tmp~next;
+      newdainyuu(tmp~next=);
+      tmp~next~next = tmp2;
+      break, break;
+    }
+    tmp = tmp~next;
+  while #tmp~next > 0:
+    newdainyuu(tmp~next=);
+  }
+}
+
+public void drawShadowList(&.stage.Stage stg=, float x, float y)
+{
+  ^&.ShadowList sl = .shadows;
+  ^uint pal, oldpal;
+  loop{while; do:
+    if(
+      #sl~al~anim == 0 || #sl~al~anim~ani.spr == 0) continue;
+    branch{
+    cond sl~color < 0:
+      pal = stg.sdw.pal;
+      {
+        int inte = stg.sdw.intensity;
+        branch{
+        cond sl~al~y < (float)stg.sdw.fadeend:
+          break, break, break, continue;
+        cond sl~al~y < (float)stg.sdw.fadebgn:
+          inte =
+            (int)(
+              (float)inte * ((float)stg.sdw.fadeend - sl~al~y)
+              / ((float)stg.sdw.fadeend - (float)stg.sdw.fadebgn));
+        }
+        sl~al~anim~ani.salpha = inte;
+        sl~al~anim~ani.dalpha = 255 - inte;
+      }
+    else:
+      pal = .tmppl;
+      loop{index i = 0; do: pal[i] = (uint)sl~color; while ++i < 256:}
+      sl~al~anim~ani.salpha = 1;
+      sl~al~anim~ani.dalpha = 255;
+    }
+    {
+      oldpal = sl~al~anim~ani.spr~colorPallet;
+      sl~al~anim~ani.spr~colorPallet = pal;
+      float syscl = stg.sdw.yscale;
+      branch{
+        float cs = sl~al~cscl;
+      cond sl~al~angle != 0.0:
+        {
+          float agl = sl~al~angle*(.m.PI/180.0);
+          float ss = syscl < 0.0 ? -1.0 : 1.0;//pow用
+          sl~al~anim~ani.angleDraw(
+            .xoffset-(x-sl~al~x)*cs,
+            .zoffset + .yoffset - (y+sl~al~y*syscl-sl~offsety)*cs,
+            cs*sl~al~xscl * ss * (ss*syscl)**#.m.sin(agl),
+            cs*-sl~al~yscl * ss * (ss*syscl)**#.m.cos(agl),
+            agl, .com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX);
+        }
+      else:
+        sl~al~anim~ani.draw(
+          .com.scrrect=, .xoffset/cs - (x-sl~al~x),
+          (.zoffset+.yoffset)/cs - (y+sl~al~y*syscl-sl~offsety),
+          cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl*syscl, 0.0,
+          160.0, .com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX);
+      }
+    break:
+      sl~al~anim~ani.spr~colorPallet = oldpal;
+    }
+  continue:
+    sl = sl~next;
+  while #sl > 0:
+  }
+}
+
+public void drawReflection(&.stage.Stage stg=, float x, float y)
+{
+  ^&.ShadowList sl = .shadows;
+  loop{while; do:
+    if(#sl~al~anim > 0 && #sl~al~anim~ani.frames > 0){
+      if(sl~al~salpha < 0){
+        sl~al~salpha =
+          (int)
+            sl~al~anim~ani.frames[sl~al~anim~ani.drawidx].salpha;
+        sl~al~dalpha =
+          (int)
+            sl~al~anim~ani.frames[sl~al~anim~ani.drawidx].dalpha;
+      }
+      sl~al~anim~ani.salpha =
+        (int)((float)sl~al~salpha*(float)stg.reflection / 255.0);
+      sl~al~anim~ani.dalpha =
+        .m.min!int?(255, sl~al~dalpha + (255-stg.reflection));
+      if(
+        sl~al~anim~ani.salpha == 1
+        && sl~al~anim~ani.dalpha == 255)
+      {
+        sl~al~anim~ani.salpha = 0;
+      }
+      branch{
+        float cs = sl~al~cscl;
+      cond sl~al~angle != 0.0:
+        sl~al~anim~ani.angleDraw(
+          .xoffset-(x-sl~al~x)*cs,
+          .zoffset+.yoffset-(y+sl~al~y-sl~offsety)*cs,
+          cs*sl~al~xscl, cs*-sl~al~yscl, sl~al~angle*(.m.PI/180.0),
+          #sl~al~fx > 0 && sl~al~fx~time != 0 ? sl~al~fx
+          : (.com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX));
+      else:
+        sl~al~anim~ani.draw(
+          .com.scrrect=, .xoffset/cs - (x-sl~al~x),
+          (.zoffset+.yoffset)/cs - (y+sl~al~y-sl~offsety),
+          cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl, 0.0, 160.0,
+          #sl~al~fx != 0 && sl~al~fx~time > 0 ? sl~al~fx
+          : (.com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX));
+      }
+    }
+    sl = sl~next;
+  while #sl > 0:
+  }
+}
+
+
+&AfterImage
+{
+  &ImgInfo
+  {
+    public ^&.act.Action anim;
+    public float x = 0.0, y = 0.0, xscl = 1.0, yscl = 1.0, angle = 0.0;
+    new()
+    {
+      `anim.new(1);
+    }
+  }
+  public int time;
+  public int length;
+  public int postbrightr;
+  public int postbrightg;
+  public int postbrightb;
+  public int addr;
+  public int addg;
+  public int addb;
+  public float mulr;
+  public float mulg;
+  public float mulb;
+  public int timegap;
+  public int framegap;
+  public int alphas;
+  public int alphad;
+  public ^&.com.PalFX palfx;
+  public ^&ImgInfo imgs;
+  public int imgidx;
+  public int restgap;
+  public int reccount;
+  new()
+  {
+    `palfx.new(.cfg.AfterImageMax);
+    loop{index i = 0; do: `palfx[i].time = -1; while ++i < #`palfx:}
+    `clear();
+    `timegap = -1;
+    `imgs.new(64);
+  }
+  public void clear()
+  {
+    `time = 0;
+    `length = 20;
+    `palfx~color = 1.0;
+    `palfx~invertall = 0;
+    `palfx~addr = 30;
+    `palfx~addg = 30;
+    `palfx~addb = 30;
+    `palfx~mulr = 120.0 / 256.0;
+    `palfx~mulg = 120.0 / 256.0;
+    `palfx~mulb = 220.0 / 256.0;
+    `postbrightr = 0;
+    `postbrightg = 0;
+    `postbrightb = 0;
+    `addr = 10;
+    `addg = 10;
+    `addb = 25;
+    `mulr = 0.65;
+    `mulg = 0.65;
+    `mulb = 0.75;
+    `timegap = 1;
+    `framegap = 5;
+    `alphas = -1;
+    `alphad = 0;
+    `imgidx = 0;
+    `restgap = 0;
+    `reccount = 0;
+  }
+  public void setupPalfx()
+  {
+    loop{
+      index i = 1;
+      int pbr = `postbrightr, pbg = `postbrightg, pbb = `postbrightb;
+      while;
+    do:
+      `palfx[i].color = `palfx[i-1].color;
+      `palfx[i].invertall = `palfx[i-1].invertall;
+      `palfx[i].addr = `palfx[i-1].addr + `addr + pbr;
+      `palfx[i].addg = `palfx[i-1].addg + `addg + pbg;
+      `palfx[i].addb = `palfx[i-1].addb + `addb + pbb;
+      pbr = pbg = pbb = 0;
+      `palfx[i].mulr = `palfx[i-1].mulr * `mulr;
+      `palfx[i].mulg = `palfx[i-1].mulg * `mulg;
+      `palfx[i].mulb = `palfx[i-1].mulb * `mulb;
+      i++;
+    while i < #`palfx:
+    }
+  }
+  public void recAndAddAL(
+    &.act.Action a=, int p,
+    float x, float y, float xs, float ys, float an, bool rec, int br)
+  {
+    if(
+      `time == 0 || !.m.inRange!int?(1, 32767, `timegap)
+      || !.m.inRange!int?(1, 32767, `framegap))
+    {
+      `time = 0;
+      `reccount = 0;
+      ret;
+    }
+    if(rec && `time > 0) `time--;
+    loop{
+      index i = `framegap, end = .cfg.AfterImageMax*`framegap;
+      if(end > `reccount) end = (`reccount/`framegap) * `framegap;
+      if(end > `length/`timegap){
+        end = (`length/(`timegap*`framegap)) * `framegap;
+      }
+      while;
+    do:
+      .addAnimList(
+        .anims=, `imgs[`imgidx-i&63].anim, p-2,
+        `imgs[`imgidx-i&63].x, `imgs[`imgidx-i&63].y, .scale,
+        `imgs[`imgidx-i&63].xscl, `imgs[`imgidx-i&63].yscl,
+        `imgs[`imgidx-i&63].angle, `alphas, `alphad, br,
+        `palfx[i/`framegap - 1 .. i/`framegap], 0, 0.0);
+      i += `framegap;
+    while i <= end:
+    }
+    if(!rec) ret;
+    if(`restgap <= 0){
+      `imgs[`imgidx].anim~copy(a=);
+      `imgs[`imgidx].x = x;
+      `imgs[`imgidx].y = y;
+      `imgs[`imgidx].xscl = xs;
+      `imgs[`imgidx].yscl = ys;
+      `imgs[`imgidx].angle = an;
+      `imgidx = `imgidx+1 & 63;
+      if(`reccount < #`imgs) `reccount++;
+      `restgap = `timegap;
+    }
+    `restgap--;
+  }
+}
+
+
+void pLrSet(float dl=, float dr=, float sl, float sr)
+{
+  dl = sl;
+  dr = sr;
+}
+void mLrSet(float dl=, float dr=, float sl, float sr)
+{
+  dl = -sr;
+  dr = -sl;
+}
+
+
+|VarTy
+{
+  Int, Float, SFalse
+}
+public &Var
+{
+  public |.VarTy typ = .VarTy::Int;
+  public int i = 0;
+  public float f = 0.0;
+  public void setI(int i)
+  {
+    if(i == .com.IERR){
+      `typ = .VarTy::SFalse;
+      ret;
+    }
+    `typ = .VarTy::Int;
+    `i = i;
+  }
+  public void setF(float f)
+  {
+    if(f == .com.FERR){
+      `typ = .VarTy::SFalse;
+      ret;
+    }
+    `typ = .VarTy::Float;
+    `f = f;
+  }
+  public void setB(bool b)
+  {
+    `typ = .VarTy::Int;
+    `i = (int)b;
+  }
+  public void setSF()
+  {
+    `typ = .VarTy::SFalse;
+  }
+  const bool isTrue()
+  {
+    if(`typ == .VarTy::SFalse) ret false;
+    if(`typ == .VarTy::Int) ret `i != 0;
+    ret `f != 0.0;
+  }
+  const int toInt()
+  {
+    if(`typ == .VarTy::SFalse) ret .com.IERR;
+    if(`typ == .VarTy::Int) ret `i;
+    ret (int)`f;
+  }
+  const float toFloat()
+  {
+    if(`typ == .VarTy::SFalse) ret .com.FERR;
+    if(`typ == .VarTy::Int) ret (float)`i;
+    ret `f;
+  }
+}
+public &Var v;//work
+public ^&Char c;//work
+
+|StTy
+{
+  S=0x1, C=0x2, A=0x4, L=0x8, N=0x10, U=0x20//L->D N->F U->P
+}
+|AtTy
+{
+  NA=   0x40, NT=   0x80, NP=  0x100,
+  SA=  0x200, ST=  0x400, SP=  0x800,
+  HA= 0x1000, HT= 0x2000, HP= 0x4000
+}
+|MovTy
+{
+  I=0x8000, A, H=0x10000, U//I->- H->+
+}
+|AnimTy
+{
+  Light, Medium, Hard, Back, Up, Diagup, Unknown
+}
+|PriTy
+{
+  Hit, Miss, Dodge
+}
+|ReactTy
+{
+  Non, High, Low, Trip, Unknown
+}
+&Fall
+{
+  public |.AnimTy animtype;
+  public float xvelocity;
+  public float yvelocity;
+  public int recover;
+  public int recovertime;
+  public int damage;
+  public int kill;
+  public int envshake_time;
+  public float envshake_freq;
+  public float envshake_ampl;
+  public float envshake_phase;
+  public void clear()
+  {
+    `animtype = .AnimTy::Unknown;
+    `xvelocity = .com.FERR;
+    `yvelocity = -4.5;
+    `recover = 1;
+    `recovertime = 4;
+    `damage = 0;
+    `kill = 1;
+    `envshake_time = 0;
+    `envshake_freq = 60.0;
+    `envshake_ampl = -4.0;
+    `envshake_phase = .com.FERR;
+  }
+}
+&Hitdef
+{
+  public int attr;
+  public int reversal_attr;
+  public int hitflag;
+  public int guardflag;
+  public int affectteam;
+  public |.AnimTy animtype;
+  public |.AnimTy air_animtype;
+  public int priority;
+  public |.PriTy bothhittype;
+  public int hitdamage;
+  public int guarddamage;
+  public int pausetime;
+  public int shaketime;
+  public int guard_pausetime;
+  public int guard_shaketime;
+  public int sparkno;
+  public int guard_sparkno;
+  public float sparkx;
+  public float sparky;
+  public int hitsoundg;
+  public int hitsoundn;
+  public int guardsoundg;
+  public int guardsoundn;
+  public |.ReactTy ground_type;
+  public |.ReactTy air_type;
+  public int ground_slidetime;
+  public int guard_slidetime;
+  public int ground_hittime;
+  public int guard_hittime;
+  public int air_hittime;
+  public int guard_ctrltime;
+  public int airguard_ctrltime;
+  public int guard_dist;
+  public float yaccel;
+  public float ground_velocityx;
+  public float ground_velocityy;
+  public float guard_velocity;
+  public float air_velocityx;
+  public float air_velocityy;
+  public float airguard_velocityx;
+  public float airguard_velocityy;
+  public float ground_cornerpush_veloff;
+  public float air_cornerpush_veloff;
+  public float down_cornerpush_veloff;
+  public float guard_cornerpush_veloff;
+  public float airguard_cornerpush_veloff;
+  public int air_juggle;
+  public int p1sprpriority;
+  public int p2sprpriority;
+  public int p1getp2facing;
+  public int p1facing;
+  public int p2facing;
+  public int p1stateno;
+  public int p2stateno;
+  public int p2getp1state;
+  public int forcestand;
+  public int ground_fall;
+  public int air_fall;
+  public float down_velocityx;
+  public float down_velocityy;
+  public int down_hittime;
+  public int down_bounce;
+  public int id;
+  public int chainid;
+  public int nochainid1;
+  public int nochainid2;
+  public int hitonce;
+  public int kill;
+  public int guard_kill;
+  public int numhits;
+  public int hitgetpower;
+  public int guardgetpower;
+  public int hitgivepower;
+  public int guardgivepower;
+  public int palfx_time;
+  public int palfx_mulr;
+  public int palfx_mulg;
+  public int palfx_mulb;
+  public int palfx_addr;
+  public int palfx_addg;
+  public int palfx_addb;
+  public int palfx_amplr;
+  public int palfx_amplg;
+  public int palfx_amplb;
+  public int palfx_cycletime;
+  public int palfx_color;
+  public int palfx_invertall;
+  public int envshake_time;
+  public float envshake_freq;
+  public float envshake_ampl;
+  public float envshake_phase;
+  public float mindistx;
+  public float maxdistx;
+  public float mindisty;
+  public float maxdisty;
+  public &.Fall fall;
+  public void clear()
+  {
+    `attr = 0;
+    `reversal_attr = 0;
+    `hitflag =
+      (int).StTy::S | (int).StTy::C | (int).StTy::A | (int).StTy::N;
+    `guardflag = 0;
+    `affectteam = 1;
+    `animtype = .AnimTy::Light;
+    `air_animtype = .AnimTy::Unknown;
+    `priority = 4;
+    `bothhittype = .PriTy::Hit;
+    `hitdamage = 0;
+    `guarddamage = 0;
+    `pausetime = 0;
+    `shaketime = 0;
+    `guard_pausetime = -1;
+    `guard_shaketime = -1;
+    `sparkno = .com.IERR;
+    `guard_sparkno = .com.IERR;
+    `sparkx = 0.0;
+    `sparky = 0.0;
+    `hitsoundg = .com.IERR;
+    `hitsoundn = -1;
+    `guardsoundg = .com.IERR;
+    `guardsoundn = -1;
+    `ground_type = .ReactTy::High;
+    `air_type = .ReactTy::Unknown;
+    `ground_slidetime = 0;
+    `guard_slidetime = -1;
+    `ground_hittime = 0;
+    `guard_hittime = -1;
+    `air_hittime = 20;
+    `guard_ctrltime = -1;
+    `airguard_ctrltime = -1;
+    `guard_dist = -1;
+    `yaccel = 0.35;
+    `ground_velocityx = 0.0;
+    `ground_velocityy = 0.0;
+    `guard_velocity = .com.FERR;
+    `air_velocityx = 0.0;
+    `air_velocityy = 0.0;
+    `airguard_velocityx = .com.FERR;
+    `airguard_velocityy = .com.FERR;
+    `ground_cornerpush_veloff = .com.FERR;
+    `air_cornerpush_veloff = .com.FERR;
+    `down_cornerpush_veloff = .com.FERR;
+    `guard_cornerpush_veloff = .com.FERR;
+    `airguard_cornerpush_veloff = .com.FERR;
+    `air_juggle = 0;
+    `p1sprpriority = 1;
+    `p2sprpriority = 0;
+    `p1getp2facing = 0;
+    `p1facing = 0;
+    `p2facing = 0;
+    `p1stateno = -1;
+    `p2stateno = -1;
+    `p2getp1state = 1;
+    `forcestand = .com.IERR;
+    `ground_fall = 0;
+    `air_fall = .com.IERR;
+    `down_velocityx = .com.FERR;
+    `down_velocityy = .com.FERR;
+    `down_hittime = 0;
+    `down_bounce = 0;
+    `id = 0;
+    `chainid = -1;
+    `nochainid1 = -1;
+    `nochainid2 = -1;
+    `hitonce = 0;
+    `kill = 1;
+    `guard_kill = 1;
+    `numhits = 1;
+    `hitgetpower = .com.IERR;
+    `guardgetpower = .com.IERR;
+    `hitgivepower = .com.IERR;
+    `guardgivepower = .com.IERR;
+    `palfx_time = 0;
+    `palfx_mulr = 256;
+    `palfx_mulg = 256;
+    `palfx_mulb = 256;
+    `palfx_addr = 0;
+    `palfx_addg = 0;
+    `palfx_addb = 0;
+    `palfx_amplr = 0;
+    `palfx_amplg = 0;
+    `palfx_amplb = 0;
+    `palfx_cycletime = 0;
+    `palfx_color = 256;
+    `palfx_invertall = 0;
+    `envshake_time = 0;
+    `envshake_freq = 60.0;
+    `envshake_ampl = -4.0;
+    `envshake_phase = .com.FERR;
+    `mindistx = .com.FERR;
+    `maxdistx = .com.FERR;
+    `mindisty = .com.FERR;
+    `maxdisty = .com.FERR;
+    `fall.clear();
+  }
+}
+&HitBy
+{
+  public int byid;
+  public int hitf1;
+  public int hitt1;
+  public int hitf2;
+  public int hitt2;
+  public int attr;
+  public int typ;
+  public int animtype;
+  public int airtype;
+  public int groundtype;
+  public int damage;
+  public int hitcount;
+  public int fallcount;
+  public int hitshaketime;
+  public int hittime;
+  public int slidetime;
+  public int ctrltime;
+  public float xvel;
+  public float yvel;
+  public float yaccel;
+  public int hitid;
+  public int chainid;
+  public int guarded;
+  public int fallf;
+  public int juggle;
+  public int p1getp2facing;
+  public float mindistx;
+  public float maxdistx;
+  public float mindisty;
+  public float maxdisty;
+  public &.Fall fall;
+  public void clear()
+  {
+    `byid = -1;
+    `hitf1 = 0;
+    `hitt1 = 0;
+    `hitf2 = 0;
+    `hitt2 = 0;
+    `attr = 0;
+    `typ = -1;
+    `animtype = 0;
+    `airtype = 0;
+    `groundtype = 0;
+    `damage = 0;
+    `hitcount = 0;
+    `fallcount = 0;
+    `hitshaketime = 0;
+    `hittime = 0;
+    `slidetime = 0;
+    `ctrltime = 0;
+    `xvel = 0.0;
+    `yvel = 0.0;
+    `yaccel = .com.FERR;
+    `hitid = -1;
+    `chainid = -1;
+    `guarded = 0;
+    `fallf = 0;
+    `juggle = 0;
+    `p1getp2facing = 0;
+    `mindistx = .com.FERR;
+    `maxdistx = .com.FERR;
+    `mindisty = .com.FERR;
+    `maxdisty = .com.FERR;
+    `fall.clear();
+  }
+}
+&HitOverride
+{
+  public int attr;
+  public int stateno;
+  public int time;
+  public int forceair;
+  new()
+  {
+    `clear();
+  }
+  public void clear()
+  {
+    `attr = 0;
+    `stateno = -1;
+    `time = 0;
+    `forceair = 0;
+  }
+}
+|MoveContact
+{
+  Hit, Guarded, Reversed
+}
+|ProjContact
+{
+  Hit, Guarded, Cancel
+}
+&Persistent
+{
+  public int p = 0;
+}
+&StateVal
+{
+  public ^&.Persistent ps;
+  public int no, prevno, playerno;
+  public int time;
+  public |.StTy typ;
+  public |.StTy phy;
+  public |.MovTy mov;
+  public int juggle;
+  public &.Hitdef hit;
+  public &.HitBy hb;
+  public ^&.HitOverride ho;
+  public |.MoveContact mctyp;
+  public int mctime;
+  new()
+  {
+    `ho.new(8);
+    `clear();
+  }
+  public void clear()
+  {
+    `ps.new(0);
+    `no = 0;
+    `prevno = 0;
+    `playerno = 0;
+    `time = 0;
+    `typ = .StTy::S;
+    `phy = .StTy::N;
+    `mov = .MovTy::I;
+    `juggle = 0;
+    `hit.clear();
+    `hb.clear();
+    loop{index i=0;do:`ho[i].clear();while ++i<8:}
+    `mctyp = .MoveContact::Hit;
+    `mctime = 0;
+  }
+  public bool setHb(&.Hitdef hit=, bool guard)
+  {
+    int fall = `hb.fallf, hc = `hb.hitcount, fc = `hb.fallcount;
+    int bi = `hb.byid;
+    `hb.clear();
+    `hb.byid = bi;
+    `hb.attr = hit.attr;
+    `hb.hitid = hit.id;
+    `hb.chainid = hit.chainid;
+    `hb.fall = hit.fall;
+    `hb.yaccel = hit.yaccel;
+    `hb.p1getp2facing = hit.p1getp2facing;
+    `hb.mindistx = hit.mindistx;
+    `hb.maxdistx = hit.maxdistx;
+    `hb.mindisty = hit.mindisty;
+    `hb.maxdisty = hit.maxdisty;
+    branch{
+    cond `typ == .StTy::A:
+      `hb.typ = (int)hit.air_type;
+      `hb.animtype = (int)hit.air_animtype;
+    else:
+      `hb.typ = (int)hit.ground_type;
+      `hb.animtype = (int)hit.animtype;
+    }
+    {
+      if(guard && ((int)`typ&hit.guardflag) != 0){
+        `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
+        `hb.hittime = hit.guard_hittime;
+        `hb.slidetime = hit.guard_slidetime;
+        `hb.guarded = 1;
+        branch{
+        cond `typ == .StTy::A:
+          `hb.ctrltime = hit.airguard_ctrltime;
+          `hb.xvel = hit.airguard_velocityx;
+          `hb.yvel = hit.airguard_velocityy;
+        else:
+          `hb.ctrltime = hit.guard_ctrltime;
+          `hb.xvel = hit.guard_velocity;
+          `hb.yvel = hit.ground_velocityy;
+        }
+        `hb.damage = hit.guarddamage;
+        ret false;
+      }
+      `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
+      `hb.slidetime = hit.ground_slidetime;
+      branch{
+      cond `typ == .StTy::A:
+        `hb.hittime = hit.air_hittime;
+        `hb.ctrltime = hit.air_hittime;
+        `hb.xvel = hit.air_velocityx;
+        `hb.yvel = hit.air_velocityy;
+        `hb.fallf = hit.air_fall;
+      cond `typ == .StTy::L:
+        `hb.hittime = hit.down_hittime;
+        `hb.ctrltime = hit.down_hittime;
+        `hb.xvel = hit.down_velocityx;
+        `hb.yvel = hit.down_bounce != 0 ? hit.down_velocityy : 0.0;
+        `hb.fallf = 1;
+      else:
+        `hb.hittime = hit.ground_hittime;
+        `hb.ctrltime = hit.ground_hittime;
+        `hb.xvel = hit.ground_velocityx;
+        `hb.yvel = hit.ground_velocityy;
+        `hb.fallf = hit.ground_fall;
+      }
+      `hb.damage = hit.hitdamage;
+      `hb.hitcount = hc+1;
+      `hb.fallcount = fc;
+      `hb.fallf |= fall;
+    }
+    ret true;
+  }
+}
+const index iLIFE              = 10;
+const index iLIFEMAX           = 11;
+const index iPOWER             = 12;
+const index iPOWERMAX          = 13;
+const index iATTACK            = 14;
+const index iDEFENCE           = 15;
+const index iLIEDOWN_TIME      = 16;
+const index iAIRJUGGLE         = 17;
+const index iSPARKNO           = 18;
+const index iGUARD_SPARKNO     = 19;
+const index iKO_ECHO           = 20;
+const index iVOLUME            = 21;
+const index iINTPERSISTINDEX   = 22;
+const index iFLOATPERSISTINDEX = 23;
+const index iGROUND_BACK       = 24;
+const index iGROUND_FRONT      = 25;
+const index iAIR_BACK          = 26;
+const index iAIR_FRONT         = 27;
+const index iHEIGHT            = 28;
+const index iATTACK_DIST       = 29;
+const index iPROJ_ATTACK_DIST  = 30;
+const index iPROJ_DOSCALE      = 31;
+const index iHEAD_POSX         = 32;
+const index iHEAD_POSY         = 33;
+const index iMID_POSX          = 34;
+const index iMID_POSY          = 35;
+const index iSHADOWOFFSET      = 36;
+const index iDRAW_OFFSETX      = 37;
+const index iDRAW_OFFSETY      = 38;
+const index iAIRJUMP_CNT       = 39;
+const index iAIRJUMP_NUM       = 40;
+const index iAIRJUMP_HEIGHT    = 41;
+const index iCTRL              = 42;
+const index iHITCOUNT          = 43;
+const index iUNIQHITCOUNT      = 44;
+const index iMOVETIMEPAUSE     = 45;
+const index iMOVETIMESUPER     = 46;
+const index iPAUSEMOVETIME     = 47;
+const index iSUPERMOVETIME     = 48;
+const index iBINDTIME          = 49;
+const index iBINDTOID          = 50;
+const index iBINDFACING        = 51;
+const index iHITPAUSETIME      = 52;
+const index iALPHAS            = 53;
+const index iALPHAD            = 54;
+const index iRECOVERTIME       = 55;
+const index iCOMBO             = 56;
+const index iSPECIALFLAG       = 57;
+const index iSYSFLAG           = 58;
+const index iSYSTEMP           = 59;
+
+const index fX                = 10;
+const index fY                = 11;
+const index fVX               = 12;
+const index fVY               = 13;
+const index fFALL_DEFENCE_MUL = 14;
+const index fXSCALE           = 15;
+const index fYSCALE           = 16;
+const index fWALK_FWD         = 17;
+const index fWALK_BACK        = 18;
+const index fRUN_FWDX         = 19;
+const index fRUN_FWDY         = 20;
+const index fRUN_BACKX        = 21;
+const index fRUN_BACKY        = 22;
+const index fJUMP_NEUX        = 23;
+const index fJUMP_NEUY        = 24;
+const index fJUMP_BACK        = 25;
+const index fJUMP_FWD         = 26;
+const index fRUNJUMP_BACKX    = 27;
+const index fRUNJUMP_BACKY    = 28;
+const index fRUNJUMP_FWDX     = 29;
+const index fRUNJUMP_FWDY     = 30;
+const index fAIRJUMP_NEUX     = 31;
+const index fAIRJUMP_NEUY     = 32;
+const index fAIRJUMP_BACK     = 33;
+const index fAIRJUMP_FWD      = 34;
+const index fYACCEL           = 35;
+const index fSTAND_FRICTION   = 36;
+const index fCROUCH_FRICTION  = 37;
+const index fBINDPOSX         = 38;
+const index fBINDPOSY         = 39;
+const index fANGLE            = 40;
+const index fANGLESCALEX      = 41;
+const index fANGLESCALEY      = 42;
+const index fCLSNXSCALE       = 43;
+const index fCLSNYSCALE       = 44;
+
+
+const int lsINVISIBLE     = 0b00000000000000000000000000000001;
+const int lsNOSTANDGUARD  = 0b00000000000000000000000000000010;
+const int lsNOCROUCHGUARD = 0b00000000000000000000000000000100;
+const int lsNOAIRGUARD    = 0b00000000000000000000000000001000;
+const int lsNOAUTOTURN    = 0b00000000000000000000000000010000;
+const int lsNOJUGGLECHECK = 0b00000000000000000000000000100000;
+const int lsNOSHADOW      = 0b00000000000000000000000001000000;
+const int lsNOWALK        = 0b00000000000000000000000010000000;
+const int lsUNGUARDABLE   = 0b00000000000000000000000100000000;
+const int lsPOSFREEZEX    = 0b00000000000000000000001000000000;
+const int lsPOSFREEZEY    = 0b00000000000000000000010000000000;
+const int lsGRAVITY       = 0b00000000000000000000100000000000;
+const int lsPLAYERPUSH    = 0b00000000000000000001000000000000;
+const int lsSCREENBOUNDX  = 0b00000000000000000010000000000000;
+const int lsSCREENBOUNDY  = 0b00000000000000000100000000000000;
+const int lsGETHIT        = 0b00000000000000001000000000000000;
+const int lsANGLEDRAW     = 0b00000000000000010000000000000000;
+const int lsTRANS         = 0b00000000000000100000000000000000;
+const int lsFRONTWCHANGE  = 0b00000000000001000000000000000000;
+const int lsBACKWCHANGE   = 0b00000000000010000000000000000000;
+const int lsFEDGECHANGE   = 0b00000000000100000000000000000000;
+const int lsBEDGECHANGE   = 0b00000000001000000000000000000000;
+const int lsGUARD         = 0b00000000010000000000000000000000;
+
+const int lsNoMoveMask = lsNOSTANDGUARD|lsNOCROUCHGUARD|lsNOAIRGUARD|lsNOWALK;
+
+public uint specialFlag;
+const uint gsINTRO          = 0b00000000000000000000000000000001;
+const uint gsROUNDNOTOVER   = 0b00000000000000000000000000000010;
+const uint gsNOBARDISPLAY   = 0b00000000000000000000000000000100;
+const uint gsNOBG           = 0b00000000000000000000000000001000;
+const uint gsNOFG           = 0b00000000000000000000000000010000;
+const uint gsNOKOSLOW       = 0b00000000000000000000000000100000;
+const uint gsGLOBALNOSHADOW = 0b00000000000000000000000001000000;
+const uint gsNOMUSIC        = 0b00000000000000000000000010000000;
+const uint gsTIMERFREEZE    = 0b00000000000000000000000100000000;
+const uint gsNOKO           = 0b00000000000000000000001000000000;
+const uint gsNOKOSND        = 0b00000000000000000000010000000000;
+public bool gs(uint mask)
+{
+  ret (.specialFlag & mask) != 0d0;
+}
+
+
+
+&PlayerList<_t>
+{
+  &Node<_t>
+  {
+    public ^_t c;
+    public ^self next;
+  }
+  ^&Node!_t? top;
+  public void clear()
+  {
+    `top.new(0);
+  }
+}
+
+public ^%^&Char chars;
+^%&Projectile projs;
+^%&Explod explods;
+&snd.Sound syssnd;
+^^&snd.Sound sounds;
+chars.new(4);
+projs.new(4);
+explods.new(4);
+sounds.new(4);
+
+
+^%index expdrawlist;
+expdrawlist.new(4);
+
+void delIL(%index l=, index i)
+{
+  ^index l1 = l[0..i], l2 = l[i+1..-1];
+  l.new(0);
+  l .= l1 .= l2;
+}
+
+|TeamMode
+{
+  Single, Simul, Turns
+}
+public ^int tmode;
+tmode.new(2);
+tmode[0] = tmode[1] = (int)TeamMode::Single;
+public ^int numturns;
+numturns.new(2);
+numturns[0] = numturns[1] = 2;
+public ^int rexisted;
+rexisted.new(2);
+rexisted[0] = rexisted[1] = 0;
+&RdCacheInfo
+{
+  public int n, pn, hi;
+}
+^%&RdCacheInfo enemy;
+%&RdCacheInfo playerid;
+enemy.new(4);
+
+
+public ^&.fgt.Fight fight;
+public int roundState()
+{
+  ret
+    .intro > .fight~ro.ctrl_time+1 ? 0 : (
+      .intro > .fight~ro.ctrl_time ? 1 : (
+        !.roundEnd() ? 2 : (
+          .intro < -(
+            .fight~ro.over_hittime
+            + .fight~ro.over_waittime + .fight~ro.over_wintime)
+          ? 4 : 3)));
+}
+public bool roundEnd()
+{
+  ret .intro < -.fight~ro.over_hittime;
+}
+
+
+public &PlayerList!&Char? players;
+public int id = cfg.HelperMax;
+float screenx = 0.0, screeny = 0.0;
+/int pause = 0, pausetime = 0, pausebg = 0;
+/int super = 0, supertime = 0, superpausebg = 0;
+int superplayer = -1;
+^&.act.Action superanim;
+float superposx = 0.0, superposy = 0.0;
+int superfacing = 1;
+int superdarken = 1;
+float superp2defmul = 1.0;
+int superunhittable = 1;
+/int envcol_time = 0;
+/int envcol_under = 0;
+int envcol_r = 255;
+int envcol_g = 255;
+int envcol_b = 255;
+
+
+&ModifyExplod
+{
+  public int id;
+  public int bindtime;
+  public float scalex;
+  public float scaley;
+  public int removeongethit;
+  public int removetime;
+  public float velocityx;
+  public float velocityy;
+  public float accelx;
+  public float accely;
+  public int sprpriority;
+  public int postype;
+  public float offsetx;
+  public float offsety;
+  public int relativef;
+  public float x;
+  public float y;
+  public int facing;
+  public int vfacing;
+  public int shadowr;
+  public int shadowg;
+  public int shadowb;
+  public int ontop;
+  public int alphas;
+  public int alphad;
+  public int supermovetime;
+  public int pausemovetime;
+  new()
+  {
+    `clear();
+  }
+  public void clear()
+  {
+    `id = -1;
+    `bindtime = .com.IERR;
+    `scalex = .com.FERR;
+    `scaley = .com.FERR;
+    `removeongethit = .com.IERR;
+    `removetime = .com.IERR;
+    `velocityx = .com.FERR;
+    `velocityy = .com.FERR;
+    `accelx = .com.FERR;
+    `accely = .com.FERR;
+    `sprpriority = .com.IERR;
+    `postype = .com.IERR;
+    `offsetx = .com.FERR;
+    `offsety = .com.FERR;
+    `relativef = .com.IERR;
+    `x = .com.FERR;
+    `y = .com.FERR;
+    `facing = .com.IERR;
+    `vfacing = .com.IERR;
+    `shadowr = .com.IERR;
+    `shadowg = .com.IERR;
+    `shadowb = .com.IERR;
+    `ontop = .com.IERR;
+    `alphas = .com.IERR;
+    `alphad = .com.IERR;
+    `supermovetime = .com.IERR;
+    `pausemovetime = .com.IERR;
+  }
+  public void setX(float x)
+  {
+    `x = x;
+  }
+  public void setY(float y)
+  {
+    `y = y;
+  }
+}
+public &Explod
+{
+  public int id;
+  public int bindtime;
+  public float scalex;
+  public float scaley;
+  public int removeongethit;
+  public int removetime;
+  public float velocityx;
+  public float velocityy;
+  public float accelx;
+  public float accely;
+  public int sprpriority;
+  public int postype;
+  public float offsetx;
+  public float offsety;
+  public int relativef;
+  public float x;
+  public float y;
+  public int facing;
+  public int vfacing;
+  public int shadowr;
+  public int shadowg;
+  public int shadowb;
+  public int supermovetime;
+  public int pausemovetime;
+  public ^&.act.Action ani;
+  public int ontop;
+  public int alphas;
+  public int alphad;
+  public int ownpal;
+  public int player;
+  public int bindid;
+  public int ignorehitpause;
+  new()
+  {
+    `clear();
+  }
+  public void clear()
+  {
+    `id = .com.IERR;
+    `bindtime = 0;
+    `scalex = 1.0;
+    `scaley = 1.0;
+    `removeongethit = 0;
+    `removetime = -2;
+    `velocityx = 0.0;
+    `velocityy = 0.0;
+    `accelx = 0.0;
+    `accely = 0.0;
+    `sprpriority = 0;
+    `postype = 0;
+    `offsetx = 0.0;
+    `offsety = 0.0;
+    `relativef = 1;
+    `x = 0.0;
+    `y = 0.0;
+    `facing = 1;
+    `vfacing = 1;
+    `shadowr = 0;
+    `shadowg = 0;
+    `shadowb = 0;
+    `supermovetime = 0;
+    `pausemovetime = 0;
+    `ani.new(0);
+    `ontop = 0;
+    `alphas = .com.IERR;
+    `alphad = .com.IERR;
+    `ownpal = 0;
+    `player = -1;
+    `bindid = -1;
+    `ignorehitpause = 1;
+  }
+  public void setFacing(int f)
+  {
+    if(f == 0) ret;
+    if((`facing < 0) != (f < 0)){
+      `facing *= -1;
+      `velocityx *= -1.0;
+    }
+  }
+  public void setX(float x)
+  {
+    `x = x;
+  }
+  public void setY(float y)
+  {
+    `y = y;
+  }
+}
+public &Projectile
+{
+  public &.Hitdef hit;
+  public int id;
+  public int anim;
+  public int hitanim;
+  public int remanim;
+  public int cancelanim;
+  public float scalex;
+  public float scaley;
+  public int remove;
+  public int removetime;
+  public float velocityx;
+  public float velocityy;
+  public float remvelocityx;
+  public float remvelocityy;
+  public float accelx;
+  public float accely;
+  public float velmulx;
+  public float velmuly;
+  public int hits;
+  public int misstime;
+  public int priority;
+  public int prioritypoint;
+  public int sprpriority;
+  public int edgebound;
+  public int stagebound;
+  public int heightboundt;
+  public int heightboundb;
+  public float x;
+  public float y;
+  public int facing;
+  public int shadowr;
+  public int shadowg;
+  public int shadowb;
+  public int supermovetime;
+  public int pausemovetime;
+  public ^&.act.Action ani;
+  public int timemiss, hitpause, playerno;
+  public |.ProjContact pctyp;
+  public int pctime;
+  new()
+  {
+    `clear();
+  }
+  public void clear()
+  {
+    `hit.clear();
+    `id = .com.IERR;
+    `anim = 0;
+    `hitanim = -1;
+    `remanim = -1;
+    `cancelanim = -1;
+    `scalex = 1.0;
+    `scaley = 1.0;
+    `remove = 1;
+    `removetime = -1;
+    `velocityx = 0.0;
+    `velocityy = 0.0;
+    `remvelocityx = 0.0;
+    `remvelocityy = 0.0;
+    `accelx = 0.0;
+    `accely = 0.0;
+    `velmulx = 1.0;
+    `velmuly = 1.0;
+    `hits = 1;
+    `misstime = 0;
+    `priority = 1;
+    `prioritypoint = 1;
+    `sprpriority = 3;
+    `edgebound = 40;
+    `stagebound = 40;
+    `heightboundt = -240;
+    `heightboundb = 1;
+    `x = 0.0;
+    `y = 0.0;
+    `facing = 1;
+    `shadowr = 0;
+    `shadowg = 0;
+    `shadowb = 0;
+    `supermovetime = 0;
+    `pausemovetime = 0;
+    `ani.new(0);
+    `timemiss = 0;
+    `hitpause = 0;
+    `playerno = 0;
+    `pctyp = .ProjContact::Hit;
+    `pctime = 0;
+  }
+  public void setX(float x)
+  {
+    `x = x;
+  }
+  public void setY(float y)
+  {
+    `y = y;
+  }
+  public void remvel()
+  {
+    `velocityx = `remvelocityx;
+    `velocityy = `remvelocityy;
+    `anim = -1;
+    `hits = 0;
+    `prioritypoint = 0;
+  }
+  public void update()
+  {
+    branch{
+    cond .super > 0:
+      if(`supermovetime == 0) ret;
+    cond .pause > 0:
+      if(`pausemovetime == 0) ret;
+    }
+    if(`hitpause > 0) ret;
+    if(.com.tickFrame()){
+      `velocityx += `accelx;
+      `velocityy += `accely;
+    }
+    float sp = .m.min!float?(1.0, .speed);
+    `x += `velocityx*(float)`facing * sp;
+    `y += `velocityy * sp;
+    if(.com.tickFrame()){
+      `velocityx *= `velmulx;
+      `velocityy *= `velmuly;
+    }
+  }
+  public void projClsn()
+  {:<-
+    public bool hitCheck(&.Projectile pr=)
+    {
+      float xscl1 = pr.scalex, yscl1 = pr.scaley;
+      float xscl2 = `scalex, yscl2 = `scaley;
+      float xofs1 = pr.x, yofs1 = pr.y;
+      float xofs2 = `x, yofs2 = `y;
+      func$void(float=, float=, float, float) lrset1 =
+        (pr.facing > 0 ? .pLrSet : .mLrSet);
+      func$void(float=, float=, float, float) lrset2 =
+        (`facing > 0 ? .pLrSet : .mLrSet);
+      bool hentei(&.act.Rect c1, &.act.Rect c2)
+      {
+        float l1, r1, l2, r2;
+        `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
+        `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
+        branch{
+        cond l1*`xscl1+`xofs1 < l2*`xscl2+`xofs2:
+          if(r1*`xscl1+`xofs1 < l2*`xscl2+`xofs2) break;
+        else:
+          if(l1*`xscl1+`xofs1 > r2*`xscl2+`xofs2) break;
+        comm:
+          branch{
+          cond
+            (float)c1.b*`yscl1+`yofs1 < (float)c2.b*`yscl2+`yofs2
+            :
+            if(
+              (float)(c2.t-1)*`yscl2+`yofs2
+              <= (float)c1.b*`yscl1+`yofs1) ret true;
+          else:
+            if(
+              (float)c2.b*`yscl2+`yofs2
+              >= (float)(c1.t-1)*`yscl1+`yofs1) ret true;
+          }
+        }
+        ret false;
+      }
+      if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
+      if(#`ani == 0 || #`ani~ani.frames == 0) ret false;
+      ^&.act.Frame frm;
+      ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn1;
+      ^&.act.Rect clsn2 = `ani~ani.currentFrame()=>frm#frm~clsn2;
+      loop{index i = 0; while; do:
+        loop{index j = 0; while; do:
+          if(hentei(clsn1[i], clsn2[j])) ret true;
+          j++;
+        while j < #clsn2:
+        }
+        i++;
+      while i < #clsn1:
+      }
+      ret false;
+    }
+    if(`hit.attr < 0) ret;
+    loop{index i = 0; while; do:
+      if(i != `playerno) loop{
+        index j = 0;
+        while;
+      do:
+        if(
+          .projs[i][j].id < 0 || (
+            .projs[i][j].hit.affectteam != 0 && (
+              (`playerno&1) != (i&1)) != (.projs[i][j].hit.affectteam > 0))
+          ) continue;
+        if(.projs[i][j].hit.attr >= 0 && hitCheck(.projs[i][j]=)){
+          `prioritypoint -= .projs[i][j].priority;
+        }
+      continue:
+        j++;
+      while j < #.projs[i]:
+      }
+      i++;
+    while i < #.projs:
+    }
+    if(`prioritypoint <= 0 && `hits > 0 && `priority > 0){
+      `hits -= 1 + -`prioritypoint / `priority;
+      if(`hits > 0){
+        `prioritypoint = `prioritypoint % `priority + `priority;
+      }
+    }
+  }
+  public void anime()
+  {:<-
+    void animAct(bool pau)
+    {
+      if(#`ani > 0) branch{
+      cond !pau && (`hitpause <= 0 || `anim < 0):
+        `ani~ani.action();
+      else:
+        `ani~ani.updateSprite();
+      }
+    }
+    bool pause()
+    {
+      branch{
+      cond .super > 0:
+        if(`supermovetime == 0) ret true;
+      cond .pause > 0:
+        if(`pausemovetime == 0) ret true;
+      }
+      ret false;
+    }
+    bool p = pause();
+    if(.com.tickFrame() && !p){
+      if(`supermovetime > 0) `supermovetime--;
+      if(`pausemovetime > 0) `pausemovetime--;
+      branch{
+      cond `anim >= 0:
+        branch{
+        cond `prioritypoint <= 0 && `remove != 0:
+          `ani = .chars[`playerno][0]~getAction(`cancelanim);
+          if(`pctime >= 0){
+            `pctyp = .ProjContact::Cancel;
+            `pctime = -1;
+          }
+        cond `hits <= 0 && `remove != 0:
+          `ani = .chars[`playerno][0]~getAction(`hitanim);
+        cond
+          (
+            `x < .xmin-(float)`edgebound
+            || .xmax+(float)`edgebound < `x)
+          || (
+            `x < .scrxmin-(float)`stagebound
+            || .scrxmax+(float)`stagebound < `x)
+          || (
+            `velocityy != 0.0 && (
+              (float)`heightboundb < `y
+              || `y < (float)`heightboundt))
+          || (`removetime >= 0 && --`removetime < 0)
+          :
+          `ani = .chars[`playerno][0]~getAction(`remanim);
+        else:
+          break;
+        comm:
+          `remvel();
+        }
+      else:
+        branch{
+        cond #`ani == 0:
+        cond !`ani~ani.loopend:
+          {
+            ^&.act.Frame frm = `ani~ani.currentFrame();
+            if(#frm > 0 && frm~time >= 0) break, break;
+          }
+        else:
+          `ani.new(0);
+        comm:
+          if(`hitpause <= 0) `id = -1;
+        }
+      }
+      `hitpause--;
+    }
+    branch{
+    cond `pctime > 0:
+      `pctime++;
+    cond `pctime < 0:
+      `pctime *= -1;
+    }
+    if(.clsndraw && #`ani > 0){
+      ^&.act.Frame frm = `ani~ani.currentFrame();
+      if(#frm == 0) break;
+      ^&.act.Rect clsn = frm~clsn1;
+      if(#clsn > 0){
+        .drawc1.new[-1].set(
+          clsn, `x, `y, (float)`facing*`scalex, `scaley);
+      }
+      clsn = frm~clsn2;
+      if(#clsn > 0){
+        .drawc2.new[-1].set(
+          clsn, `x, `y, (float)`facing*`scalex, `scaley);
+      }
+    }
+    if(.com.tickFrame()){
+      animAct(p);
+      if(p) break;
+      if(`hitpause > 0) break;
+      if(`timemiss > 0){
+        `timemiss *= -1;
+        `hits--;
+      }
+      if(`timemiss < 0) `timemiss++;
+      if(`hits <= 0) `hit.attr = -1;
+    }
+    .addAnimList(
+      .anims=, `ani, `sprpriority, `x, `y, .scale,
+      (float)`facing*`scalex, `scaley, 0.0, -1, 0,
+      256 >> (int)(
+        .super > 0 && .superdarken != 0 && `playerno != .superplayer),
+      .consts.null!&.com.PalFX?(),
+      `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 0.0);
+  }
+}
+public &Char
+{
+  &.com.ParseMethod!self? parseMethod;
+  public ^/char def, name, displayname, author;
+  public ^int pal_defaults;
+  public ^/char command;
+  public ^/char sprite;
+  public ^/char anim;
+  public ^/char sound;
+  public ^^/char pal;
+  public ^/char intro;
+  public ^/char ending;
+  public ^&.sff.Sff sf;
+  public ^&.snd.Snd sn;
+  public ^&.com.PalFX palfx;
+  public %&.act.Action actionList;
+  public ^&.act.Action ani;
+  public ^int ivar, sysivar;
+  public ^float fvar, sysfvar;
+  public &.cmd.CommandList cmd;
+  public &.StateVal stVal;
+  public &.AfterImage aimg;
+  public int key;
+  public int id, playerno, helperindex, helperid, parentindex;
+  public %int children;
+  public %int targets;
+  public byte facing;
+  public bool keyctrl;
+  public bool player;
+  public bool inguarddist;
+  public int sprpriority;
+  public int palno, drawpalno;
+  public int animno;
+  public int animpno;
+  public float frontw, backw, fedge, bedge;
+  public float attackmul, defencemul, attackdist;
+  public float offsetx, offsety;
+  public float veloff;
+  public int tmphit, atktmp, hittmp, acttmp, destmp, minus, cs1tmp;
+  public %&.RdCacheInfo enemyn;
+  public ^&.act.Frame curFrame;
+  void dummy(){}
+  public method$void() state = dummy, state_1 = dummy,
+    state_2 = dummy, state_3 = dummy, state_4 = dummy;
+  new()
+  {
+    `ivar.new(60);
+    `sysivar.new(60);
+    `fvar.new(40);
+    `sysfvar.new(60);
+    `clearVal();
+  }
+  void copyParent(`self c=)
+  {
+    %char buf;
+    `name = (buf .= c.name .= "'s helper");
+    `displayname = c.displayname;
+    `author = c.author;
+    `sf = c.sf;
+    `sn = c.sn;
+    `actionList = c.actionList;
+    `cmd.copy(c.cmd=);
+    `palno = c.palno;
+    `drawpalno = c.drawpalno;
+    `state_1 = c.state_1;
+    `state_2 = c.state_2;
+    `state_3 = c.state_3;
+    `state_4 = c.state_4;
+    .s.copy!int?(`sysivar[10..-1], c.sysivar[10..-1]);
+    .s.copy!float?(`sysfvar[10..-1], c.sysfvar[10..-1]);
+    `sysivar[.iLIFE] = `sysivar[.iLIFEMAX];
+    `sysivar[.iPOWER] = 0;
+    `sysivar[.iCTRL] = 0;
+    `clearSpSysVar();
+  }
+  public void clearSpSysVar()
+  {
+    `sysivar[.iAIRJUMP_CNT] = 0;
+    `sysivar[.iCTRL] = 0;
+    `sysivar[.iHITCOUNT] = 0;
+    `sysivar[.iUNIQHITCOUNT] = 0;
+    `sysivar[.iMOVETIMEPAUSE] = 0;
+    `sysivar[.iMOVETIMESUPER] = 0;
+    `sysivar[.iPAUSEMOVETIME] = 0;
+    `sysivar[.iSUPERMOVETIME] = 0;
+    `sysivar[.iBINDTIME] = 0;
+    `sysivar[.iHITPAUSETIME] = 0;
+    `sysfvar[.fANGLE] = 0.0;
+    `sysfvar[.fANGLESCALEX] = 1.0;
+    `sysfvar[.fANGLESCALEY] = 1.0;
+    `sysivar[.iALPHAS] = 255;
+    `sysivar[.iALPHAD] = 0;
+    `sysivar[.iRECOVERTIME] = 0;
+    `sysivar[.iCOMBO] = 0;
+    `veloff = 0.0;
+    `palfx.new(0);
+    `aimg.timegap = -1;
+    `enemyn.new(0);
+  }
+  public void clearVal()
+  {
+    `ani.new(0);
+    `curFrame.new(0);
+    `stVal.clear();
+    `rangeSetSysIVar(0, 4, 0);
+    `rangeSetSysFVar(0, 4, 0.0);
+    `rangeSetIVar(0, 59, 0);
+    `rangeSetFVar(0, 39, 0.0);
+    `key = -1; `id = .com.IERR; `playerno = -1; `helperindex = -1;
+    `helperid = 0; `parentindex = -1;
+    `facing = 1;
+    `keyctrl = false;
+    `player = false;
+    `inguarddist = false;
+    `sprpriority = 0;
+    `palno = 0;
+    `drawpalno = 0;
+    `animno = 0;
+    `animpno = -1;
+    `tmphit = -1;
+    `atktmp = -1;
+    `hittmp = 0;
+    `acttmp = 0;
+    `destmp = 0;
+    `minus = 1;
+    `cs1tmp = 0;
+    `state = `dummy;
+  }
+  void clearHitDef()
+  {
+    `stVal.hit.clear();
+    `sysivar[.iHITPAUSETIME] = 0;
+  }
+  void clearHitCount()
+  {
+    `sysivar[.iHITCOUNT] = 0;
+    `sysivar[.iUNIQHITCOUNT] = 0;
+  }
+  void clearRdCache()
+  {
+    .enemy[`playerno].new(0);
+    `enemyn.new(0);
+  }
+  public void rangeSetSysIVar(index start, index end, int n)
+  {
+    if(start < 0) ret;
+    loop{index i = start; while; do:
+      `sysivar[i] = n;
+      i++;
+    while i <= end && i < #`sysivar:
+    }
+  }
+  public void rangeSetSysFVar(index start, index end, float n)
+  {
+    if(start < 0) ret;
+    loop{index i = start; while; do:
+      `sysfvar[i] = n;
+      i++;
+    while i <= end && i < #`sysfvar:
+    }
+  }
+  public void rangeSetIVar(index start, index end, int n)
+  {
+    if(start < 0) ret;
+    loop{index i = start; while; do:
+      `ivar[i] = n;
+      i++;
+    while i <= end && i < #`ivar:
+    }
+  }
+  public void rangeSetFVar(index start, index end, float n)
+  {
+    if(start < 0) ret;
+    loop{index i = start; while; do:
+      `fvar[i] = n;
+      i++;
+    while i <= end && i < #`fvar:
+    }
+  }
+  public ^&.act.Action getAction(int no)
+  {
+    *`ani.self a;
+    loop{index i = 0; while; do:
+      if(`actionList[i].no == no){
+        a.new(1);
+        a~copy(`actionList[i]=);
+        break, break;
+      }
+      i++;
+    while i< #`actionList:
+    }
+    ret a;
+  }
+  public ^&.Explod newExplod()
+  {:<-
+    ^&.Explod foo(index i)
+    {
+      .explods[`playerno][i].clear();
+      .explods[`playerno][i].id = .com.IERR+2;
+      .expdrawlist[`playerno] .= i;
+      ret .explods[`playerno][i..i+1];
+    }
+    loop{index i = 0; while; do:
+      if(.explods[`playerno][i].id == .com.IERR) ret foo(i);
+      i++;
+    while i < #.explods[`playerno]:
+      if(i < .cfg.ExplodMax){
+        .explods[`playerno].new[i];
+        ret foo(i);
+      }
+    }
+    ret .consts.null!&.Explod?();
+  }
+  public ^&.Projectile newProj()
+  {
+    loop{index i = 0; while; do:
+      if(.projs[`playerno][i].id < 0){
+        .projs[`playerno][i].clear();
+        ret .projs[`playerno][i..i+1];
+      }
+      i++;
+    while i < #.projs[`playerno]:
+      if(i < .cfg.PlayerProjectileMax){
+        .projs[`playerno].new[i];
+        ret .projs[`playerno][i..i+1];
+      }
+    }
+    ret .consts.null!&.Projectile?();
+  }
+  public void addTarget(int id)
+  {
+    loop{index i = 0; while; do:
+      if(`targets[i] < 0 || `targets[i] == id){
+        `targets[i] = id;
+        break, break;
+      }
+      i++;
+    while i < #`targets:
+      `targets .= id;
+    }
+  }
+  public void removeTarget(int id)
+  {
+    loop{index i = 0; while; do:
+      if(`targets[i] == id){
+        `targets[i] = -1;
+        break, break;
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void outTarget()
+  {
+    if(`stVal.hb.byid < 0) ret;
+    ^`self c = .players.get(`stVal.hb.byid);
+    if(#c > 0) c~removeTarget(`id);
+    if(`sysivar[.iBINDTOID] == `stVal.hb.byid){
+      `sysivar[.iBINDTIME] = 0;
+    }
+    `stVal.hb.byid = -1;
+  }
+  public bool isTarget(int id)
+  {
+    loop{index i = 0; while; do:
+      if(`targets[i] == id) ret true;
+      i++;
+    while i < #`targets:
+    }
+    ret false;
+  }
+  void addChild(int hidx)
+  {
+    loop{index i = 0; while; do:
+      if(`children[i] < 0){
+        `children[i] = hidx;
+        ret;
+      }
+      i++;
+    while i < #`children:
+    }
+    `children .= hidx;
+  }
+  public ^&.com.PalFX getPalfx()
+  {
+    if(#`palfx > 0) ret `palfx;
+    if(`parentindex < 0){
+      `palfx.new(1);
+      ret `palfx;
+    }
+    ret .chars[`playerno][`parentindex]~getPalfx();
+  }
+  public bool ls(int mask)
+  {
+    ret (`sysivar[.iSPECIALFLAG] & mask) != 0;
+  }
+  public bool load(^/char def)
+  {:<-
+    public void info(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "name"):
+        if(#`name == 0) `name = data;
+      cond .s.equ(name, "displayname"):
+        if(#`displayname == 0) `displayname = data;
+      cond .s.equ(name, "author"):
+        if(#`author == 0) `author = data;
+      cond .s.equ(name, "pal.defaults"):
+        `pal_defaults = .s.svToAry!int?(",", data);
+      }
+    }
+    public void files(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "cmd"):
+        if(#`command == 0) `command = data;
+      cond .s.equ(name, "sprite"):
+        if(#`sprite == 0) `sprite = data;
+      cond .s.equ(name, "anim"):
+        if(#`anim == 0) `anim = data;
+      cond .s.equ(name, "sound"):
+        if(#`sound == 0) `sound = data;
+      cond .s.equ(name, "pal1"):
+        if(#`pal[0] == 0) `pal[0] = data;
+      cond .s.equ(name, "pal2"):
+        if(#`pal[1] == 0) `pal[1] = data;
+      cond .s.equ(name, "pal3"):
+        if(#`pal[2] == 0) `pal[2] = data;
+      cond .s.equ(name, "pal4"):
+        if(#`pal[3] == 0) `pal[3] = data;
+      cond .s.equ(name, "pal5"):
+        if(#`pal[4] == 0) `pal[4] = data;
+      cond .s.equ(name, "pal6"):
+        if(#`pal[5] == 0) `pal[5] = data;
+      cond .s.equ(name, "pal7"):
+        if(#`pal[6] == 0) `pal[6] = data;
+      cond .s.equ(name, "pal8"):
+        if(#`pal[7] == 0) `pal[7] = data;
+      cond .s.equ(name, "pal9"):
+        if(#`pal[8] == 0) `pal[8] = data;
+      cond .s.equ(name, "pal10"):
+        if(#`pal[9] == 0) `pal[9] = data;
+      cond .s.equ(name, "pal11"):
+        if(#`pal[10] == 0) `pal[10] = data;
+      cond .s.equ(name, "pal12"):
+        if(#`pal[11] == 0) `pal[11] = data;
+      }
+    }
+    public void arcade(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "intro.storyboard"):
+        `intro = data;
+      cond .s.equ(name, "ending.storyboard"):
+        `ending = data;
+      }
+    }
+    void section(^^/char lines, index i=)
+    {
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      branch{
+      cond .s.equ(secname, "info"):
+        `parse!`load:<-info?(lines, i=, sec);
+      cond .s.equ(secname, "files"):
+        `parse!`load:<-files?(lines, i=, sec);
+      cond .s.equ(secname, "arcade"):
+        `parse!`load:<-arcade?(lines, i=, sec);
+      }
+    }
+    public void begin(^^/char lines, index i=, ^/char section)
+    {
+      index fnd = .s.cFind(" "\t, section);
+      ^/char name = .s.toLower()<, section[0..fnd];
+      if(fnd >= 0) loop{while; do:
+        fnd++;
+      while fnd < #section && .s.cMatch!char?(" "\t, section[fnd]):
+      }
+      ^/char sec = section[fnd..-1];
+      branch{
+      cond .s.equ(name, "action"):
+        {
+          int no;
+          no = .com.atoi(sec);
+          ^&.act.Action act = `getAction(no);
+          if(#act > 0) break;
+          `actionList.new[-1].no = no;
+          act = `actionList[#`actionList-1..-1];
+          act~read(lines, i=);
+        }
+      }
+    }
+    void action(^^/char lines, index i=)
+    {
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      branch{
+      cond .s.equ(secname, "begin"):
+        `load:<-begin(lines, i=, sec);
+      }
+    }
+    public void remap(^/char sec, ^/char name, ^/char data)
+    {
+      void map(|.cmd.Key k=, |.cmd.Key nk=)
+      {
+        branch{
+        cond .s.equ(`data, "x"):
+          k  = .cmd.Key:: x;
+          nk = .cmd.Key::nx;
+        cond .s.equ(`data, "y"):
+          k  = .cmd.Key:: y;
+          nk = .cmd.Key::ny;
+        cond .s.equ(`data, "z"):
+          k  = .cmd.Key:: z;
+          nk = .cmd.Key::nz;
+        cond .s.equ(`data, "a"):
+          k  = .cmd.Key:: a;
+          nk = .cmd.Key::na;
+        cond .s.equ(`data, "b"):
+          k  = .cmd.Key:: b;
+          nk = .cmd.Key::nb;
+        cond .s.equ(`data, "c"):
+          k  = .cmd.Key:: c;
+          nk = .cmd.Key::nc;
+        cond .s.equ(`data, "s"):
+          k  = .cmd.Key:: s;
+          nk = .cmd.Key::ns;
+        }
+      }
+      branch{
+      cond .s.equ(name, "x"):
+        map(.cmd.x=, .cmd.nx=);
+      cond .s.equ(name, "y"):
+        map(.cmd.y=, .cmd.ny=);
+      cond .s.equ(name, "z"):
+        map(.cmd.z=, .cmd.nz=);
+      cond .s.equ(name, "a"):
+        map(.cmd.a=, .cmd.na=);
+      cond .s.equ(name, "b"):
+        map(.cmd.b=, .cmd.nb=);
+      cond .s.equ(name, "c"):
+        map(.cmd.c=, .cmd.nc=);
+      cond .s.equ(name, "s"):
+        map(.cmd.s=, .cmd.ns=);
+      }
+    }
+    public void defaults(
+      ^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "command.time"):
+        `cmd.defaultTime = .s.sToN!`cmd.defaultTime.self?(data);
+      cond .s.equ(name, "command.buffer.time"):
+        `cmd.defaultBufferTime =
+          .s.sToN!`cmd.defaultBufferTime.self?(data);
+      }
+    }
+    public void command(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "name"):
+        `cmd.ctmp~name = data;
+      cond .s.equ(name, "command"):
+        `cmd.ctmp~readCmd(data);
+      cond .s.equ(name, "time"):
+        `cmd.ctmp~time = .s.sToN!`cmd.ctmp<>.time.self?(data);
+      cond .s.equ(name, "buffer.time"):
+        `cmd.ctmp~buffertime =
+          .s.sToN!`cmd.ctmp<>.buffertime.self?(data);
+      }
+    }
+    void commandlist(^^/char lines, index i=)
+    {
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      branch{
+      cond .s.equ(secname, "remap"):
+        `parse!`load:<-remap?(lines, i=, sec);
+      cond .s.equ(secname, "defaults"):
+        `parse!`load:<-defaults?(lines, i=, sec);
+      cond .s.equ(secname, "command"):
+        `cmd.ctmp.new(1);
+        `cmd.ctmp~time = `cmd.defaultTime;
+        `cmd.ctmp~buffertime = `cmd.defaultBufferTime;
+        `parse!`load:<-command?(lines, i=, sec);
+        `cmd.add(`cmd.ctmp<>=);
+      }
+    }
+    `def = def;
+    ^char mainbuf = .file.loadAsciiText(def);
+    ^^/char lines = .com.splitLines(mainbuf);
+    .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
+    `clearDef();
+    loop{index i = 0; while; do:
+      section(lines, i=);
+      i++;
+    while i < #lines:
+    }
+    if(#`displayname == 0) `displayname = `name;
+    `sf.new(1);
+    if(
+      !.com.loadFile(def, `sprite=)<,
+       [bool(^/char f){ret `sf~loadFile(f);}]) ret false;
+    if(
+      !.com.loadFile(def, `anim=)<, [bool(^/char f){
+        ret #(mainbuf = .file.loadAsciiText(f)) > 0;
+      }]) ret false;
+    lines = .com.splitLines(mainbuf);
+    .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
+    `actionList.new(0);
+    loop{index i = 0; while; do:
+      action(lines, i=);
+      i++;
+    while i < #lines:
+    }
+    loop{index i = 0; while; do:
+      `actionList[i].ani.setup(`sf);
+      i++;
+    while i < #`actionList:
+    }
+    `sn.new(1);
+    if(
+      #`sound > 0 && !.com.loadFile(def, `sound=)<,
+      [bool(^/char f){ret `sn~loadFile(f);}]) ret false;
+    if(
+      !.com.loadFile(def, `command=)<, [bool(^/char f){
+        ret #(mainbuf = .file.loadAsciiText(f)) > 0;
+      }]) ret false;
+    lines = .com.splitLines(mainbuf);
+    .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
+    .cmd.resetReadKeymap();
+    `cmd.clear();
+    `cmd.buffer.new(1);
+    loop{index i = 0; while; do:
+      commandlist(lines, i=);
+      i++;
+    while i < #lines:
+    }
+    ret true;
+  }
+  public bool loadPallet(^/char def, int no)
+  {
+    ^uint pal;
+    pal.new(256);
+    `palno = no;
+    bool loaded = false, changed = false;
+    loop{
+      index i = 0, idx, n = no-1;
+      if(n < 0) n = 0;
+      ubyte r, g, b;
+    do:
+      branch{
+      cond (i+n) % 6 < 3:
+        idx = (i+n)%12 + 3;
+      else:
+        idx = (i+n)%12 - 3;
+      }
+      {
+        &.file.File f;
+        if(
+          .com.loadFile(def, `pal[idx]=)<, [bool(^/char fn){
+            f.open(fn, "rb"); ret f.read!ubyte?(r=);
+          }])
+        {
+          loop{
+            index j = 255;
+            continue;
+          do:
+            if(!f.read!ubyte?(r=)) ret false;
+          continue:
+            if(!f.read!ubyte?(g=)) ret false;
+            if(!f.read!ubyte?(b=)) ret false;
+            pal[j] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
+            j--;
+          while j >= 0:
+          }
+          {
+            ^&.sff.Sprite spr = `sf~getSprite(0, 0);
+            if(#spr > 0 && #spr~colorPallet > 0){
+              .s.copy!uint?(spr~colorPallet, pal);
+            }
+            spr = `sf~getSprite(9000, 0);
+            if(#spr > 0 && #spr~colorPallet > 0){
+              .s.copy!uint?(spr~colorPallet, pal);
+            }
+            spr = `sf~getSprite(121, 0);
+            if(#spr > 0 && #spr~colorPallet > 0){
+              .s.copy!uint?(spr~colorPallet, pal);
+            }
+          }
+          loaded = true;
+        }
+      }
+      i++;
+    while i < 12 && !loaded:
+      if(i < 12) loop{
+        index i = 0;
+        `drawpalno = idx+1;
+        while;
+      do:
+        if(i == `playerno || #.chars[i] == 0) continue;
+        if(
+          .s.equ(.chars[i][0]~def, `def)
+          && .chars[i][0]~drawpalno == `drawpalno)
+        {
+          loaded = false;
+          changed = true;
+          break, break, do;
+        }
+      continue:
+        i++;
+      while i < #.chars:
+      }
+    }
+    ret loaded || changed;
+  }
+  public void clearDef()
+  {
+    `name = "";
+    `displayname = "";
+    `author = "";
+    `pal_defaults.new(0);
+    `command = "";
+    `sprite = "";
+    `anim = "";
+    `sound = "";
+    `pal.new(12);
+    `intro = "";
+    `ending = "";
+  }
+  public void setEnemyWinty()
+  {
+    if(`helperindex != 0) ret;
+    branch{
+    cond
+      (`stVal.hb.attr&((int).AtTy::HA|(int).AtTy::HT|(int).AtTy::HP))
+      != 0
+      :
+      .winty[(`playerno+1)&1] = .fgt.WinTy::H;
+    cond
+      (`stVal.hb.attr&((int).AtTy::SA|(int).AtTy::ST|(int).AtTy::SP))
+      != 0
+      :
+      .winty[(`playerno+1)&1] = .fgt.WinTy::S;
+    cond
+      (`stVal.hb.attr&((int).AtTy::NT|(int).AtTy::ST|(int).AtTy::HT))
+      != 0
+      :
+      .winty[(`playerno+1)&1] = .fgt.WinTy::Throw;
+    else:
+      .winty[(`playerno+1)&1] = .fgt.WinTy::N;
+    }
+  }
+  public bool attrCheck(&.Hitdef hit=)
+  {
+    if((hit.hitflag & (int)`stVal.typ) == 0) ret false;
+    if((hit.hitflag & (int).StTy::N) == 0 && `hittmp >= 2) ret false;
+    if((hit.hitflag & (int).MovTy::I) != 0 && `hittmp != 0) ret false;
+    if((hit.hitflag & (int).MovTy::H) != 0 && `hittmp == 0) ret false;
+    if(
+      `stVal.hb.hitt1 != 0 && (
+        (`stVal.hb.hitf1 & hit.attr & 63) == 0
+        || (`stVal.hb.hitf1 & hit.attr & !63) == 0)) ret false;
+    if(
+      `stVal.hb.hitt2 != 0 && (
+        (`stVal.hb.hitf2 & hit.attr & 63) == 0
+        || (`stVal.hb.hitf2 & hit.attr & !63) == 0)) ret false;
+    ret true;
+  }
+  public bool hittable(&.Hitdef hit=, ~$bool(&.Hitdef=) countercheck)
+  {
+    if(
+      .super > 0 && .superunhittable != 0
+      && `sysivar[.iSUPERMOVETIME] != 0) ret false;
+    branch{
+    cond `atktmp >= 0:
+      if(
+        `stVal.hit.attr != 0 && (
+          `stVal.hit.reversal_attr == 0 || hit.reversal_attr == 0))
+      {
+        if(
+          hit.priority <= `stVal.hit.priority && (
+            hit.priority < `stVal.hit.priority
+            || `stVal.hit.bothhittype == .PriTy::Dodge
+            || hit.bothhittype != .PriTy::Hit)
+          && countercheck(:`stVal.hit=:)) ret false;
+      }
+    cond `hittmp != 0:
+      if(hit.chainid >= 0 && `stVal.hb.hitid != hit.chainid) ret false;
+      if(
+        hit.nochainid1 >= 0
+        && `stVal.hb.hitid == hit.nochainid1) ret false;
+      if(
+        hit.nochainid2 >= 0
+        && `stVal.hb.hitid == hit.nochainid2) ret false;
+    }
+    branch{
+    cond hit.reversal_attr != 0:
+      if(`atktmp < 0 || `stVal.hit.reversal_attr != 0) ret false;
+      if(
+        (`stVal.hit.attr & hit.reversal_attr & 63) == 0
+        || (`stVal.hit.attr & hit.reversal_attr & !63) == 0) ret false;
+    else:
+      if(hit.attr == 0) ret false;
+      if(!`attrCheck(hit=)) ret false;
+    }
+    ret true;
+  }
+  public bool hitCheck(`self atk=)
+  {
+    float xscl1 = atk.sysfvar[.fCLSNXSCALE],
+      yscl1 = atk.sysfvar[.fCLSNYSCALE];
+    float xscl2 = `sysfvar[.fCLSNXSCALE],
+      yscl2 = `sysfvar[.fCLSNYSCALE];
+    float xofs1 = atk.sysfvar[.fX] + atk.offsetx,
+      yofs1 = atk.sysfvar[.fY] + atk.offsety;
+    float xofs2 = `sysfvar[.fX] + `offsetx,
+      yofs2 = `sysfvar[.fY] + `offsety;
+    func$void(float=, float=, float, float) lrset1 =
+      (atk.facing > 0 ? .pLrSet : .mLrSet);
+    func$void(float=, float=, float, float) lrset2 =
+      (`facing > 0 ? .pLrSet : .mLrSet);
+    bool hentei(&.act.Rect c1, &.act.Rect c2)
+    {
+      float l1, r1, l2, r2;
+      `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
+      `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
+      branch{
+      cond l1*`xscl1+`xofs1 < l2*`xscl2+`xofs2:
+        if(r1*`xscl1+`xofs1 < l2*`xscl2+`xofs2) break;
+      else:
+        if(l1*`xscl1+`xofs1 > r2*`xscl2+`xofs2) break;
+      comm:
+        branch{
+        cond (float)c1.b*`yscl1+`yofs1 < (float)c2.b*`yscl2+`yofs2:
+          if(
+            (float)(c2.t-1)*`yscl2+`yofs2
+            <= (float)c1.b*`yscl1+`yofs1) ret true;
+        else:
+          if(
+            (float)c2.b*`yscl2+`yofs2
+            >= (float)(c1.t-1)*`yscl1+`yofs1) ret true;
+        }
+      }
+      ret false;
+    }
+    if(#atk.ani == 0 || #atk.curFrame == 0) ret false;
+    if(#`ani == 0 || #`curFrame == 0) ret false;
+    ^&.act.Rect clsn1 = atk.curFrame~clsn1;
+    ^&.act.Rect clsn2 = `curFrame~clsn2;
+    if(atk.stVal.hit.reversal_attr != 0) clsn2 = `curFrame~clsn1;
+    loop{index i = 0; while; do:
+      loop{index j = 0; while; do:
+        if(hentei(clsn1[i], clsn2[j])) ret true;
+        j++;
+      while j < #clsn2:
+      }
+      i++;
+    while i < #clsn1:
+    }
+    ret false;
+  }
+  public bool projHitCheck(&.Projectile pr=)
+  {
+    float xscl1 = pr.scalex, yscl1 = pr.scaley;
+    float xscl2 = `sysfvar[.fCLSNXSCALE],
+      yscl2 = `sysfvar[.fCLSNYSCALE];
+    float xofs1 = pr.x, yofs1 = pr.y;
+    float xofs2 = `sysfvar[.fX] + `offsetx,
+      yofs2 = `sysfvar[.fY] + `offsety;
+    func$void(float=, float=, float, float) lrset1 =
+      (pr.facing > 0 ? .pLrSet : .mLrSet);
+    func$void(float=, float=, float, float) lrset2 =
+      (`facing > 0 ? .pLrSet : .mLrSet);
+    bool hentei(&.act.Rect c1, &.act.Rect c2)
+    {
+      float l1, r1, l2, r2;
+      `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
+      `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
+      branch{
+      cond l1*`xscl1+`xofs1 < l2*`xscl2+`xofs2:
+        if(r1*`xscl1+`xofs1 < l2*`xscl2+`xofs2) break;
+      else:
+        if(l1*`xscl1+`xofs1 > r2*`xscl2+`xofs2) break;
+      comm:
+        branch{
+        cond (float)c1.b*`yscl1+`yofs1 < (float)c2.b*`yscl2+`yofs2:
+          if(
+            (float)(c2.t-1)*`yscl2+`yofs2
+            <= (float)c1.b*`yscl1+`yofs1) ret true;
+        else:
+          if(
+            (float)c2.b*`yscl2+`yofs2
+            >= (float)(c1.t-1)*`yscl1+`yofs1) ret true;
+        }
+      }
+      ret false;
+    }
+    if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
+    if(#`ani == 0 || #`curFrame == 0) ret false;
+    ^&.act.Frame frm;
+    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn1;
+    ^&.act.Rect clsn2 = `curFrame~clsn2;
+    loop{index i = 0; while; do:
+      loop{index j = 0; while; do:
+        if(hentei(clsn1[i], clsn2[j])) ret true;
+        j++;
+      while j < #clsn2:
+      }
+      i++;
+    while i < #clsn1:
+    }
+    ret false;
+  }
+  public bool hitProjCheck(&.Projectile pr=)
+  {
+    float xscl1 = pr.scalex, yscl1 = pr.scaley;
+    float xscl2 = `sysfvar[.fCLSNXSCALE],
+      yscl2 = `sysfvar[.fCLSNYSCALE];
+    float xofs1 = pr.x, yofs1 = pr.y;
+    float xofs2 = `sysfvar[.fX] + `offsetx,
+      yofs2 = `sysfvar[.fY] + `offsety;
+    func$void(float=, float=, float, float) lrset1 =
+      (pr.facing > 0 ? .pLrSet : .mLrSet);
+    func$void(float=, float=, float, float) lrset2 =
+      (`facing > 0 ? .pLrSet : .mLrSet);
+    bool hentei(&.act.Rect c1, &.act.Rect c2)
+    {
+      float l1, r1, l2, r2;
+      `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
+      `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
+      branch{
+      cond l1*`xscl1+`xofs1 < l2*`xscl2+`xofs2:
+        if(r1*`xscl1+`xofs1 < l2*`xscl2+`xofs2) break;
+      else:
+        if(l1*`xscl1+`xofs1 > r2*`xscl2+`xofs2) break;
+      comm:
+        branch{
+        cond (float)c1.b*`yscl1+`yofs1 < (float)c2.b*`yscl2+`yofs2:
+          if(
+            (float)(c2.t-1)*`yscl2+`yofs2
+            <= (float)c1.b*`yscl1+`yofs1) ret true;
+        else:
+          if(
+            (float)c2.b*`yscl2+`yofs2
+            >= (float)(c1.t-1)*`yscl1+`yofs1) ret true;
+        }
+      }
+      ret false;
+    }
+    if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
+    if(#`ani == 0 || #`curFrame == 0) ret false;
+    ^&.act.Frame frm;
+    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn2;
+    if(`stVal.hit.reversal_attr != 0) clsn1 = frm~clsn1;
+    ^&.act.Rect clsn2 = `curFrame~clsn1;
+    loop{index i = 0; while; do:
+      loop{index j = 0; while; do:
+        if(hentei(clsn1[i], clsn2[j])) ret true;
+        j++;
+      while j < #clsn2:
+      }
+      i++;
+    while i < #clsn1:
+    }
+    ret false;
+  }
+  public void tickTimer()
+  {
+    if(!`isPaused()){
+      if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
+      branch{
+      cond `stVal.hb.hitshaketime > 0:
+        `stVal.hb.hitshaketime--;
+      cond `stVal.hb.hittime > 0:
+        `stVal.hb.hittime--;
+        if(`isFall()){
+          `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
+          `stVal.hb.fallcount++;
+        }
+      cond `stVal.hb.fall.recovertime > 0:
+        `stVal.hb.fall.recovertime--;
+      }
+      branch{
+      cond `stVal.mctime > 0:
+        if(`sysivar[.iHITPAUSETIME] <= 0) `stVal.mctime++;
+      cond `stVal.mctime < 0:
+        `stVal.mctime *= -1;
+        `stVal.juggle = 0;
+      }
+      branch{
+      cond `stVal.hb.hitshaketime <= 0 && `stVal.hb.hittime <= 0:
+        if(`sysivar[.iHITPAUSETIME] > 0) `sysivar[.iHITPAUSETIME]--;
+      else:
+        `sysivar[.iHITPAUSETIME] = 0;
+      }
+      if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
+      if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
+      if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
+      loop{index i = 0; while; do:
+        if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
+        i++;
+      while i < #`stVal.ho:
+      }
+    }
+    if(`tmphit >= 0){
+      `sysivar[.iHITCOUNT]++;
+      `stVal.hit.clear();
+    }
+    `tmphit = -1;
+    if(`player){
+      `enemyn.new(0);
+      `minus = -1;
+      `state_4(::);
+    }
+    `minus = 2;
+    `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
+    branch{
+    cond `stVal.mov == .MovTy::H:
+      if(.supertime < 0 && .supertime != .com.IERR){
+        `defencemul *= .superp2defmul;
+      }
+      if(`sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0){
+        `sysivar[.iCOMBO] = 0;
+      }
+    else:
+      `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
+      `stVal.hb.fallcount = 0;
+      `sysivar[.iCOMBO] = 0;
+    }
+  }
+  public void tickAndAnim(
+    float highest=, float lowest=, float leftest=, float rightest=)
+  {
+    if(`id < 0) ret;
+    float x = `sysfvar[.fX]+`offsetx;
+    float y = `sysfvar[.fY]+`offsety;
+    float xs = (float)`facing * `sysfvar[.fXSCALE];
+    float ys = `sysfvar[.fYSCALE];
+    if(.clsndraw && #`curFrame > 0){
+      ^&.act.Frame frm = `curFrame;
+      ^&.act.Rect clsn = frm~clsn1;
+      if(#clsn > 0 && `atktmp >= 0){
+        .drawc1.new[-1].set(clsn, x, y, xs, ys);
+      }
+      clsn = frm~clsn2;
+      if(#clsn > 0) branch{
+      cond `stVal.hb.hitt1 != 0 || `stVal.hb.hitt2 != 0:
+        .drawc2sp.new[-1].set(clsn, x, y, xs, ys);
+      else:
+        .drawc2.new[-1].set(clsn, x, y, xs, ys);
+      }
+      if(`ls(.lsPLAYERPUSH)){
+        clsn.new(1);
+        clsn~l = (short)-`backw + 1;
+        clsn~t = (short)-`getHeight() + 1;
+        clsn~r = (short)`frontw;
+        clsn~b = 0;
+        .drawwh.new[-1].set(
+          clsn, x-`offsetx, y-`offsety, (float)`facing, 1.0);
+      }
+    }
+    if(`ls(.lsSCREENBOUNDX)){
+      float l, r;
+      branch{
+      cond `facing > 0:
+        l = `bedge; r = `fedge;
+      else:
+        l = `fedge; r = `bedge;
+      }
+      leftest = .m.min!float?(`sysfvar[.fX]-l, leftest);
+      rightest = .m.max!float?(`sysfvar[.fX]+r, rightest);
+    }
+    if(`ls(.lsSCREENBOUNDY)){
+      highest = .m.min!float?(`sysfvar[.fY], highest);
+      lowest =
+        .m.min!float?(0.0)<,
+        .m.max!float?(`sysfvar[.fY], lowest);
+    }
+    if(#`ani > 0 && !`ls(.lsINVISIBLE)){
+      int sp = `sprpriority;
+      int br = 256 >> (int)(
+        .super > 0 && .superdarken != 0 && `playerno != .superplayer);
+      if(`ls(.lsANGLEDRAW)){
+        xs *= `sysfvar[.fANGLESCALEX];
+        ys *= `sysfvar[.fANGLESCALEY];
+      }
+      float an =
+        `ls(.lsANGLEDRAW) ? (
+          `sysfvar[.fANGLE] == 0.0 ? 360.0 : `sysfvar[.fANGLE])
+        : 0.0;
+      .addAnimList(
+        .anims=, `ani, sp, x, y, .scale, xs, ys, an,
+        `ls(.lsTRANS) ? `sysivar[.iALPHAS] : -1,
+        `sysivar[.iALPHAD], br, `getPalfx(),
+        `ls(.lsNOSHADOW) ? 0 : -1, (float)`sysivar[.iSHADOWOFFSET]);
+      `aimg.recAndAddAL(
+        `ani<>=, sp, x, y, xs, ys, an,
+        .com.tickFrame() && `acttmp > 0, br);
+    }
+    if(.com.tickFrame()) `tickTimer();
+  }
+  public bool isSuperPaused()
+  {
+    ret
+      .super > 0 && `sysivar[.iSUPERMOVETIME] == 0
+      && `sysivar[.iMOVETIMESUPER] <= 0;
+  }
+  public bool isNormalPaused()
+  {
+    ret
+      .super <= 0 && .pause > 0 && `sysivar[.iPAUSEMOVETIME] == 0
+      && `sysivar[.iMOVETIMEPAUSE] <= 0;
+  }
+  public bool isPaused()
+  {
+    ret `acttmp <= -2;
+  }
+  public bool isHitPaused()
+  {
+    ret `sysivar[.iHITPAUSETIME] > 0;
+  }
+  public bool isActive()
+  {
+    ret !`isPaused() && !`isHitPaused();
+  }
+  public bool isFreezeX()
+  {
+    ret
+      `ls(.lsPOSFREEZEX)
+      || (`sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTIME] != .com.IERR)
+      || (
+        `stVal.hb.hittime > 0 && (
+          `stVal.hb.mindistx != .com.FERR
+          || `stVal.hb.maxdistx != .com.FERR));
+  }
+  public bool isFall()
+  {
+    ret `stVal.hb.fallf != 0 && `stVal.hb.hittime <= 0;
+  }
+  public float getHeight()
+  {
+    ret
+      (float)`sysivar[.iHEIGHT]
+      * (`stVal.typ == .StTy::C || `stVal.typ == .StTy::L ? 0.5 : 1.0);
+  }
+  void lSetNormal()
+  {
+    if(
+      .intro > .fight~ro.ctrl_time
+      || .intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime)
+      || `sysivar[.iLIFE] <= 0)
+    {
+      `sysivar[.iCTRL] = 0;
+    }
+    `sysivar[.iSPECIALFLAG] &= .lsNoMoveMask;
+    `sysivar[.iSPECIALFLAG] |=
+      `player && (
+        `sysivar[.iLIFE] > 0 || `sysivar[.iRECOVERTIME] > 0)
+      ? .lsSCREENBOUNDX | .lsSCREENBOUNDY | (
+        .intro <= .fight~ro.ctrl_time && (
+          `stVal.phy != .StTy::N
+          || (
+            `stVal.mov == .MovTy::A && #`curFrame > 0 && (
+              #`curFrame~clsn1 > 0 || #`curFrame~clsn2 > 0))
+          || `stVal.hb.hittime > 0
+          || (
+            `stVal.playerno == `playerno
+            && (`stVal.typ == .StTy::L || `stVal.hb.fallf != 0)))
+        ? .lsPLAYERPUSH : 0) : 0;
+    `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
+    `attackdist = (float)`sysivar[.iATTACK_DIST];
+    `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
+    `offsety = (float)`sysivar[.iDRAW_OFFSETY];
+    if(.super <= 0){
+      `sysivar[.iMOVETIMESUPER] = 0;
+      if(.pause <= 0) `sysivar[.iMOVETIMEPAUSE] = 0;
+    }
+  }
+  public float defFW()
+  {
+    ret
+      (float)(
+        `stVal.typ == .StTy::A
+        ? `sysivar[.iAIR_FRONT] : `sysivar[.iGROUND_FRONT]);
+  }
+  public float defBW()
+  {
+    ret
+      (float)(
+        `stVal.typ == .StTy::A
+        ? `sysivar[.iAIR_BACK] : `sysivar[.iGROUND_BACK]);
+  }
+  public void action()
+  {
+    if(`helperindex == 0){
+      `cmd.step(`key, `facing, `key < 0);
+    }
+    {
+      `enemyn.new(0);
+      {
+        bool p = `isSuperPaused() || `isNormalPaused();
+        if(
+          `acttmp > 0
+          && `stVal.playerno == `playerno && #`ani > 0)
+        {
+          `ani~ani.action();
+        }
+        `acttmp = -(int)p * 2;
+        `changeState2();
+        `minus = 1;
+        if(!p){
+          `lSetNormal();
+          if(#`palfx > 0) `palfx~step();
+          if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
+          if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
+          if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
+          if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
+        }
+        if(`stVal.playerno == `playerno && `player){
+          `state_3(::);
+        }
+        if(p) ret;
+        if(`player && .super <= 0 && .pause <= 0){
+          `state_2(::);
+        }
+        if(`keyctrl && `stVal.playerno == `playerno){
+          `state_1(::);
+        }
+        `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
+      }
+      `minus = 0;
+      `state(::);
+    break:
+      `minus = 2;
+      `acttmp += (int)`isActive() - (int)`isHitPaused();
+      branch{
+      cond #`ani > 0:
+        `curFrame = `ani~ani.currentFrame();
+        branch{
+        cond `acttmp > 0 && `stVal.playerno != `playerno:
+          `ani~ani.action();
+        else:
+          `ani~ani.updateSprite();
+        }
+      else:
+        `curFrame.new(0);
+      }
+      if(!`ls(.lsFRONTWCHANGE)) `frontw = `defFW();
+      if(!`ls(.lsBACKWCHANGE)) `backw = `defBW();
+      if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
+      if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
+    }
+  }
+  public float move(float tension)
+  {
+    if(`helperindex > 0 && `destmp != 0){
+      `destroySelf();
+      ret 0.0;
+    }
+    if(`acttmp <= 0) ret 0.0;
+    if(
+      .m.inRange!int?(120, 159, `stVal.no)
+      || (
+        `keyctrl && `ctrl()
+        && (
+          (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+          || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+          || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
+        && `trCommand("holdback")$.v.isTrue()))
+    {
+      `sysivar[.iSPECIALFLAG] |= .lsGUARD;
+    }
+    float sp = .m.min!float?(1.0, .speed);
+    if(!`ls(.lsPOSFREEZEX)){
+      `sysfvar[.fX] +=
+        (`sysfvar[.fVX]*(float)`facing + `veloff) * sp;
+      if(.com.tickFrame()){
+        `veloff *=
+          `sysfvar[.fSTAND_FRICTION] * `sysfvar[.fSTAND_FRICTION];
+        if(#`veloff < 1.0) `veloff = 0.0;
+      }
+    }
+    if(.com.tickFrame()) switch(`stVal.phy){
+    case .StTy::S:
+      if(!`ls(.lsPOSFREEZEX)){
+        `sysfvar[.fVX] *= `sysfvar[.fSTAND_FRICTION];
+      }
+    case .StTy::C:
+      if(!`ls(.lsPOSFREEZEX)){
+        `sysfvar[.fVX] *= `sysfvar[.fCROUCH_FRICTION];
+      }
+    default:<-
+      if(!`ls(.lsPOSFREEZEY)){
+        `sysfvar[.fVY] +=
+          (
+            `stVal.mov == .MovTy::H
+            ? `stVal.hb.yaccel : `sysfvar[.fYACCEL])
+          * (float)(
+            (int)(`stVal.phy == .StTy::A) + (int)`ls(.lsGRAVITY));
+      }
+    }
+    if(!`ls(.lsPOSFREEZEY)){
+      `sysfvar[.fY] += `sysfvar[.fVY] * sp;
+    }
+    float cvx = 0.0;
+    if(`ls(.lsSCREENBOUNDX)){
+      if(tension > 0.0) branch{
+      cond
+        `sysfvar[.fX] < .xmin - .screenleft + tension
+        || `sysfvar[.fX] > .xmax + .screenright - tension
+        :
+        cvx += `sysfvar[.fVX] * (float)`facing * sp;
+      }
+      float l, r;
+      branch{
+      cond `facing > 0:
+        l = `bedge; r = `fedge;
+      else:
+        l = `fedge; r = `bedge;
+      }
+      .m.limRange!float?(`sysfvar[.fX]=, .xmin+l, .xmax-r);
+    }
+    ret cvx;
+  }
+  public void bind()
+  {
+    if(`sysivar[.iBINDTIME] == 0) ret;
+    ^`self c = .players.get(`sysivar[.iBINDTOID]);
+    if(#c == 0) ret;
+    if(`sysfvar[.fBINDPOSX] != .com.FERR){
+      `sysfvar[.fX] =
+        c~sysfvar[.fX] + (float)c~facing*`sysfvar[.fBINDPOSX];
+      `enemyn.new(0);
+    }
+    if(`sysfvar[.fBINDPOSY] != .com.FERR){
+      `sysfvar[.fY] = c~sysfvar[.fY] + `sysfvar[.fBINDPOSY];
+    }
+    branch{
+    cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
+    cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
+    }
+  }
+  public void update(float x)
+  {
+    if(.com.tickFrame()){
+      `clearRdCache();
+      `atktmp =
+        `stVal.mov != .MovTy::I && `sysivar[.iHITPAUSETIME] <= 0
+        ? `stVal.no : -1;
+      `hittmp =
+        (int)(`stVal.mov == .MovTy::H) << (int)(
+          `stVal.typ == .StTy::A && `stVal.hb.fallf != 0);
+      if(`stVal.mov != .MovTy::H){
+        `stVal.hb.hittime = 0;
+        `stVal.hb.fallf = 0;
+        `stVal.hb.juggle = 0;
+        `stVal.hb.hitcount = 0;
+      }
+      if(
+        `stVal.playerno == `playerno && (
+          `stVal.mov != .MovTy::H
+          || (`sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0)))
+      {
+        `outTarget();
+      }
+    }
+    if(`sysivar[.iBINDTIME] == .com.IERR) `sysivar[.iBINDTIME] = 0;
+    `bind();
+    ^`self c;
+    if(
+      `stVal.hb.hittime > 0
+      && #(c = .players.get(`stVal.hb.byid)) > 0)
+    {
+      if(`stVal.hb.p1getp2facing != 0){
+        c~setFacing(`facing*`stVal.hb.p1getp2facing);
+      }
+      if(`stVal.hb.mindistx != .com.FERR) branch{
+      cond c~facing < 0:
+        `sysfvar[.fX] =
+          .m.min!float?(`sysfvar[.fX])<,
+          (c~sysfvar[.fX] - `stVal.hb.mindistx);
+      else:
+        `sysfvar[.fX] =
+          .m.max!float?(`sysfvar[.fX])<,
+          (c~sysfvar[.fX] + `stVal.hb.mindistx);
+      comm:
+        `stVal.hb.mindistx = .com.FERR;
+      }
+      if(`stVal.hb.maxdistx != .com.FERR) branch{
+      cond c~facing < 0:
+        `sysfvar[.fX] =
+          .m.max!float?(`sysfvar[.fX])<,
+          (c~sysfvar[.fX] - `stVal.hb.maxdistx);
+      else:
+        `sysfvar[.fX] =
+          .m.min!float?(`sysfvar[.fX])<,
+          (c~sysfvar[.fX] + `stVal.hb.maxdistx);
+      comm:
+        `stVal.hb.maxdistx = .com.FERR;
+      }
+      if(
+        `stVal.playerno != `playerno
+        || `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A)
+      {
+        if(`stVal.hb.mindisty != .com.FERR){
+          `sysfvar[.fY] =
+            .m.max!float?(`sysfvar[.fY])<,
+            (c~sysfvar[.fY] + `stVal.hb.mindisty);
+          `stVal.hb.mindisty = .com.FERR;
+        }
+        if(`stVal.hb.maxdisty != .com.FERR){
+          `sysfvar[.fY] =
+            .m.min!float?(`sysfvar[.fY])<,
+            (c~sysfvar[.fY] + `stVal.hb.maxdisty);
+          `stVal.hb.maxdisty = .com.FERR;
+        }
+      }
+    }
+  }
+  public void posReset(float p1x, float p2x)
+  {
+    `facing = (`playerno&1) == 0 ? 1 : -1;
+    `sysfvar[.fX] =
+      ((`playerno&1) == 0 ? p1x : p2x)
+      + (float)(`playerno*-`facing / 2) * .com.P1P3Dist;
+    `sysfvar[.fY] = 0.0;
+    `sysfvar[.fVX] = 0.0;
+    `setYV(0.0);
+  }
+  void nikou<if_t, ff_t>(&.Var rtn=, &.Var v1, &.Var v2)
+  {
+    if(v1.typ == .VarTy::SFalse || v2.typ == .VarTy::SFalse){
+      rtn.setSF();
+      ret;
+    }
+    branch{
+    cond v1.typ == v2.typ:
+      branch{
+      cond v1.typ == .VarTy::Int:
+        if_t(rtn=, v1.i, v2.i);
+      else:
+        ff_t(rtn=, v1.f, v2.f);
+      }
+    else:
+      branch{
+      cond v1.typ == .VarTy::Int:
+        ff_t(rtn=, (float)v1.i, v2.f);
+      else:
+        ff_t(rtn=, v1.f, (float)v2.i);
+      }
+    }
+  }
+  public void setLife(int l)
+  {
+    if(.roundEnd()) ret;
+    `sysivar[.iLIFE] =
+      .m.max!int?(0)<, .m.min!int?(`sysivar[.iLIFEMAX])<, l;
+  }
+  public int getDamage(int damage, bool kill, bool absolute, float atkmul)
+  {
+    int d = damage;
+    if(!absolute){
+      d = (int).m.ceil((float)d*atkmul / `defencemul);
+    }
+    if(`player){
+      .m.limRange!int?(
+        d=, `sysivar[.iLIFE]-`sysivar[.iLIFEMAX],
+        .m.max!int?(0, `sysivar[.iLIFE]-(int)!kill));
+    }
+    ret d;
+  }
+  public bool addLife(int l, bool kill, bool absolute)
+  {
+    if(!.m.inRange!int?(-.fight~ro.over_hittime, 0, .intro)) ret false;
+    bool foo = `sysivar[.iLIFE] != 0;
+    `sysivar[.iLIFE] +=
+      (int).m.floor((float)l / (absolute ? 1.0 : `defencemul));
+    if(`player){
+      .m.limRange!int?(
+        `sysivar[.iLIFE]=, kill || !foo ? 0 : 1, `sysivar[.iLIFEMAX]);
+    }
+    if(`helperindex == 0 && `sysivar[.iLIFE] == 0){
+      `stVal.hb.fallf = 1;
+      `stVal.hb.fall.recover = 0;
+      if(!foo) break;
+      branch{
+      cond `stVal.mov == .MovTy::H || `stVal.playerno != `playerno:
+        `setEnemyWinty();
+      else:
+        if(`helperindex == 0){
+          .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
+        }
+      }
+      ret true;
+    }
+    ret false;
+  }
+  public void setPower(int p)
+  {
+    `sysivar[.iPOWER] =
+      .m.max!int?(0)<, .m.min!int?(`sysivar[.iPOWERMAX])<, p;
+  }
+  public int getSharePower()
+  {
+    ret .chars[`playerno & (.com.powershare?1:-1)][0]~sysivar[.iPOWER];
+  }
+  public void addPower(int p)
+  {
+    .chars[`playerno & (.com.powershare?1:-1)][0]~setPower(
+      `getSharePower() + p);
+  }
+  public void setFacing(int f)
+  {
+    if(f == 0) ret;
+    if((`facing < 0) != (f < 0)){
+      `facing *= -1;
+      `sysfvar[.fVX] *= -1.0;
+      `stVal.hb.xvel *= -1.0;
+      if(`stVal.hb.fall.xvelocity != .com.FERR){
+        `stVal.hb.fall.xvelocity *= -1.0;
+      }
+    }
+  }
+  void setFEdge(float f)
+  {
+    if(f != .com.FERR) `fedge = f;
+  }
+  void setBEdge(float b)
+  {
+    if(b != .com.FERR) `bedge = b;
+  }
+  void setHitdefDefault(&.Hitdef h=, bool proj)
+  {
+    if(!proj && h.guard_dist < 0) h.guard_dist = `sysivar[.iATTACK_DIST];
+    if(h.guard_pausetime < 0) h.guard_pausetime = h.pausetime;
+    if(h.guard_shaketime < 0) h.guard_shaketime = h.shaketime;
+    if(
+      h.hitonce < 0
+      || (h.attr&((int).AtTy::NT|(int).AtTy::ST|(int).AtTy::HT)) != 0)
+    {
+      h.hitonce = 1;
+    }
+    if(h.guard_hittime < 0) h.guard_hittime = h.ground_hittime;
+    if(h.guard_slidetime < 0) h.guard_slidetime = h.guard_hittime;
+    if(h.guard_ctrltime < 0) h.guard_ctrltime = h.guard_slidetime;
+    if(h.ground_velocityx == .com.FERR) h.ground_velocityx = 0.0;
+    if(h.ground_velocityy == .com.FERR) h.ground_velocityy = 0.0;
+    if(h.air_velocityx == .com.FERR) h.air_velocityx = 0.0;
+    if(h.air_velocityy == .com.FERR) h.air_velocityy = 0.0;
+    if(h.guard_velocity == .com.FERR) h.guard_velocity = h.ground_velocityx;
+    if(h.airguard_ctrltime < 0) h.airguard_ctrltime = h.guard_ctrltime;
+    if(h.airguard_velocityx == .com.FERR){
+      h.airguard_velocityx = h.air_velocityx*1.5;
+    }
+    if(h.airguard_velocityy == .com.FERR){
+      h.airguard_velocityy = h.air_velocityy*0.5;
+    }
+    if(h.down_velocityx == .com.FERR) h.down_velocityx = h.air_velocityx;
+    if(h.down_velocityy == .com.FERR) h.down_velocityy = h.air_velocityy;
+    if(h.air_fall == .com.IERR) h.air_fall = h.ground_fall;
+    if(h.air_animtype == .AnimTy::Unknown) h.air_animtype = h.animtype;
+    if(h.air_type == .ReactTy::Unknown) h.air_type = h.ground_type;
+    if(h.forcestand == .com.IERR){
+      h.forcestand = (int)(h.ground_velocityy != 0.0);
+    }
+    if(h.ground_cornerpush_veloff == .com.FERR){
+      h.ground_cornerpush_veloff =
+        (h.attr&((int).AtTy::NA|(int).AtTy::SA|(int).AtTy::HA)) != 0
+        || !`player ? 0.0 : h.guard_velocity*1.3;
+    }
+    if(h.air_cornerpush_veloff == .com.FERR){
+      h.air_cornerpush_veloff = h.ground_cornerpush_veloff;
+    }
+    if(h.down_cornerpush_veloff == .com.FERR){
+      h.down_cornerpush_veloff = h.ground_cornerpush_veloff;
+    }
+    if(h.guard_cornerpush_veloff == .com.FERR){
+      h.guard_cornerpush_veloff = h.ground_cornerpush_veloff;
+    }
+    if(h.airguard_cornerpush_veloff == .com.FERR){
+      h.airguard_cornerpush_veloff = h.ground_cornerpush_veloff;
+    }
+    if(h.hitgetpower == .com.IERR){
+      h.hitgetpower = (int)(.cfg.Attack_LifeToPowerMul*(float)(h.hitdamage));
+    }
+    if(h.guardgetpower == .com.IERR){
+      h.guardgetpower =
+        (int)(.cfg.Attack_LifeToPowerMul*(float)(h.hitdamage)*0.5);
+    }
+    if(h.hitgivepower == .com.IERR){
+      h.hitgivepower = (int)(.cfg.GetHit_LifeToPowerMul*(float)(h.hitdamage));
+    }
+    if(h.guardgivepower == .com.IERR){
+      h.guardgivepower =
+        (int)(.cfg.GetHit_LifeToPowerMul*(float)(h.hitdamage)*0.5);
+    }
+    if(h.hitdamage == .com.IERR) h.hitdamage = 0;
+    if(h.guarddamage == .com.IERR) h.guarddamage = 0;
+    if(h.p1facing == .com.IERR) h.p1facing = 0;
+    if(h.p2facing == .com.IERR) h.p2facing = 0;
+    if(h.p1getp2facing == .com.IERR) h.p1getp2facing = 0;
+    if(h.fall.yvelocity == .com.FERR) h.fall.yvelocity = -4.5;
+    if(h.fall.recovertime == .com.IERR) h.fall.recovertime = 4;
+    if(h.fall.damage == .com.IERR) h.fall.damage = 0;
+  }
+  void playSound(
+    bool f, bool lw, bool lp, int g, int s, int ch,
+    int vo, float p, float fr, ^float x)
+  {
+    if(g < 0) ret;
+    ^&.snd.Sound sou = .newChannel(`playerno, ch, lw);
+    if(#sou == 0) ret;
+    branch{
+    cond f:
+      if(#.fight~fsn == 0) break;
+      sou~sound = .fight~fsn~getSound(g, s);
+    else:
+      if(#`sn == 0) break;
+      sou~sound = `sn~getSound(g, s);
+    }
+    sou~chrx = x;
+    sou~setVol(vo);
+    sou~loop_ = lp;
+    sou~lowpriority = lw;
+    sou~setPan(p * (float)`facing);
+    sou~freqmul = fr;
+    sou~fidx = 0.0;
+  }
+  public bool ctrl()
+  {
+    ret `sysivar[.iCTRL] != 0;
+  }
+  public void destroySelf()
+  {
+    if(`id == .com.IERR || `helperindex <= 0) ret;
+    if(`parentindex >= 0) loop{index i = 0; while; do:
+      if(
+        .chars[`playerno][`parentindex]~children[i]
+        == `helperindex)
+      {
+        .chars[`playerno][`parentindex]~children[i] = -1;
+        break, break;
+      }
+      i++;
+    while i < #.chars[`playerno][`parentindex]~children:
+    }
+    loop{index i = 0; while; do:
+      if(`children[i] >= 0){
+        .chars[`playerno][`children[i]]~parentindex = -1;
+      }
+      i++;
+    while i < #`children:
+    }
+    .players.destroy(`id);
+    `id = .com.IERR;
+  }
+  public void setX(float x)
+  {
+    `sysfvar[.fX] = x;
+  }
+  public void setY(float y)
+  {
+    `sysfvar[.fY] = y;
+  }
+  public void setYV(float yv)
+  {
+    `sysfvar[.fVY] = yv;
+    `sysivar[.iSPECIALFLAG] &= !.lsGRAVITY;
+  }
+  public void setPos<_t>(_t o=, int pt, float x, float y, int facing)
+  {
+    branch{
+    cond facing < 0:
+      o.facing = -1;
+    else:
+      o.facing = 1;
+    }
+    switch(pt){
+    case 0://p1
+      if(x != .com.FERR) o.setX(`sysfvar[.fX] + (float)`facing*x);
+      if(y != .com.FERR) o.setY(`sysfvar[.fY] + y);
+      o.facing *= `facing;
+    case 1://p2
+      {
+        ^`self c = .players.enemyNear(`=, 0);
+        if(#c == 0) break;
+        if(x != .com.FERR) o.setX(c~sysfvar[.fX] + (float)c~facing*x);
+        if(y != .com.FERR) o.setY(c~sysfvar[.fY] + y);
+        o.facing *= c~facing;
+      }
+    case 2, 3://front, back
+      if(x != .com.FERR) branch{
+      cond (`facing > 0 && pt == 2) || (`facing < 0 && pt == 3):
+        o.setX(.screenx + (320.0 - x)/.scale);
+      else:
+        o.setX(.screenx + x/.scale);
+      }
+      if(y != .com.FERR) o.setY(.screeny + y/.scale);
+      o.facing *= `facing;
+    case 4://left
+      if(x != .com.FERR) o.setX(.screenx + x/.scale);
+      if(y != .com.FERR) o.setY(.screeny + y/.scale);
+    case 5://right
+      if(x != .com.FERR) o.setX(.screenx + (320.0 + x)/.scale);
+      if(y != .com.FERR) o.setY(.screeny + y/.scale);
+    }
+  }
+  public void setAlpha(int trans, int salpha=, int dalpha=)
+  {
+    switch(trans){
+    case 0://default
+      salpha = .com.IERR;
+      dalpha = .com.IERR;
+    case 1://none
+      salpha = 255;
+      dalpha = 0;
+    case 2://add
+      salpha = 255;
+      dalpha = 255;
+    case 3://addalpha
+      if(salpha != .com.IERR){
+        salpha = .m.max!int?(0)<, .m.min!int?(255)<, salpha;
+      }
+      if(dalpha != .com.IERR){
+        dalpha = .m.max!int?(0)<, .m.min!int?(255)<, dalpha;
+      }
+      if(salpha == 1 && dalpha == 255) salpha = 0;
+    case 4://add1
+      salpha = 255;
+      dalpha = 128;
+    case 5://sub
+      salpha = 1;
+      dalpha = 255;
+    }
+  }
+  public void setBindToId(`self to=)
+  {
+    `sysivar[.iBINDTOID] = to.id;
+    if(
+      to.sysivar[.iBINDTOID] == `id && to.sysivar[.iBINDTIME] != .com.IERR)
+    {
+      to.sysivar[.iBINDTIME] = 0;
+    }
+  }
+  public void trPlayerID()
+  {
+    .c = .players.get(.v.toInt());
+  }
+  public void trEnemy()
+  {
+    .c = .players.enemy(`playerno, .v.toInt());
+  }
+  public void trEnemyNear()
+  {
+    .c = .players.enemyNear(`=, .v.toInt());
+  }
+  public void trRoot()
+  {
+    .c = .chars[`playerno][0];
+  }
+  public void trParent()
+  {
+    if(`parentindex < 0){
+      .c = .consts.null!`self?();
+      `trDestroySelf();
+      ret;
+    }
+    .c = .chars[`playerno][`parentindex];
+  }
+  public void trPartner()
+  {
+    .c =
+      #.chars[`playerno+2 & 3] > 0
+      ? .chars[`playerno+2 & 3][0] : .consts.null!`self?();
+  }
+  public void trHelper()
+  {
+    int id = .v.toInt();
+    if(id != .com.IERR) loop{index i = 1; while; do:
+      if(
+        .chars[`playerno][i]~id != .com.IERR
+        && (id <= 0 || id == .chars[`playerno][i]~helperid))
+      {
+        .c = .chars[`playerno][i];
+        ret;
+      }
+      i++;
+    while i < #.chars[`playerno]:
+    }
+    .c = .consts.null!`self?();
+  }
+  public void trTarget()
+  {
+    int id = .v.toInt();
+    loop{index i = 0; while; do:
+      .c = .players.get(`targets[i]);
+      if(#.c > 0 && (id < 0 || .c~stVal.hb.hitid == id)) ret;
+      i++;
+    while i < #`targets:
+    }
+    .c = .consts.null!`self?();
+  }
+  public void trRange(
+    &.Var v, bool not, bool minequ, &.Var min, &.Var max, bool maxequ)
+  {
+    bool b1 = (minequ ? `trGrE(v, min) : `trGr(v, min))$.v.isTrue();
+    bool b2 = (maxequ ? `trLsE(v, max) : `trLs(v, max))$.v.isTrue();
+    .v.setB((b1&b2) ^ not);
+  }
+  public void trEqu(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setB(i1 == i2);}
+    void f(&.Var r=, float f1, float f2){r.setB(f1 == f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trNEqu(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setB(i1 != i2);}
+    void f(&.Var r=, float f1, float f2){r.setB(f1 != f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trGr(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setB(i1 > i2);}
+    void f(&.Var r=, float f1, float f2){r.setB(f1 > f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trGrE(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setB(i1 >= i2);}
+    void f(&.Var r=, float f1, float f2){r.setB(f1 >= f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trLs(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setB(i1 < i2);}
+    void f(&.Var r=, float f1, float f2){r.setB(f1 < f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trLsE(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setB(i1 <= i2);}
+    void f(&.Var r=, float f1, float f2){r.setB(f1 <= f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trAnd(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setI(r.i = i1 & i2);}
+    void f(&.Var r=, float f1, float f2){r.setI((int)f1 & (int)f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trXor(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setI(i1 ^ i2);}
+    void f(&.Var r=, float f1, float f2){r.setI((int)f1 ^ (int)f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trOr(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setI(i1 | i2);}
+    void f(&.Var r=, float f1, float f2){r.setI((int)f1 | (int)f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trNot()
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    .v.setI(!.v.toInt());
+  }
+  public void trBoolAnd(&.Var v1, &.Var v2)
+  {
+    if(v1.typ == .VarTy::SFalse || (v1.isTrue() && v2.typ == .VarTy::SFalse)){
+      .v.setSF();
+      ret;
+    }
+    .v.setB(v1.isTrue() && v2.isTrue());
+  }
+  public void trBoolOr(&.Var v1, &.Var v2)
+  {
+    if(v1.typ == .VarTy::SFalse || (!v1.isTrue() && v2.typ == .VarTy::SFalse)){
+      .v.setSF();
+      ret;
+    }
+    .v.setB(v1.isTrue() || v2.isTrue());
+  }
+  public void trIfelse(&.Var b, &.Var v1, &.Var v2)
+  {
+    if(b.typ == .VarTy::SFalse){
+      .v.setSF();
+      ret;
+    }
+    .v = b.isTrue() ? v1 : v2;
+  }
+  public void trBoolNot()
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    .v.setB(!.v.isTrue());
+  }
+  public void trMinus()
+  {
+    .v.i *= -1;
+    .v.f *= -1.0;
+  }
+  public void trAbs()
+  {
+    .v.i = #.v.i;
+    .v.f = #.v.f;
+  }
+  public void trFloor()
+  {
+    if(.v.typ != .VarTy::Float) ret;
+    .v.setI((int).m.floor(.v.f));
+  }
+  public void trCeil()
+  {
+    if(.v.typ != .VarTy::Float) ret;
+    .v.setI((int).m.ceil(.v.f));
+  }
+  public void trSin()
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    .v.setF(.m.sin(.v.toFloat()));
+  }
+  public void trCos()
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    .v.setF(.m.cos(.v.toFloat()));
+  }
+  public void trTan()
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    .v.setF(.m.tan(.v.toFloat()));
+  }
+  public void trAsin()
+  {
+    double x = .v.toFloat();
+    if(!.m.inRange!double?(-1.0, 1.0, x)){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(.m.asin(x));
+  }
+  public void trAcos()
+  {
+    double x = .v.toFloat();
+    if(!.m.inRange!double?(-1.0, 1.0, x)){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(.m.acos(x));
+  }
+  public void trAtan()
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    .v.setF(.m.atan(.v.toFloat()));
+  }
+  public void trLog(&.Var v1, &.Var v2)
+  {
+    double x = v1.toFloat(), y = v2.toFloat();
+    if(x < 0.0 || y < 0.0){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(.m.log(x, y));
+  }
+  public void trLn()
+  {
+    double x = .v.toFloat();
+    if(x < 0.0){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(.m.ln(x));
+  }
+  public void trExp()
+  {
+    double x = .v.toFloat();
+    if(x < 0.0){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(.m.exp(x));
+  }
+  public void trMul(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setI(i1 * i2);}
+    void f(&.Var r=, float f1, float f2){r.setF(f1 * f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trDiv(&.Var v1, &.Var v2)
+  {:<-
+    public void i(&.Var r=, int   i1, int   i2)
+    {
+      branch{
+      cond i2 == 0:
+        r.setSF();
+      else:
+        r.setI(i1 / i2);
+      }
+    }
+    void f(&.Var r=, float f1, float f2){r.setF(f1 / f2);}
+    `nikou!i, f?(.v=, v1, v2);
+    if(!.m.isfinite(.v.toFloat())) .v.setSF();
+  }
+  public void trMod(&.Var v1, &.Var v2)
+  {:<-
+    public void i(&.Var r=, int   i1, int   i2)
+    {
+      branch{
+      cond i2 == 0:
+        r.setSF();
+      else:
+        r.setI(i1 % i2);
+      }
+    }
+    void f(&.Var r=, float f1, float f2){
+      `trMod:<-i(r=, (int)f1, (int)f2);
+    }
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trAdd(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setI(i1 + i2);}
+    void f(&.Var r=, float f1, float f2){r.setF(f1 + f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trSub(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int   i1, int   i2){r.setI(i1 - i2);}
+    void f(&.Var r=, float f1, float f2){r.setF(f1 - f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public void trPow(&.Var v1, &.Var v2)
+  {:<-
+    void i(&.Var r=, int i1, int i2)
+    {
+      r.setI((int)((double)i1**(double)i2));
+    }
+    void f(&.Var r=, float f1, float f2){r.setF(f1**f2);}
+    `nikou!i, f?(.v=, v1, v2);
+  }
+  public int trId()
+  {
+    ret `id < 0 ? !`id : `id;
+  }
+  public void trVelX()
+  {
+    .v.setF(
+      `stVal.typ == .StTy::S && #`sysfvar[.fVX] < 1.0
+      ? 0.0 : `sysfvar[.fVX]);
+  }
+  public void trVelSetY()
+  {
+    float f = .v.toFloat();
+    if(f == .com.FERR) ret;
+    `setYV(f);
+  }
+  public void trAnim()
+  {
+    .v.setI(`animno);
+  }
+  public void trAnimTime()
+  {
+    branch{
+    cond
+      `animpno < 0 || #`ani == 0 || #`ani~ani.frames == 0
+      :
+      .v.setI(0);
+    else:
+      .v.setI(`ani~ani.animTime());
+    }
+  }
+  public void trAnimElem()
+  {
+    int n = .v.toInt();
+    if(#`ani == 0 || n > #`ani~ani.frames){
+      .v.setSF();
+      ret;
+    }
+    `trAnimElemTime();
+  }
+  public void trAnimElemTime()
+  {
+    int t = .v.toInt();
+    if(t < 1 || #`ani == 0){
+      .v.setSF();
+      ret;
+    }
+    if(t > #`ani~ani.frames){
+      `trAnimTime();
+      if(.v.toInt() > 0) .v.setI(0);
+      ret;
+    }
+    t--;
+    .v.typ = .VarTy::Int;
+    if(
+      `ani~ani.loopend && `ani~ani.time == 0
+      && `ani~ani.current == `ani~ani.loopstart)
+    {
+      .v.i = 0;
+      loop{index i = t; while; do:
+        .v.i += `ani~ani.frames[i].time;
+        i++;
+      while i < #`ani~ani.frames && `ani~ani.frames[i].time >= 0:
+      }
+      ret;
+    }
+    .v.i = `ani~ani.time;
+    loop{index i = t; while; do:
+      .v.i += `ani~ani.frames[i].time;
+      i++;
+    while i < `ani~ani.current && `ani~ani.frames[i].time >= 0:
+    }
+    loop{index i = `ani~ani.current; while; do:
+      .v.i -= `ani~ani.frames[i].time;
+      i++;
+    while i < t && `ani~ani.frames[i].time >= 0:
+    }
+  }
+  public void trAnimElemNo()
+  {
+    int tim = .v.toInt();
+    if(
+      tim == .com.IERR || #`ani == 0 || #`ani~ani.frames == 0)
+    {
+      .v.setSF();
+      ret;
+    }
+    if(
+      tim == 0 && `ani~ani.loopend && `ani~ani.time == 0
+      && `ani~ani.current == `ani~ani.loopstart)
+    {
+      .v.setI(#`ani~ani.frames);
+      ret;
+    }
+    branch{
+    cond tim < 0:
+      loop{
+        index i = `ani~ani.current;
+        tim += `ani~ani.time;
+        bool lp = false;
+        continue;
+      do:
+        tim += `ani~ani.frames[i].time;
+      continue:
+        if(lp && `ani~ani.frames[i].time < 0){
+          .v.setI(i+1);
+          ret;
+        }
+        if(tim >= 0){
+          branch{
+          cond
+            tim == 0 && `ani~ani.loopend && i == `ani~ani.loopstart
+            :
+            .v.setI(#`ani~ani.frames);
+          else:
+            .v.setI(i+1);
+          }
+          ret;
+        }
+        i--;
+      while
+        i >= 0 && (
+          `ani~ani.current < `ani~ani.loopstart
+          || i >= `ani~ani.loopstart)
+        :
+        lp = true;
+        i = #`ani~ani.frames - 1;
+        do;
+      }
+    else:
+      loop{
+        index i = `ani~ani.current;
+        tim -= `ani~ani.frames[i].time - `ani~ani.time;
+        continue;
+      do:
+        tim -= `ani~ani.frames[i].time;
+      continue:
+        if(tim <= 0 || `ani~ani.frames[i].time < 0){
+          branch{
+          cond
+            tim == 0 && `ani~ani.loopend && i == `ani~ani.loopstart
+            :
+            .v.setI(#`ani~ani.frames);
+          else:
+            .v.setI(i+1);
+          }
+          ret;
+        }
+        i++;
+        if(i >= #`ani~ani.frames) i = `ani~ani.loopstart;
+      while true:
+      }
+    }
+    .v.typ = .VarTy::SFalse;
+  }
+  public void trAnimElemSpecial(^/char f)
+  {
+    int n1 = .v.toInt();
+    if(n1 == .com.IERR){
+      .v.setSF();
+      ret;
+    }
+    .v.setI(0);
+    `trAnimElemNo();
+    int n2 = .v.toInt();
+    `trAnimElemTime();
+    if(.v.typ == .VarTy::SFalse || .v.toInt() != 0){
+      .v.setB(false);
+      ret;
+    }
+    branch{
+    cond .s.equ(">=", f): .v.setB(n2 == n1);
+    cond .s.equ("<=", f): .v.setB(n2 < n1);
+    cond .s.equ("!=", f): .v.setB(n2 != n1);
+    }
+  }
+  public void trChangeAnim(int no)
+  {
+    `animno = no;
+    `animpno = `playerno;
+    `ani = `getAction(no);
+    if(#`ani == 0){
+      `animpno = -1;
+      `animno = 0;
+      `ani = `getAction(0);
+      `trDestroySelf();
+    }
+    `sysfvar[.fCLSNXSCALE] = `sysfvar[.fXSCALE];
+    `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
+  }
+  public void trChangeAnim2(int pno, int no)
+  {
+    `animno = no;
+    `animpno = pno;
+    `ani = .chars[pno][0]~getAction(no);
+    branch{
+    cond #`ani > 0:
+      `sysfvar[.fCLSNXSCALE] = .chars[pno][0]~sysfvar[.fXSCALE];
+      `sysfvar[.fCLSNYSCALE] = .chars[pno][0]~sysfvar[.fYSCALE];
+      `ani~ani.sff = `sf;
+    else:
+      `animpno = -1;
+      `ani = `getAction(0);
+      `sysfvar[.fCLSNXSCALE] = `sysfvar[.fXSCALE];
+      `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
+      `trDestroySelf();
+    }
+  }
+  public void trAnimExist(int pno)
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    .v.setB(#.chars[pno][0]~getAction(.v.toInt()) > 0);
+  }
+  public void trSelfAnimExist()
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    .v.setB(#`getAction(.v.toInt()) > 0);
+  }
+  public void trPlayerIDExist()
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    .v.setB(#.players.get(.v.toInt()) > 0);
+  }
+  public void trSysIVar()
+  {
+    int i = .v.toInt();
+    if(i < 0){
+      .v.setSF();
+      ret;
+    }
+    .v.setI(`sysivar[i]);
+  }
+  public void trSetSysIVar(&.Var idx, &.Var v)
+  {
+    int i = idx.toInt();
+    if(v.typ == .VarTy::SFalse || i < 0){
+      .v.setSF();
+      ret;
+    }
+    .v.setI(`sysivar[i] = v.toInt());
+  }
+  public void trSysFVar()
+  {
+    int i = .v.toInt();
+    if(i < 0){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(`sysfvar[i]);
+  }
+  public void trSetSysFVar(&.Var idx, &.Var v)
+  {
+    int i = idx.toInt();
+    if(v.typ == .VarTy::SFalse || i < 0){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(`sysfvar[i] = v.toFloat());
+  }
+  public void trIVar()
+  {
+    int i = .v.toInt();
+    if(i < 0){
+      .v.setSF();
+      ret;
+    }
+    .v.setI(`ivar[i]);
+  }
+  public void trSetIVar(&.Var idx, &.Var v)
+  {
+    int i = idx.toInt();
+    if(v.typ == .VarTy::SFalse || i < 0){
+      .v.setSF();
+      ret;
+    }
+    .v.setI(`ivar[i] = v.toInt());
+  }
+  public void trFVar()
+  {
+    int i = .v.toInt();
+    if(i < 0){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(`fvar[i]);
+  }
+  public void trSetFVar(&.Var idx, &.Var v)
+  {
+    int i = idx.toInt();
+    if(v.typ == .VarTy::SFalse || i < 0){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(`fvar[i] = v.toFloat());
+  }
+  public bool isHitState()
+  {:<-
+    %char buf;
+    buf .=
+      "`s" .= .s.iToS(`stVal.no)
+      .= '_' .= .s.iToS(`stVal.playerno) .= "PIsH";
+    bool dummy(){ret false;}
+    method$bool() ish = dummy;
+    ret consteval(ish=, buf) && ish(::);
+  }
+  public bool changeState1(int p, int n)
+  {
+    if(`cs1tmp == 0) `stVal.prevno = `stVal.no;
+    `stVal.no = n;
+    `stVal.playerno = p;
+    `stVal.time = 0;
+    if(n < 0) ret false;
+    %char buf;
+    buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PInit";
+    if(!consteval(`state=, buf)) ret false;
+    if(.changeStateNest >= 2500){
+      lib al = <alert.ssz>;
+      al.alert!.self?(buf);
+      ret false;
+    }
+    `cs1tmp = 1;
+    `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
+    ret true;
+  }
+  public void changeState2()
+  {
+    if(`cs1tmp != 0) `state(::);
+    `cs1tmp = 0;
+  }
+  public void trChangeState(int p)
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    int n = .v.toInt();
+    if(`minus == 1 && `stVal.no == n && `stVal.playerno == p) ret;
+    branch{
+    cond `changeState1(p, n):
+      if(`minus != 2){
+        `changeState2();
+      }
+      if(`minus == 0){
+        if(`id >= 0){
+          .changeStateNest++;
+          `state(::);
+          .changeStateNest--;
+        }
+      }
+    else:
+      `trDestroySelf();
+      if(`helperindex == 0 && n != 0){
+        .v.setI(0);
+        `trSelfState();
+      }
+    }
+  }
+  public void trSelfState()
+  {
+    `trChangeState(`playerno);
+  }
+  public void trSetPersistent(int p=)
+  {
+    if(.v.typ == .VarTy::SFalse) ret;
+    p = .m.min!int?(99, .v.toInt());
+    if(p == 0) p = .consts.int_t::MAX;
+    p = .m.max!int?(0, p);
+  }
+  public void trCommand(^/char name)
+  {
+    .v.typ = .VarTy::Int;
+    .v.i = 1;
+    ^&.cmd.Command cl = `cmd.get(name);
+    loop{index i = 0; while; do:
+      if(cl[i].state) break;
+      i++;
+    while i < #cl:
+      .v.i = 0;
+    }
+  }
+  public void trP2Life()
+  {
+    ^`self e = .players.enemyNear(`=, 0);
+    .v.setI(e~sysivar[.iLIFE]);
+  }
+  public void trP2DistX()
+  {
+    ^`self e = .players.enemyNear(`=, 0);
+    .v.setF(.m.floor((float)`facing*(e~sysfvar[.fX] - `sysfvar[.fX])));
+  }
+  public void trP2DistY()
+  {
+    ^`self e = .players.enemyNear(`=, 0);
+    .v.setF(e~sysfvar[.fY] - `sysfvar[.fY]);
+  }
+  public void trP2BodyDistX()
+  {
+    ^`self e = .players.enemyNear(`=, 0);
+    .v.setF()<, .m.floor(
+      (float)`facing*(
+        (e~sysfvar[.fX] - `sysfvar[.fX] + (float)e~facing*e~frontw)
+        - `frontw));
+  }
+  public void trP2BodyDistY()
+  {
+    ^`self e = .players.enemyNear(`=, 0);
+    .v.setF(
+      (e~sysfvar[.fY] - e~getHeight()) - (`sysfvar[.fY] - `getHeight()));
+  }
+  public void trRootDistX()
+  {
+    .v.setF()<, .m.floor(
+      (float)`facing*(.chars[`playerno][0]~sysfvar[.fX] - `sysfvar[.fX]));
+  }
+  public void trRootDistY()
+  {
+    .v.setF(
+      (.chars[`playerno][0]~sysfvar[.fY] - .chars[`playerno][0]~getHeight())
+      - (`sysfvar[.fY] - `getHeight()));
+  }
+  public void trParentDistX()
+  {
+    `trParent();
+    if(#.c == 0){
+      .v.setSF();
+      ret;
+    }
+    .v.setF()<, .m.floor((float)`facing*(.c~sysfvar[.fX] - `sysfvar[.fX]));
+  }
+  public void trParentDistY()
+  {
+    `trParent();
+    if(#.c == 0){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(
+      (.c~sysfvar[.fY] - .c~getHeight()) - (`sysfvar[.fY] - `getHeight()));
+  }
+  public void trStateType(|.StTy st)
+  {
+    .v.typ = .VarTy::Int;
+    .v.i = (int)(st == `stVal.typ);
+  }
+  public void trP2StateType(|.StTy st)
+  {
+    ^`self e = .players.enemyNear(`=, 0);
+    .v.setB(st == e~stVal.typ);
+  }
+  public void trP2StateNo()
+  {
+    ^`self e = .players.enemyNear(`=, 0);
+    .v.setI(e~stVal.no);
+  }
+  public void trMoveType(|.MovTy mt)
+  {
+    .v.setB(mt == `stVal.mov);
+  }
+  public void trP2MoveType(|.MovTy mt)
+  {
+    ^`self e = .players.enemyNear(`=, 0);
+    .v.setB(mt == e~stVal.mov);
+  }
+  public void trPName(int no, ^/char name)
+  {
+    if(no <= 0 || #.chars < no){
+      .v.typ = .VarTy::Int;
+      .v.i = 0;
+      ret;
+    }
+    int foo = ((no-1) & !1) + ((no-1) + `playerno & 1);
+    .v.setI(
+      (int)(#.chars[foo] > 0 && .s.equ(name, .chars[foo][0]~name)));
+  }
+  public void trFrontEdgeDist()
+  {
+    .v.setF(
+      (`facing > 0 ? .xmax - `sysfvar[.fX] : `sysfvar[.fX] - .xmin));
+  }
+  public void trFrontEdgeBodyDist()
+  {
+    .v.setF(
+      (`facing > 0 ? .xmax - `sysfvar[.fX] : `sysfvar[.fX] - .xmin)
+      - `fedge);
+  }
+  public void trBackEdgeDist()
+  {
+    .v.setF(
+      (`facing < 0 ? .xmax - `sysfvar[.fX] : `sysfvar[.fX] - .xmin));
+  }
+  public void trBackEdgeBodyDist()
+  {
+    .v.setF(
+      (`facing < 0 ? .xmax - `sysfvar[.fX] : `sysfvar[.fX] - .xmin)
+      - `bedge);
+  }
+  public void trIsHelper()
+  {
+    int id = .v.toInt();
+    if(id == .com.IERR){
+      .v.setSF();
+      ret;
+    }
+    .v.setB(`helperindex > 0 && (id <= 0 || `helperid == id));
+  }
+  public void trIsPlayer()
+  {
+    .v.setB(`player);
+  }
+  public void trActive()
+  {
+    .v.setB(`isActive());
+  }
+  public void trTeamMode(|.TeamMode tm)
+  {
+    .v.setB(.tmode[`playerno&1] == (int)tm);
+  }
+  public void trNewHelper(^`self c=)
+  {
+    c = .create(`playerno);
+    if(#c == 0) ret;
+    c~id ^= -1;
+    c~helperid = 0;
+    c~copyParent(`=);
+    `addChild(c~helperindex);
+    c~parentindex = `helperindex;
+  }
+  void helproSetPos<_t>(_t obj=, int pt, float x, float y, int facing)
+  {
+    switch(pt){
+    case 2, 3://front, back
+      if(facing < 0) obj.facing *= -1;
+      branch{
+      cond (`facing > 0 && pt == 2) || (`facing < 0 && pt == 3):
+        obj.setX(.screenx + 320.0/.scale - x);
+      else:
+        obj.setX(.screenx + x);
+      }
+      obj.setY(y);
+      obj.facing *= `facing;
+    case 4://left
+      if(facing < 0) obj.facing *= -1;
+      obj.setX(.screenx + x);
+      obj.setY(y);
+    case 5://right
+      if(facing < 0) obj.facing *= -1;
+      obj.setX(.screenx + 320.0/.scale + x);
+      obj.setY(y);
+    default:
+      `setPos!_t?(obj=, pt, x, y, facing);
+    }
+  }
+  public void trHelperInit(
+    `self h=, int st, int pt, float x, float y, int facing, int ownpal)
+  {
+    `helproSetPos!h.self?(h=, pt, x, y, facing);
+    if(x == .com.FERR) h.sysfvar[.fX] = 0.0;
+    if(y == .com.FERR) h.sysfvar[.fY] = 0.0;
+    h.sysfvar[.fVX] = 0.0;
+    h.sysfvar[.fVY] = 0.0;
+    if(ownpal != 0) h.palfx.new(1);
+    .v.setI(st);
+    h.trSelfState();
+  }
+  public void trProjInit(&.Projectile p=, int pt, float x, float y)
+  {
+    `helproSetPos!p.self?(p=, pt, x, y, 1);
+    if(x == .com.FERR) p.x = 0.0;
+    if(y == .com.FERR) p.y = 0.0;
+    p.ani = `getAction(p.anim);
+    if(`sysivar[.iPROJ_DOSCALE] != 0){
+      p.scalex *= `sysfvar[.fXSCALE];
+      p.scaley *= `sysfvar[.fYSCALE];
+    }
+    p.playerno = `playerno;
+  }
+  public void trDestroySelf()
+  {
+    if(`helperindex <= 0) ret;
+    `destmp = 1;
+  }
+  public void trTargetBind(int time, int id, float x, float y)
+  {
+    if(time == .com.IERR || id == .com.IERR) ret;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(
+        #c > 0 && (id < 0 || c~stVal.hb.hitid == id)
+        && c~sysivar[.iBINDTIME] != .com.IERR)
+      {
+        c~setBindToId(`=);
+        c~sysivar[.iBINDTIME] = time;
+        c~sysivar[.iBINDFACING] = 0;
+        c~sysfvar[.fBINDPOSX] = x;
+        c~sysfvar[.fBINDPOSY] = y;
+        if(c~sysivar[.iBINDTIME] != 0){
+          c~sysfvar[.fVX] = 0.0;
+          c~setYV(0.0);
+        }
+        c~bind();
+        if(c~player) `enemyn.new(0);
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trTargetDrop(int id, int keepone)
+  {
+    if(id == .com.IERR) ret;
+    %int tmp;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
+        tmp .= `targets[i];
+      }
+      i++;
+    while i < #`targets:
+    }
+    branch{
+    cond keepone != 0 && #tmp > 0:
+      `targets.new(0);
+      `targets .= tmp[.m.rand(0, #tmp-1)];
+    else:
+      `targets = tmp;
+    }
+  }
+  public void trTargetFacing(int fasing, int id)
+  {
+    if(fasing == 0) ret;
+    int f = `facing;
+    if(fasing < 0) f *= -1;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)) c~setFacing(f);
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trTargetState(int pno, int state, int id)
+  {
+    if(state < 0 || id == .com.IERR) ret;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
+        c~sysivar[.iCTRL] = 0;
+        c~changeState1(pno, state);
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trTargetVelSetX(int id, float vx)
+  {
+    if(vx == .com.FERR || id == .com.IERR) ret;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
+        c~sysfvar[.fVX] = vx;
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trTargetVelSetY(int id, float vy)
+  {
+    if(vy == .com.FERR || id == .com.IERR) ret;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
+        c~setYV(vy);
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trTargetVelAddX(int id, float vx)
+  {
+    if(vx == .com.FERR || id == .com.IERR) ret;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
+        c~sysfvar[.fVX] += vx;
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trTargetVelAddY(int id, float vy)
+  {
+    if(vy == .com.FERR || id == .com.IERR) ret;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
+        c~sysfvar[.fVY] += vy;
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trTargetLifeAdd(int va, int id, bool kill, bool absolute)
+  {
+    if(va == .com.IERR || id == .com.IERR) ret;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
+        if(
+          c~addLife(
+            -`getDamage(-va, kill, absolute, `attackmul), true, true)
+          ) branch
+        {
+        cond (`playerno&1) == (c~playerno&1):
+          if(c~helperindex == 0) branch{
+          cond `playerno == c~playerno:
+            .winty[(c~playerno+1)&1] = .fgt.WinTy::Suicide;
+          else:
+            .winty[(c~playerno+1)&1] = .fgt.WinTy::Teammate;
+          }
+        else:
+          c~setEnemyWinty();
+        }
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trTargetPowerAdd(int pw, int id)
+  {
+    if(pw == .com.IERR || id == .com.IERR) ret;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)) c~addPower(pw);
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trHitAdd(int h)
+  {
+    if(h == .com.IERR) ret;
+    `sysivar[.iHITCOUNT] += h;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0) c~sysivar[.iCOMBO] += h;
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trNumEnemy()
+  {
+    .v.setI(.players.numEnemy(`playerno));
+  }
+  public void trNumPartner()
+  {
+    .v.setI(#.chars[`playerno+2 & 3]);
+  }
+  public void trHitFallSet(int f, float vx, float vy)
+  {
+    if(`stVal.mov != .MovTy::H) ret;
+    if(f >= 0) `stVal.hb.fallf = (int)(f != 0);
+    if(vx != .com.FERR) `sysfvar[.fVX] = vx;
+    if(vy != .com.FERR) `setYV(vy);
+  }
+  public void trHitFallVel()
+  {
+    if(`stVal.mov != .MovTy::H) ret;
+    if(`stVal.hb.fall.xvelocity != .com.FERR){
+      `sysfvar[.fVX] = `stVal.hb.fall.xvelocity;
+    }
+    `setYV(`stVal.hb.fall.yvelocity);
+  }
+  public void trHitFall()
+  {
+    .v.typ = .VarTy::Int;
+    .v.i = (int)(`stVal.hb.fallf != 0);
+  }
+  public void trHitFallDamage()
+  {
+    if(`stVal.mov != .MovTy::H) ret;
+    if(
+      `addLife(
+        -`stVal.hb.fall.damage, `stVal.hb.fall.kill != 0, false))
+    {
+      `setEnemyWinty();
+    }
+  }
+  public void trHitVelSetX()
+  {
+    if(`stVal.mov != .MovTy::H) ret;
+    `sysfvar[.fVX] = `stVal.hb.xvel;
+  }
+  public void trHitVelSetY()
+  {
+    if(`stVal.mov != .MovTy::H) ret;
+    `setYV(`stVal.hb.yvel);
+  }
+  public void trHitVelX()
+  {
+    .v.setF(`stVal.mov != .MovTy::H ? -`stVal.hb.xvel : 0.0);
+  }
+  public void trHitVelY()
+  {
+    .v.setF(`stVal.mov != .MovTy::H ? -`stVal.hb.yvel : 0.0);
+  }
+  public void trProjTime(|.ProjContact pct)
+  {
+    int id = .v.toInt();
+    if(id == .com.IERR){
+      .v.setSF();
+      ret;
+    }
+    .v.typ = .VarTy::Int;
+    branch{
+    cond id < 0:
+      .v.i = 0;
+    else:
+      .v.i = -1;
+      loop{index i = 0; while; do:
+        if(.projs[`playerno][i].id >= 0
+          && (id == 0 || .projs[`playerno][i].id == id)
+          && .projs[`playerno][i].pctyp == pct
+          && .projs[`playerno][i].pctime != 0
+          && (.v.i <= 0 || .v.i > #.projs[`playerno][i].pctime))
+        {
+          .v.i = #.projs[`playerno][i].pctime;
+        }
+        i++;
+      while i < #.projs[`playerno]:
+      }
+    }
+  }
+  public void trProjContactTime()
+  {
+    int id = .v.toInt();
+    if(id == .com.IERR){
+      .v.setSF();
+      ret;
+    }
+    .v.typ = .VarTy::Int;
+    branch{
+    cond id < 0:
+      .v.i = 0;
+    else:
+      .v.i = -1;
+      loop{index i = 0; while; do:
+        if(.projs[`playerno][i].id >= 0
+          && (id == 0 || .projs[`playerno][i].id == id)
+          && .projs[`playerno][i].pctime != 0
+          && (.v.i <= 0 || .v.i > #.projs[`playerno][i].pctime))
+        {
+          .v.i = #.projs[`playerno][i].pctime;
+        }
+        i++;
+      while i < #.projs[`playerno]:
+      }
+    }
+  }
+  public void trHitDefAttr(int flg)
+  {
+    int mask = (int).AtTy::NA - 1;
+    .v.setI(
+      (int)(
+        (mask&`stVal.hit.attr&flg) != 0
+        && (!mask&`stVal.hit.attr&flg) != 0));
+  }
+  public void trNumHelper()
+  {
+    int id = .v.toInt();
+    if(id == .com.IERR){
+      .v.typ = .VarTy::SFalse;
+      ret;
+    }
+    .v.typ = .VarTy::Int;
+    .v.i = 0;
+    loop{index i = 1; while; do:
+      if(
+        .chars[`playerno][i]~id != .com.IERR
+        && (id <= 0 || id == .chars[`playerno][i]~helperid)) .v.i++;
+      i++;
+    while i < #.chars[`playerno]:
+    }
+  }
+  public void trExplodBindTime(int id, int bt)
+  {
+    if(bt == .com.IERR || id == .com.IERR) ret;
+    loop{index i = 0; while; do:
+      if(
+        .explods[`playerno][i].player == `id && (
+          (id < 0 && .explods[`playerno][i].id > .com.IERR+1)
+          || .explods[`playerno][i].id == id))
+      {
+        .explods[`playerno][i].bindtime = bt + (bt > 0 ? 1 : 0);
+      }
+      i++;
+    while i < #.explods[`playerno]:
+    }
+  }
+  public void trRemoveExplod(int id)
+  {
+    if(id == .com.IERR) ret;
+    loop{index i = #.expdrawlist[`playerno]-1; while; do:
+      if(
+        (
+          id < 0 && .explods[`playerno][.expdrawlist[`playerno][i]].id
+          > .com.IERR+1)
+        || .explods[`playerno][.expdrawlist[`playerno][i]].id == id)
+      {
+        .explods[`playerno][.expdrawlist[`playerno][i]].id = .com.IERR;
+        .delIL(.expdrawlist[`playerno]=, i);
+      }
+      i--;
+    while i >= 0:
+    }
+  }
+  public void trNumExplod()
+  {
+    int id = .v.toInt();
+    if(id == .com.IERR){
+      .v.setSF();
+      ret;
+    }
+    .v.typ = .VarTy::Int;
+    .v.i = 0;
+    loop{index i = 0; while; do:
+      if(
+        .explods[`playerno][i].player == `id && (
+          (id < 0 && .explods[`playerno][i].id > .com.IERR+1)
+          || .explods[`playerno][i].id == id)) .v.i++;
+      i++;
+    while i < #.explods[`playerno]:
+    }
+  }
+  public void trNumTarget()
+  {
+    int id = .v.toInt();
+    if(id == .com.IERR){
+      .v.setSF();
+      ret;
+    }
+    .v.typ = .VarTy::Int;
+    .v.i = 0;
+    loop{index i = 0; while; do:
+      if(`targets[i] >= 0) branch{
+      cond id < 0:
+        .v.i++;
+      else:
+        {
+          ^`self t = .players.get(`targets[i]);
+          if(#t == 0) break;
+          if(t~stVal.hb.hitid == id) .v.i++;
+        } 
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trNumProjID()
+  {
+    int id = .v.toInt();
+    if(id == .com.IERR){
+      .v.setSF();
+      ret;
+    }
+    int d = .m.max!int?(0, id);
+    .v.typ = .VarTy::Int;
+    .v.i = 0;
+    loop{index i = 0; while; do:
+      if(.projs[`playerno][i].id == d) .v.i++;
+      i++;
+    while i < #.projs[`playerno]:
+    }
+  }
+  public void trNumProj()
+  {
+    .v.typ = .VarTy::Int;
+    .v.i = 0;
+    loop{index i = 0; while; do:
+      if(.projs[`playerno][i].id >= 0) .v.i++;
+      i++;
+    while i < #.projs[`playerno]:
+    }
+  }
+  public void trHitPauseTime()
+  {
+    .v.setI(.m.max!int?(0, `sysivar[.iHITPAUSETIME]));
+  }
+  public void trInGuardDist()
+  {
+    .v.setB(`inguarddist);
+  }
+  public void trHitOver()
+  {
+    .v.setB(`stVal.hb.hittime <= 0);
+  }
+  public void trHitShakeOver()
+  {
+    .v.setI(
+      (int)(`stVal.mov == .MovTy::H && `stVal.hb.hitshaketime <= 0));
+  }
+  public void trCanRecover()
+  {
+    .v.setI(
+      (int)(
+        `isFall() && `stVal.hb.fall.recover != 0
+        && `stVal.hb.fall.recovertime <= 0));
+  }
+  public void trMoveContact()
+  {
+    .v.typ = .VarTy::Int;
+    .v.i = #`stVal.mctime;
+  }
+  public void trMoveReversed()
+  {
+    .v.typ = .VarTy::Int;
+    .v.i = 0;
+    if(`stVal.mctyp == .MoveContact::Reversed){
+      .v.i = #`stVal.mctime;
+    }
+  }
+  public void trMoveHit()
+  {
+    .v.typ = .VarTy::Int;
+    .v.i = 0;
+    if(`stVal.mctyp == .MoveContact::Hit){
+      .v.i = #`stVal.mctime;
+    }
+  }
+  public void trMoveGuarded()
+  {
+    .v.typ = .VarTy::Int;
+    .v.i = 0;
+    if(`stVal.mctyp == .MoveContact::Guarded){
+      .v.i = #`stVal.mctime;
+    }
+  }
+  public void trMoveHitReset()
+  {
+    `stVal.mctime = 0;
+  }
+  public void trPalNo()
+  {
+    .v.setI(`palno);
+  }
+  public void trMatchOver()
+  {
+    .v.setB(.p1wins >= .p1mw || .p2wins >= .p2mw);
+  }
+  public void trMatchNo()
+  {////////////////////////////////////////////////////////////////////////////
+    .v.setI(1);
+  }
+  public void trRoundNo()
+  {
+    .v.setI(.round);
+  }
+  public void trRoundState()
+  {
+    .v.setI(.roundState());
+  }
+  public void trRoundsExisted()
+  {
+    .v.setI(.rexisted[`playerno&1]);
+  }
+  public bool isWin()
+  {
+    ret .win >= 0 && (`playerno&1) == .win;
+  }
+  public bool isLose()
+  {
+    ret .win >= 0 && (`playerno+1&1) == .win;
+  }
+  public void trWin()
+  {
+    .v.setB(`isWin());
+  }
+  public void trWinKO()
+  {
+    .v.setB(`isWin() && .ko == .fgt.KOTy::KO);
+  }
+  public void trWinTime()
+  {
+    .v.setB(`isWin() && .ko == .fgt.KOTy::TO);
+  }
+  public void trWinPerfect()
+  {
+    .v.setI(
+      (int)(
+        `isWin() && `sysivar[.iLIFE] == `sysivar[.iLIFEMAX]));
+  }
+  public void trLose()
+  {
+    .v.setB(`isLose());
+  }
+  public void trLoseKO()
+  {
+    .v.setB(`isLose() && .ko == .fgt.KOTy::KO);
+  }
+  public void trLoseTime()
+  {
+    .v.setB(`isLose() && .ko == .fgt.KOTy::TO);
+  }
+  public void trDrawGame()
+  {
+    .v.setB(.roundState() >= 3 && .win < 0);
+  }
+
+}
+
+public void Explod::update()
+{
+  ^&.Char c;
+  if(.com.tickFrame()){
+    if(`removeongethit != 0){
+      if(#c == 0) c = .players.get(`player);
+      if(#c == 0 || c~stVal.mov == .MovTy::H){
+        `id = .com.IERR;
+        ret;
+      }
+    }
+    if(`id == .com.IERR+1 || `removetime >= 0 && --`removetime < 0){
+      `id = .com.IERR;
+      ret;
+    }
+  }
+  {
+    float scl = 1.0, cscl = .scale, xofs = 0.0, yofs = 0.0;
+    bool p = false;
+    branch{
+    cond .super > 0:
+      p = `supermovetime == 0;
+    cond .pause > 0:
+      p = `pausemovetime == 0;
+    }
+    bool act = !p && `ignorehitpause != 0;
+    if(.com.tickFrame()){
+      if(!p && !act && (#c > 0 || #(c = .players.get(`player)) > 0)){
+        act = c~acttmp%2 != -1;
+      }
+      if(#`ani > 0) branch{
+      cond act:
+        `ani~ani.action();
+      else:
+        `ani~ani.updateSprite();
+      }
+      if(p) break;
+      if(`supermovetime > 0) `supermovetime--;
+      if(`pausemovetime > 0) `pausemovetime--;
+      if(`bindtime > 0) `bindtime--;
+    }
+    if(act && `bindtime == 0){
+      float sp = .m.min!float?(1.0, .speed);
+      if(.com.tickFrame()){
+        `velocityx += `accelx;
+        `velocityy += `accely;
+      }
+      `x += `velocityx*(float)(`facing*`relativef) * sp;
+      `y += `velocityy * sp;
+    }
+  break:
+    if(`bindtime != 0) branch{
+    cond `postype >= 4:
+      cscl = 1.0;
+      `x = .camerax + `offsetx + (`postype == 4 ? -160.0 : 160.0);
+      xofs = -.xoffset;
+      `y = .cameray + `offsety - .zoffset;
+      yofs = -.yoffset;
+    else:
+      {
+        ^&.Char bc = .players.get(`bindid);
+        if(#bc == 0){
+          `id = .com.IERR;
+          break, break;
+        }
+        if(`offsetx != .com.FERR){
+          `setX(bc~sysfvar[.fX] + `offsetx);
+        }
+        if(`offsety != .com.FERR){
+          `setY(bc~sysfvar[.fY] + `offsety);
+        }
+      }
+    }
+    branch{
+      type _t = $void(.anims.self=);
+      ~_t aal =
+        [_t(a=){
+          if(`ownpal == 0 && #c == 0){
+            if(#(c = .players.get(`player)) == 0) ret;
+          }
+          .addAnimList(
+            a=, `ani, `sprpriority, `x+xofs, `y+yofs, cscl,
+            (float)`facing*`scalex*scl,
+            (float)`vfacing*`scaley*scl, 0.0,
+            `alphas < 0 ? -1 : `alphas, `alphad,
+            256 >> (int)(
+              .super > 0 && .superdarken != 0
+              && (#c > 0 || #(c = .players.get(`player)) > 0)
+              && c~playerno != .superplayer),
+            `ownpal == 0 ? c~getPalfx() : .consts.null!&.com.PalFX?(),
+            `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
+            0.0);
+        }];
+    cond `ontop != 0:
+      aal(:.topanims=:);
+    else:
+      aal(:.anims=:);
+    }
+    if(
+      `removetime == 0
+      || (
+        `removetime == -2 && (#`ani == 0 || `ani~ani.loopend)))
+    {
+      `id = .com.IERR+1;
+    }
+  }
+}
+public void Explod::setPos(&.Char c=)
+{
+  switch(`postype){
+  case 0:
+    `bindid = c.id;
+    `facing = c.facing*`relativef;
+    `offsetx *= (float)c.facing;
+    if(`offsetx != .com.FERR) `setX(c.sysfvar[.fX] + `offsetx);
+    if(`offsety != .com.FERR) `setY(c.sysfvar[.fY] + `offsety);
+    break;
+  case 1:
+    {
+      ^&.Char bc = .players.enemyNear(c=, 0);
+      if(#bc == 0) break;
+      `bindid = bc~id;
+      `facing *= bc~facing*`relativef;
+      `offsetx *= (float)bc~facing;
+      if(`offsetx != .com.FERR) `setX(bc~sysfvar[.fX] + `offsetx);
+      if(`offsety != .com.FERR) `setY(bc~sysfvar[.fY] + `offsety);
+    }
+    break;
+  case 2, 3:
+    branch{
+    cond
+      (c.facing > 0 && `postype == 2)
+      || (c.facing < 0 && `postype == 3)
+      :
+      `postype = 5;
+      if(`offsetx != .com.FERR) `offsetx *= -1.0;
+    else:
+      `postype = 4;
+    }
+    c.setPos!`self?(`=, `postype, `offsetx, `offsety, `relativef*c.facing);
+  default:
+    c.setPos!`self?(`=, `postype, `offsetx, `offsety, `relativef);
+  }
+}
+public void Explod::modify(&.Char c=, &.ModifyExplod mod=)
+{
+  if(
+    `player != c.id || `id <= .com.IERR+1
+    || (mod.id >= 0 && mod.id != `id)) ret;
+  if(mod.bindtime != .com.IERR) `bindtime = mod.bindtime;
+  if(mod.scalex != .com.FERR) `scalex = mod.scalex;
+  if(mod.scaley != .com.FERR) `scaley = mod.scaley;
+  if(mod.removeongethit != .com.IERR) `removeongethit = mod.removeongethit;
+  if(mod.removetime != .com.IERR) `removetime = mod.removetime;
+  if(mod.velocityx != .com.FERR) `velocityx = mod.velocityx;
+  if(mod.velocityy != .com.FERR) `velocityy = mod.velocityy;
+  if(mod.accelx != .com.FERR) `accelx = mod.accelx;
+  if(mod.accely != .com.FERR) `accely = mod.accely;
+  if(mod.sprpriority != .com.IERR) `sprpriority = mod.sprpriority;
+  if(mod.postype != .com.IERR) `postype = mod.postype;
+  if(mod.offsetx != .com.FERR) `offsetx = mod.offsetx;
+  if(mod.offsety != .com.FERR) `offsety = mod.offsety;
+  if(mod.relativef != .com.IERR) `relativef = mod.relativef;
+  if(mod.x != .com.FERR) `x = mod.x;
+  if(mod.y != .com.FERR) `y = mod.y;
+  if(mod.facing != .com.IERR) `setFacing(mod.facing);
+  if(mod.vfacing != .com.IERR) `vfacing = mod.vfacing;
+  if(mod.shadowr != .com.IERR) `shadowr = mod.shadowr;
+  if(mod.shadowg != .com.IERR) `shadowg = mod.shadowg;
+  if(mod.shadowb != .com.IERR) `shadowb = mod.shadowb;
+  if(mod.ontop != .com.IERR) `ontop = mod.ontop;
+  if(mod.alphas != .com.IERR) `alphas = mod.alphas;
+  if(mod.alphad != .com.IERR) `alphad = mod.alphad;
+  if(mod.supermovetime != .com.IERR) `supermovetime = mod.supermovetime;
+  if(mod.pausemovetime != .com.IERR) `pausemovetime = mod.pausemovetime;
+  if(mod.postype >= 0) `setPos(c=);
+}
+
+
+
+public ^&Char PlayerList!&Char?::get(int id)
+{
+  if(id < 0) ret .consts.null!`_t?();
+  loop{index i = 0; while; do:
+    if(.playerid[i].n == id){
+      ret .chars[.playerid[i].pn][.playerid[i].hi];
+    }
+    i++;
+  while i < #.playerid:
+  }
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if(p~c~id == id || !p~c~id == id){
+      .playerid.new[-1].n = id;
+      .playerid[-1].pn = p~c~playerno;
+      .playerid[-1].hi = p~c~helperindex;
+      ret p~c;
+    }
+    p = p~next;
+  while #p > 0:
+  }
+  ret .consts.null!`_t?();
+}
+public ^&Char PlayerList!&Char?::enemy(int pno, int n)
+{
+  loop{index i = 0; while; do:
+    if(.enemy[pno][i].n == n){
+      ret .chars[.enemy[pno][i].pn][.enemy[pno][i].hi];
+    }
+    i++;
+  while i < #.enemy[pno]:
+  }
+  type p_t = `top<>.self;
+  int foo(`p_t p=)
+  {
+    void bar(int pno, int n)
+    {
+      .enemy[pno].new[-1].n = n;
+      .enemy[pno][-1].pn = `p.c~playerno;
+      .enemy[pno][-1].hi = `p.c~helperindex;
+    }
+    if(#p.next == 0) branch{
+    cond (p.c~playerno&1) != (`pno&1) && p.c~player:
+      if(`n == 0){
+        bar(`pno, `n);
+        ret -1;
+      }
+      ret 1;
+    else:
+      ret 0;
+    }
+    int tmp = self(p.next<>=);
+    if(tmp >= 0 && (p.c~playerno&1) != (`pno&1) && p.c~player){
+      if(`n == tmp){
+        bar(`pno, `n);
+        ret -1;
+      }
+      ret tmp+1;
+    }
+    ret tmp;
+  }
+  if(n < 0 || #`top == 0 || foo(`top<>=) >= 0){
+    ret .consts.null!`_t?();
+  }
+  ret .chars[.enemy[pno][-1].pn][.enemy[pno][-1].hi];
+}
+public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
+{
+  if(n < 0) ret .consts.null!pyr.self?();
+  loop{index i = 0; while; do:
+    if(pyr.enemyn[i].n == n){
+      ret .chars[pyr.enemyn[i].pn][pyr.enemyn[i].hi];
+    }
+    i++;
+  while i < #pyr.enemyn:
+  }
+  ^^pyr.self en.new(n+1);
+  void add(^`pyr.self e, index rng)
+  {
+    loop{index i = rng; while; do:
+      if(#`en[i] == 0){
+        `en[i] = e;
+        ret;
+      }
+      if(
+        (e~sysivar[.iLIFE] > 0 && `en[i]~sysivar[.iLIFE] <= 0)
+        || (
+          e~sysivar[.iLIFE] > 0
+          ? `en[i]~sysivar[.iLIFE] > 0
+          && #(e~sysfvar[.fX] - `pyr.sysfvar[.fX])
+          < #(`en[i]~sysfvar[.fX] - `pyr.sysfvar[.fX])
+          : `en[i]~sysivar[.iLIFE] <= 0
+          && e~sysivar[.iRECOVERTIME] >= `en[i]~sysivar[.iRECOVERTIME]))
+      {
+        self(`en[i], i+1);
+        `en[i] = e;
+        ret;
+      }
+      i++;
+    while i < #`en:
+    }
+  }
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if((p~c~playerno&1) != (pyr.playerno&1) && p~c~player){
+      add(p~c, 0);
+    }
+    p = p~next;
+  while #p > 0:
+  }
+  if(#en[-1] == 0) ret .consts.null!&.Char?();
+  pyr.enemyn.new[-1].n = n;
+  pyr.enemyn[-1].pn = en[-1]~playerno;
+  pyr.enemyn[-1].hi = en[-1]~helperindex;
+  ret en[-1];
+}
+public int PlayerList!&Char?::numEnemy(int pno)
+{
+  int cnt = 0;
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if((p~c~playerno&1) != (pno&1) && p~c~player) cnt++;
+    p = p~next;
+  while #p > 0:
+  }
+  ret cnt;
+}
+public void PlayerList!&Char?::add(^&.Char c)
+{
+  .playerid.new(0);
+  if(#`top == 0){
+    `top.new(1);
+    `top~c = c;
+    ret;
+  }
+  if(`top~c~id >= 0){
+    *`top.self tmp = `top;
+    `top.new(1);
+    `top~c = c;
+    `top~next = tmp;
+    ret;
+  }
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if(p~next~c~id >= 0){
+      *`top.self tmp = p~next;
+      p~next.new(1);
+      p~next~c = c;
+      p~next~next = tmp;
+      break, break;
+    }
+    p = p~next;
+  while #p~next > 0:
+    p~next.new(1);
+    p~next~c = c;
+  }
+}
+public void PlayerList!&Char?::destroy(int id)
+{
+  if(id < 0 || #`top == 0) ret;
+  .playerid.new(0);
+  if(`top~c~id == id){
+    `top = `top~next;
+    ret;
+  }
+  *`top.self p = `top;
+  loop{while; do:
+    if(p~next~c~id == id){
+      p~next = p~next~next;
+      break, break;
+    }
+    p = p~next;
+  while #p~next > 0:
+  }
+}
+public void PlayerList!&Char?::action()
+{
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if(p~c~id < 0) p~c~id ^= -1;
+    p~c~action();
+  continue:
+    p = p~next;
+  while #p > 0:
+  }
+}
+public void PlayerList!&Char?::move(float tension, float cvx=)
+{
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if(p~c~id < 0) continue;
+    cvx += p~c~move(tension);
+  continue:
+    p = p~next;
+  while #p > 0:
+  }
+}
+public void PlayerList!&Char?::update(float x)
+{
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if(p~c~id < 0) continue;
+    p~c~update(x);
+  continue:
+    p = p~next;
+  while #p > 0:
+  }
+}
+public void PlayerList!&Char?::clsn(&.Char pyr=)
+{
+  float pxmi, pxma;
+  branch{
+  cond pyr.facing > 0:
+    pxmi = .xmin+pyr.bedge; pxma = .xmax-pyr.fedge;
+  else:
+    pxmi = .xmin+pyr.fedge; pxma = .xmax-pyr.bedge;
+  }
+  bool foo(
+    bool hitting, `pyr.self by=, &.Hitdef hit=, float y, bool pro, int hits)
+  {
+    void expreset(&.Explod e=, float x, float y)
+    {
+      e.postype = 0;
+      e.offsetx = x + `hit.sparkx;
+      e.offsety = y + `hit.sparky;
+      e.relativef = 1;
+      e.player = `by.id;
+      e.scalex = e.scaley = 1.0;
+      e.ontop = 1;
+      e.sprpriority = 5;
+      e.ownpal = 1;
+      e.supermovetime = e.pausemovetime = -1;
+      `by.setPos!e.self?(e=, e.postype, e.offsetx, e.offsety, e.relativef);
+    }
+    if(`pyr.stVal.hb.yaccel == .com.FERR){
+      `pyr.stVal.hb.yaccel = `pyr.sysfvar[.fYACCEL];
+    }
+    ^&.snd.Sound sou;
+    branch{
+    cond hitting:
+      branch{
+        if(hit.sparkno == .com.IERR) break;
+        ^&.Explod e = by.newExplod();
+        if(#e == 0) break;
+        expreset(
+          e<>=, (`pyr.sysfvar[.fX]-by.sysfvar[.fX])*(float)by.facing, y);
+      cond hit.sparkno < 0:
+        e~ani = .fight~getAction(!hit.sparkno);
+      else:
+        e~ani = by.getAction(hit.sparkno);
+      }
+    else:
+      if(
+        (hit.attr&((int).AtTy::NT|(int).AtTy::ST|(int).AtTy::HT)) == 0) branch
+      {
+        if(hit.guard_sparkno == .com.IERR) break;
+        ^&.Explod e = by.newExplod();
+        if(#e == 0) break;
+        expreset(
+          e<>=, (`pyr.sysfvar[.fX]-by.sysfvar[.fX])*(float)by.facing, y);
+      cond hit.guard_sparkno < 0:
+        e~ani = .fight~getAction(!hit.guard_sparkno);
+      else:
+        e~ani = by.getAction(hit.guard_sparkno);
+      }
+    }
+    if(!pro) by.sprpriority = hit.p1sprpriority;
+    `pyr.sprpriority = hit.p2sprpriority;
+    if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
+      `pyr.stVal.typ == .StTy::S;
+    }
+    if(`pyr.stVal.hb.hitshaketime <= 0){
+      `pyr.stVal.hb.hittime++;
+      if(`pyr.stVal.hb.hittime <= 0) `pyr.stVal.hb.fall.recovertime++;
+    }
+    bool rtn = false, damageable = false, p2s = false;
+    if(`pyr.cs1tmp == 0 || `pyr.stVal.playerno == by.playerno){
+      damageable = true;
+      if(`pyr.stVal.hb.typ != 0){
+        `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
+        rtn = true;
+      }
+      loop{index i = 0; while; do:
+        if(
+          `pyr.stVal.ho[i].time != 0
+          && (`pyr.stVal.ho[i].attr & hit.attr & 63) != 0
+          && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0)
+        {
+          if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
+          `pyr.sysivar[.iCTRL] = 0;
+          `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno);
+          branch{
+          cond hit.p2stateno >= 0 && hit.p2getp1state != 0:
+            rtn = damageable = false;
+          else:
+            rtn = true;
+            if(!`pyr.isHitState()) damageable = false;
+          }
+          break, break, break;
+        }
+        i++;
+      while i < #`pyr.stVal.ho:
+      }
+      if(hit.p2stateno >= 0 && hit.p2getp1state != 0){
+        if(by.cs1tmp != 0 && by.stVal.playerno != by.playerno){
+          rtn = damageable = false;
+          break, break;
+        }
+        `pyr.sysivar[.iCTRL] = 0;
+        `pyr.changeState1(by.playerno, hit.p2stateno);
+        p2s = true;
+      }
+    }
+    `pyr.stVal.hb.damage =
+      `pyr.getDamage(
+        `pyr.stVal.hb.damage * hits,
+        hit.kill != 0 && (hitting || hit.guard_kill != 0),
+        false, by.attackmul);
+    if(damageable) branch{
+    cond hitting:
+      by.addPower(hit.hitgetpower);
+      if(`pyr.addLife(-`pyr.stVal.hb.damage, true, true)) branch{
+      cond (by.playerno&1) == (`pyr.playerno&1):
+        if(`pyr.helperindex == 0) branch{
+        cond by.playerno == `pyr.playerno:
+          .winty[(`pyr.playerno+1)&1] = .fgt.WinTy::Suicide;
+        else:
+          .winty[(`pyr.playerno+1)&1] = .fgt.WinTy::Teammate;
+        }
+      else:
+        `pyr.setEnemyWinty();
+      }
+      `pyr.addPower(hit.hitgivepower);
+      branch{
+        if(hit.hitsoundg == .com.IERR) break;
+        sou = .newChannel(by.playerno, -1, false);
+        if(#sou == 0) break;
+      cond hit.hitsoundg < 0:
+        if(#.fight~fsn > 0){
+          sou~sound = .fight~fsn~getSound(!hit.hitsoundg, hit.hitsoundn);
+        }
+      else:
+        if(#by.sn > 0){
+          sou~sound = by.sn~getSound(hit.hitsoundg, hit.hitsoundn);
+        }
+      comm:
+        sou~chrx = `pyr.sysfvar[.fX...fX+1];
+        sou~setDefaultParameter();
+      }
+      if(hit.palfx_time > 0){
+        ^&.com.PalFX fx = `pyr.getPalfx();
+        fx~clear();
+        fx~time = hit.palfx_time;
+        fx~mulr = (float)hit.palfx_mulr / 256.0;
+        fx~mulg = (float)hit.palfx_mulg / 256.0;
+        fx~mulb = (float)hit.palfx_mulb / 256.0;
+        fx~addr = hit.palfx_addr;
+        fx~addg = hit.palfx_addg;
+        fx~addb = hit.palfx_addb;
+        fx~amplr = hit.palfx_amplr;
+        fx~amplg = hit.palfx_amplg;
+        fx~amplb = hit.palfx_amplb;
+        if(hit.palfx_cycletime > 0) fx~cycletime = hit.palfx_cycletime;
+        fx~color =
+          .m.max!float?(0.0)<, .m.min!float?(1.0)<,
+          ((float)hit.palfx_color / 256.0);
+        fx~invertall = hit.palfx_invertall;
+      }
+      if(hit.envshake_time > 0){
+        .stage.envShake.time = hit.envshake_time;
+        .stage.envShake.freq = (hit.envshake_freq / 180.0) * .m.PI;
+        .stage.envShake.ampl = hit.envshake_ampl;
+        .stage.envShake.phase = hit.envshake_phase;
+        .stage.envShake.setDefPhase();
+      }
+      `pyr.sysivar[.iCOMBO] += hit.numhits*hits;
+      if(
+        !pro && rtn && by.cs1tmp == 0 && `pyr.ls(.lsSCREENBOUNDX) && (
+          (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
+          || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
+        ) switch(`pyr.stVal.typ)
+      {
+      case .StTy::S, .StTy::C:
+        by.veloff += by.stVal.hit.ground_cornerpush_veloff * (float)by.facing;
+      case .StTy::A:
+        by.veloff += by.stVal.hit.air_cornerpush_veloff * (float)by.facing;
+      case .StTy::L:
+        by.veloff += by.stVal.hit.down_cornerpush_veloff * (float)by.facing;
+      }
+      if(`pyr.hittmp < 2){
+        `pyr.stVal.hb.juggle = by.sysivar[.iAIRJUGGLE];
+      }
+      `pyr.stVal.hb.juggle -=
+        (pro ? 0 : by.stVal.juggle) + by.stVal.hit.air_juggle;
+    else:
+      by.addPower(hit.guardgetpower);
+      if(
+        `pyr.addLife(-`pyr.stVal.hb.damage, true, true)
+        && `pyr.helperindex == 0) branch
+      {
+      cond by.playerno == `pyr.playerno:
+        .winty[(`pyr.playerno+1)&1] = .fgt.WinTy::Suicide;
+      cond (by.playerno&1) == (`pyr.playerno&1):
+        .winty[(`pyr.playerno+1)&1] = .fgt.WinTy::Teammate;
+      else:
+        .winty[(`pyr.playerno+1)&1] = .fgt.WinTy::C;
+      }
+      `pyr.addPower(hit.guardgivepower);
+      branch{
+        if(hit.guardsoundg == .com.IERR) break;
+        sou = .newChannel(by.playerno, -1, false);
+        if(#sou == 0) break;
+      cond hit.guardsoundg < 0:
+        if(#.fight~fsn > 0){
+          sou~sound =
+            .fight~fsn~getSound(!hit.guardsoundg, hit.guardsoundn);
+        }
+      else:
+        if(#by.sn > 0){
+          sou~sound = by.sn~getSound(hit.guardsoundg, hit.guardsoundn);
+        }
+      comm:
+        sou~chrx = `pyr.sysfvar[.fX...fX+1];
+        sou~setDefaultParameter();
+      }
+      if(
+        !pro && rtn && by.cs1tmp == 0 && `pyr.ls(.lsSCREENBOUNDX) && (
+          (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
+          || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
+        ) switch(`pyr.stVal.typ)
+      {
+      case .StTy::S, .StTy::C:
+        by.veloff += by.stVal.hit.guard_cornerpush_veloff * (float)by.facing;
+      case .StTy::A:
+        by.veloff +=
+          by.stVal.hit.airguard_cornerpush_veloff * (float)by.facing;
+      }
+    comm:
+      {
+        by.setFacing(
+          (int)(`pyr.sysfvar[.fX] - by.sysfvar[.fX]) * hit.p1facing);
+        int op2f = `pyr.facing;
+        `pyr.setFacing(by.facing * -hit.p2facing);
+        if(
+          (hit.p2facing != 0 ? (op2f != `pyr.facing) == (hit.p2facing > 0)
+          : (`pyr.facing < 0) == (by.facing < 0)))
+        {
+          `pyr.stVal.hb.xvel *= -1.0;
+          if(`pyr.stVal.hb.fall.xvelocity != .com.FERR){
+            `pyr.stVal.hb.fall.xvelocity *= -1.0;
+          }
+        }
+      }
+      if(hit.p1stateno >= 0) branch{
+      cond
+        (by.cs1tmp == 0 || by.stVal.playerno == by.playerno)
+        && (hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s)
+        :
+        by.changeState1(by.playerno, hit.p1stateno);
+      else:
+        break, break;
+      }
+      if(rtn){
+        `pyr.outTarget();
+        by.addTarget(`pyr.id);
+        `pyr.stVal.hb.byid = by.id;
+      }
+    }
+    ret rtn;
+  }
+  bool juggcheck(int h, int a)
+  {
+    ret a <= 0 || a <= h;
+  }
+  pyr.inguarddist = false;
+  loop{
+    *`top.self p = `top;
+    float pl, pr, pv;
+    float sp = .m.min!float?(1.0, .speed);
+    branch{
+    cond pyr.facing > 0:
+      pl = pyr.sysfvar[.fX] - pyr.backw;
+      pr = pyr.sysfvar[.fX] + pyr.frontw;
+    else:
+      pl = pyr.sysfvar[.fX] - pyr.frontw;
+      pr = pyr.sysfvar[.fX] + pyr.backw;
+    }
+    pv = pyr.acttmp > 0 ? pyr.sysfvar[.fVX]*(float)pyr.facing*sp : 0.0;
+    while;
+  do:
+    if(p~c~id < 0) continue;
+    if(
+      (pyr.playerno&1) != (p~c~playerno&1)
+      && !pyr.isFreezeX() && !p~c~isFreezeX()
+      && pyr.ls(.lsPLAYERPUSH) && p~c~ls(.lsPLAYERPUSH)
+      && (
+        (pyr.stVal.typ != .StTy::A || p~c~stVal.typ != .StTy::L)
+        && (pyr.stVal.typ != .StTy::L || p~c~stVal.typ != .StTy::A))
+      && pyr.sysfvar[.fY] - p~c~sysfvar[.fY] < pyr.getHeight()
+      && p~c~sysfvar[.fY] - pyr.sysfvar[.fY] < p~c~getHeight())
+    {
+      if(pl >= pr) break;
+      float el, er;
+      branch{
+      cond p~c~facing > 0:
+        el = p~c~sysfvar[.fX] - p~c~backw;
+        er = p~c~sysfvar[.fX] + p~c~frontw;
+      else:
+        el = p~c~sysfvar[.fX] - p~c~frontw;
+        er = p~c~sysfvar[.fX] + p~c~backw;
+      }
+      if(el >= er) break;
+      float ev =
+        p~c~acttmp > 0
+        ? p~c~sysfvar[.fVX]*(float)p~c~facing*sp : 0.0;
+      if((pl < el || pl < er)  && (el < pr || er < pr)){
+        float foo = (1.0 - (1.0 - 0.5)**(0.5*sp)) * 0.5;
+        branch{
+          float tmp = (pyr.sysfvar[.fX] - pv) - (p~c~sysfvar[.fX] -  ev);
+        cond tmp < 0.0:
+          pyr.sysfvar[.fX] -= (pr - el) * foo;
+          p~c~sysfvar[.fX] += (pr - el) * foo;
+        cond tmp > 0.0:
+          pyr.sysfvar[.fX] += (er - pl) * foo;
+          p~c~sysfvar[.fX] -= (er - pl) * foo;
+        cond pyr.sysfvar[.fY] > p~c~sysfvar[.fY]:
+          branch{
+          cond pyr.facing > 0:
+            pyr.sysfvar[.fX] -= (pr - el) * foo;
+            p~c~sysfvar[.fX] += (pr - el) * foo;
+          else:
+            pyr.sysfvar[.fX] += (er - pl) * foo;
+            p~c~sysfvar[.fX] -= (er - pl) * foo;
+          }
+        else:
+          branch{
+          cond p~c~facing > 0:
+            pyr.sysfvar[.fX] += (er - pl) * foo;
+            p~c~sysfvar[.fX] -= (er - pl) * foo;
+          else:
+            pyr.sysfvar[.fX] -= (pr - el) * foo;
+            p~c~sysfvar[.fX] += (pr - el) * foo;
+          }
+        }
+        if(pyr.ls(.lsSCREENBOUNDX)) branch{
+        cond pyr.sysfvar[.fX] < pxmi:
+          p~c~sysfvar[.fX] += pxmi - pyr.sysfvar[.fX];
+          pyr.sysfvar[.fX] = pxmi;
+        cond pyr.sysfvar[.fX] > pxma:
+          p~c~sysfvar[.fX] += pxma - pyr.sysfvar[.fX];
+          pyr.sysfvar[.fX] = pxma;
+        }
+        if(p~c~ls(.lsSCREENBOUNDX)) branch{
+          float l, r, x = p~c~sysfvar[.fX];
+          branch{
+          cond p~c~facing > 0:
+            l = .xmin+p~c~bedge; r = .xmax-p~c~fedge;
+          else:
+            l = .xmin+p~c~fedge; r = .xmax-p~c~bedge;
+          }
+        cond x < l:
+          pyr.sysfvar[.fX] += l - x;
+          p~c~sysfvar[.fX] = l;
+        cond x > r:
+          pyr.sysfvar[.fX] += r - x;
+          p~c~sysfvar[.fX] = r;
+        }
+      }
+    }
+    if(!.com.tickFrame()) continue;
+    if(
+      p~c~atktmp < 0 || p~c~id == pyr.id || (
+        p~c~stVal.hit.affectteam != 0
+        && ((pyr.playerno&1) != (p~c~playerno&1))
+        != (p~c~stVal.hit.affectteam > 0))) continue;
+    if(
+      p~c~stVal.mov == .MovTy::A && (
+        p~c~attackdist >= #(pyr.sysfvar[.fX] - p~c~sysfvar[.fX])))
+    {
+      pyr.inguarddist = true;
+    }
+    if(
+      p~c~stVal.hit.hitonce >= 0
+      && (
+        pyr.hittmp < 2 || p~c~ls(.lsNOJUGGLECHECK)
+        || juggcheck(
+          pyr.stVal.hb.juggle, p~c~stVal.juggle + p~c~stVal.hit.air_juggle))
+      && pyr.hittable(
+        p~c~stVal.hit=, [bool(&.Hitdef h=){
+          ret p~c~attrCheck(h=)&&p~c~hitCheck(pyr=);}]))
+    {
+      if(
+        .m.inRange!float?(
+          0.0, (float)p~c~stVal.hit.guard_dist,
+          (pyr.sysfvar[.fX] - p~c~sysfvar[.fX])*(float)p~c~facing))
+      {
+        pyr.inguarddist = true;
+      }
+      if(pyr.hitCheck(p~c<>=)){
+        branch{
+        cond
+          pyr.stVal.setHb(
+            p~c~stVal.hit=,
+            !p~c~ls(.lsUNGUARDABLE) && pyr.ls(.lsGUARD))
+          :
+          if(!foo(true, p~c<>=, p~c~stVal.hit=, 0.0, false, 1)) break;
+          p~c~stVal.mctyp =
+            p~c~stVal.hit.reversal_attr !=  0
+            ? .MoveContact::Reversed : .MoveContact::Hit;
+          p~c~sysivar[.iHITPAUSETIME] =
+            .m.max!int?(1, p~c~stVal.hit.pausetime+1);
+          p~c~sysivar[.iUNIQHITCOUNT]++;
+        else:
+          if(!foo(false, p~c<>=, p~c~stVal.hit=, 0.0, false, 1)) break;
+          p~c~stVal.mctyp = .MoveContact::Guarded;
+          p~c~sysivar[.iHITPAUSETIME] =
+            .m.max!int?(1, p~c~stVal.hit.guard_pausetime+1);
+        comm:
+          if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
+          p~c~stVal.mctime = -1;
+        break:
+          p~c~tmphit = p~c~atktmp;
+        }
+      }
+    }
+  continue:
+    p = p~next;
+  while #p > 0:
+  }
+  if(!.com.tickFrame()) ret;
+  loop{
+    index i = 0;
+    while;
+  do:
+    loop{
+      index j = 0;
+      while;
+    do:
+      if(
+        .projs[i][j].id < 0 || .projs[i][j].hits <= 0 || (
+          .projs[i][j].hit.affectteam != 0
+          && ((pyr.playerno&1) != (i&1))
+          != (.projs[i][j].hit.affectteam > 0))) continue;
+      if(pyr.stVal.hb.fallf == 0){
+        pyr.stVal.hb.juggle = .chars[i][0]~sysivar[.iAIRJUGGLE];
+      }
+      if(
+        (float).chars[i][0]~sysivar[.iPROJ_ATTACK_DIST]
+        >= #(pyr.sysfvar[.fX] - .projs[i][j].x))
+      {
+        pyr.inguarddist = true;
+      }
+      if(
+        (
+          pyr.hittmp < 2 || .chars[i][0]~ls(.lsNOJUGGLECHECK)
+          || juggcheck(pyr.stVal.hb.juggle, .projs[i][j].hit.air_juggle))
+        && .projs[i][j].timemiss >= 0
+        && .projs[i][j].hitpause <= 0 && pyr.hittable(
+          .projs[i][j].hit=, [bool(&.Hitdef h=){
+            ret
+              (h.hitflag&(int).StTy::U) != 0
+              && pyr.hitProjCheck(.projs[i][j]=);}]))
+      {
+        if(
+          .m.inRange!float?(
+            0.0, (float).projs[i][j].hit.guard_dist,
+            (pyr.sysfvar[.fX] - .chars[i][0]~sysfvar[.fX])
+            * (float).chars[i][0]~facing))
+        {
+          pyr.inguarddist = true;
+        }
+        if(pyr.projHitCheck(.projs[i][j]=)){
+          .projs[i][j].timemiss = .m.max!int?(0, .projs[i][j].misstime);
+          bool hit =
+            pyr.stVal.setHb(.projs[i][j].hit=, pyr.ls(.lsGUARD));
+          if(
+            foo(
+              hit, .chars[i][0]<>=, .projs[i][j].hit=,
+              .projs[i][j].y - .chars[i][0]~sysfvar[.fY], true,
+              .projs[i][j].misstime == 0 ? .projs[i][j].hits : 1))
+          {
+            branch{
+            cond hit:
+              .projs[i][j].pctyp == .ProjContact::Hit;
+              .projs[i][j].pctime = -1;
+              .projs[i][j].hitpause =
+                .m.max!int?(1, .projs[i][j].hit.pausetime+1);
+            else:
+              .projs[i][j].pctyp == .ProjContact::Guarded;
+              .projs[i][j].pctime = -1;
+              .projs[i][j].hitpause =
+                .m.max!int?(1, .projs[i][j].hit.guard_pausetime+1);
+            }
+          }
+          if(.projs[i][j].misstime == 0) .projs[i][j].hits = 0;
+        }
+      }
+      if(
+        .projs[i][j].prioritypoint > 0 && pyr.stVal.mov == .MovTy::A
+        && (pyr.stVal.hit.hitflag & (int).StTy::U) != 0
+        && pyr.hitProjCheck(.projs[i][j]=))
+      {
+        .projs[i][j].hits = 0;
+        .projs[i][j].prioritypoint = 0;
+      }
+    continue:
+      j++;
+    while j < #.projs[i]:
+    }
+    i++;
+  while i < #.projs:
+  }
+}
+public void PlayerList!&Char?::getHit()
+{
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if(p~c~id < 0) continue;
+    p~c~stVal.hb.damage = 0;
+    .players.clsn(p~c<>=);
+  continue:
+    p = p~next;
+  while #p > 0:
+  }
+}
+
+
+
+^int sndbuf;
+sndbuf.new(.sdl.SNDBUFLEN);
+
+void sndbufClear()
+{
+  loop{index i = 0; do:
+    .sndbuf[i++] = 0;
+  while  i < .sdl.SNDBUFLEN:
+  }
+}
+sndbufClear();
+
+^&.snd.Sound newChannel(int pn, int ch, bool lowpriority)
+{
+  index c = .m.min!int?(255, ch);
+  if(c >= 0) branch{
+  cond lowpriority:
+    if(#.sounds[pn][c].sound > 0){
+      ret .consts.null!&.snd.Sound?();
+    }
+  comm:
+    ret .sounds[pn][c..c+1];
+  }
+  loop{index i = 255; do:
+    if(#.sounds[pn][i].sound == 0) ret .sounds[pn][i..i+1];
+    i--;
+  while i >= 0:
+  }
+  ret .consts.null!&.snd.Sound?();
+}
+void playSound()
+{
+  if(.sdl.setSndBuf(.sndbuf)){
+    .sndbufClear();
+    .syssnd.mix(.sndbuf, .xmin - .screenleft, .xmax + .screenright);
+    loop{index i = 0; while; do:
+      loop{index j = 0; while; do:
+        .sounds[i][j].mix(
+          .sndbuf, .xmin - .screenleft, .xmax + .screenright);
+        j++;
+      while j < #.sounds[i]:
+      }
+      i++;
+    while i < #.sounds:
+    }
+  }
+}
+void stopAllSound()
+{
+  if(.sdl.setSndBuf(.sndbuf)){
+    .sndbufClear();
+    loop{index i = 0; while; do:
+      loop{index j = 0; while; do:
+        .sounds[i][j].sound.new(0);
+        j++;
+      while j < #.sounds[i]:
+      }
+      i++;
+    while i < #.sounds:
+    }
+  }
+}
+
+public void charInit(&.Char c=, int no, int idx)
+{
+  c.clearVal();
+  c.playerno = no;
+  c.helperindex = idx;
+  if(c.helperindex == 0){
+    c.keyctrl = true;
+    c.player = true;
+  }
+  c.key = .m.inRange!int?(0, #.com.com-1, no) && !.com.com[no] ?  no : !no;
+}
+
+public ^&Char create(int no)
+{
+  index idx = 0;
+  loop{while; do:
+    if(.chars[no][idx]~id == .com.IERR) break;
+    idx++;
+  while idx < #.chars[no]:
+    if(idx >= .cfg.HelperMax) ret .consts.null!&.Char?();
+    .chars[no].new[idx].new(1);
+  }
+  ^&.Char c = .chars[no][idx];
+  .charInit(c<>=, no, idx);
+  c~id = .id++;
+  .players.add(c);
+  ret c;
+}
+void gSetNormal(&.stage.Stage stg=, float scl, float x)
+{
+  .scale = stg.ztopscale*scl;
+  .zoffset = (float)stg.zoffset*scl + (1.0 - scl)*240.0;
+  .yoffset = (stg.bga.yoffset-.stage.envShake.getOffset())*scl;
+  .xoffset = stg.bga.xoffset*scl;
+  .scrxmin = (float)stg.cam.boundleft - 160.0/stg.ztopscale;
+  .scrxmax = (float)stg.cam.boundright + 160.0/stg.ztopscale;
+  .specialFlag &= !(.gsINTRO|.gsROUNDNOTOVER);
+}
+
+^&.fgt.LifePower getLifePower()
+{
+  %&.fgt.LifePower lpl;
+  loop{index i = 0; while; do:
+    branch{
+    cond #.chars[i] > 0:
+      lpl.new[-1].set(
+        (float).chars[i][0]~sysivar[.iLIFE]
+        / (float).chars[i][0]~sysivar[.iLIFEMAX],
+        (float).chars[i][0]~getSharePower()
+        / (float).chars[i][0]~sysivar[.iPOWERMAX],
+        .chars[i][0]~getSharePower() / 1000);
+    else:
+      lpl.new[-1].set(0.0, 0.0, 0);
+    }
+    i++;
+  while i < #.chars:
+  }
+  ret lpl;
+}
+
+public float action(
+  &.stage.Stage stg=, float x=, float y=,
+  float leftest=, float rightest=, float scl)
+{
+  .anims.new(0);
+  .topanims.new(0);
+  .shadows.new(0);
+  .resetDrawnClsnList();
+  if(.se.eventKeys[0].down) .clsndraw!!;
+  .gSetNormal(stg=, scl, x);
+  .screenx = x - 160.0 / .scale;
+  .screeny = y - .zoffset / .scale;
+  .camerax = x;
+  .cameray = y;
+  if(.com.tickFrame()){
+    branch{
+    cond .super > 0:
+      .super--;
+    cond .pause > 0:
+      .pause--;
+    }
+    if(.pausetime < 0 && .pausetime != .com.IERR){
+      .pausetime *= -1;
+      .pause = .pausetime;
+    }
+    if(.supertime < 0 && .supertime != .com.IERR){
+      .supertime *= -1;
+      .super = .supertime;
+    }
+    if(#.superanim > 0) .superanim~ani.action();
+    .com.allPalFX~step();
+    .stage.bgPalFX~step();
+    .stage.envShake.next();
+    if(.super <= 0 && .pause <= 0){
+      .specialFlag = 0d0;
+      .screenleft = (float)stg.screenleft;
+      .screenright = (float)stg.screenright;
+    }
+    .xmin = .screenx + .screenleft;
+    .xmax = .screenx + (320.0 / .scale) - .screenright;
+    if(.xmin > .xmax) .xmin = .xmax = (.xmin + .xmax) * 0.5;
+    if(.envcol_time > 0) .envcol_time--;
+    .players.action();
+  }
+  %bool hbuf;
+  loop{index i = 0; while; do:
+    branch{
+    cond #.chars[i] > 0:
+      hbuf .=
+        .chars[i][0]~stVal.mov == .MovTy::H
+        && .chars[i][0]~sysivar[.iRECOVERTIME] > 0
+        && .chars[i][0]~trCanRecover()$!.v.isTrue();
+    else:
+      hbuf .= false;
+    }
+    i++;
+  while i < #.chars:
+  }
+  ^int cb;
+  cb.new(2);
+  cb[0] = cb[1] = 0;
+  loop{index i = 0; while; do:
+    loop{index j = 0; while; do:
+      cb[!i&1] =
+        .m.min!int?(999)<,
+        .m.max!int?(cb[!i&1], .chars[i][j]~sysivar[.iCOMBO]);
+      j++;
+    while j < #.chars[i]:
+    }
+    i++;
+  while i < #.chars:
+  }
+  .fight~step(.tmode, .getLifePower(), hbuf, cb, .syssnd=);
+  float tension = (float)stg.cam.tension / .scale;
+  float cvx = 0.0;
+  float highest = 0.0, lowest = .screeny;
+  rightest = leftest = x;
+  .players.move(tension, cvx=);
+  .players.update(x);
+  loop{index i = 0; while; do:
+    loop{index j = 0; while; do:
+      if(.projs[i][j].id >= 0) .projs[i][j].update();
+      j++;
+    while j < #.projs[i]:
+    }
+    i++;
+  while i < #.projs:
+  }
+  if(#.superanim > 0){
+    .addAnimList(
+      .topanims=, .superanim, 5, .superposx, .superposy, .scale,
+      (float).superfacing, 1.0, 0.0, 255, 0, 256,
+      .consts.null!&.com.PalFX?(), 0, 0.0);
+    if(.superanim~ani.loopend) .superanim.new(0);
+  }
+  if(.com.tickFrame()) loop{index i = 0; while; do:
+    loop{index j = 0; while; do:
+      if(.projs[i][j].id >= 0) .projs[i][j].projClsn();
+      j++;
+    while j < #.projs[i]:
+    }
+    i++;
+  while i < #.projs:
+  }
+  .players.getHit();
+  loop{index i = 0; while; do:
+    loop{index j = 0; while; do:
+      if(.projs[i][j].id >= 0) .projs[i][j].anime();
+      j++;
+    while j < #.projs[i]:
+    }
+    i++;
+  while i < #.projs:
+  }
+  loop{index i = 0; while; do:
+    loop{index j = 0; while; do:
+      .chars[i][j]~tickAndAnim(highest=, lowest=, leftest=, rightest=);
+      j++;
+    while j < #.chars[i]:
+    }
+    i++;
+  while i < #.chars:
+  }
+  loop{index i = 0; while; do:
+    loop{index j = #.expdrawlist[i]-1; while; do:
+      if(.explods[i][.expdrawlist[i][j]].id != .com.IERR){
+        .explods[i][.expdrawlist[i][j]].update();
+      }
+      if(.explods[i][.expdrawlist[i][j]].id == .com.IERR){
+        .delIL(.expdrawlist[i]=, j);
+      }
+      j--;
+    while j >= 0:
+    }
+    i++;
+  while i < #.explods:
+  }
+  leftest -= x;
+  rightest -= x;
+  if(.roundState() == 4 && #(leftest + rightest)*.scale > 64.0){
+    float tmp;
+    branch{
+    cond leftest + rightest < 0.0:
+      tmp =
+        .m.max!float?(0.0, (.xmin - x - .screenleft) - leftest + 64.0);
+      tmp = -.m.sqrt(tmp * (1.0/32.0));
+    else:
+      tmp =
+        .m.max!float?(0.0, rightest - (.xmax - x + .screenright) + 64.0);
+      tmp = .m.sqrt(tmp * (1.0/32.0));
+    }
+    cvx += tmp;
+  }
+  branch{
+    float tmp = leftest + rightest;
+  cond cvx < 0.0:
+    if(cvx < tmp) cvx = .m.min!float?(0.0, tmp);
+  else:
+    if(cvx > tmp) cvx = .m.max!float?(0.0, tmp);
+  }
+  x += cvx;
+  if(lowest >= highest) branch{
+  cond highest < (float)-stg.cam.floortension / .scale:
+    y =
+      (highest + (float)stg.cam.floortension / .scale)
+      * .scale * stg.cam.verticalfollow;
+  else:
+    y = 0.0;
+  }
+  bool finish()
+  {
+    bool p1 = false, p2 = false;
+    loop{index i = 0; while; do:
+      if(#.chars[i] > 0 && .chars[i][0]~sysivar[.iLIFE] > 0) break;
+      i += 2;
+    while i < #.chars:
+      p1 = true;
+    }
+    loop{index i = 1; while; do:
+      if(#.chars[i] > 0 && .chars[i][0]~sysivar[.iLIFE] > 0) break;
+      i += 2;
+    while i < #.chars:
+      p2 = true;
+    }
+    branch{
+    cond .time == 0:
+      {
+        .intro = -.fight~ro.over_hittime;
+        if(p1 || p2) break;
+        .winty[0] = .winty[1] = .fgt.WinTy::T;
+        float l1 = 0.0, l2 = 0.0;
+        loop{index i = 0; while; do:
+          if(#.chars[i] > 0){
+            l1 +=
+              (.tmode[0] == (int).TeamMode::Simul ? 0.5 : 1.0)
+              * (float).chars[i][0]~sysivar[.iLIFE]
+              / (float).chars[i][0]~sysivar[.iLIFEMAX];
+          }
+          i += 2;
+        while i < #.chars:
+        }
+        loop{index i = 1; while; do:
+          if(#.chars[i] > 0){
+            l2 +=
+              (.tmode[1] == (int).TeamMode::Simul ? 0.5 : 1.0)
+              * (float).chars[i][0]~sysivar[.iLIFE]
+              / (float).chars[i][0]~sysivar[.iLIFEMAX];
+          }
+          i += 2;
+        while i < #.chars:
+        }
+        branch{
+        cond l1 > l2:
+          p2 = true;
+        cond l2 > l1:
+          p1 = true;
+        else:
+          p1 = p2 = true;
+        }
+      }
+    cond .gs(.gsNOKO):
+      ret false;
+    }
+    if(.intro == -.fight~ro.over_hittime && (p1 || p2)) branch{
+    cond
+      .tmode[0] != (int).TeamMode::Turns
+      && .tmode[1] != (int).TeamMode::Turns
+      && .draws < .fight~ro.match_maxdrawgames && p1 && p2
+      :
+      .draws++;
+    else:
+      if(p2){
+        loop{index i = 0; while; do:
+          if(
+            #.chars[i] > 0
+            && .chars[i][0]~sysivar[.iLIFE]
+            < .chars[i][0]~sysivar[.iLIFEMAX]) break;
+          i += 2;
+        while i < #.chars:
+          .fgt.setPerfect(.winty[0]=);
+        }
+        .fight~wi[0].add(.winty[0]);
+        .p1wins += 1;
+      }
+      if(p1){
+        loop{index i = 1; while; do:
+          if(
+            #.chars[i] > 0
+            && .chars[i][0]~sysivar[.iLIFE]
+            < .chars[i][0]~sysivar[.iLIFEMAX]) break;
+          i += 2;
+        while i < #.chars:
+          .fgt.setPerfect(.winty[1]=);
+        }
+        .fight~wi[1].add(.winty[1]);
+        .p2wins += 1;
+      }
+    }
+    if(.intro == -.fight~ro.over_hittime) branch{
+    cond p1 && p2:
+      .ko =
+        .winty[0] == .fgt.WinTy::T || .winty[0] == .fgt.WinTy::PT
+        ? .fgt.KOTy::TODraw : .fgt.KOTy::DKO;
+      .win = -1;
+    cond p1:
+      .ko = .winty[1] == .fgt.WinTy::T || .winty[1] == .fgt.WinTy::PT
+      ? .fgt.KOTy::TO : .fgt.KOTy::KO;
+      .win = 1;
+    cond p2:
+      .ko = .winty[0] == .fgt.WinTy::T || .winty[0] == .fgt.WinTy::PT
+      ? .fgt.KOTy::TO : .fgt.KOTy::KO;
+      .win = 0;
+    }
+    ret p1 || p2;
+  }
+  if(
+    .fight~ro.act(
+      .intro, .round, .syssnd=, .ko,
+      .win >= 0 && .tmode[.win] == (int).TeamMode::Simul) && .com.tickFrame())
+  {
+    .gametime++;
+    branch{
+    cond .intro > .fight~ro.ctrl_time:
+      .intro--;
+      if(.gs(.gsINTRO) && .intro <= .fight~ro.ctrl_time){
+        .intro = .fight~ro.ctrl_time+1;
+      }
+      if(.intro == .fight~ro.ctrl_time) loop{index i = 0; while; do:
+        if(#.chars[i] > 0){
+          .chars[i][0]~posReset((float)stg.p1.startx, (float)stg.p2.startx);
+          .v.setI(0);
+          .chars[i][0]~trSelfState();
+          .chars[i][0]~sysivar[.iCTRL] = 0;
+        }
+        i++;
+      while i < #.chars:
+        x = 0.0;
+        leftest =
+          .m.max!float?(
+            (float).m.min!int?(stg.p1.startx, stg.p2.startx),
+            -160.0 / .scale + .screenleft);
+        rightest =
+          .m.min!float?(
+            (float).m.max!int?(stg.p1.startx, stg.p2.startx),
+            160.0 / .scale - .screenright);
+      }
+    cond .intro >= 1:
+      .intro--;
+    }
+    branch{
+    cond .roundEnd() || finish():
+      .intro--;
+    else:
+      if(.intro < 0) .intro = 0;
+    }
+    if(.intro == 0) loop{index i = 0; while; do:
+      if(#.chars[i] > 0 && .chars[i][0]~stVal.no == 0){
+        .chars[i][0]~sysivar[.iCTRL] = 1;
+      }
+      i++;
+    while i < #.chars:
+    }
+    if(
+      .intro == 0 && .time > 0 && !.gs(.gsTIMERFREEZE)
+      && (.super <= 0 || .superpausebg == 0) 
+      && (.pause <= 0 || .pausebg == 0)) .time--;
+  }
+  if(.com.tickFrame()){
+    branch{
+      int st = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
+      int fade = .fight~ro.slow_time * 2 / 5;
+    cond
+      !.gs(.gsNOKOSLOW) && .time != 0
+      && .m.inRange!int?(st, -.fight~ro.over_hittime-1, .intro)
+      :
+      .speed = .com.Speed * 0.25;
+    cond
+      !.gs(.gsNOKOSLOW) && .time != 0
+      && .m.inRange!int?(st-fade, st-1, .intro)
+      :
+      .speed = .com.Speed*(0.25 + 0.75 * (float)(-.intro + st)/(float)fade);
+    else:
+      .speed = .com.Speed;
+    }
+  }
+  .sdl.pauseBGM(.gs(.gsNOMUSIC));
+  .playSound();
+  float foobar =
+    .m.max!float?(220.0/.scale)<, .m.sqrt(
+      (rightest - leftest)*(rightest - leftest)
+      + (lowest - highest)*(lowest - highest));
+  const float barbaz = 12.0;
+  float tmp =
+   (foobar*.scale) / .m.max!float?(.scale)<, (
+    (400.0 - 80.0*.m.max!float?(1.0, .scale)) * 2.0**(barbaz-2.0));
+  branch{
+  cond tmp >= 3.0/2.0**barbaz:
+    tmp = .m.max!float?(15.0/16.0)<, (67.0/64.0 - tmp*2.0**(barbaz-6.0));
+  else:
+    tmp =
+      .m.min!float?(129.0/128.0)<, ((2.0**barbaz+3.0)/2.0**barbaz - tmp)**32.0;
+  }
+  branch{
+  cond tmp > 1.0:
+    tmp = (tmp - 1.0)*.zoomdelay**8.0 + 1.0;
+    if(foobar*tmp > .xmax - .xmin) tmp = (.xmax - .xmin) / foobar;
+    .zoomdelay = .m.min!float?(1.0, .zoomdelay + 1.0/32.0);
+  else:
+    .zoomdelay = 0.0;
+  }
+  leftest -= .screenleft;
+  rightest += .screenright;
+  leftest *= stg.ztopscale;
+  rightest *= stg.ztopscale;
+  ret tmp;
+}
+public void draw(&.stage.Stage stg=, float x, float y, float scl)
+{
+  ^&.fgt.LifePower lpl = .getLifePower();
+  uint ecol =
+    ((uint).envcol_b&0xff)
+    | ((uint).envcol_g<<0d8&0xff00) | ((uint).envcol_r<<0d16&0xff0000);
+  &.sdl.Rect onedot.set(0, 0, 0d1, 0d1), til.set(0, 0, 0d0, 0d0);
+  ^ubyte px;
+  px.new(1);
+  px<> = 0d0;
+  %byte dammy;
+  %^/char winner;
+  if(.win >= 0){
+    winner.new[-1] = .chars[.win][0]~displayname;
+    if(.tmode[.win] == (int).TeamMode::Simul){
+      winner.new[-1] = .chars[.win+2][0]~displayname;
+    }
+  }
+  ^^/char names;
+  names.new(4);
+  names[0] = .chars[0][0]~displayname;
+  names[1] = .chars[1][0]~displayname;
+  if(#.chars[2] > 0) names[2] = .chars[2][0]~displayname;
+  if(#.chars[3] > 0) names[3] = .chars[3][0]~displayname;
+  int ob = .com.brightness;
+  .com.brightness = 256 >> (int)(.super > 0 && .superdarken != 0);
+  if(.envcol_time == 0) branch{
+  cond .gs(.gsNOBG):
+    .sdl.screen.fill(.com.scrrect=, 0x00000000);
+  else:
+    if(stg.debugbg) .sdl.screen.fill(.com.scrrect=, 0x00ff00ff);
+    stg.bgDraw(false, x, y, scl);
+  }
+  branch{
+  cond<envu> .envcol_time != 0 && .envcol_under != 0:
+    .sdl.screen.fill(.com.scrrect=, ecol);
+  cond<envt> .envcol_time != 0:
+    break;
+  comm:
+    if(!.gs(.gsGLOBALNOSHADOW)){
+      if(stg.reflection > 0) .drawReflection(stg=, x, y);
+      if(stg.sdw.intensity > 0) .drawShadowList(stg=, x, y);
+    }
+  else:
+    .fight~draw(.tmode, 0, lpl, names, .time, .gs(.gsNOBARDISPLAY));
+    .fight~ro.draw(0, .intro, .round, .ko, winner);
+  }
+  if(.envcol_time == 0 || .envcol_under != 0){
+    .drawAnimList(.anims=, stg=, x, y);
+  }
+  if(.envcol_time == 0 && !.gs(.gsNOFG)) stg.bgDraw(true, x, y, scl);
+  if(.envcol_time != 0 && .envcol_under == 0){
+    .tmppl<> = ecol;
+    .sdl.screen.fill(.com.scrrect=, ecol);
+  }
+  .fight~draw(.tmode, 1, lpl, names, .time, .gs(.gsNOBARDISPLAY));
+  .fight~ro.draw(1, .intro, .round, .ko, winner);
+  .drawAnimList(.topanims=, stg=, x, y);
+  .fight~draw(.tmode, 2, lpl, names, .time, .gs(.gsNOBARDISPLAY));
+  .fight~ro.draw(2, .intro, .round, .ko, winner);
+  if(.intro > .fight~ro.ctrl_time+1){
+    .tmppl<> = 0x000000;
+    .sdl.screen.renderMugenZoom(
+      .com.scrrect=, 0.0, 0.0, px, .tmppl, -1, onedot=, 0.0, 0.0, til=,
+      (float).cfg.Width, (float).cfg.Width, (float).cfg.Height, 0.0, 0d0,
+      256*(.intro-(.fight~ro.ctrl_time+1))/.fight~ro.start_waittime,
+      0, dammy=);
+  }
+  .com.brightness = ob;
+  if(.clsndraw) .drawClsn();
+}
+
+void resetGbl()
+{
+  .com.allPalFX~clear();
+  .stage.bgPalFX~clear();
+  .stage.envShake.clear();
+  .fight~reset();
+  .ko = .fgt.KOTy::NotYet;
+  .win = -1;
+  .winty[0] = .winty[1] = .fgt.WinTy::N;
+  .pause = 0;
+  .pausetime = 0;
+  .super = 0;
+  .supertime = 0;
+  .superanim.new(0);
+  .envcol_time = 0;
+  .specialFlag = 0d0;
+  .zoomdelay = 0.0;
+}
+
+public void nextRound(&.stage.Stage stg=)
+{
+  .resetGbl();
+  .intro = .fight~ro.start_waittime + .fight~ro.ctrl_time+1;
+  .time = .cfg.Time;
+  .id = .cfg.HelperMax;
+  .gSetNormal(stg=, 1.0, (float)stg.cam.startx);
+  .screenx = (float)stg.cam.startx - 160.0 / .scale;
+  .screeny = .zoffset / .scale;
+  .screenleft = (float)stg.screenleft;
+  .screenright = (float)stg.screenright;
+  .xmin = .screenx + .screenleft;
+  .xmax = .screenx + (320.0 / .scale) - .screenright;
+  if(stg.resetbg) stg.reset();
+  loop{index i = 0; while; do:
+    if(#.chars[i] == 0) continue;
+    .id = .chars[i][0]~id + 1;
+    loop{index j = 1; while; do:
+      .chars[i][j]~destroySelf();
+      j++;
+    while j < #.chars[i]:
+    }
+    .projs[i].new(0);
+    .explods[i].new(0);
+    .expdrawlist[i].new(0);
+    .sounds[i].new(256);
+    .chars[i][0]~children.new(0);
+    .chars[i][0]~targets.new(0);
+    .chars[i][0]~posReset((float)stg.p1.startx, (float)stg.p2.startx);
+    .chars[i][0]~sysivar[.iCTRL] = 0;
+    .chars[i][0]~stVal.clear();
+    .chars[i][0]~clearSpSysVar();
+    .chars[i][0]~rangeSetIVar(
+      0, .chars[i][0]~sysivar[.iINTPERSISTINDEX]-1, 0);
+    .chars[i][0]~rangeSetFVar(
+      0, .chars[i][0]~sysivar[.iFLOATPERSISTINDEX]-1, 0.0);
+  continue:
+    i++;
+  while i < #.chars:
+  }
+  loop{
+    index i = 0;
+    while;
+  do:
+    if(#.chars[i] > 0){
+      .chars[i][0]~trChangeAnim(0);
+      .v.setI(5900);
+      .chars[i][0]~trSelfState();
+    }
+    i++;
+  while i < #.chars:
+  }
+}
+
+
+public bool roundOver()
+{
+  if(.roundState() == 4 && .cmd.anybutton()){
+    ret true;
+  }
+  ret
+    !.gs(.gsROUNDNOTOVER) && .intro < -(
+      .fight~ro.over_hittime + .fight~ro.over_waittime
+      + .fight~ro.over_wintime + .fight~ro.over_time);
+}
+

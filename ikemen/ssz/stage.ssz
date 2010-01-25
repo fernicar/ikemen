@@ -1,0 +1,609 @@
+﻿
+
+lib file = <file.ssz>;
+lib s = <string.ssz>;
+lib mat = <math.ssz>;
+lib consts = <consts.ssz>;
+lib sff = "sff.ssz";
+lib com = "common.ssz";
+lib bg = "bg.ssz";
+lib cfg = "config.ssz";
+
+public ^&com.PalFX bgPalFX;
+bgPalFX.new(1);
+
+&EnvShake
+{
+  public int time;
+  public float freq;
+  public float ampl;
+  public float phase;
+  new()
+  {
+    `clear();
+  }
+  public void clear()
+  {
+    `time = 0;
+    `freq = .mat.PI / 3.0;
+    `ampl = -4.0;
+    `phase = .com.FERR;
+  }
+  public void setDefPhase()
+  {
+    if(`phase != .com.FERR) ret;
+    `phase = (`freq >= .mat.PI/2.0 ? .mat.PI/2.0 : 0.0);
+  }
+  public void next()
+  {
+    if(`time <= 0) ret;
+    `time--;
+    `phase += `freq;
+  }
+  public float getOffset()
+  {
+    if(`time <= 0) ret 0.0;
+    ret `ampl * .mat.sin(`phase);
+  }
+}
+public &EnvShake envShake;
+
+&Camera
+{
+  public int startx = 0;
+  public int boundleft = -95, boundright = 95;
+  public int boundhigh = -25;
+  public float verticalfollow = 0.2;
+  public int tension = 50, floortension = 0;
+}
+
+&Player
+{
+  public int startx = -70, starty = 0;
+}
+
+&Shadow
+{
+  public ^uint pal;
+  public int intensity = 128;
+  public uint color = 0x0;
+  public float yscale = 0.4;
+  public int fadeend = .consts.int_t::MIN, fadebgn = .consts.int_t::MIN;
+  new()
+  {
+    `pal.new(256);
+    loop{index i = 0; do: `pal[i] = `color; while ++i < 256:}
+  }
+}
+
+public &Stage
+{
+  &.com.ParseMethod!self? parseMethod;
+  public ^/char spr;
+  public ^/char bgmusic;
+  public ^/char name;
+  public ^&.sff.Sff sf;
+  public %&.bg.BackGround bg;
+  public %&.bg.Action actionList;
+  public %&.bg.BGCtrl bgctrlList;
+  public &.bg.BGCTimeLine bgctl;
+  public &.bg.BGCtrl bgcdef;
+  public &.bg.BGAction bga;
+  public &.Camera cam;
+  public &.Shadow sdw;
+  public &.Player p1, p2;
+  public int screenleft = 15, screenright = 15;
+  public int zoffset = 0;
+  public int zoffsetlink = -1;
+  public float ztopscale = 1.0;
+  public int reflection = 0;
+  public bool hires = false, resetbg = true, debugbg = false, reflect = true;
+  new()
+  {
+    `p2.startx *= -1;
+  }
+  ^&.bg.Action getAction(int no)
+  {
+    loop{index i = 0; while; do:
+      if(`actionList[i].no == no) ret `actionList[i..i+1];
+      i++;
+    while i< #`actionList:
+    }
+    ret .consts.null!&.bg.Action?();
+  }
+  void getBG(%^&.bg.BackGround bgl=, int id)
+  {
+    loop{index i = 0; while; do:
+      if(`bg[i].id == id) bgl.new[-1] = `bg[i..i+1];
+      i++;
+    while i< #`bg:
+    }
+  }
+  public bool load(^/char def)
+  {:<-
+    public void info(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "name"):
+        `name = data;
+      }
+    }
+    public void camera(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "startx"):
+        `cam.startx = .s.sToN!int?(data);
+      cond .s.equ(name, "boundleft"):
+        `cam.boundleft = .s.sToN!int?(data);
+      cond .s.equ(name, "boundright"):
+        `cam.boundright = .s.sToN!int?(data);
+      cond .s.equ(name, "boundhigh"):
+        `cam.boundhigh = .s.sToN!int?(data);
+      cond .s.equ(name, "verticalfollow"):
+        `cam.verticalfollow = .s.sToN!`cam.verticalfollow.self?(data);
+      cond .s.equ(name, "tension"):
+        `cam.tension = .s.sToN!int?(data);
+      cond .s.equ(name, "floortension"):
+        `cam.floortension = .s.sToN!int?(data);
+      }
+    }
+    public void playerinfo(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "p1startx"):
+        `p1.startx = .s.sToN!int?(data);
+      cond .s.equ(name, "p1starty"):
+        `p1.starty = .s.sToN!int?(data);
+      cond .s.equ(name, "p2startx"):
+        `p2.startx = .s.sToN!int?(data);
+      cond .s.equ(name, "p2starty"):
+        `p2.starty = .s.sToN!int?(data);
+      }
+    }
+    public void scaling(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "topscale"):
+        `ztopscale = .s.sToN!`ztopscale.self?(data);
+      }
+    }
+    public void bound(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "screenleft"):
+        `screenleft = .s.sToN!int?(data);
+      cond .s.equ(name, "screenright"):
+        `screenright = .s.sToN!int?(data);
+      }
+    }
+    public void stageinfo(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "zoffset"):
+        `zoffset = .s.sToN!int?(data);
+      cond .s.equ(name, "zoffsetlink"):
+        `zoffsetlink = .s.sToN!`zoffsetlink.self?(data);
+      cond .s.equ(name, "hires"):
+        `hires = .s.sToN!int?(data) != 0;
+      cond .s.equ(name, "resetbg"):
+        `resetbg = .s.sToN!int?(data) != 0;
+      }
+    }
+    public void shadow(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "intensity"):
+        `sdw.intensity =
+          .mat.max!int?(0)<, .mat.min!int?(255)<, .s.sToN!int?(data);
+      cond .s.equ(name, "color"):
+        {
+          ^ubyte c = .s.svToAry!c<>.self?(",", data);
+          if(#c >= 3){
+            `sdw.color = c[0]<<0d16 | c[1]<<0d8 | c[2];
+          }
+          loop{index i = 0; do:
+            `sdw.pal[i] = `sdw.color;
+          while ++i < 256:
+          }
+        }
+      cond .s.equ(name, "yscale"):
+        `sdw.yscale = .s.sToN!`sdw.yscale.self?(data);
+      cond .s.equ(name, "reflect"):
+        `reflect = .s.sToN!int?(data) != 0;
+      cond .s.equ(name, "fade.range"):
+        .com.readPair!int?(`sdw.fadeend=, `sdw.fadebgn=, data);
+      }
+    }
+    public void reflection(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "intensity"):
+        `reflection =
+          .mat.max!int?(0)<, .mat.min!int?(255)<, .s.sToN!int?(data);
+      }
+    }
+    public void music(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "bgmusic"):
+        `bgmusic = data;
+      }
+    }
+    public void bgdef(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "spr"):
+        `spr = data;
+      cond .s.equ(name, "debugbg"):
+        `debugbg = .s.sToN!int?(data) != 0;
+      }
+    }
+    public void bg(^/char sec, ^/char name, ^/char data)
+    {
+      `bg[-1].read(name, data, `hires);
+    }
+    public void begin(^^/char lines, index i=, ^/char section)
+    {
+      index fnd = .s.cFind(" "\t, section);
+      ^/char name = .s.toLower()<, section[0..fnd];
+      if(fnd >= 0) loop{while; do:
+        fnd++;
+      while fnd < #section && .s.cMatch!char?(" "\t, section[fnd]):
+      }
+      ^/char sec = section[fnd..-1];
+      branch{
+      cond .s.equ(name, "action"):
+        {
+          int no;
+          no = .com.atoi(sec);
+          ^&.bg.Action act = `getAction(no);
+          if(#act > 0) break;
+          `actionList.new[-1].no = no;
+          act = `actionList[#`actionList-1..-1];
+          act~read(lines, i=);
+        }
+      }
+    }
+    public void bgctrldef(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "ctrlid"):
+        {
+          ^int ids = .s.svToAry!ids<>.self?(",", data);
+          `bgcdef.ctrlbg.new(0);
+          `bgcdef.positionlinkkamo = false;
+          branch{
+          cond #ids == 1 && ids[0] == -1:
+            loop{index i = 0; while; do:
+              if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+                `bgcdef.positionlink = true;
+              }
+              `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
+              i++;
+            while i < #`bg:
+            }
+          else:
+            loop{
+              index i = 0;
+              while;
+            do:
+              loop{index j = 0; while; do:
+                if(ids[j] == ids[i]) break, continue;
+                j++;
+              while j < i:
+              }
+              if(`zoffsetlink >= 0 && ids[i] == `zoffsetlink){
+                `bgcdef.positionlink = true;
+              }
+              `getBG(`bgcdef.ctrlbg=, ids[i]);
+            continue:
+              i++;
+            while i < #ids:
+            }
+          }
+        }
+      cond .s.equ(name, "looptime"):
+        `bgcdef.looptime = .s.sToN!`bgcdef.looptime.self?(data);
+      }
+    }
+    public void bgctrl(^/char sec, ^/char name, ^/char data)
+    {
+      if(!`bgctrlList[-1].read(name, data)) branch{
+      cond .s.equ(name, "ctrlid"):
+        {
+          ^int ids = .s.svToAry!ids<>.self?(",", data);
+          `bgctrlList[-1].ctrlbg.new(0);
+          branch{
+          cond #ids == 1 && ids[0] == -1:
+            loop{index i = 0; while; do:
+              if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+                `bgctrlList[-1].positionlink = true;
+              }
+              `bgctrlList[-1].ctrlbg.new[-1] = `bg[i..i+1];
+              i++;
+            while i < #`bg:
+            }
+          else:
+            loop{
+              index i = 0;
+              while;
+            do:
+              loop{index j = 0; while; do:
+                if(ids[j] == ids[i]) break, continue;
+                j++;
+              while j < i:
+              }
+              if(`zoffsetlink >= 0 && ids[i] == `zoffsetlink){
+                `bgctrlList[-1].positionlink = true;
+              }
+              `getBG(`bgctrlList[-1].ctrlbg=, ids[i]);
+            continue:
+              i++;
+            while i < #ids:
+            }
+          }
+        }
+      }
+    }
+    void section(^^/char lines, index i=)
+    {
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      branch{
+      cond .s.equ(secname, "info"):
+        `parse!`load:<-info?(lines, i=, sec);
+      cond .s.equ(secname, "camera"):
+        `parse!`load:<-camera?(lines, i=, sec);
+      cond .s.equ(secname, "playerinfo"):
+        `parse!`load:<-playerinfo?(lines, i=, sec);
+      cond .s.equ(secname, "scaling"):
+        `parse!`load:<-scaling?(lines, i=, sec);
+      cond .s.equ(secname, "bound"):
+        `parse!`load:<-bound?(lines, i=, sec);
+      cond .s.equ(secname, "stageinfo"):
+        `parse!`load:<-stageinfo?(lines, i=, sec);
+      cond .s.equ(secname, "shadow"):
+        `parse!`load:<-shadow?(lines, i=, sec);
+      cond .s.equ(secname, "reflection"):
+        `parse!`load:<-reflection?(lines, i=, sec);
+      cond .s.equ(secname, "music"):
+        `parse!`load:<-music?(lines, i=, sec);
+      cond .s.equ(secname, "bgdef"):
+        `parse!`load:<-bgdef?(lines, i=, sec);
+      cond .s.equ(secname, "bg"):
+        `bg.new[-1];
+        `parse!`load:<-bg?(lines, i=, sec);
+      cond .s.equ(secname, "begin"):
+        `load:<-begin(lines, i=, sec);
+      cond .s.equ(secname, "bgctrldef"):
+        `bgcdef.ctrlbg.new(0);
+        `bgcdef.looptime = -1;
+        `bgcdef.positionlink = false;
+        `bgcdef.positionlinkkamo = false;
+        loop{index i = 0; while; do:
+          if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+            `bgcdef.positionlinkkamo = true;
+          }
+          `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
+          i++;
+        while i < #`bg:
+        }
+        `parse!`load:<-bgctrldef?(lines, i=, sec);
+        `bgcdef.positionlink |= `bgcdef.positionlinkkamo;
+      cond .s.equ(secname, "bgctrl"):
+        if(#`bgctrlList == 0 && #`bgcdef.ctrlbg == 0) loop{
+          index i = 0;
+          while;
+        do:
+          if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+            `bgcdef.positionlink = true;
+          }
+          `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
+          i++;
+        while i < #`bg:
+        }
+        `bgctrlList.new[-1].ctrlbg = `bgcdef.ctrlbg;
+        `bgctrlList[-1].looptime = `bgcdef.looptime;
+        `parse!`load:<-bgctrl?(lines, i=, sec);
+        if(`bgctrlList[-1].ctrlbg == `bgcdef.ctrlbg){
+          `bgctrlList[-1].positionlink |= `bgcdef.positionlink;
+        }
+      }
+    }
+    ^char buf = .file.loadAsciiText(def);
+    ^^/char lines = .com.splitLines(buf);
+    .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
+    `clear();
+    loop{index i = 0; while; do:
+      section(lines, i=);
+      i++;
+    while i < #lines:
+    }
+    if(!`reflect) `reflection = 0;
+    `sf.new(1);
+    if(
+      !.com.loadFile(def, `spr=)<,
+      [bool(^/char f){ret `sf~loadFile(f);}]) ret false;
+    loop{index i = 0; while; do:
+      `bg[i].setup(`sf, `hires, (float)`cam.startx)<,
+        [void(^&.bg.Action act=, int n){act = `getAction(n);}];
+      if(
+        `zoffset == 0
+        && `zoffsetlink >= 0 && `bg[i].id == `zoffsetlink)
+      {
+        `zoffset = (int)`bg[i].starty + 240;
+      }
+      i++;
+    while i < #`bg:
+    }
+    ret true;
+  }
+  type bglsig_t = $void(&.bg.BackGround=);
+  public void bgCtrl(&.bg.BGCtrl bgc=)
+  {:<-
+    void bgLoop(^^&.bg.BackGround bglist, ~`bglsig_t dg)
+    {
+      loop{index i = 0; while; do:
+        dg(:bglist[i]<>=:);
+        i++;
+      while i < #bglist:
+      }
+    }
+    bgc.currenttime++;
+    switch(bgc.typ){
+    case .bg.BgcType::Anim:
+      {
+        ^&.bg.Action act = `getAction((int)bgc.x);
+        if(#act > 0) bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+          bg.actionno = (int)bgc.x;
+          bg.anim.setFrames(act~frames, act~loopstart, act~nrepeat);
+          bg.anim.current = 0;
+        }];
+      }
+    case .bg.BgcType::Visible:
+      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+        bg.visible = (int)bgc.x != 0;
+      }];
+    case .bg.BgcType::Enable:
+      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+        bg.visible = bg.active = (int)bgc.x != 0;
+      }];
+    case .bg.BgcType::PosSet:
+      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+        if(bgc.setx) bg.bga.x = bgc.x;
+        if(bgc.sety) bg.bga.y = bgc.y;
+      }];
+      if(bgc.positionlink){
+        if(bgc.setx) `bga.x = bgc.x;
+        if(bgc.sety) `bga.y = bgc.y;
+      }
+    case .bg.BgcType::PosAdd:
+      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+        if(bgc.setx) bg.bga.x += bgc.x;
+        if(bgc.sety) bg.bga.y += bgc.y;
+      }];
+      if(bgc.positionlink){
+        if(bgc.setx) `bga.x += bgc.x;
+        if(bgc.sety) `bga.y += bgc.y;
+      }
+    case .bg.BgcType::SinX:
+      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+        bg.bga.xradius = bgc.x;
+        bg.bga.sinxlooptime = (int)bgc.y;
+        if(bg.bga.sinxlooptime > 0){
+          bg.bga.sinxtime =
+            (int)((float)bgc.n*bgc.y/360.0) % bg.bga.sinxlooptime;
+          if(bg.bga.sinxtime < 0) bg.bga.sinxtime += bg.bga.sinxlooptime;
+        }
+      }];
+      if(bgc.positionlink){
+        `bga.xradius = bgc.x;
+        `bga.sinxlooptime = (int)bgc.y;
+        if(`bga.sinxlooptime > 0){
+          `bga.sinxtime =
+            (int)((float)bgc.n*bgc.y/360.0) % `bga.sinxlooptime;
+          if(`bga.sinxtime < 0) `bga.sinxtime += `bga.sinxlooptime;
+        }
+      }
+    case .bg.BgcType::SinY:
+      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+        bg.bga.yradius = bgc.x;
+        bg.bga.sinylooptime = (int)bgc.y;
+        if(bg.bga.sinylooptime > 0){
+          bg.bga.sinytime =
+            (int)((float)bgc.n*bgc.y/360.0) % bg.bga.sinylooptime;
+          if(bg.bga.sinytime < 0) bg.bga.sinytime += bg.bga.sinylooptime;
+        }
+      }];
+      if(bgc.positionlink){
+        `bga.yradius = bgc.x;
+        `bga.sinylooptime = (int)bgc.y;
+        if(`bga.sinylooptime > 0){
+          `bga.sinytime =
+            (int)((float)bgc.n*bgc.y/360.0) % `bga.sinylooptime;
+          if(`bga.sinytime < 0) `bga.sinytime += `bga.sinylooptime;
+        }
+      }
+    case .bg.BgcType::VelSet:
+      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+        if(bgc.setx) bg.bga.vx = bgc.x;
+        if(bgc.sety) bg.bga.vy = bgc.y;
+      }];
+      if(bgc.positionlink){
+        if(bgc.setx) `bga.vx = bgc.x;
+        if(bgc.sety) `bga.vy = bgc.y;
+      }
+    case .bg.BgcType::VelAdd:
+      bgLoop(bgc.ctrlbg)<,[`bglsig_t(bg=){
+        if(bgc.setx) bg.bga.vx += bgc.x;
+        if(bgc.sety) bg.bga.vy += bgc.y;
+      }];
+      if(bgc.positionlink){
+        if(bgc.setx) `bga.vx += bgc.x;
+        if(bgc.sety) `bga.vy += bgc.y;
+      }
+    }
+  }
+  public void action()
+  {
+    `bgctl.step!`self?(`=);
+    `bga.action();
+    loop{index i = 0; while; do:
+      `bg[i].bga.action();
+      if(`bg[i].active) `bg[i].anim.action();
+      i++;
+    while i < #`bg:
+    }
+  }
+  public void bgDraw(bool t, float x, float y, float scl)
+  {
+    loop{
+      index i = 0;
+      while;
+    do:
+      if(
+        `bg[i].visible && `bg[i].toplayer == t
+        && #`bg[i].anim.spr > 0)
+      {
+        `bg[i].draw(
+          x, y + .envShake.getOffset(),
+          scl, .bgPalFX~time != 0 ? .bgPalFX : .com.allPalFX);
+      }
+      i++;
+    while i < #`bg:
+    }
+  }
+  public void clear()
+  {
+    `spr = "";
+    `bgmusic = "";
+    `name = "";
+    `bg.new(0);
+    `actionList.new(0);
+    `bgctrlList.new(0);
+  }
+  public void reset()
+  {
+    `bga.clear();
+    loop{index i = 0; while; do:
+      `bg[i].reset();
+      i++;
+    while i < #`bg:
+    }
+    loop{index i = 0; while; do:
+      `bgctrlList[i].currenttime = 0;
+      i++;
+    while i < #`bgctrlList:
+    }
+    `bgctl.clear();
+    loop{index i = #`bgctrlList-1; while; do:
+      `bgctl.add(`bgctrlList[i..i+1]);
+      i--;
+    while i >= 0:
+    }
+  }
+}
+
+

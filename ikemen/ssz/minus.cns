@@ -1,0 +1,132 @@
+
+[Statedef -1]
+
+
+[Statedef -2]
+
+
+[Statedef -3]
+
+
+[Statedef -4]
+
+[State -4, kosnd1]
+type = PlaySnd
+triggerall = !NoKosnd
+triggerall = !Alive
+triggerall = !IsHelper
+trigger1 = sysvar(58) & 4
+value = 11, 0
+channel = 0
+
+[State -4, kosnd2]
+type = VarSet
+trigger1 = 1
+sysvar(58) = (sysvar(58)&~4) | 4*Alive;SYSFLAG
+
+[State -4, Hit1]
+type = ChangeState
+triggerall = GetHit
+trigger1 = statetype = S
+value = ifelse(GetHitVar(guarded) && Alive, 150, 5000 + (gethitvar(type) = 3)*70)
+ctrl = 0
+ignorehitpause = 1
+
+[State -4, Hit2]
+type = ChangeState
+triggerall = GetHit
+trigger1 = statetype = C
+value = ifelse(GetHitVar(guarded) && Alive, 152, 5010 + (gethitvar(type) = 3)*60)
+ctrl = 0
+ignorehitpause = 1
+
+[State -4, Hit3]
+type = ChangeState
+triggerall = GetHit
+trigger1 = statetype = A
+value = ifelse(GetHitVar(guarded) && Alive, 154, 5020 + (gethitvar(type) = 3)*50)
+ctrl = 0
+ignorehitpause = 1
+
+[State -4, Hit4]
+type = ChangeState
+triggerall = GetHit
+trigger1 = statetype = L
+value = 5080 - (gethitvar(type) = 3)*10
+ctrl = 0
+ignorehitpause = 1
+
+[State -4, Getup1]
+type = ChangeState
+triggerall = Active
+triggerall = StateNo = 5110
+trigger1 = Alive
+trigger1 = sysvar(55) <= 0;RECOVERTIME
+value = 5120
+
+[State -4, Getup2]
+type = VarSet
+triggerall = StateNo != 5110
+trigger1 = Alive
+trigger1 = movetype != H
+trigger2 = !Alive
+trigger2 = !HitOver || gethitvar(isbound) || abs(vel x)+abs(vel y) >= 0.01
+sysvar(55) = const(data.liedown.time);RECOVERTIME
+
+[State -4, Getup3]
+type = VarAdd
+triggerall = Active
+trigger1 = StateNo = 5110
+trigger2 = !Alive
+trigger2 = HitOver
+trigger2 = !gethitvar(isbound)
+trigger2 = abs(vel x)+abs(vel y) < 0.01
+sysvar(55) = -1;RECOVERTIME
+
+[State -4, Landing1]
+type = VarSet
+trigger1 = Physics != A
+trigger2 = vel y <= 0
+trigger3 = pos y < 0
+sysvar(58) = sysvar(58) & ~8;SYSFLAG
+
+[State -4, Landing2]
+type = ChangeState
+triggerall = Active
+triggerall = Physics = A
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+trigger1 = (sysvar(58) & 8) && sysvar(58) := (sysvar(58) | 8);SYSFLAG
+value = 52
+
+[State -4, Turn Cond]
+type = VarSet
+trigger1 = 1
+sysvar(59) = ctrl && (statetype=S||statetype=C) && !NoAutoTurn && p2dist X < -5;SYSTEMP
+
+[State -4, Turn1]
+type = ChangeAnim
+trigger1 = sysvar(59);SYSTEMP
+value = ifelse(statetype = S, 5, 6)
+
+[State -4, Turn2]
+type = Turn
+trigger1 = sysvar(59);SYSTEMP
+
+
+[State -4, Win or Lose1]
+type = VarSet
+trigger1 = RoundState < 4
+sysvar(58) = sysvar(58) | 2;SYSFLAG
+
+[State -4, Win or Lose2]
+type = ChangeState
+triggerall = Active
+triggerall = RoundState = 4
+triggerall = !IsHelper
+triggerall = sysvar(58) & 2;SYSFLAG
+trigger1 = StateNo = 0
+trigger1 = (Physics != S && Physics != C) || abs(vel x) < 0.01
+trigger1 = sysvar(58) := (sysvar(58) & ~2) || 1;SYSFLAG
+value = ifelse(Win, 180, ifelse(Lose, 170, 175))
+

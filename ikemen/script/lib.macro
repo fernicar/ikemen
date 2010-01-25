@@ -1,0 +1,39 @@
+﻿
+#`| for | a@for | b@for | c@for | d@for | e@for |
+#[
+  #`#a@for#!
+  #`#[
+    #`#]#b@for#[#=_
+    #`!(#_#,) #if #{ #^#`#d@for#~ #}
+    #`#]#e@for#[
+    #`#]#c@for#[
+    #`#tmp@for #~
+  #] #=tmp@for #!
+#]
+#defMacro
+
+#`% anyBtn % a@anyBtn %
+#[
+  #{| getState | a #\#a@anyBtn#!#} ||
+  #{| getState | b #\#a@anyBtn#!#} ||
+  #{| getState | c #\#a@anyBtn#!#} ||
+  #{| getState | x #\#a@anyBtn#!#} ||
+  #{| getState | y #\#a@anyBtn#!#} ||
+  #{| getState | z #\#a@anyBtn#!#} #expr#=_
+  (#_#, != 0)#echo
+#]
+#defMacro
+
+#`% btnPalNo % a@btnPalNo %
+#[
+  6*(int)#{| getState | holds #\#a@btnPalNo#!#}#expr#=_
+  #`| getState | a #\#a@btnPalNo#! #if #{#^#`1+#_#\expr#~#}
+  #`| getState | b #\#a@btnPalNo#! #if #{#^#`2+#_#\expr#~#}
+  #`| getState | c #\#a@btnPalNo#! #if #{#^#`3+#_#\expr#~#}
+  #`| getState | x #\#a@btnPalNo#! #if #{#^#`4+#_#\expr#~#}
+  #`| getState | y #\#a@btnPalNo#! #if #{#^#`5+#_#\expr#~#}
+  #`| getState | z #\#a@btnPalNo#! #if #{#^#`6+#_#\expr#~#}
+  #`0#echo
+#]
+#defMacro
+

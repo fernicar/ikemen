@@ -1,0 +1,109 @@
+﻿
+lib file = <file.ssz>;
+lib sh = <shell.ssz>;
+lib s = <string.ssz>;
+
+const ^/char conffile = "ssz/config.ssz";
+const ^/char selfile = "script/select.macro";
+
+if(#file.find(conffile) == 0){
+  &file.File f;
+  f.open(conffile, "wb");
+  f.writeAry!ubyte?()<, s.sToU8(
+\xfeff"
+
+const int Time = 999 * 6;//frames
+const int Life = 100;
+const int Team_1VS2Life = 150;
+
+const int HelperMax = 32;
+const int PlayerProjectileMax = 50;
+const int ExplodMax = 64;
+const int AfterImageMax = 8;
+
+const float Attack_LifeToPowerMul = 0.7;
+const float GetHit_LifeToPowerMul = 0.6;
+
+const int Width = 640;
+const int Height = 480;
+
+const float Super_TargetDefenceMul = 1.5;
+
+const int GameSpeed = 60;//frames/second
+
+const float TurnsRecoveryRate = 1.0 / 300.0;//for rest time(seconds)
+
+const float LifebarFontScale = 1.0;
+
+
+const ^/char system = "\""script/main.macro"\"";
+const ^/char fight = "\""data/fight.def"\"";
+
+lib sdl = <alpha/sdlplugin.ssz>;
+type k_t = |sdl.SDLKey;
+/%&Keys in;
+in.new[0].set(
+  -1, (int)k_t::UP, (int)k_t::DOWN, (int)k_t::LEFT, (int)k_t::RIGHT,
+  (int)k_t::z, (int)k_t::x, (int)k_t::c, (int)k_t::a, (int)k_t::s, (int)k_t::d,
+  (int)k_t::RETURN);
+
+
+const bool Zoom = false;
+const float MinScale = 5.0 / 6.0;
+const float MaxScale = 15.0 / 14.0;
+
+const bool SaveMemory = true;
+
+
+const bool IgnoreMostErrors = true;
+
+
+
+
+public &Keys
+{
+  public int jn = -2, u, d, l, r, a, b, c, x, y, z, s;
+  public void set(
+    int jn, int u, int d, int l, int r,
+    int a, int b, int c, int x, int y, int z, int s)
+  {
+    `jn = jn;
+    `u = u;
+    `d = d;
+    `l = l;
+    `r = r;
+    `a = a;
+    `b = b;
+    `c = c;
+    `x = x;
+    `y = y;
+    `z = z;
+    `s = s;
+  }
+}
+"
+  );
+}
+
+
+if(#file.find(selfile) == 0){
+  &file.File f;
+  f.open(selfile, "wb");
+  f.writeAry!ubyte?()<, s.sToU8(
+\xfeff"
+#`
+kfm, kfm.def
+kfm, kfm.def
+kfm, kfm.def
+#[#addChar#]#each
+
+#`
+kfm.def
+stage0.def
+#[#addStage#]#each
+"
+  );
+}
+
+sh.open("ikemen.exe", "ssz/ikemen.ssz", "", false, true);
+

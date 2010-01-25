@@ -1,0 +1,1028 @@
+﻿
+
+lib mac = <macro.ssz>;
+lib tbl = <table.ssz>;
+lib s = <string.ssz>;
+lib al = <alert.ssz>;
+lib consts = <consts.ssz>;
+lib se = <alpha/sdlevent.ssz>;
+lib file = <file.ssz>;
+lib sdl = <alpha/sdlplugin.ssz>;
+lib mes = <alpha/mesdialog.ssz>;
+lib m = <math.ssz>;
+lib soc = <socket.ssz>;
+lib sff = "sff.ssz";
+lib bg = "bg.ssz";
+lib cmd = "command.ssz";
+lib fnt = "font.ssz";
+lib com = "common.ssz";
+lib cfg = "config.ssz";
+lib snd = "sound.ssz";
+
+
+^/char listenPort = "7500";
+
+^int sndbuf;
+sndbuf.new(.sdl.SNDBUFLEN);
+void sndbufClear()
+{
+  loop{index i = 0; do:
+    .sndbuf[i++] = 0;
+  while  i < .sdl.SNDBUFLEN:
+  }
+}
+sndbufClear();
+^&snd.Sound sounds;
+sounds.new(16);
+|.mac.RetState dummyf(^char arg, ^char re=, &.Function fn=)
+{
+  ret .mac.RetState::ERROR;
+}
+
+type fsig_t =  $|.mac.RetState(^char, ^char=, &Function=);
+public &Function
+{
+  public func .fsig_t f = .dummyf;
+  public ref data;
+  public ^&.Script block;
+  public |.mac.RetState call(^char arg, ^char re=)
+  {
+    ret `f(:arg, re=, `=:);
+  }
+}
+
+
+|mac.RetState recvText(^char arg, ^char re=, &.Function fn=)
+{
+  %char buf;
+  ^char tx;
+  fn.data.cast(tx=);
+  buf .= arg .= tx;
+  re = buf;
+  ret .mac.RetState::OK;
+}
+
+
+
+public &Macro
+{
+  ^^/char argNames;
+  ^/char text;
+  public void def(^^/char argTxt)
+  {
+    if(#argTxt == 0) ret;
+    `argNames =
+      .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<,
+      argTxt[0..#argTxt-1];
+    `text = argTxt[-1];
+
+  }
+  public ^char getBlock(^^/char argTxt)
+  {
+    %char buf;
+    buf .= "#{";
+    loop{index i = 0; while; do:
+      buf .= "#`" .= argTxt[i] .= "#=" .= `argNames[i];
+      i++;
+    while i < #`argNames:
+      if(i > 0) buf .= "#`";
+    }
+    ret buf .= `text .= "#}";
+  }
+}
+|mac.RetState recvMacro(^char arg, ^char re=, &.Function fn=)
+{
+  ^&.Macro mc;
+  fn.data.cast(mc=);
+  re =
+    mc~getBlock()<,
+    .s.each!^/char?([void(^/char s=){s = fn.block~esc(s);}])<,
+    .splitArgs(arg);
+  ret .mac.RetState::OK;
+}
+
+
+public &Sff
+{
+  ^&.sff.Sff sff;
+  public ^&.sff.Sff getSff()
+  {
+    ret `sff;
+  }
+  public bool load(^/char file)
+  {
+    `sff.new(1);
+    ret `sff~loadFile(file);
+  }
+}
+|mac.RetState recvSff(^char arg, ^char re=, &.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .splitArgs(arg);
+  ^&.Sff sf;
+  fn.data.cast(sf=);
+  branch{
+  cond .s.equ(mess[0], "load"):
+    if(#mess < 2 || !sf~load(mess[1])) else;
+    re.new(0);
+  else:
+    .mac.errormes .= "エラー(Sff): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  ret .mac.RetState::OK;
+}
+
+
+public &Anim
+{
+  ^&.sff.Anim!&.bg.Frame? ani;
+  &.sdl.Rect window;
+  float x = 0.0, y = 0.0;
+  float xscl = 1.0, yscl = 1.0;
+  new()
+  {
+    `ani.new(1);
+    `ani~mask = 0;
+    `window = .com.scrrect;
+  }
+  public void setSff(^&.sff.Sff sf)
+  {
+    `ani~sff = sf;
+  }
+  public bool setAction(^/char str)
+  {
+    ^^/char lines = .s.splitLines(str);
+    index i = 0;
+    &.bg.Action act;
+    act.read(lines, i=);
+    `ani~reset();
+    `ani~setFrames(act.frames, act.loopstart, act.nrepeat);
+    ret #act.frames > 0;
+  }
+  public int animTime()
+  {
+    ret `ani~animTime();
+  }
+  public void update()
+  {
+    `ani~action();
+  }
+  public void draw()
+  {
+    if(.se.fskip) ret;
+    `ani~draw(
+      `window=, `x, `y, 1.0, 1.0,
+      `xscl, `xscl, `yscl, 0.0, 0.0, .consts.null!&.com.PalFX?()); 
+  }
+  public void setPos(float x, float y)
+  {
+    `x = x;
+    `y = y;
+  }
+  public void addPos(float x, float y)
+  {
+    `x += x;
+    `y += y;
+  }
+  public void setScale(float x, float y)
+  {
+    `xscl = x;
+    `yscl = y;
+  }
+  public void setTile(ushort x, ushort y)
+  {
+    `ani~tile.w = x;
+    `ani~tile.h = y;
+  }
+  public void setColorKey(int ck)
+  {
+    `ani~mask = ck;
+  }
+  public void setAlpha(short sa, short da)
+  {
+    `ani~salpha = sa;
+    `ani~dalpha = da;
+  }
+  public void setWindow(float x, float y, float w, float h)
+  {
+    `window.x = (short)(x * .com.WidthScale);
+    `window.y = (short)(y * .com.HeightScale);
+    `window.w = (ushort)(w * .com.WidthScale + 0.5);
+    `window.h = (ushort)(h * .com.HeightScale + 0.5);
+  }
+}
+|mac.RetState recvAnim(^char arg, ^char re=, &.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .splitArgs(arg);
+  ^&.Anim an;
+  fn.data.cast(an=);
+  branch{
+  cond .s.equ(mess[0], "update"):
+    an~update();
+    re.new(0);
+  cond .s.equ(mess[0], "draw"):
+    an~draw();
+    re.new(0);
+  cond .s.equ(mess[0], "animTime"):
+    re = .s.iToS(an~animTime());
+  cond .s.equ(mess[0], "addPos"):
+    {
+      float x = 0.0, y = 0.0;
+      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
+      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      an~addPos(x, y);
+    }
+    re.new(0);
+  cond .s.equ(mess[0], "setPos"):
+    {
+      float x = 0.0, y = 0.0;
+      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
+      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      an~setPos(x, y);
+    }
+    re.new(0);
+  cond .s.equ(mess[0], "setScale"):
+    {
+      float x = 0.0, y = 0.0;
+      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
+      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      an~setScale(x, y);
+    }
+    re.new(0);
+  cond .s.equ(mess[0], "setSff"):
+    if(#mess < 2) else;
+    {
+      ^&.Function f = fn.block~getObj(mess[1]);
+      ^&.Sff sf;
+      if(#f == 0 || !f~data.cast(sf=)) break, else;
+      an~setSff(sf~getSff());
+    }
+    re.new(0);
+  cond .s.equ(mess[0], "setAction"):
+    if(!an~setAction(mess[1])) else;
+    re.new(0);
+  cond .s.equ(mess[0], "setTile"):
+    {
+      ushort x = 0x0, y = 0x0;
+      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
+      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      an~setTile(x, y);
+    }
+    re.new(0);
+  cond .s.equ(mess[0], "setColorKey"):
+    {
+      int ck = 0;
+      if(#mess >= 2 && !consteval(ck=, mess[1])) break, else;
+      an~setColorKey(ck);
+    }
+  cond .s.equ(mess[0], "setAlpha"):
+    {
+      short sa = 255, da = 0;
+      if(#mess >= 2 && !consteval(sa=, mess[1])) break, else;
+      if(#mess >= 3 && !consteval(da=, mess[2])) break, else;
+      an~setAlpha(sa, da);
+    }
+  cond .s.equ(mess[0], "setWindow"):
+    {
+      float x = 0.0, y = 0.0, w = 320.0, h = 240.0;
+      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
+      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      if(#mess >= 4 && !consteval(w=, mess[3])) break, else;
+      if(#mess >= 5 && !consteval(h=, mess[4])) break, else;
+      an~setWindow(x, y, w, h);
+    }
+  else:
+    .mac.errormes .= "エラー(Anim): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  ret .mac.RetState::OK;
+}
+
+
+public &Font
+{
+  ^&.fnt.Font fnt;
+  public ^&.fnt.Font getFont()
+  {
+    ret `fnt;
+  }
+  public bool load(^/char file)
+  {
+    `fnt.new(1);
+    ret `fnt~loadFile(file);
+  }
+}
+|mac.RetState recvFont(^char arg, ^char re=, &.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .splitArgs(arg);
+  ^&.Font fo;
+  fn.data.cast(fo=);
+  branch{
+  cond .s.equ(mess[0], "load"):
+    if(#mess < 2 || !fo~load(mess[1])) else;
+    re.new(0);
+  else:
+    .mac.errormes .= "エラー(Font): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  ret .mac.RetState::OK;
+}
+
+
+public &TextImg
+{
+  ^/char text;
+  ^&.fnt.Font fnt;
+  int bank = 0, align = 0;
+  float x = 0.0, y = 0.0;
+  float xscl = 1.0, yscl = 1.0;
+  public void setFont(^&.fnt.Font fo)
+  {
+    `fnt = fo;
+  }
+  public void draw()
+  {
+    if(.se.fskip || #`fnt == 0) ret;
+    `fnt~drawText(
+      `x, `y, `xscl, `yscl, `bank, `align, `text);
+  }
+  public void setText(^/char t)
+  {
+    `text = t;
+  }
+  public void setBank(int b)
+  {
+    `bank = b;
+  }
+  public void setAlign(int a)
+  {
+    `align = a;
+  }
+  public void setPos(float x, float y)
+  {
+    `x = x;
+    `y = y;
+  }
+  public void setScale(float x, float y)
+  {
+    `xscl = x;
+    `yscl = y;
+  }
+}
+|mac.RetState recvTextImg(^char arg, ^char re=, &.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .splitArgs(arg);
+  ^&.TextImg ti;
+  fn.data.cast(ti=);
+  branch{
+  cond .s.equ(mess[0], "draw"):
+    ti~draw();
+    re.new(0);
+  cond .s.equ(mess[0], "setPos"):
+    {
+      float x = 0.0, y = 0.0;
+      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
+      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      ti~setPos(x, y);
+    }
+    re.new(0);
+  cond .s.equ(mess[0], "setScale"):
+    {
+      float x = 0.0, y = 0.0;
+      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
+      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      ti~setScale(x, y);
+    }
+  cond .s.equ(mess[0], "setText"):
+    if(#mess < 2) else;
+    ti~setText(mess[1]);
+    re.new(0);
+  cond .s.equ(mess[0], "setBank"):
+    {
+      int b = 0;
+      if(#mess >= 2 && !consteval(b=, mess[1])) break, else;
+      ti~setBank(b);
+    }
+    re.new(0);
+  cond .s.equ(mess[0], "setAlign"):
+    {
+      int a = 0;
+      if(#mess >= 2 && !consteval(a=, mess[1])) break, else;
+      ti~setAlign(a);
+    }
+    re.new(0);
+  cond .s.equ(mess[0], "setFont"):
+    if(#mess < 2) else;
+    {
+      ^&.Function f = fn.block~getObj(mess[1]);
+      ^&.Font fo;
+      if(#f == 0 || !f~data.cast(fo=)) break, else;
+      ti~setFont(fo~getFont());
+    }
+    re.new(0);
+  else:
+    .mac.errormes .= "エラー(TextImg): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  ret .mac.RetState::OK;
+}
+
+
+public &Snd
+{
+  ^&.snd.Snd snd;
+  public ^&.snd.Snd getSnd()
+  {
+    ret `snd;
+  }
+  public bool load(^/char file)
+  {
+    `snd.new(1);
+    ret `snd~loadFile(file);
+  }
+  public bool play(int g, int n)
+  {
+    if(#`snd == 0) ret false;
+    ^&.snd.Sound c = .getChannel(-1);
+    if(#c == 0) ret false;
+    c~sound = `snd~getSound(g, n);
+    ret #c~sound > 0;
+  }
+}
+|mac.RetState recvSnd(^char arg, ^char re=, &.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .splitArgs(arg);
+  ^&.Snd sn;
+  fn.data.cast(sn=);
+  branch{
+  cond .s.equ(mess[0], "load"):
+    if(#mess < 2 || !sn~load(mess[1])) else;
+    re.new(0);
+  cond .s.equ(mess[0], "play"):
+    if(#mess < 3) else;
+    {
+      int g, n;
+      if(!consteval(g=, mess[1])) break, else;
+      if(!consteval(n=, mess[2])) break, else;
+      sn~play(g, n);
+    }
+    re.new(0);
+  else:
+    .mac.errormes .= "エラー(Snd): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  ret .mac.RetState::OK;
+}
+
+
+public &Command
+{
+  ^&.cmd.CommandList cmd;
+  new()
+  {
+    `cmd.new(1);
+    `cmd~buffer.new(1);
+  }
+  public void input(int pn)
+  {
+    `cmd~step(pn-1, 1, false);
+  }
+  public bool getState(^/char name)
+  {
+    ^&.cmd.Command cl = `cmd~get(name);
+    loop{index i = 0; while; do:
+      if(cl[i].state) ret true;
+      i++;
+    while i < #cl:
+    }
+    ret false;
+  }
+  public void addCommand(^/char name, ^/char com)
+  {
+    &.cmd.Command c;
+    c.name = name;
+    .cmd.resetReadKeymap();
+    c.readCmd(com);
+    `cmd~add(c=);
+  }
+  public void cmdBufReset(int pn)
+  {
+    `cmd~bufReset(pn-1);
+  }
+}
+|mac.RetState recvCommand(^char arg, ^char re=, &.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .splitArgs(arg);
+  ^&.Command cm;
+  fn.data.cast(cm=);
+  branch{
+  cond .s.equ(mess[0], "input"):
+    {
+      int p;
+      if(!consteval(p=, mess[1])) break, else;
+      cm~input(p);
+    }
+    re.new(0);
+  cond .s.equ(mess[0], "getState"):
+    if(#mess < 2) else;
+    {
+      %char buf;
+      buf .= cm~getState(mess[1]) ? "true" : "false";
+      re = buf;
+    }
+  cond .s.equ(mess[0], "addCommand"):
+    if(#mess < 3) else;
+    cm~addCommand(mess[1], mess[2]);
+    re.new(0);
+  cond .s.equ(mess[0], "cmdBufReset"):
+    {
+      int p;
+      if(!consteval(p=, mess[1])) break, else;
+      cm~cmdBufReset(p);
+    }
+    re.new(0);
+  else:
+    .mac.errormes .= "エラー(Command): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  ret .mac.RetState::OK;
+}
+
+
+void inputThread(^/char title, ^^char str, ^bool done)
+{
+  .mes.InputStr(:title, str<>=:);
+  done<> = true;
+}
+public &InputDialog
+{
+  thread!.inputThread? inth;
+  ^^char str;
+  ^bool done;
+  new()
+  {
+    `str.new(1);
+    `done.new(1);
+    `done<> = true;
+  }
+  public bool popup(^/char title)
+  {
+    if(!`done<>) ret false;
+    .sdl.fullScreen(.se.full = false);
+    `done<> = false;
+    `inth..(title, `str, `done);
+    ret true;
+  }
+  public bool isDone()
+  {
+    ret `done<>;
+  }
+  public ^char getStr()
+  {
+    if(!`done<>){
+      ret .consts.null!char?();
+    }
+    ret `str<>;
+  }
+}
+|mac.RetState recvInputDialog(^char arg, ^char re=, &.Function fn=)
+{
+  ^^/char mess =
+    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .splitArgs(arg);
+  ^&.InputDialog id;
+  fn.data.cast(id=);
+  branch{
+  cond .s.equ(mess[0], "popup"):
+    if(!id~popup(mess[1])) else;
+    re.new(0);
+  cond .s.equ(mess[0], "isDone"):
+    {
+      %char buf;
+      buf .= id~isDone() ? "true" : "false";
+      re = buf;
+    }
+  cond .s.equ(mess[0], "getStr"):
+    re = id~getStr();
+  else:
+    .mac.errormes .= "エラー(InputDialog): " .= arg .= \r\n;
+    ret .mac.RetState::ERROR;
+  }
+  ret .mac.RetState::OK;
+}
+
+
+public ^&Script newRoot()
+{
+  ^&.Script sc;
+  sc.new(1);
+  sc~setThis(sc);
+  ret sc;
+}
+
+
+public &Script
+{
+  core &.mac.Macro c;
+  ^self this, parent;
+  &.tbl.NameTable!&.Function? fun;
+  public void setThis(^`self th)
+  {
+    if(#`this == 0) `this = th;
+  }
+  public |.mac.RetState call(^char arg, ^/char name, ^char re=)
+  {:<-
+    type sig_t = $|.mac.RetState(^char, ^char=);
+    *sig_t dummy(arg, re=)
+    {
+      ret .mac.RetState::ERROR;
+    }
+    *sig_t _if(arg, re=)
+    {
+      bool b;
+      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
+      re.new(0);
+      if(!b){
+        ^char arg, name;
+        `c.read(arg=, name=);
+      }
+      ret .mac.RetState::OK;
+    }
+    *sig_t _expr(arg, re=)
+    {
+      long l;
+      if(!consteval(l=, arg)){
+        .mac.errormes .= arg .= " <-この式は変です"\r\n;
+        ret .mac.RetState::ERROR;
+      }
+      re = .s.iToS(l);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _calc(arg, re=)
+    {
+      double d;
+      if(!consteval(d=, arg)){
+        .mac.errormes .= arg .= " <-この式は変です"\r\n;
+        ret .mac.RetState::ERROR;
+      }
+      .mes.DoubleToStr(:re=, d:);
+      if(.s.find(".", re) < 0){
+        %char buf;
+        buf .= re .= ".0";
+        re = buf;
+      }
+      ret .mac.RetState::OK;
+    }
+    *sig_t _rand(arg, re=)
+    {
+      ^^/char args =
+        .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .splitArgs(arg);
+      branch{
+      cond #args >= 2:
+        {
+          int mi, ma;
+          if(!consteval(mi=, args[0]) || !consteval(ma=, args[1])) break, else;
+          re = .s.iToS(.m.randI(mi, ma));
+        }
+      cond #args[0] == 0:
+          re = .s.iToS(.m.random());
+      else:
+        .mac.errormes .= "エラー(rand): " .= arg .= \r\n;
+        ret .mac.RetState::ERROR;
+      }
+      ret .mac.RetState::OK;
+    }
+    *sig_t _each(arg, re=)
+    {
+      ^^/char args = .splitArgs(arg);
+      %char buf;
+      loop{index i = 0; while; do:
+        buf .= "#`" .= `c.esc(args[i]) .= args[-1];
+        i++;
+      while i < #args-1:
+      }
+      re = buf;
+      ret .mac.RetState::CONTINUED;
+    }
+    *sig_t _loadFile(arg, re=)
+    {
+      re = .s.u8ToS()<, .file.readAll!ubyte?(arg);
+      if(#re > 0 && re[0] == '\xfeff') re = re[1..-1];
+      ret .mac.RetState::OK;
+    }
+    *sig_t _undef(arg, re=)
+    {
+      `setFunction(.s.trim(arg), .consts.null!&.Function?());
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _defMacro(arg, re=)
+    {
+    ^^/char tmp = .splitArgs(arg);
+      ^&.Function f = `newObj!&.Macro, .recvMacro?(tmp[0]);
+      ^&.Macro m;
+      f~data.cast(m=);
+      m~def(tmp[1..-1]);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _newSff(arg, re=)
+    {
+      `newObj!&.Sff, .recvSff?(arg);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _newAnim(arg, re=)
+    {
+      `newObj!&.Anim, .recvAnim?(arg);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _newCommand(arg, re=)
+    {
+      `newObj!&.Command, .recvCommand?(arg);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _newFont(arg, re=)
+    {
+      `newObj!&.Font, .recvFont?(arg);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _newTextImg(arg, re=)
+    {
+      `newObj!&.TextImg, .recvTextImg?(arg);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _newSnd(arg, re=)
+    {
+      `newObj!&.Snd, .recvSnd?(arg);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _newInputDialog(arg, re=)
+    {
+      `newObj!&.InputDialog, .recvInputDialog?(arg);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _esc(arg, re=)
+    {
+      %char buf;
+      buf .= .se.esc ? "true" : "false";
+      re = buf;
+      ret .mac.RetState::OK;
+    }
+    *sig_t _setPowerShare(arg, re=)
+    {
+      bool b;
+      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
+      .com.powershare = b;
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _setAutoLevel(arg, re=)
+    {
+      bool b;
+      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
+      .com.autolevel = b;
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _set1PCom(arg, re=)
+    {
+      bool b;
+      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
+      .com.com[0] = b;
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _set2PCom(arg, re=)
+    {
+      bool b;
+      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
+      .com.com[1] = b;
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _set3PCom(arg, re=)
+    {
+      bool b;
+      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
+      .com.com[2] = b;
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _set4PCom(arg, re=)
+    {
+      bool b;
+      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
+      .com.com[3] = b;
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _setListenPort(arg, re=)
+    {
+      if(#arg > 0) .listenPort = .s.clone!char?(arg);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _getListenPort(arg, re=)
+    {
+      re = .s.clone!char?(.listenPort);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _enterNetPlay(arg, re=)
+    {
+      if(#.cmd.net > 0){
+        .mac.errormes .= "すでに通信中です"\r\n;
+        ret .mac.RetState::ERROR;
+      }
+      .cmd.net.new(1);
+      .cmd.net~openReplayFile("replay/netplay.replay");
+      branch{
+      cond #arg > 0:
+        .cmd.net~connect(arg, .listenPort);
+      else:
+        .cmd.net~accept(.listenPort);
+      }
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _exitNetPlay(arg, re=)
+    {
+      .cmd.net.new(0);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _connected(arg, re=)
+    {
+      %char buf;
+      buf .= #.cmd.net > 0 && .cmd.net~isConnected() ? "true" : "false";
+      re = buf;
+      ret .mac.RetState::OK;
+    }
+    *sig_t _enterReplay(arg, re=)
+    {
+      .cmd.replay.new(1);
+      .cmd.replay~open(arg);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _exitReplay(arg, re=)
+    {
+      .cmd.replay.new(0);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _synchronize(arg, re=)
+    {
+      if(!.cmd.synchronize()){
+        .mac.errormes .= "エラーです"\r\n;
+        ret .mac.RetState::ERROR;
+      }
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    *sig_t _playBGM(arg, re=)
+    {
+      .sdl.playBGM("plugins", arg);
+      re.new(0);
+      ret .mac.RetState::OK;
+    }
+    method sig_t met = dummy;
+    branch{
+    cond #name >= 1 && name[0] == '=':
+      ret `setVar(arg, name[1..-1], re=);
+    else:
+      {
+        %char buf;
+        buf .= '_' .= .s.trim(name);
+        if(!consteval(met=, buf)) ret `funCall(arg, buf[1..-1], re=);
+      }
+    }
+    ret met(:arg, re=:);
+  }
+  bool readBool(bool b=, ^/char arg)
+  {
+    if(!consteval(b=, arg)){
+      .mac.errormes .= arg .= " <-この条件式は変です"\r\n;
+      ret false;
+    }
+    ret true;
+  }
+  |.mac.RetState funCall(^char arg, ^/char name, ^char re=)
+  {
+    ^&.Function f = `fun.get(name);
+    if(#f == 0){
+      if(#`parent == 0) ret `c.call(arg, name, re=);
+      ret `parent~funCall(arg, name, re=);
+    }
+    ret f~call(arg, re=);
+  }
+  public |.mac.RetState setVar(^char arg, ^/char name, ^char re=)
+  {
+    if(#name > 0) branch{
+    cond name[0] == '~':
+      if(#`parent == 0) ret `setVar(arg, name[1..-1], re=);
+      ret `parent~setVar(arg, name, re=);
+    cond name[0] == '^':
+      if(#`parent == 0) ret .mac.RetState::ERROR;
+      ret `parent~setVar(arg, name[1..-1], re=);
+    }
+    ^&.Function f;
+    f.new(1);
+    f~f = .recvText;
+    f~data = arg;
+    `fun.set(.s.trim(name), f);
+    re = arg;
+    ret .mac.RetState::OK;
+  }
+  public void setFunction(^/char name, ^&.Function f)
+  {
+    `fun.set(name, f);
+  }
+  public |.mac.RetState run(^char out=)
+  {
+    ret .mac.run!`self?(`=, out=, true);
+  }
+  public void error(^/char cc)
+  {
+    .al.alert!`self?(cc[0..200]);
+  }
+  public ^self newBlock(^char txt)
+  {
+    ^`self b;
+    b.new(1);
+    b~this = b;
+    b~parent = `this;
+    b~init(txt);
+    ret b;
+  }
+  ^&.Function newObj<_t, f_t>(^/char name)
+  {
+    ^&.Function f;
+    f.new(1);
+    f~f = f_t;
+    ^_t x;
+    x.new(1);
+    f~data = x;
+    f~block = `this;
+    `fun.set(.s.trim(name), f);
+    ret f;
+  }
+  public ^&.Function getObj(^/char name)
+  {
+    ^&.Function f = `fun.get(.s.trim(name));
+    if(#f == 0 && #`parent > 0) ret `parent~getObj(name);
+    ret f;
+  }
+}
+
+
+
+
+public ^^/char splitArgs(^char arg)
+{
+  ^^/char spl;
+  branch{
+  cond #arg > 0:
+    spl = .s.split(arg[0..1], arg[1..-1]);
+  else:
+    spl.new(1);
+  }
+  ret spl;
+}
+
+
+^&.snd.Sound getChannel(int ch)
+{
+  index c = .m.min!int?(15, ch);
+  if(c >= 0) ret .sounds[c..c+1];
+  loop{index i = 15; do:
+    if(#.sounds[i].sound == 0){
+      .sounds[i].setDefaultParameter();
+      ret .sounds[i..i+1];
+    }
+  while --i >= 0:
+  }
+  ret .consts.null!&.snd.Sound?();
+}
+public void playSound()
+{
+  if(.sdl.setSndBuf(.sndbuf)){
+    .sndbufClear();
+    loop{index i = 0; while; do:
+      .sounds[i].mix(.sndbuf, -160.0, 160.0);
+      i++;
+    while i < #.sounds:
+    }
+  }
+}
+

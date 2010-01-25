@@ -1,0 +1,351 @@
+﻿
+lib file = <file.ssz>;
+lib s = <string.ssz>;
+lib consts = <consts.ssz>;
+lib tbl = <table.ssz>;
+lib mat = <math.ssz>;
+lib sdl = <alpha/sdlplugin.ssz>;
+
+void error(^/char m)
+{
+  lib al = <alert.ssz>;
+  al.alert!.self?(m);
+}
+
+public &SndNnm
+{
+  public int group = -1, number = 0;
+}
+
+public &Wave
+{
+  public uint samplesPerSec;
+  public ushort channels, bytesPerSample;
+  public ^ubyte wav;
+  public &.SndNnm num;
+}
+
+public &Snd
+{
+  &.tbl.IntTable!ulong, &.Wave? soundTable;
+  ushort ver, ver2;
+  public void clear()
+  {
+    `soundTable.clear();
+  }
+  public bool loadFile(^/char filename)
+  {
+    &.file.File f;
+    if(!f.open(filename, "rb")) ret false;
+    `clear();
+    uint subHeaderOffset, subFileLenght;
+    uint numberOfSounds;
+    bool wav(&.Wave wav=)
+    {
+      uint riffSize = 0x0, fmtSize = 0x0, dataSize = 0x0, musi;
+      ubyte ub;
+      loop{index i = 0; %char s; do:
+        if(!`f.read!ubyte?(ub=)) ret false;
+        s .= (char)ub;
+      while ++i < 4:
+        if(!.s.equ(s, "RIFF")){.error("RIFFじゃない"); ret false;}
+      }
+      if(!`f.read!uint?(riffSize=)) ret false;
+      loop{index i = 0; %char s; do:
+        if(!`f.read!ubyte?(ub=)) ret false;
+        s .= (char)ub;
+      while ++i < 4:
+        if(!.s.equ(s, "WAVE")){.error("WAVEじゃない"); ret false;}
+      }
+      loop{
+        ushort fmtID, mushi;
+        %char s;
+        long ofs = (long)`subHeaderOffset + 28;
+        uint size;
+      do:
+        s.new(0);
+        loop{index i = 0; do:
+          if(!`f.read!ubyte?(ub=)) break, break;
+          s .= (char)ub;
+        while ++i < 4:
+        }
+        if(!`f.read!uint?(size=)) break;
+        branch{
+        cond .s.equ(s, "fmt "):
+          fmtSize = size;
+          if(!`f.read!ushort?(fmtID=)) ret false;
+          if(fmtID != 0x1){
+            .error("リニアPCMじゃない");
+            ret false;
+          }
+          if(!`f.read!ushort?(wav.channels=)) ret false;
+          if(wav.channels-0x1 >= 0x2){
+            .error("チャンネル数が不正");
+            ret false;
+          }
+          if(!`f.read!uint?(wav.samplesPerSec=)) ret false;
+          if(wav.samplesPerSec-0x1 >= 0x20000){
+            %char buf;
+            .error(buf .= "周波数が不正 " .= .s.iToS((int)wav.samplesPerSec));
+            ret false;
+          }
+          if(!`f.read!uint?(musi=)) ret false;
+          if(!`f.read!ushort?(mushi=)) ret false;
+          if(!`f.read!ushort?(wav.bytesPerSample=)) ret false;
+          if(wav.bytesPerSample != 0x8 && wav.bytesPerSample != 0x10){
+            .error("bit数が不正");
+            ret false;
+          }
+          wav.bytesPerSample >>= 0x3;
+        cond .s.equ(s, "data"):
+          dataSize = size;
+          wav.wav.new((index)dataSize);
+          `f.readAry!ubyte?(wav.wav);
+        }
+        ofs += (long)size + 8;
+        `f.seek(ofs, .file.Seek::SET);
+      while
+        (fmtSize == 0x0 || dataSize == 0x0)
+        && ofs < (long)`subHeaderOffset + (long)riffSize + 24
+        :
+      break:
+        if(fmtSize == 0x0) .error("fmt がない");
+      }
+      ret fmtSize > 0x0;
+    }
+    ubyte ub;
+    loop{
+      index i = 0;
+      %char s;
+    do:
+      if(!f.read!ubyte?(ub=)) ret false;
+      s .= (char)ub;
+      i++;
+    while i < 12:
+      if(!.s.equ(s, "ElecbyteSnd"\0)){
+        .error("ElecbyteSndじゃない");
+        ret false;
+      }
+    }
+    if(!f.read!ushort?(`ver=)) ret false;
+    if(!f.read!ushort?(`ver2=)) ret false;
+    if(!f.read!uint?(numberOfSounds=)) ret false;
+    if(!f.read!uint?(subHeaderOffset=)) ret false;
+    loop{
+      index i = 0;
+      uint nextSubHeaderOffset;
+      ^&.Wave soundList;
+      soundList.new((index)numberOfSounds);
+    do:
+      f.seek((long)subHeaderOffset, .file.Seek::SET);
+      if(!f.read!uint?(nextSubHeaderOffset=)) ret false;
+      if(!f.read!uint?(subFileLenght=)) ret false;
+      if(!f.read!int?(soundList[i].num.group=)) ret false;
+      if(!f.read!int?(soundList[i].num.number=)) ret false;
+      if(!wav(soundList[i]=)) ret false;
+      `soundTable.operate(
+        (ulong)soundList[i].num.group
+        | (ulong)soundList[i].num.number<<0d32,
+        [void(^&.Wave w=){if(#w == 0) w = soundList[i..i+1];}]);
+      subHeaderOffset = nextSubHeaderOffset;
+      i++;
+    while i < (index)numberOfSounds:
+    }
+    ret true;
+  }
+  public ^&.Wave getSound(int group, int number)
+  {
+    ret `soundTable.get((ulong)group | (ulong)number<<0d32);
+  }
+}
+
+public &Sound
+{
+  public ^&.Wave sound;
+  public ^/float chrx;
+  public float x = 0.0;
+  public short volume = 256;
+  public bool loop_ = false, lowpriority = false;
+  public float freqmul = 1.0;
+  public float fidx = 0.0;
+  const float frametime = 1.0 / 44100.0;
+  public void setVol(int v)
+  {
+    branch{
+    cond v < -256: `volume = 0;
+    cond v > 256: `volume = 512;
+    else: `volume = v+256;
+    }
+  }
+  public void setPan(float p)
+  {
+    if(#`sound > 0 ){
+      `x = p;
+    }
+    branch{
+    cond p < -160.0: `x = -160.0;
+    cond p > 160.0: `x = 160.0;
+    else: `x = p;
+    }
+  }
+  public void setDefaultParameter()
+  {
+    `setVol(0);
+    `loop_ = false;
+    `lowpriority = false;
+    `setPan(0.0);
+    `freqmul = 1.0;
+    `fidx = 0.0;
+  }
+  void mix_s16(^int buf, float fidxadd, int lv, int rv)
+  {
+    loop{
+      index i = 0;
+      int iidx;
+      ^/ubyte w = `sound~wav;
+      index l = #w;
+      continue;
+    do:
+      buf[i] += ((int)w[iidx] | (int)(byte)w[iidx+1]<<8)*lv >> 8;
+      buf[i+1] += ((int)w[iidx+2] | (int)(byte)w[iidx+3]<<8)*rv >>8;
+      i += 2;
+      `fidx += fidxadd;
+    continue:
+      iidx = (int)`fidx * 4;
+      if(iidx >= l){
+        if(!`loop_){
+          `sound.new(0);
+          ret;
+        }
+        iidx = 0;
+        `fidx = 0.0;
+      }
+    while i < .sdl.SNDBUFLEN:
+    }
+  }
+  void mix_m16(^int buf, float fidxadd, int lv, int rv)
+  {
+    loop{
+      index i = 0;
+      int iidx;
+      ^/ubyte w = `sound~wav;
+      index l = #w;
+      int tmp;
+      continue;
+    do:
+      buf[i] += (tmp = (int)w[iidx] | (int)(byte)w[iidx+1]<<8)*lv >> 8;
+      buf[i+1] += tmp*rv >>8;
+      i += 2;
+      `fidx += fidxadd;
+    continue:
+      iidx = (int)`fidx * 2;
+      if(iidx >= l){
+        if(!`loop_){
+          `sound.new(0);
+          ret;
+        }
+        iidx = 0;
+        `fidx = 0.0;
+      }
+    while i < .sdl.SNDBUFLEN:
+    }
+  }
+  void mix_s8(^int buf, float fidxadd, int lv, int rv)
+  {
+    loop{
+      index i = 0;
+      int iidx;
+      ^/ubyte w = `sound~wav;
+      index l = #w;
+      continue;
+    do:
+      buf[i] += ((int)w[iidx] - 128)*lv;
+      buf[i+1] += ((int)w[iidx+1] - 128)*rv;
+      i += 2;
+      `fidx += fidxadd;
+    continue:
+      iidx = (int)`fidx * 2;
+      if(iidx >= l){
+        if(!`loop_){
+          `sound.new(0);
+          ret;
+        }
+        iidx = 0;
+        `fidx = 0.0;
+      }
+    while i < .sdl.SNDBUFLEN:
+    }
+  }
+  void mix_m8(^int buf, float fidxadd, int lv, int rv)
+  {
+    loop{
+      index i = 0;
+      int iidx;
+      ^/ubyte w = `sound~wav;
+      index l = #w;
+      int tmp;
+      continue;
+    do:
+      buf[i] += (tmp = (int)w[iidx] - 128)*lv;
+      buf[i+1] += tmp*rv;
+      i += 2;
+      `fidx += fidxadd;
+    continue:
+      iidx = (int)`fidx;
+      if(iidx >= l){
+        if(!`loop_){
+          `sound.new(0);
+          ret;
+        }
+        iidx = 0;
+        `fidx = 0.0;
+      }
+    while i < .sdl.SNDBUFLEN:
+    }
+  }
+  public void mix(^int buf, float left, float right)
+  {
+    if(#`sound == 0) ret;
+    float fidxadd =
+      (float)`sound~samplesPerSec * `freqmul * `frametime;
+    if(!.mat.isfinite(fidxadd) || fidxadd <= 0.0){
+      `sound.new(0);
+      ret;
+    }
+    int lv = `volume, rv = `volume;
+    branch{
+    cond #`chrx > 0:
+      {
+        float w = right - left,
+          c = left + w/2.0;
+        float x = `chrx<>+`x;
+        branch{
+        cond x < left: x = left;
+        cond x > right: x = right;
+        }
+        lv = (int)((float)lv*(w*(5.0/9.0)-(x - c)) / w);
+        rv = (int)((float)rv*(w*(5.0/9.0)+(x - c)) / w);
+      }
+    else:
+      lv = (int)((float)lv*(200.0-`x) / 360.0);
+      rv = (int)((float)lv*(200.0+`x) / 360.0);
+    }
+    branch{
+    cond `sound~channels == 0d2:
+      branch{
+      cond `sound~bytesPerSample == 0d2:
+        `mix_s16(buf, fidxadd, lv, rv);
+      else:
+        `mix_s8(buf, fidxadd, lv, rv);
+      }
+    else:
+      branch{
+      cond `sound~bytesPerSample == 0d2:
+        `mix_m16(buf, fidxadd, lv, rv);
+      else:
+        `mix_m8(buf, fidxadd, lv, rv);
+      }
+    }
+  }
+}
+

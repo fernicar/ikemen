@@ -1,0 +1,102 @@
+﻿
+lib sdl = <alpha/sdlplugin.ssz>;
+
+uint nexttime = 0x0, timerIndex = 0x0, lastdraw = 0x0;
+public &sdl.Event sdle;
+public bool end = false, fskip = false, full = false, esc = false;
+
+public &Key
+{
+  public |.sdl.SDLKey key = .sdl.SDLKey::UNKNOWN;
+  public bool shift = false, ctrl = false, alt = false;
+  public bool down = false;
+  public void reset()
+  {
+    `down = false;
+  }
+  public void checkDown(|.sdl.SDLKey k, int m)
+  {
+    `down |=
+     `key == k
+     && `shift == (
+       (m & ((int).sdl.SDLMod::LSHIFT | (int).sdl.SDLMod::RSHIFT)) != 0)
+     && `ctrl == (
+       (m & ((int).sdl.SDLMod::LCTRL | (int).sdl.SDLMod::RCTRL)) != 0)
+     && `alt == (
+       (m & ((int).sdl.SDLMod::LALT | (int).sdl.SDLMod::RALT)) != 0);
+  }
+}
+
+public %&Key eventKeys;
+
+public bool event()
+{
+  .esc = false;
+  loop{index i = 0; while; do:
+    .eventKeys[i].reset();
+    i++;
+  while i < #.eventKeys:
+  }
+  branch{
+    uint now = .sdl.GetTicks(::);
+    uint dif = .nexttime - now;
+    if(++.timerIndex > 0d2) .timerIndex = 0d0;
+    .nexttime += (.timerIndex == 0d0 ? 0d16 : 0d17);
+  cond dif < 0d18:
+    .sdl.Delay(:dif:);
+  cond now - .lastdraw > 0d1000:
+  cond dif+0d17 < 0d17:
+  else:
+    if(-dif > 0d600){
+      .nexttime = now + (.timerIndex == 0d0 ? 0d16 : 0d17);
+    }
+    .fskip = true;
+    break;
+  comm:
+    .lastdraw = now;
+    .fskip = false;
+  }
+  loop{
+    while;
+  do:
+    switch(.sdle.etype){
+    case .sdl.EventType::QUIT:// ウィンドウの×ボタンが押された時など
+      .end = true;
+      ret false;
+    case .sdl.EventType::KEYDOWN:
+      loop{index i = 0; while; do:
+        .eventKeys[i].checkDown(
+          .sdle.key.keysym.sym, (int).sdle.key.keysym.mod);
+        i++;
+      while i < #.eventKeys:
+      }
+      branch{
+      cond
+        (
+          (int).sdle.key.keysym.mod
+          & ((int).sdl.SDLMod::LALT | (int).sdl.SDLMod::RALT)) != 0
+        :
+        switch(.sdle.key.keysym.sym){
+        case .sdl.SDLKey::RETURN:
+          if(!.sdl.fullScreen(!!.full)) ret false;
+        case .sdl.SDLKey::F4:
+          .end = true;
+          ret false;
+        }
+      cond
+        (
+          (int).sdle.key.keysym.mod
+          & ((int).sdl.SDLMod::LCTRL | (int).sdl.SDLMod::RCTRL)) != 0
+        :
+      else:
+        switch(.sdle.key.keysym.sym){
+        case .sdl.SDLKey::ESCAPE:
+          .esc = true;
+        }
+      }
+    }
+  while .sdl.PollEvent(:.sdle=:):
+  }
+  ret !.end;
+}
+

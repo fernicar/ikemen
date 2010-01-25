@@ -1,0 +1,21 @@
+﻿
+lib stage = "stage.ssz";
+lib chr = "char.ssz";
+lib cmd = "command.ssz";
+
+public &Share
+{
+  public ^%^&.chr.Char c;
+  public ^&.chr.fgt.Fight f;
+  public ^&.stage.Stage st;
+  public ^int tm, nt, re;
+  public int chr_home, chr_round;
+  public int chr_p1mw, chr_p2mw, chr_p1w, chr_p2w, chr_drw;
+  public int stt;
+  public ^bool com;
+  public ^&.cmd.NetInput net;
+  public ^&.cmd.FileInput rep;
+  public bool clsndw, powsh, alvl;
+}
+
+

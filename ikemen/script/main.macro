@@ -1,0 +1,737 @@
+﻿
+#`script/lib.macro#loadFile#!
+#`script/select.macro#loadFile#!
+
+############################################################
+sysSff#newSff
+#`| load | data/system.sff #sysSff
+
+sysSnd#newSnd
+#`| load | data/system.snd #sysSnd
+
+jgFnt#newFont
+#`| load | font/jg.fnt #jgFnt
+
+#`sound/Offenbach-Orpheus-in-the-Underworld.mp3#=bgm#playBGM
+
+############################################################
+p1Cmd#newCommand
+#`#;
+%| addCommand | u | $U
+%| addCommand | d | $D
+%| addCommand | l | $B
+%| addCommand | r | $F
+%| addCommand | a | a
+%| addCommand | b | b
+%| addCommand | c | c
+%| addCommand | x | x
+%| addCommand | y | y
+%| addCommand | z | z
+%| addCommand | s | s
+%| addCommand | holds | /s
+%#\p1Cmd#each
+
+p2Cmd#newCommand
+#`#;
+%| addCommand | u | $U
+%| addCommand | d | $D
+%| addCommand | l | $B
+%| addCommand | r | $F
+%| addCommand | a | a
+%| addCommand | b | b
+%| addCommand | c | c
+%| addCommand | x | x
+%| addCommand | y | y
+%| addCommand | z | z
+%| addCommand | s | s
+%| addCommand | holds | /s
+%#\p2Cmd#each
+
+############################################################
+#`| sysSff | 151 | 0 | 1 | 1 #setRandomSpr
+#`| 5 | 2 #setSelColRow
+#`| 29 | 29 #setSelCellSize
+#`| 1 | 1 #setSelCellScale
+
+#`#[
+  ############################################################
+  #`0#=~p1TeamMode
+  #`2#=~p1NumTurns
+  #`0#=~p1SelOffset
+  #`0#=~p1SelX
+  #`0#=~p1SelY
+
+  #`0#=~p2TeamMode
+  #`2#=~p2NumTurns
+  #`0#=~p2SelOffset
+  #`0#=~p2SelX
+  #`0#=~p2SelY
+
+  #`0#=~stageNo
+#]#=init#!
+
+
+############################################################
+p1SelTmTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setText  | Select team mode
+%| setPos   | 20 | 30
+%#\p1SelTmTxt#each
+
+p1SingleTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setText  | Single
+%| setPos   | 20 | 50
+%#\p1SingleTxt#each
+
+p1SimulTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setText  | Simul
+%| setPos   | 20 | 65
+%#\p1SimulTxt#each
+
+p1TurnsTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setText  | Turns
+%| setPos   | 20 | 80
+%#\p1TurnsTxt#each
+
+p1TmCursor#newAnim
+#`| setSff | sysSff #p1TmCursor
+#`| setAction |
+180,0, 0,0, -1
+#p1TmCursor
+
+p1TmIcon#newAnim
+#`| setSff | sysSff #p1TmIcon
+#`| setAction |
+181,0, 0,0, -1
+#p1TmIcon
+
+
+#`' p1TmSub '
+#[
+  #`| getState | u #p1Cmd#if #{
+    #`| play | 100 | 0 #sysSnd
+    #p1TeamMode#,-1<0?2:#p1TeamMode#,-1#expr#=~p1TeamMode
+  #}
+  #`| getState | d #p1Cmd #if #{
+    #`| play | 100 | 0 #sysSnd
+    #p1TeamMode#,+1>2?0:#p1TeamMode#,+1#expr#=~p1TeamMode
+  #}
+  #`#p1TeamMode#,==2 #if #{
+    #`| getState | l #p1Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p1NumTurns#,-1<1?1:#p1NumTurns#,-1#expr#=~p1NumTurns
+    #}
+    #`| getState | r #p1Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p1NumTurns#,+1>4?4:#p1NumTurns#,+1#expr#=~p1NumTurns
+    #}
+  #}
+  #`|draw#p1SelTmTxt
+  #`|draw#p1SingleTxt
+  #`|draw#p1SimulTxt
+  #`|draw#p1TurnsTxt
+  #`%| update
+    %| setPos | 80 | 66
+    %| draw
+    %| setPos | 86 | 66
+    %| draw
+    %| setPos | 80 | 81
+    %| draw
+    #{
+      #p1NumTurns#,<2 #if #{#^#`#~#}
+      %| setPos | 86 | 81
+      %| draw
+      #echo
+    #}
+    #{
+      #p1NumTurns#,<3 #if #{#^#`#~#}
+      %| setPos | 92 | 81
+      %| draw
+      #echo
+    #}
+    #{
+      #p1NumTurns#,<4 #if #{#^#`#~#}
+      %| setPos | 98 | 81
+      %| draw
+      #echo
+    #}
+    %#\p1TmIcon#each
+  #`%| setPos | 10 | #{50+15*#p1TeamMode#expr#}
+    %| update
+    %| draw
+    %#\p1TmCursor#each
+  #`| p1Cmd #anyBtn#! #if #{
+    #`| play | 100 | 1 #sysSnd
+    #`| 1 | #p1TeamMode#, | #p1NumTurns #setTeamMode
+    #`$#=~p1Selected
+    #`false#=~p1SelEnd
+    #p1SelSub#=~p1Task
+  #}
+#]
+#defMacro
+
+
+############################################################
+p2SelTmTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | -1
+%| setText  | Select team mode
+%| setPos   | 300 | 30
+%#\p2SelTmTxt#each
+
+p2SingleTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | -1
+%| setText  | Single
+%| setPos   | 300 | 50
+%#\p2SingleTxt#each
+
+p2SimulTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | -1
+%| setText  | Simul
+%| setPos   | 300 | 65
+%#\p2SimulTxt#each
+
+p2TurnsTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | -1
+%| setText  | Turns
+%| setPos   | 300 | 80
+%#\p2TurnsTxt#each
+
+p2TmCursor#newAnim
+#`| setSff | sysSff #p2TmCursor
+#`| setAction |
+190,0, 0,0, -1
+#p2TmCursor
+
+p2TmIcon#newAnim
+#`| setSff | sysSff #p2TmIcon
+#`| setAction |
+191,0, 0,0, -1
+#p2TmIcon
+
+
+#`' p2TmSub '
+#[
+  #`| getState | u #p2Cmd#if #{
+    #`| play | 100 | 0 #sysSnd
+    #p2TeamMode#,-1<0?2:#p2TeamMode#,-1#expr#=~p2TeamMode
+  #}
+  #`| getState | d #p2Cmd #if #{
+    #`| play | 100 | 0 #sysSnd
+    #p2TeamMode#,+1>2?0:#p2TeamMode#,+1#expr#=~p2TeamMode
+  #}
+  #`#p2TeamMode#,==2 #if #{
+    #`| getState | r #p2Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p2NumTurns#,-1<1?1:#p2NumTurns#,-1#expr#=~p2NumTurns
+    #}
+    #`| getState | l #p2Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p2NumTurns#,+1>4?4:#p2NumTurns#,+1#expr#=~p2NumTurns
+    #}
+  #}
+  #`|draw#p2SelTmTxt
+  #`|draw#p2SingleTxt
+  #`|draw#p2SimulTxt
+  #`|draw#p2TurnsTxt
+  #`%| update
+    %| setPos | 240 | 66
+    %| draw
+    %| setPos | 234 | 66
+    %| draw
+    %| setPos | 240 | 81
+    %| draw
+    #{
+      #p2NumTurns#,<2 #if #{#^#`#~#}
+      %| setPos | 234 | 81
+      %| draw
+      #echo
+    #}
+    #{
+      #p2NumTurns#,<3 #if #{#^#`#~#}
+      %| setPos | 228 | 81
+      %| draw
+      #echo
+    #}
+    #{
+      #p2NumTurns#,<4 #if #{#^#`#~#}
+      %| setPos | 222 | 81
+      %| draw
+      #echo
+    #}
+    %#\p2TmIcon#each
+  #`%| setPos | 310 | #{50+15*#p2TeamMode#expr#}
+    %| update
+    %| draw
+    %#\p2TmCursor#each
+  #`| p2Cmd #anyBtn#! #if #{
+    #`| play | 100 | 1 #sysSnd
+    #`| 2 | #p2TeamMode#, | #p2NumTurns #setTeamMode
+    #`$#=~p2Selected
+    #`false#=~p2SelEnd
+    #p2SelSub#=~p2Task
+  #}
+#]
+#defMacro
+
+
+############################################################
+p1Cursor#newAnim
+#`| setSff | sysSff #p1Cursor
+#`| setAction |
+160,0, 0,0, -1
+#p1Cursor
+
+p1NameTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 4
+%| setAlign | 1
+%| setScale | 0.5 | 0.5
+%#\p1NameTxt#each
+
+#`' p1SelSub '
+#[
+  #p1SelOffset#, + #p1SelX#, + 5*#p1SelY #expr#=_
+  #`| #_#, | 18 | 13 | 1 | 1 #drawPortrait
+  #`162#=__
+  #`#p1Selected#[#=___
+    #`%| setPos | 10 | #__#,
+      %| setText | #{| #___ #getCharName #}
+      %| draw
+      %#\p1NameTxt#each
+    #`7.0+#__#calc#=__
+  #]#each
+  #`!#p1SelEnd #if #{
+    #`| getState | u #p1Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p1SelY#,<=0 #if #{#^ #p1SelOffset#,-5#expr#=~p1SelOffset #`#~#}
+      #p1SelY#,-1#expr#=~p1SelY
+    #}
+    #`| getState | d #p1Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p1SelY#,>=1 #if #{#^ #p1SelOffset#,+5#expr#=~p1SelOffset #`#~#}
+      #p1SelY#,+1#expr#=~p1SelY
+    #}
+    #`| getState | l #p1Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p1SelX#,-1<0?4:#p1SelX#,-1#expr#=~p1SelX
+    #}
+    #`| getState | r #p1Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p1SelX#,+1>4?0:#p1SelX#,+1#expr#=~p1SelX
+    #}
+    #`%| update
+      %| setPos | #{10.0+29.0*#p1SelX#calc#} | #{170.0+29.0*#p1SelY#calc#}
+      %| draw
+      %#\p1Cursor#each
+    #`%| setPos | 10 | #__#,
+      %| setText | #{| #_ #getCharName #}
+      %| draw
+      %#\p1NameTxt#each
+    #`| 1 | #_#, | #{| p1Cmd #btnPalNo#!#echo#} #selectChar#=__
+    #`#__#, > 0 #if #{
+      #`| play | 100 | 1 #sysSnd
+      #`#p1Selected#_#,$#=~p1Selected
+    #}
+    #`#__#, == 2 #if #{
+      true#=~p1SelEnd
+      #p2In#, == 1 #if #{ #`#p2TmSub#=~p2Task #}
+    #}
+  #}
+#]
+#defMacro
+
+
+############################################################
+p2Cursor#newAnim
+#`| setSff | sysSff #p2Cursor
+#`| setAction |
+170,0, 0,0, -1
+#p2Cursor
+
+p2NameTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 1
+%| setAlign | -1
+%| setScale | 0.5 | 0.5
+%#\p2NameTxt#each
+
+#`' p2SelSub '
+#[
+  #p2SelOffset#, + #p2SelX#, + 5*#p2SelY #expr#=_
+  #`| #_#, | 302 | 13 | -1 | 1 #drawPortrait
+  #`162#=__
+  #`#p2Selected#[#=___
+    #`%| setPos | 310 | #__#,
+      %| setText | #{| #___ #getCharName #}
+      %| draw
+      %#\p2NameTxt#each
+    #`7.0+#__#calc#=__
+  #]#each
+  #`!#p2SelEnd #if #{
+    #`| getState | u #p2Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p2SelY#,<=0 #if #{#^ #p2SelOffset#,-5#expr#=~p2SelOffset #`#~#}
+      #p2SelY#,-1#expr#=~p2SelY
+    #}
+    #`| getState | d #p2Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p2SelY#,>=1 #if #{#^ #p2SelOffset#,+5#expr#=~p2SelOffset #`#~#}
+      #p2SelY#,+1#expr#=~p2SelY
+    #}
+    #`| getState | l #p2Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p2SelX#,-1<0?4:#p2SelX#,-1#expr#=~p2SelX
+    #}
+    #`| getState | r #p2Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #p2SelX#,+1>4?0:#p2SelX#,+1#expr#=~p2SelX
+    #}
+    #`%| update
+      %| setPos | #{169.0+29.0*#p2SelX#calc#} | #{170.0+29.0*#p2SelY#calc#}
+      %| draw
+      %#\p2Cursor#each
+    #`%| setPos | 310 | #__#,
+      %| setText | #{| #_ #getCharName #}
+      %| draw
+      %#\p2NameTxt#each
+    #`| 2 | #_#, | #{| p2Cmd #btnPalNo#!#echo#} #selectChar#=__
+    #`#__#, > 0 #if #{
+      #`| play | 100 | 1 #sysSnd
+      #`#p2Selected#_#,$#=~p2Selected
+    #}
+    #`#__#, == 2 #if #{
+      true#=~p2SelEnd
+    #}
+  #}
+#]
+#defMacro
+
+
+############################################################
+SelStageTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 0
+%| setPos   | 160 | 237
+%| setScale | 0.5 | 0.5
+%#\SelStageTxt#each
+
+#`' SelStageSub '
+#[
+  #`| getState | l #p1Cmd#if #{
+    #`| play | 100 | 0 #sysSnd
+    #`|#stageNo#,-1#setStage#=~stageNo
+  #}
+  #`| getState | r #p1Cmd #if #{
+    #`| play | 100 | 0 #sysSnd
+    #`|#stageNo#,+1#setStage#=~stageNo
+  #}
+  #`%| setText | Stage #stageNo#,: #{|#stageNo#getStageName#}
+    %| draw
+    %#\SelStageTxt#each
+  #`| p1Cmd #anyBtn#! #if #{#`false#=~SelMode#}
+#]
+#defMacro
+
+
+############################################################
+selBG#newAnim
+#`#;
+%| setSff      | sysSff
+%| setTile     | 1 | 1
+%| setColorKey | -1
+%| setScale    | 0.5 | 0.5
+%#\selBG#each
+#`| setAction |
+100,0, 0,0, -1
+#selBG
+
+
+selBox#newAnim
+#`#;
+%| setSff      | sysSff
+%| setTile     | 1 | 0
+%| setColorKey | -1
+%| setAlpha    | 1 | 255
+%| setPos      | 0 | 166
+%| setWindow   | 5 | 0 | 151 | 240
+%#\selBox#each
+#`| setAction |
+100,1, 0,0, -1
+#selBox
+
+
+selBox2#newAnim
+#`#;
+%| setSff      | sysSff
+%| setTile     | 1 | 0
+%| setColorKey | -1
+%| setAlpha    | 1 | 255
+%| setPos      | 0 | 166
+%| setWindow   | 164 | 0 | 151 | 240
+%#\selBox2#each
+#`| setAction |
+100,1, 0,0, -1
+#selBox2
+
+
+#`& bgSub &
+#[
+  #`%| addPos | -1 | -1
+    %| update
+    %| draw
+    %#\selBG#each
+  #`%| addPos | -1 | 0
+    %| update
+    %| draw
+    %#\selBox#each
+  #`%| addPos | 1 | 0
+    %| update
+    %| draw
+    %#\selBox2#each
+#]
+#defMacro
+
+
+############################################################
+
+#`% randSel % a@randSel % b@randSel %
+#[
+  #a@randSel#, == #b@randSel #if #{#^#~#}
+  #`| #a@randSel#, | #{|0|2#rand#} | #{|1|4#rand#} #setTeamMode
+  #{
+    #`#[
+      #`| #a@randSel#, | #{|#rand#} | #{|1|12#rand#} #selectChar#, < 2
+      #if #{#^#_#~#}
+    #]#=_#!
+  #}
+#]
+#defMacro
+
+############################################################
+watchMode#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setText  | Watch Mode
+%| setPos   | 100 | 80
+%#\watchMode#each
+
+p1VsComTxt#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setText  | 1P V.S. Com
+%| setPos   | 100 | 100
+%#\p1VsComTxt#each
+
+p1VsP2#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setText  | 1P V.S. 2P
+%| setPos   | 100 | 120
+%#\p1VsP2#each
+
+netplay#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setText  | Netplay
+%| setPos   | 100 | 140
+%#\netplay#each
+
+portChange#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setPos   | 100 | 160
+%#\portChange#each
+
+replay#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setText  | Replay
+%| setPos   | 100 | 180
+%#\replay#each
+
+connecting#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setPos   | 10 | 140
+%#\connecting#each
+
+inputdia#newInputDialog
+
+#`#[
+  #`| setPos | 0 | 0   #selBG
+  #`| setPos | 0 | 166 #selBox
+  #`| setPos | 0 | 166 #selBox2
+
+  #`$#=p1Selected
+  #`false#=p1SelEnd
+
+  #`$#=p2Selected
+  #`false#=p2SelEnd
+
+  #`#p1TmSub#=p1Task
+  #`#=p2Task
+
+  #refresh
+  #gameMode#, > 1 #if #{ #`#p2TmSub#=~p2Task #}
+
+  #`true#=SelMode
+
+  #`#[ #`| input | 1 #p1Cmd #`| input | #p2In #p2Cmd #]#=cmdInput
+  #`| cmdBufReset | 1 #p1Cmd
+  #`| cmdBufReset | #p2In #p2Cmd
+
+  ############################################################
+  ##メインループ
+  ############################################################
+  #`$ $ #\SelMode $ #[ #`#cmdInput#! #`#refresh #] $ $
+  #[
+    #esc #if #{#^#^#`#modeSel#~#}
+    #`#bgSub#!
+    #`| 10 | 170 | #p1SelOffset #drawFace
+    #`| 169 | 170 | #p2SelOffset #drawFace
+    #p1SelEnd#, && #p2SelEnd #if #{#SelStageSub#!#}
+    #p2Task#!
+    #p1Task#!
+  #]
+  #for #!
+  #{
+    #`#[
+      #game#=_
+      #_#, < 0 || #gameMode#, != 0 #if #{#^#~#}
+      #`| 1 | #_ #randSel#!
+      #`| 2 | #_ #randSel#!
+      #`#__#~
+    #]#=__#!
+  #}
+  #`#bgm#playBGM
+  #`#main#~
+#]#=main
+
+#`#[
+  #exitNetPlay
+  #exitReplay
+
+  #`0#=gameMode
+  #`1#=p2In
+
+  true#set1PCom
+  true#set2PCom
+  true#set3PCom
+  true#set4PCom
+  false#setAutoLevel
+
+  #`| setText | Port Change(#{#getListenPort#}) #portChange
+
+  #refresh
+  #`#[ #`| input | 1 #p1Cmd #]#=cmdInput
+  #`| cmdBufReset | 1 #p1Cmd
+
+  #`$ $ #[ !(#{| p1Cmd #anyBtn#!#echo#}) #]#;
+    $ #[ #`#cmdInput#! #`#refresh #] $ $
+  #[
+    #`| getState | u #p1Cmd#if #{
+      #`| play | 100 | 0 #sysSnd
+      #gameMode#,-1<0?5:#gameMode#,-1#expr#=~gameMode
+    #}
+    #`| getState | d #p1Cmd #if #{
+      #`| play | 100 | 0 #sysSnd
+      #gameMode#,+1>5?0:#gameMode#,+1#expr#=~gameMode
+    #}
+    #`| draw #watchMode
+    #`| draw #p1VsComTxt
+    #`| draw #p1VsP2
+    #`| draw #netplay
+    #`| draw #portChange
+    #`| draw #replay
+    #`%| setPos | 95 | 80 + 20*#gameMode#,
+      %| update
+      %| draw
+      %#\p1TmCursor#each
+  #]
+  #for #!
+
+  #`#gameMode#, == 0 #if #{true#setAutoLevel#}
+  #`#gameMode#, == 1 #if #{false#set1PCom#}
+  #`#gameMode#, == 2 #if #{2#=~p2In #`false#set1PCom #`false#set2PCom#}
+  #`#gameMode#, == 3 #if #{
+    2#=~p2In
+    false#set1PCom
+    false#set2PCom
+    #`| popup | Input Server #inputdia
+    #`$ $ #[ !(#{| isDone #inputdia#}) #] $ #\`#\refresh $ $ #for #!
+    #`| setText
+      | Now connecting.. #{| getStr #inputdia#} #{#getListenPort#}
+    #connecting
+    #`| getStr #inputdia #enterNetPlay
+    #`$ $ #[ !(#{ #connected #}) #] $ #\`#\refresh $ $
+    #[
+      #esc #if #{#^#^#^#`#modeSel#~#}
+      #`| draw #connecting
+    #]
+    #for #!
+    #`#init#!
+    #synchronize
+  #}
+  #`#gameMode#, == 4 #if #{
+    #`| popup | Input Port #inputdia
+    #`$ $ #[ !(#{| isDone #inputdia#}) #] $ #\`#\refresh $ $ #for #!
+    #`| getStr #inputdia #setListenPort
+    #^#`#modeSel#~
+  #}
+  #`#gameMode#, == 5 #if #{
+    2#=~p2In
+    false#set1PCom
+    false#set2PCom
+    #`replay/netplay.replay#enterReplay
+    #`#init#!
+    #synchronize
+  #}
+  #`#main#~
+#]#=modeSel#!
+
+

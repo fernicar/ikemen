@@ -1,0 +1,2104 @@
+﻿
+lib file = <file.ssz>;
+lib s = <string.ssz>;
+lib consts = <consts.ssz>;
+lib mat = <math.ssz>;
+lib sdl = <alpha/sdlplugin.ssz>;
+lib sff = "sff.ssz";
+lib snd = "sound.ssz";
+lib com = "common.ssz";
+lib act = "action.ssz";
+lib fnt = "font.ssz";
+lib bg = "bg.ssz";
+lib cfg = "config.ssz";
+
+
+public &LifePower
+{
+  public float l, p;
+  public int lv;
+  public void set(float life, float power, int level)
+  {
+    `l = life;
+    `p = power;
+    `lv = level;
+  }
+}
+
+public void laydraw(
+  &.sdl.Rect r=, float x, float y, float scl, int ln,
+  &.sff.Anim!&.bg.Frame? a=, &.com.Layout l=)
+{
+  if(l.layerno != ln) ret;
+  a.draw(
+    r=, x+l.offset.x, y+l.offset.y, scl, scl,
+    l.scale.x*(float)l.facing, l.scale.x*(float)l.facing,
+    l.scale.y*(float)l.vfacing, 0.0, 0.0, .consts.null!&.com.PalFX?());
+}
+
+public void laytext(
+  float x, float y, float scl, int ln, ^/char text,
+  &.fnt.Font f=, int b, int a, &.com.Layout l=)
+{
+  if(l.layerno != ln) ret;
+  f.drawText(
+    (x+l.offset.x)*scl, (y+l.offset.y)*scl,
+    l.scale.x*(float)l.facing*scl, l.scale.y*(float)l.vfacing*scl, b, a, text);
+}
+
+public void layspr(
+  float x, float y, int ln, ^&.sff.Sprite spr, &.com.Layout l=)
+{
+  if(l.layerno != ln || #spr == 0) ret;
+  &.sdl.Rect tile;
+  tile.set(0, 0, 0x0, 0x0);
+  float x2 =
+    x + l.offset.x - l.scale.x*(float)(spr~rct.x*l.facing);
+  float y2 =
+    y + l.offset.y - l.scale.y*(float)(spr~rct.y*l.vfacing);
+  if(l.scale.x*(float)l.facing < 0.0){
+    x2 *= -1.0;
+  }
+  if(l.scale.y*(float)l.vfacing < 0.0){
+    y2 *= -1.0;
+    y2 += 240.0;
+  }
+  .sdl.screen.renderMugenZoom(
+    .com.scrrect=, 0.0, 0.0, spr~pxl, spr~colorPallet,
+    0, spr~rct=, -x2*.com.WidthScale, -y2*.com.HeightScale, tile=,
+    l.scale.x*(float)l.facing*.com.WidthScale,
+    l.scale.x*(float)l.facing*.com.WidthScale,
+    l.scale.y*(float)l.vfacing*.com.HeightScale,
+    0.0, 0x0, 255, spr~rle, spr~pluginbuf=);
+}
+
+public &ActionList
+{
+  public %&.bg.Action actionList;
+  public ^&.bg.Action getAction(int no)
+  {
+    loop{index i = 0; while; do:
+      if(`actionList[i].no == no) ret `actionList[i..i+1];
+      i++;
+    while i < #`actionList:
+    }
+    ret .consts.null!&.bg.Action?();
+  }
+}
+
+public void readSpr(&.sff.Anim!&.bg.Frame? a=, ^/char data)
+{
+  a.frames.new(1);
+  .com.readPair!short?(a.frames~group=, a.frames~number=, data);
+  a.mask = 0;
+}
+
+public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
+{
+  ^&.bg.Action act = al.getAction(.s.sToN!int?(data));
+  if(#act == 0) ret;
+  a.setFrames(act~frames, act~loopstart, act~nrepeat);
+  a.mask = 0;
+}
+
+&Lifebar
+{
+  public int posx = 140;
+  public int posy = 12;
+  public int range_xz = 0;
+  public int range_xm = -127;
+  public &.sff.Anim!&.bg.Frame? bg0;
+  public &.com.Layout bg0_lay;
+  public &.sff.Anim!&.bg.Frame? bg1;
+  public &.com.Layout bg1_lay;
+  public &.sff.Anim!&.bg.Frame? bg2;
+  public &.com.Layout bg2_lay;
+  public &.sff.Anim!&.bg.Frame? mid;
+  public &.com.Layout mid_lay;
+  public &.sff.Anim!&.bg.Frame? front;
+  public &.com.Layout front_lay;
+  public &.ActionList al;
+  public float oldlife = 1.0;
+  public float midlife = 1.0;
+  public float midlifelim = 1.0;
+  public int mlifetime = 0;
+  public bool read(^/char name, ^/char data)
+  {
+    branch{
+    cond .s.equ(name, "pos"):
+      .com.readPair!int?(`posx=, `posy=, data);
+    cond .s.equ(name, "range.x"):
+      .com.readPair!int?(`range_xz=, `range_xm=, data);
+    cond .s.equ(name, "bg0.spr"):
+      .readSpr(`bg0=, data);
+    cond .s.equ(name, "bg0.anim"):
+      .readAnim(`bg0=, `al=, data);
+    cond .s.equ(name[0..4], "bg0."):
+      ret `bg0_lay.read(name[4..-1], data);
+    cond .s.equ(name, "bg1.spr"):
+      .readSpr(`bg1=, data);
+    cond .s.equ(name, "bg1.anim"):
+      .readAnim(`bg1=, `al=, data);
+    cond .s.equ(name[0..4], "bg1."):
+      ret `bg1_lay.read(name[4..-1], data);
+    cond .s.equ(name, "bg2.spr"):
+      .readSpr(`bg2=, data);
+    cond .s.equ(name, "bg2.anim"):
+      .readAnim(`bg2=, `al=, data);
+    cond .s.equ(name[0..4], "bg2."):
+      ret `bg2_lay.read(name[4..-1], data);
+    cond .s.equ(name, "mid.spr"):
+      .readSpr(`mid=, data);
+    cond .s.equ(name, "mid.anim"):
+      .readAnim(`mid=, `al=, data);
+    cond .s.equ(name[0..4], "mid."):
+      ret `mid_lay.read(name[4..-1], data);
+    cond .s.equ(name, "front.spr"):
+      .readSpr(`front=, data);
+    cond .s.equ(name, "front.anim"):
+      .readAnim(`front=, `al=, data);
+    cond .s.equ(name[0..6], "front."):
+      ret `front_lay.read(name[6..-1], data);
+    else:
+      ret false;
+    }
+    ret true;
+  }
+  public void step(float life, bool hit)
+  {
+    branch{
+    cond hit:
+      if(`mlifetime < 30){
+        `mlifetime = 30;
+        `midlife = `midlifelim = `oldlife;
+      }
+    else:
+      if(`mlifetime > 0) `mlifetime--;
+      if(`mlifetime <= 0) `midlife -= 1.0 / 144.0;
+      branch{
+      cond `mlifetime <= 0 && life < `midlifelim:
+        `midlifelim +=
+          (life - `midlifelim)
+          * (1.0 / (12.0 - (life - `midlifelim)*144.0));
+      else:
+        `midlifelim = life;
+      }
+      `oldlife = life;
+    }
+    if(`midlife < `midlifelim) `midlife = `midlifelim;
+    `bg0.action();
+    `bg1.action();
+    `bg2.action();
+    `mid.action();
+    `front.action();
+  }
+  public void bgDraw(int layerno)
+  {
+    .laydraw(
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
+      layerno, `bg0=, `bg0_lay=);
+    .laydraw(
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
+      layerno, `bg1=, `bg1_lay=);
+    .laydraw(
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
+      layerno, `bg2=, `bg2_lay=);
+  }
+  public void draw(int layerno, float life)
+  {:<-
+    &.sdl.Rect lrct, mrct;
+    lrct = mrct = .com.scrrect;
+    void setLifeWidth(&.sdl.Rect r=, float life)
+    {
+      branch{
+      cond `range_xz < `range_xm:
+        r.x =
+          (short)(
+            (float)(`posx + `range_xz)*.com.WidthScale + 0.5);
+        r.w =
+          (ushort)(
+            (float)(`range_xm-`range_xz+1)*life*.com.WidthScale + 0.5);
+      else:
+        r.x =
+          (short)(
+            (float)(`posx + `range_xz+1)*.com.WidthScale + 0.5)
+          - (short)(
+            (float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
+        r.w =
+          (ushort)(
+            (float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
+      }
+    }
+    setLifeWidth(lrct=, life);
+    setLifeWidth(mrct=, `midlife);
+    .laydraw(
+      mrct=, (float)`posx, (float)`posy, 1.0,
+      layerno, `mid=, `mid_lay=);
+    .laydraw(
+      lrct=, (float)`posx, (float)`posy, 1.0,
+      layerno, `front=, `front_lay=);
+  }
+  public void setup(^&.sff.Sff sf)
+  {
+    `bg0.setup(sf);
+    `bg0_lay.setup();
+    `bg1.setup(sf);
+    `bg1_lay.setup();
+    `bg2.setup(sf);
+    `bg2_lay.setup();
+    `mid.setup(sf);
+    `mid_lay.setup();
+    `front.setup(sf);
+    `front_lay.setup();
+  }
+  public void reset()
+  {
+    `bg0.reset();
+    `bg1.reset();
+    `bg2.reset();
+    `mid.reset();
+    `front.reset();
+  }
+}
+
+&Powerbar
+{
+  public int posx = 140;
+  public int posy = 22;
+  public int range_xz = 0;
+  public int range_xm = -107;
+  public &.sff.Anim!&.bg.Frame? bg0;
+  public &.com.Layout bg0_lay;
+  public &.sff.Anim!&.bg.Frame? bg1;
+  public &.com.Layout bg1_lay;
+  public &.sff.Anim!&.bg.Frame? bg2;
+  public &.com.Layout bg2_lay;
+  public &.sff.Anim!&.bg.Frame? mid;
+  public &.com.Layout mid_lay;
+  public &.sff.Anim!&.bg.Frame? front;
+  public &.com.Layout front_lay;
+  public int counter_fontn = -1;
+  public int counter_fontb = 0;
+  public int counter_fonta = 0;
+  public &.com.Layout counter_lay;
+  public ^&.com.IXY level_snd;
+  public &.ActionList al;
+  public ^&.snd.Snd sn;
+  public float midpower = 0.0;
+  public float midpowerlim = 0.0;
+  public int prevlevel = 0;
+  new()
+  {
+    `level_snd.new(3);
+    `level_snd[0].x = `level_snd[1].x = `level_snd[2].x = -1;
+  }
+  public bool read(^/char name, ^/char data)
+  {
+    branch{
+    cond .s.equ(name, "pos"):
+      .com.readPair!int?(`posx=, `posy=, data);
+    cond .s.equ(name, "range.x"):
+      .com.readPair!int?(`range_xz=, `range_xm=, data);
+    cond .s.equ(name, "bg0.spr"):
+      .readSpr(`bg0=, data);
+    cond .s.equ(name, "bg0.anim"):
+      .readAnim(`bg0=, `al=, data);
+    cond .s.equ(name[0..4], "bg0."):
+      ret `bg0_lay.read(name[4..-1], data);
+    cond .s.equ(name, "bg1.spr"):
+      .readSpr(`bg1=, data);
+    cond .s.equ(name, "bg1.anim"):
+      .readAnim(`bg1=, `al=, data);
+    cond .s.equ(name[0..4], "bg1."):
+      ret `bg1_lay.read(name[4..-1], data);
+    cond .s.equ(name, "bg2.spr"):
+      .readSpr(`bg2=, data);
+    cond .s.equ(name, "bg2.anim"):
+      .readAnim(`bg2=, `al=, data);
+    cond .s.equ(name[0..4], "bg2."):
+      ret `bg2_lay.read(name[4..-1], data);
+    cond .s.equ(name, "mid.spr"):
+      .readSpr(`mid=, data);
+    cond .s.equ(name, "mid.anim"):
+      .readAnim(`mid=, `al=, data);
+    cond .s.equ(name[0..4], "mid."):
+      ret `mid_lay.read(name[4..-1], data);
+    cond .s.equ(name, "front.spr"):
+      .readSpr(`front=, data);
+    cond .s.equ(name, "front.anim"):
+      .readAnim(`front=, `al=, data);
+    cond .s.equ(name[0..6], "front."):
+      ret `front_lay.read(name[6..-1], data);
+    cond .s.equ(name, "counter.font"):
+      {
+        ^int nba = .s.svToAry!int?(",", data);
+        if(#nba < 2) break;
+        `counter_fontn = nba[0];
+        `counter_fontb = nba[1];
+        if(#nba >= 3) `counter_fonta = nba[2];
+      }
+    cond .s.equ(name[0..8], "counter."):
+      ret `counter_lay.read(name[8..-1], data);
+    cond .s.equ(name, "level1.snd"):
+      .com.readPair!int?(`level_snd[0].x=, `level_snd[0].y=, data);
+    cond .s.equ(name, "level2.snd"):
+      .com.readPair!int?(`level_snd[1].x=, `level_snd[1].y=, data);
+    cond .s.equ(name, "level3.snd"):
+      .com.readPair!int?(`level_snd[2].x=, `level_snd[2].y=, data);
+    else:
+      ret false;
+    }
+    ret true;
+  }
+  public void step(float power, int level, &.snd.Sound snd=)
+  {
+    `midpower -= 1.0 / 144.0;
+    branch{
+    cond power < `midpowerlim:
+      `midpowerlim +=
+        (power - `midpowerlim)
+        * (1.0 / (12.0 - (power - `midpowerlim)*144.0));
+    else:
+      `midpowerlim = power;
+    }
+    if(`midpower < `midpowerlim) `midpower = `midpowerlim;
+    if(level > `prevlevel){
+      snd.sound =
+        `sn~getSound(`level_snd[level-1].x, `level_snd[level-1].y);
+      snd.setDefaultParameter();
+    }
+    `prevlevel = level;
+    `bg0.action();
+    `bg1.action();
+    `bg2.action();
+    `mid.action();
+    `front.action();
+  }
+  public void bgDraw(int layerno)
+  {
+    .laydraw(
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
+      layerno, `bg0=, `bg0_lay=);
+    .laydraw(
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
+      layerno, `bg1=, `bg1_lay=);
+    .laydraw(
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
+      layerno, `bg2=, `bg2_lay=);
+  }
+  public void draw(int layerno, float power, int level, ^&.fnt.Font f)
+  {:<-
+    &.sdl.Rect lrct, mrct;
+    lrct = mrct = .com.scrrect;
+    void setPowerWidth(&.sdl.Rect r=, float power)
+    {
+      branch{
+      cond `range_xz < `range_xm:
+        r.x =
+          (short)(
+            (float)(`posx + `range_xz)*.com.WidthScale + 0.5);
+        r.w =
+          (ushort)(
+            (float)(`range_xm-`range_xz+1)*power*.com.WidthScale + 0.5);
+      else:
+        r.x =
+          (short)(
+            (float)(`posx + `range_xz+1)*.com.WidthScale + 0.5)
+          - (short)(
+            (float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
+        r.w =
+          (ushort)(
+            (float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
+      }
+    }
+    setPowerWidth(lrct=, power);
+    setPowerWidth(mrct=, `midpower);
+    .laydraw(
+      mrct=, (float)`posx, (float)`posy, 1.0,
+      layerno, `mid=, `mid_lay=);
+    .laydraw(
+      lrct=, (float)`posx, (float)`posy, 1.0,
+      layerno, `front=, `front_lay=);
+    if(`counter_fontn >= 0){
+      .laytext(
+        (float)`posx, (float)`posy, 1.0, layerno, .s.iToS(level),
+        f[`counter_fontn]=, `counter_fontb, `counter_fonta,
+        `counter_lay=);
+    }
+  }
+  public void setup(^&.sff.Sff sf, ^&.snd.Snd s)
+  {
+    `counter_lay.scale.x *= .cfg.LifebarFontScale;
+    `counter_lay.scale.y *= .cfg.LifebarFontScale;
+    `counter_lay.setup();
+    `bg0.setup(sf);
+    `bg0_lay.setup();
+    `bg1.setup(sf);
+    `bg1_lay.setup();
+    `bg2.setup(sf);
+    `bg2_lay.setup();
+    `mid.setup(sf);
+    `mid_lay.setup();
+    `front.setup(sf);
+    `front_lay.setup();
+    `sn = s;
+  }
+  public void reset()
+  {
+    `bg0.reset();
+    `bg1.reset();
+    `bg2.reset();
+    `mid.reset();
+    `front.reset();
+  }
+}
+
+&Face
+{
+  public int posx = 2;
+  public int posy = 12;
+  public &.sff.Anim!&.bg.Frame? bg;
+  public &.com.Layout bg_lay;
+  public int face_sprg = -1;
+  public int face_spri = 0;
+  public ^&.sff.Sprite face_spr;
+  public &.com.Layout face_lay;
+  public int teammate_posx = 1;
+  public int teammate_posy = 49;
+  public int teammate_spacingx = 13;
+  public int teammate_spacingy = 0;
+  public &.sff.Anim!&.bg.Frame? teammate_bg;
+  public &.com.Layout teammate_bg_lay;
+  public &.sff.Anim!&.bg.Frame? teammate_ko;
+  public &.com.Layout teammate_ko_lay;
+  public int numko = 0;
+  public int teammate_face_sprg = -1;
+  public int teammate_face_spri = 0;
+  public ^^&.sff.Sprite teammate_face_spr;
+  public &.com.Layout teammate_face_lay;
+  public &.ActionList al;
+  public bool read(^/char name, ^/char data)
+  {
+    branch{
+    cond .s.equ(name, "pos"):
+      .com.readPair!int?(`posx=, `posy=, data);
+    cond .s.equ(name, "bg.spr"):
+      .readSpr(`bg=, data);
+    cond .s.equ(name, "bg.anim"):
+      .readAnim(`bg=, `al=, data);
+    cond .s.equ(name[0..3], "bg."):
+      ret `bg_lay.read(name[3..-1], data);
+    cond .s.equ(name, "face.spr"):
+      .com.readPair!int?(`face_sprg=, `face_spri=, data);
+    cond .s.equ(name[0..5], "face."):
+      ret `face_lay.read(name[5..-1], data);
+    cond .s.equ(name, "teammate.pos"):
+      .com.readPair!int?(`teammate_posx=, `teammate_posy=, data);
+    cond .s.equ(name, "teammate.spacing"):
+      .com.readPair!int?(
+        `teammate_spacingx=, `teammate_spacingy=, data);
+    cond .s.equ(name, "teammate.bg.spr"):
+      .readSpr(`teammate_bg=, data);
+    cond .s.equ(name, "teammate.bg.anim"):
+      .readAnim(`teammate_bg=, `al=, data);
+    cond .s.equ(name[0..12], "teammate.bg."):
+      ret `teammate_bg_lay.read(name[12..-1], data);
+    cond .s.equ(name, "teammate.ko.spr"):
+      .readSpr(`teammate_ko=, data);
+    cond .s.equ(name, "teammate.ko.anim"):
+      .readAnim(`teammate_ko=, `al=, data);
+    cond .s.equ(name[0..12], "teammate.ko."):
+      ret `teammate_ko_lay.read(name[12..-1], data);
+    cond .s.equ(name, "teammate.face.spr"):
+      .com.readPair!int?(
+        `teammate_face_sprg=, `teammate_face_spri=, data);
+    cond .s.equ(name[0..14], "teammate.face."):
+      ret `teammate_face_lay.read(name[14..-1], data);
+    else:
+      ret false;
+    }
+    ret true;
+  }
+  public void step()
+  {
+    `bg.action();
+    `teammate_bg.action();
+    `teammate_ko.action();
+  }
+  public void bgDraw(int layerno)
+  {
+    .laydraw(
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
+      layerno, `bg=, `bg_lay=);
+  }
+  public void draw(int layerno)
+  {
+    .layspr(
+      (float)`posx, (float)`posy, layerno, `face_spr, `face_lay=);
+    loop{
+      index i = 0;
+      float x = (float)`teammate_posx, y = (float)`teammate_posy;
+      while;
+    do:
+      if(i == `numko) continue;
+      .laydraw(
+        .com.scrrect=, x, y, 1.0, layerno,
+        `teammate_bg=, `teammate_bg_lay=);
+      .layspr(
+        x, y, layerno, `teammate_face_spr[i], `teammate_face_lay=);
+      if(i < `numko){
+        .laydraw(
+          .com.scrrect=, x, y, 1.0, layerno,
+          `teammate_ko=, `teammate_ko_lay=);
+      }
+      x += (float)`teammate_spacingx;
+      y += (float)`teammate_spacingy;
+    continue:
+      i++;
+    while i < #`teammate_face_spr:
+    }
+  }
+  public void setup(^&.sff.Sff sf)
+  {
+    `bg.setup(sf);
+    `bg_lay.setup();
+    `face_lay.setup();
+    `teammate_bg.setup(sf);
+    `teammate_bg_lay.setup();
+    `teammate_ko.setup(sf);
+    `teammate_ko_lay.setup();
+    `teammate_face_lay.setup();
+  }
+  public void reset()
+  {
+    `bg.reset();
+    `teammate_bg.reset();
+    `teammate_ko.reset();
+  }
+}
+
+&Name
+{
+  public int posx = 14;
+  public int posy = 10;
+  public int name_fontn = -1;
+  public int name_fontb = 0;
+  public int name_fonta = 0;
+  public &.com.Layout name_lay;
+  public &.sff.Anim!&.bg.Frame? bg;
+  public &.com.Layout bg_lay;
+  public &.ActionList al;
+  public bool read(^/char name, ^/char data)
+  {
+    branch{
+    cond .s.equ(name, "pos"):
+      .com.readPair!int?(`posx=, `posy=, data);
+    cond .s.equ(name, "name.font"):
+      {
+        ^int nba = .s.svToAry!int?(",", data);
+        if(#nba < 2) break;
+        `name_fontn = nba[0];
+        `name_fontb = nba[1];
+        if(#nba >= 3) `name_fonta = nba[2];
+      }
+    cond .s.equ(name[0..5], "name."):
+      ret `name_lay.read(name[5..-1], data);
+    cond .s.equ(name, "bg.spr"):
+      .readSpr(`bg=, data);
+    cond .s.equ(name, "bg.anim"):
+      {
+        ^&.bg.Action act = `al.getAction(.s.sToN!int?(data));
+        if(#act == 0) break;
+        `bg.setFrames(act~frames, act~loopstart, act~nrepeat);
+        `bg.mask = 0;
+      }
+    cond .s.equ(name[0..3], "bg."):
+      ret `bg_lay.read(name[3..-1], data);
+    else:
+      ret false;
+    }
+    ret true;
+  }
+  public void step()
+  {
+    `bg.action();
+  }
+  public void bgDraw(int layerno)
+  {
+    .laydraw(
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
+      layerno, `bg=, `bg_lay=);
+  }
+  public void draw(int layerno, ^&.fnt.Font f, ^/char name)
+  {
+    if(`name_fontn >= 0){
+      .laytext(
+        (float)`posx, (float)`posy, 1.0, layerno, name,
+        f[`name_fontn]=, `name_fontb, `name_fonta, `name_lay=);
+    }
+  }
+  public void setup(^&.sff.Sff sf)
+  {
+    `name_lay.scale.x *= .cfg.LifebarFontScale;
+    `name_lay.scale.y *= .cfg.LifebarFontScale;
+    `name_lay.setup();
+    `bg.setup(sf);
+    `bg_lay.setup();
+  }
+  public void reset()
+  {
+    `bg.reset();
+  }
+}
+
+&Combo
+{
+  public int posx = 10;
+  public int posy = 80;
+  public float start_x = -40.0;
+  public int counter_fontn = -1;
+  public int counter_fontb = 0;
+  public int counter_shake = 1;
+  public &.com.Layout counter_lay;
+  public int text_fontn = -1;
+  public int text_fontb = 0;
+  public ^/char text_text;
+  public &.com.Layout text_lay;
+  public int displaytime = 90;
+  public ^int cur;
+  public ^int resttime;
+  public ^int slidetime;
+  public ^int shaketime;
+  new()
+  {
+    `counter_lay.layerno = 2;
+    `text_lay.layerno = 2;
+    `cur.new(2);
+    `resttime.new(2);
+    `slidetime.new(2);
+    `shaketime.new(2);
+    `reset();
+  }
+  public bool read(^/char name, ^/char data)
+  {
+    branch{
+    cond .s.equ(name, "pos"):
+      .com.readPair!int?(`posx=, `posy=, data);
+    cond .s.equ(name, "start.x"):
+      `start_x = .s.sToN!float?(data);
+    cond .s.equ(name, "counter.font"):
+      .com.readPair!int?(`counter_fontn=, `counter_fontb=, data);
+    cond .s.equ(name, "counter.shake"):
+      `counter_shake = .s.sToN!int?(data);
+    cond .s.equ(name[0..8], "counter."):
+      ret `counter_lay.read(name[8..-1], data);
+    cond .s.equ(name, "text.font"):
+      .com.readPair!int?(`text_fontn=, `text_fontb=, data);
+    cond .s.equ(name, "text.text"):
+      `text_text = data;
+    cond .s.equ(name[0..5], "text."):
+      ret `text_lay.read(name[5..-1], data);
+    cond .s.equ(name, "displaytime"):
+      `displaytime = .s.sToN!int?(data);
+    else:
+      ret false;
+    }
+    ret true;
+  }
+  public void step(^/int combo)
+  {
+    loop{index i = 0; while; do:
+      branch{
+      cond `resttime[i] > 0:
+        if(`slidetime[i] < 30) `slidetime[i]++;
+      else:
+        if(`slidetime[i] > 0) `slidetime[i]--;
+      }
+      if(`shaketime[i] > 0) `shaketime[i]--;
+      if(`slidetime[i] == 30) `resttime[i]--;
+      if(combo[i] >= 2 && `cur[i] != combo[i]){
+        `cur[i] = combo[i];
+        `resttime[i] = `displaytime;
+        if(`counter_shake != 0) `shaketime[i] = 15;
+      }
+      i++;
+    while i < #`cur:
+    }
+  }
+  public void draw(int layerno, ^&.fnt.Font f)
+  {:<-
+    float haba(int n, ^&.fnt.Font f)
+    {
+      ret
+        `counter_fontn >= 0
+        ? (float)f[`counter_fontn].textWidth(.s.iToS(n))
+        * `counter_lay.scale.x
+        : 0.0;
+    }
+    loop{
+      index i = 0;
+      float x;
+      ^/char t;
+    while; do:
+      if(`slidetime[i] == 0) continue;
+      x =
+        (i&1) == 0
+        ? (
+          `start_x > 0.0 ? 0.0
+          : `start_x*((float)(15-`slidetime[i])/15.0 + 1.0))
+        + (float)`posx + haba(`cur[i], f)
+        : (
+          `start_x > 0.0 ? 0.0 
+          : -`start_x*((float)(15-`slidetime[i])/15.0 + 1.0))
+        - (float)`posx + 320.0;
+      t = .s.join(.s.iToS(`cur[i]))<, .s.split("%i")<, `text_text;
+      if(`text_fontn >= 0){
+        branch{
+        cond (i&1) == 0:
+          if(`posx != 0){
+            x +=
+              `text_lay.offset.x
+              * ((1.0 - .cfg.LifebarFontScale) * .cfg.LifebarFontScale);
+          }
+        else:
+          x -= `text_lay.offset.x * (`posx != 0 ? 1.0 : .cfg.LifebarFontScale);
+        }
+        .laytext(
+          x*(1.0/.cfg.LifebarFontScale),
+          (float)`posy*(1.0/.cfg.LifebarFontScale),
+          .cfg.LifebarFontScale, layerno, t,
+          f[`text_fontn]=, `text_fontb, (i&1)==0?1:-1, `text_lay=);
+        if((i&1) != 0){
+          x -=
+            (float)f[`text_fontn].textWidth(t)
+            * `text_lay.scale.x * .cfg.LifebarFontScale;
+        }
+      }
+      if(`counter_fontn >= 0){
+        float z = 1.0 + (float)`shaketime[i]*(1.0/20.0)
+          * .mat.sin((double)`shaketime[i] * (.mat.PI / 2.5));
+        .laytext(
+          x/z, (float)`posy/z, z, layerno, .s.iToS(`cur[i]),
+          f[`counter_fontn]=, `counter_fontb, -1, `counter_lay=);
+      }
+    continue:
+      i++;
+    while i < #`cur:
+    }
+  }
+  public void setup()
+  {
+    `start_x *= .cfg.LifebarFontScale;
+    `counter_lay.scale.x *= .cfg.LifebarFontScale;
+    `counter_lay.scale.y *= .cfg.LifebarFontScale;
+    `counter_lay.offset.x = 0.0;
+    `counter_lay.offset.y = 0.0;
+    `counter_lay.setup();
+    `text_lay.setup();
+  }
+  public void reset()
+  {
+    `cur[0] = `cur[1] = 0;
+    `resttime[0] = `resttime[1] = 0;
+    `slidetime[0] = `slidetime[1] = 0;
+    `shaketime[0] = `shaketime[1] = 0;
+  }
+}
+
+
+&AnimFontSnd
+{
+  public int sndg = -1;
+  public int sndi = 0;
+  public int fontn = -1;
+  public int fontb = 0;
+  public int fonta = 0;
+  public ^/char text;
+  public &.sff.Anim!&.bg.Frame? anim;
+  public &.com.Layout lay;
+  public bool read(
+    ^/char name, ^/char data, &.ActionList al=)
+  {
+    branch{
+    cond .s.equ(name, "snd"):
+      .com.readPair!int?(`sndg=, `sndi=, data);
+    cond .s.equ(name, "font"):
+      {
+        ^int nba = .s.svToAry!int?(",", data);
+        if(#nba < 2) break;
+        `fontn = nba[0];
+        `fontb = nba[1];
+        if(#nba >= 3) `fonta = nba[2];
+      }
+    cond .s.equ(name, "text"):
+      `text = data;
+    cond .s.equ(name, "spr"):
+      .readSpr(`anim=, data);
+    cond .s.equ(name, "anim"):
+      .readAnim(`anim=, al=, data);
+    else:
+      ret `lay.read(name, data);
+    }
+    ret true;
+  }
+  public void action()
+  {
+    `anim.action();
+  }
+  public void draw(int layerno, ^&.fnt.Font f)
+  {
+    branch{
+    cond #`anim.frames > 0:
+      .laydraw(.com.scrrect=, 0.0, 0.0, 1.0, layerno, `anim=, `lay=);
+    cond `fontn >= 0 && #`text > 0:
+      .laytext(
+        0.0, 0.0, 1.0, layerno, `text,
+        f[`fontn]=, `fontb, `fonta, `lay=);
+    }
+  }
+  public bool noSound()
+  {
+    ret `sndg < 0;
+  }
+  public bool noDisplay()
+  {
+    ret #`anim.frames == 0 && (`fontn < 0 || #`text == 0);
+  }
+  public bool end(int dt)
+  {
+    ret
+      `lay.displaytime < 0
+      ? #`anim.frames == 0 || `anim.loopend
+      : dt >= `lay.displaytime;
+  }
+  public void setup(^&.sff.Sff sf)
+  {
+    `anim.setup(sf);
+    if(#`anim.frames == 0){
+      `lay.scale.x *= .cfg.LifebarFontScale;
+      `lay.scale.y *= .cfg.LifebarFontScale;
+    }
+    `lay.setup();
+  }
+  public void reset()
+  {
+    `anim.reset();
+  }
+}
+
+
+
+|KOTy
+{
+  NotYet, KO, DKO, TO, TODraw
+}
+
+&Round
+{
+  public int match_wins = 2;
+  public int match_maxdrawgames = 1;
+  public int start_waittime = 30;
+  public int round_time = 0;
+  public int round_sndtime = 0;
+  public &.AnimFontSnd round_default;
+  public ^&.AnimFontSnd round;
+  public int fight_time = 0;
+  public int fight_sndtime = 0;
+  public &.AnimFontSnd fight;
+  public int ctrl_time = 30;
+  public int ko_time = 0;
+  public int ko_sndtime = 0;
+  public &.AnimFontSnd ko;
+  public &.AnimFontSnd dko;
+  public &.AnimFontSnd to;
+  public int slow_time = 60;
+  public int over_waittime = 45;
+  public int over_hittime = 10;
+  public int over_wintime = 45;
+  public int over_time = 210;
+  public int win_time = 60;
+  public int win_sndtime = 0;
+  public &.AnimFontSnd win;
+  public &.AnimFontSnd win2;
+  public &.AnimFontSnd drawn;
+  public &.ActionList al;
+  public ^&.fnt.Font fnt;
+  public ^&.snd.Snd sn;
+  public int cur, wt, swt, dt, wt2, swt2, dt2;
+  new()
+  {
+    `round_default.lay.layerno = 2;
+    `round.new(9);
+    loop{index i = 0; while; do:
+      `round[i].lay.layerno = 2;
+      i++;
+    while i < #`round:
+    }
+    `fight.lay.layerno = 2;
+    `ko.lay.layerno = 1;
+    `dko.lay.layerno = 1;
+    `to.lay.layerno = 1;
+    `win.lay.layerno = 1;
+    `win2.lay.layerno = 1;
+    `drawn.lay.layerno = 1;
+  }
+  public bool read(^/char name, ^/char data)
+  {
+    branch{
+    cond .s.equ(name, "match.wins"):
+      `match_wins = .s.sToN!int?(data);
+    cond .s.equ(name, "match.maxdrawgames"):
+      `match_maxdrawgames = .s.sToN!int?(data);
+    cond .s.equ(name, "start.waittime"):
+      `start_waittime = .mat.max!int?(1, .s.sToN!int?(data));
+    cond .s.equ(name, "round.time"):
+      `round_time = .s.sToN!int?(data);
+    cond .s.equ(name, "round.sndtime"):
+      `round_sndtime = .s.sToN!int?(data);
+    cond .s.equ(name[0..14], "round.default."):
+      ret `round_default.read(name[14..-1], data, `al=);
+    cond .s.equ(name[0..7], "round1."):
+      ret `round[0].read(name[7..-1], data, `al=);
+    cond .s.equ(name[0..7], "round2."):
+      ret `round[1].read(name[7..-1], data, `al=);
+    cond .s.equ(name[0..7], "round3."):
+      ret `round[2].read(name[7..-1], data, `al=);
+    cond .s.equ(name[0..7], "round4."):
+      ret `round[3].read(name[7..-1], data, `al=);
+    cond .s.equ(name[0..7], "round5."):
+      ret `round[4].read(name[7..-1], data, `al=);
+    cond .s.equ(name[0..7], "round6."):
+      ret `round[5].read(name[7..-1], data, `al=);
+    cond .s.equ(name[0..7], "round7."):
+      ret `round[6].read(name[7..-1], data, `al=);
+    cond .s.equ(name[0..7], "round8."):
+      ret `round[7].read(name[7..-1], data, `al=);
+    cond .s.equ(name[0..7], "round9."):
+      ret `round[8].read(name[7..-1], data, `al=);
+    cond .s.equ(name, "fight.time"):
+      `fight_time = .s.sToN!int?(data);
+    cond .s.equ(name, "fight.sndtime"):
+      `fight_sndtime = .s.sToN!int?(data);
+    cond .s.equ(name[0..6], "fight."):
+      ret `fight.read(name[6..-1], data, `al=);
+    cond .s.equ(name, "ctrl.time"):
+      `ctrl_time = .mat.max!int?(1, .s.sToN!int?(data));
+    cond .s.equ(name, "ko.time"):
+      `ko_time = .s.sToN!int?(data);
+    cond .s.equ(name, "ko.sndtime"):
+      `ko_sndtime = .s.sToN!int?(data);
+    cond .s.equ(name[0..3], "ko."):
+      ret `ko.read(name[3..-1], data, `al=);
+    cond .s.equ(name[0..4], "dko."):
+      ret `dko.read(name[4..-1], data, `al=);
+    cond .s.equ(name[0..3], "to."):
+      ret `to.read(name[3..-1], data, `al=);
+    cond .s.equ(name, "slow.time"):
+      `slow_time = .s.sToN!int?(data);
+    cond .s.equ(name, "over.waittime"):
+      `over_waittime = .s.sToN!int?(data);
+    cond .s.equ(name, "over.hittime"):
+      `over_hittime = .s.sToN!int?(data);
+    cond .s.equ(name, "over.wintime"):
+      `over_wintime = .s.sToN!int?(data);
+    cond .s.equ(name, "over.time"):
+      `over_time = .s.sToN!int?(data);
+    cond .s.equ(name, "win.time"):
+      `win_time = .s.sToN!int?(data);
+    cond .s.equ(name, "win.sndtime"):
+      `win_sndtime = .s.sToN!int?(data);
+    cond .s.equ(name[0..4], "win."):
+      ret `win.read(name[4..-1], data, `al=);
+    cond .s.equ(name[0..5], "win2."):
+      ret `win2.read(name[5..-1], data, `al=);
+    cond .s.equ(name[0..5], "draw."):
+      ret `drawn.read(name[5..-1], data, `al=);
+    else:
+      ret false;
+    }
+    ret true;
+  }
+  public bool act(
+    int roundState, int round, &.snd.Sound snd=, |.KOTy ko, bool simul)
+  {
+    branch{
+    cond roundState > `ctrl_time:
+      `cur = 0;
+      `wt = `round_time;
+      `swt = `round_sndtime;
+      `dt = 0;
+    cond roundState >= 0 || `cur < 2:
+      switch(`cur){
+      case 0:
+        if(`swt-- == 0) branch{
+        cond round <= #`round:
+          snd.sound =
+            `sn~getSound(`round[round-1].sndg, `round[round-1].sndi);
+          snd.setDefaultParameter();
+        else:
+          snd.sound =
+            `sn~getSound(`round_default.sndg, `round_default.sndi);
+          snd.setDefaultParameter();
+        }
+        if(`wt-- <= 0) branch{
+          `dt++;
+        cond round <= #`round:
+          `round[round-1].action();
+          if(!`round[round-1].end(`dt)) break;
+        else:
+          `round_default.action();
+          if(!`round_default.end(`dt)) break;
+        comm:
+          `cur = 1;
+          `wt = `fight_time;
+          `swt = `fight_sndtime;
+          `dt = 0;
+        }
+        ret false;
+      case 1:
+        if(`swt-- == 0){
+          snd.sound = `sn~getSound(`fight.sndg, `fight.sndi);
+          snd.setDefaultParameter();
+        }
+        if(`wt-- <= 0){
+          `dt++;
+          `fight.action();
+          if(`fight.end(`dt)){
+            `cur = 2;
+            `wt = `ko_time;
+            `swt = `ko_sndtime;
+            `dt = 0;
+            `wt2 = `win_time;
+            `swt2 = `win_sndtime;
+            `dt2 = 0;
+          }
+        }
+      }
+    cond `cur == 2 && ko != .KOTy::NotYet:
+      switch(ko){
+      case .KOTy::KO:
+        if(`swt-- == 0){
+          snd.sound = `sn~getSound(`ko.sndg, `ko.sndi);
+          snd.setDefaultParameter();
+        }
+        if(`ko.end(`dt)) `wt = 2;
+        if(`wt-- <= 0){
+          `dt++;
+          `ko.action();
+        }
+      case .KOTy::DKO:
+        if(`swt-- == 0){
+          snd.sound = `sn~getSound(`dko.sndg, `dko.sndi);
+          snd.setDefaultParameter();
+        }
+        if(`dko.end(`dt)) `wt = 2;
+        if(`wt-- <= 0){
+          `dt++;
+          `dko.action();
+        }
+      default:
+        if(`swt-- == 0){
+          snd.sound = `sn~getSound(`to.sndg, `to.sndi);
+          snd.setDefaultParameter();
+        }
+        if(`to.end(`dt)) `wt = 2;
+        if(`wt-- <= 0){
+          `dt++;
+          `to.action();
+        }
+      }
+      if(
+        roundState
+        < -(`over_hittime + `over_waittime + `over_wintime))
+      {
+        branch{
+        cond ko == .KOTy::DKO || ko == .KOTy::TODraw:
+          if(`swt2-- == 0){
+            snd.sound = `sn~getSound(`drawn.sndg, `drawn.sndi);
+            snd.setDefaultParameter();
+          }
+          if(`drawn.end(`dt2)) `wt2 = 2;
+          if(`wt2-- <= 0){
+            `dt2++;
+            `drawn.action();
+          }
+        cond simul:
+          if(`swt2-- == 0){
+            snd.sound = `sn~getSound(`win2.sndg, `win2.sndi);
+            snd.setDefaultParameter();
+          }
+          if(`win2.end(`dt2)) `wt2 = 2;
+          if(`wt2-- <= 0){
+            `dt2++;
+            `win2.action();
+          }
+        else:
+          if(`swt2-- == 0){
+            snd.sound = `sn~getSound(`win.sndg, `win.sndi);
+            snd.setDefaultParameter();
+          }
+          if(`win.end(`dt2)) `wt2 = 2;
+          if(`wt2-- <= 0){
+            `dt2++;
+            `win.action();
+          }
+        }
+      }
+    }
+    ret true;
+  }
+  public void draw(
+    int layerno, int roundState, int round, |.KOTy ko, ^/^/char name)
+  {
+    int ob = .com.brightness;
+    .com.brightness = 256;
+    switch(`cur){
+    case 0:
+      if(`wt >= 0 || roundState > `ctrl_time) break;
+      branch{
+        ^/char tmp;
+      cond round <= #`round:
+        tmp = `round[round-1].text;
+        `round[round-1].text =
+          .s.join(.s.iToS(round))<,
+          .s.split("%i")<, `round[round-1].text;
+        `round[round-1].draw(layerno, `fnt);
+        `round[round-1].text = tmp;
+      else:
+        tmp = `round_default.text;
+        `round_default.text =
+          .s.join(.s.iToS(round))<,
+          .s.split("%i")<, `round_default.text;
+        `round_default.draw(layerno, `fnt);
+        `round_default.text = tmp;
+      }
+    case 1:
+      if(`wt >= 0) break;
+      `fight.draw(layerno, `fnt);
+    case 2:
+      if(`wt < 0) switch(ko){
+      case .KOTy::KO:
+        `ko.draw(layerno, `fnt);
+      case .KOTy::DKO:
+        `dko.draw(layerno, `fnt);
+      case .KOTy::TO, .KOTy::TODraw:
+        `to.draw(layerno, `fnt);
+      }
+      if(`wt2 < 0) branch{
+        ^/char tmp;
+      cond ko == .KOTy::DKO || ko == .KOTy::TODraw:
+        `drawn.draw(layerno, `fnt);
+      cond #name >= 2:
+        tmp = `win2.text;
+        loop{
+          ^^/char sp = .s.split("%s", `win2.text);
+          %char buf;
+          buf .= sp[0];
+          index i = 1;
+          while;
+        do:
+          buf .= name[(i-1) % #name];
+          buf .= sp[i];
+          i++;
+        while i < #sp:
+          `win2.text = buf;
+        }
+        `win2.draw(layerno, `fnt);
+        `win2.text = tmp;
+      else:
+        tmp = `win.text;
+        `win.text = .s.join(name[0])<, .s.split("%s")<, `win.text;
+        `win.draw(layerno, `fnt);
+        `win.text = tmp;
+      }
+    }
+    .com.brightness = ob;
+  }
+  public void setup(
+    ^&.sff.Sff sf, ^&.fnt.Font f, ^&.snd.Snd s)
+  {
+    `round_default.setup(sf);
+    loop{index i = 0; while; do:
+      `round[i].setup(sf);
+      if(`round[i].noSound()){
+        `round[i].sndg = `round_default.sndg;
+        `round[i].sndi = `round_default.sndi;
+      }
+      if(`round[i].noDisplay()){
+        `round[i].fontn = `round_default.fontn;
+        `round[i].fontb = `round_default.fontb;
+        `round[i].fonta = `round_default.fonta;
+        `round[i].text = `round_default.text;
+        `round[i].anim.copy(`round_default.anim=);
+        `round[i].lay = `round_default.lay;
+      }
+      i++;
+    while i < #`round:
+    }
+    `fight.setup(sf);
+    `ko.setup(sf);
+    `dko.setup(sf);
+    `to.setup(sf);
+    `win.setup(sf);
+    `win2.setup(sf);
+    `drawn.setup(sf);
+    `fnt = f;
+    `sn = s;
+  }
+  public void reset()
+  {
+    `round_default.reset();
+    loop{index i = 0; while; do:
+      `round[i].reset();
+      i++;
+    while i < #`round:
+    }
+    `fight.reset();
+    `ko.reset();
+    `dko.reset();
+    `to.reset();
+    `win.reset();
+    `win2.reset();
+    `drawn.reset();
+  }
+}
+
+|WinTy
+{
+  N, S, H, C, T, Throw, Suicide, Teammate, Perfect, NumTypes,
+  PN, PS, PH, PC, PT, PThrow, PSuicide, PTeammate
+}
+public void setPerfect(|.WinTy wt=)
+{
+  switch(wt){
+  case .WinTy::N:        wt = .WinTy::PN;
+  case .WinTy::S:        wt = .WinTy::PS;
+  case .WinTy::H:        wt = .WinTy::PH;
+  case .WinTy::C:        wt = .WinTy::PC;
+  case .WinTy::T:        wt = .WinTy::PT;
+  case .WinTy::Throw:    wt = .WinTy::PThrow;
+  case .WinTy::Suicide:  wt = .WinTy::PSuicide;
+  case .WinTy::Teammate: wt = .WinTy::PTeammate;
+  }
+}
+&WinIcon
+{
+  public int posx = 34;
+  public int posy = 43;
+  public int iconoffsetx = 12;
+  public int iconoffsety = 0;
+  public int useiconupto = 4;
+  public int counter_fontn = -1;
+  public int counter_fontb = 0;
+  public int counter_fonta = 0;
+  public &.com.Layout counter_lay;
+  public ^&.sff.Anim!&.bg.Frame? icon;
+  public ^&.com.Layout icon_lay;
+  public &.ActionList al;
+  public %|.WinTy wins;
+  new()
+  {
+    `icon.new((index).WinTy::NumTypes);
+    `icon_lay.new((index).WinTy::NumTypes);
+  }
+  public bool read(^/char name, ^/char data)
+  {
+    branch{
+    cond .s.equ(name, "pos"):
+      .com.readPair!int?(`posx=, `posy=, data);
+    cond .s.equ(name, "iconoffset"):
+      .com.readPair!int?(`iconoffsetx=, `iconoffsety=, data);
+    cond .s.equ(name, "useiconupto"):
+      `useiconupto = .s.sToN!int?(data);
+    cond .s.equ(name, "counter.font"):
+      {
+        ^int nba = .s.svToAry!int?(",", data);
+        if(#nba < 2) break;
+        `counter_fontn = nba[0];
+        `counter_fontb = nba[1];
+        if(#nba >= 3) `counter_fonta = nba[2];
+      }
+    cond .s.equ(name[0..8], "counter."):
+      ret `counter_lay.read(name[8..-1], data);
+    cond .s.equ(name, "n.spr"):
+      .readSpr(`icon[(index).WinTy::N]=, data);
+    cond .s.equ(name, "n.anim"):
+      .readAnim(`icon[(index).WinTy::N]=, `al=, data);
+    cond .s.equ(name[0..2], "n."):
+      ret `icon_lay[(index).WinTy::N].read(name[2..-1], data);
+    cond .s.equ(name, "s.spr"):
+      .readSpr(`icon[(index).WinTy::S]=, data);
+    cond .s.equ(name, "s.anim"):
+      .readAnim(`icon[(index).WinTy::S]=, `al=, data);
+    cond .s.equ(name[0..2], "s."):
+      ret `icon_lay[(index).WinTy::S].read(name[2..-1], data);
+    cond .s.equ(name, "h.spr"):
+      .readSpr(`icon[(index).WinTy::H]=, data);
+    cond .s.equ(name, "h.anim"):
+      .readAnim(`icon[(index).WinTy::H]=, `al=, data);
+    cond .s.equ(name[0..2], "h."):
+      ret `icon_lay[(index).WinTy::H].read(name[2..-1], data);
+    cond .s.equ(name, "c.spr"):
+      .readSpr(`icon[(index).WinTy::C]=, data);
+    cond .s.equ(name, "c.anim"):
+      .readAnim(`icon[(index).WinTy::C]=, `al=, data);
+    cond .s.equ(name[0..2], "c."):
+      ret `icon_lay[(index).WinTy::C].read(name[2..-1], data);
+    cond .s.equ(name, "t.spr"):
+      .readSpr(`icon[(index).WinTy::T]=, data);
+    cond .s.equ(name, "t.anim"):
+      .readAnim(`icon[(index).WinTy::T]=, `al=, data);
+    cond .s.equ(name[0..2], "t."):
+      ret `icon_lay[(index).WinTy::T].read(name[2..-1], data);
+    cond .s.equ(name, "throw.spr"):
+      .readSpr(`icon[(index).WinTy::Throw]=, data);
+    cond .s.equ(name, "throw.anim"):
+      .readAnim(`icon[(index).WinTy::Throw]=, `al=, data);
+    cond .s.equ(name[0..6], "throw."):
+      ret `icon_lay[(index).WinTy::Throw].read(name[6..-1], data);
+    cond .s.equ(name, "suicide.spr"):
+      .readSpr(`icon[(index).WinTy::Suicide]=, data);
+    cond .s.equ(name, "suicide.anim"):
+      .readAnim(`icon[(index).WinTy::Suicide]=, `al=, data);
+    cond .s.equ(name[0..8], "suicide."):
+      ret `icon_lay[(index).WinTy::Suicide].read(name[8..-1], data);
+    cond .s.equ(name, "teammate.spr"):
+      .readSpr(`icon[(index).WinTy::Teammate]=, data);
+    cond .s.equ(name, "teammate.anim"):
+      .readAnim(`icon[(index).WinTy::Teammate]=, `al=, data);
+    cond .s.equ(name[0..9], "teammate."):
+      ret `icon_lay[(index).WinTy::Teammate].read(name[9..-1], data);
+    cond .s.equ(name, "perfect.spr"):
+      .readSpr(`icon[(index).WinTy::Perfect]=, data);
+    cond .s.equ(name, "perfect.anim"):
+      .readAnim(`icon[(index).WinTy::Perfect]=, `al=, data);
+    cond .s.equ(name[0..8], "perfect."):
+      ret `icon_lay[(index).WinTy::Perfect].read(name[8..-1], data);
+    else:
+      ret false;
+    }
+    ret true;
+  }
+  public void step()
+  {
+    loop{index i = 0; do: `icon[i].action(); while ++i < #`icon:}
+  }
+  public void draw(int layerno, ^&.fnt.Font f)
+  {
+    branch{
+    cond #`wins > `useiconupto:
+      if(`counter_fontn < 0) break;
+      .laytext(
+        (float)`posx, (float)`posy, 1.0,
+        layerno, .s.iToS(#`wins),
+        f[`counter_fontn]=, `counter_fontb, `counter_fonta,
+        `counter_lay=);
+    else:
+      loop{
+        index i = 0;
+        while;
+      do:
+        branch{
+          int wt = (int)`wins[i];
+        cond<p> wt >= (int).WinTy::PN:
+          wt -= (int).WinTy::PN;
+        comm:
+          .laydraw(
+            .com.scrrect=, (float)(`posx+`iconoffsetx*i),
+            (float)(`posy+`iconoffsety*i), 1.0,
+            layerno, `icon[wt]=, `icon_lay[wt]=);
+        diff<p>:
+          .laydraw(
+            .com.scrrect=, (float)(`posx+`iconoffsetx*i),
+            (float)(`posy+`iconoffsety*i), 1.0,
+            layerno, `icon[(index).WinTy::Perfect]=,
+            `icon_lay[(index).WinTy::Perfect]=);
+        }
+        i++;
+      while i < #`wins:
+      }
+    }
+  }
+  public void add(|.WinTy wt)
+  {
+    `wins .= wt;
+  }
+  public void setup(^&.sff.Sff sf)
+  {
+    `counter_lay.scale.x *= .cfg.LifebarFontScale;
+    `counter_lay.scale.y *= .cfg.LifebarFontScale;
+    `counter_lay.setup();
+    loop{index i = 0; do:
+      `icon[i].setup(sf);
+      `icon_lay[i].setup();
+    while ++i < #`icon:
+    }
+  }
+  public void reset()
+  {
+    loop{index i = 0; do: `icon[i].reset(); while ++i < #`icon:}
+  }
+  public void clear()
+  {
+    `wins.new(0);
+  }
+}
+
+&Time
+{
+  public int posx = 160;
+  public int posy = 23;
+  public int counter_fontn = -1;
+  public int counter_fontb = 0;
+  public int counter_fonta = 0;
+  public &.com.Layout counter_lay;
+  public &.sff.Anim!&.bg.Frame? bg;
+  public &.com.Layout bg_lay;
+  public int framespercount = 60;
+  public &.ActionList al;
+  public bool read(^/char name, ^/char data)
+  {
+    branch{
+    cond .s.equ(name, "pos"):
+      .com.readPair!int?(`posx=, `posy=, data);
+    cond .s.equ(name, "counter.font"):
+      {
+        ^int nba = .s.svToAry!int?(",", data);
+        if(#nba < 2) break;
+        `counter_fontn = nba[0];
+        `counter_fontb = nba[1];
+        if(#nba >= 3) `counter_fonta = nba[2];
+      }
+    cond .s.equ(name[0..8], "counter."):
+      ret `counter_lay.read(name[8..-1], data);
+    cond .s.equ(name, "bg.spr"):
+      .readSpr(`bg=, data);
+    cond .s.equ(name, "bg.anim"):
+      .readAnim(`bg=, `al=, data);
+    cond .s.equ(name[0..3], "bg."):
+      ret `bg_lay.read(name[3..-1], data);
+    cond .s.equ(name, "framespercount"):
+      `framespercount = .s.sToN!int?(data);
+    else:
+      ret false;
+    }
+    ret true;
+  }
+  public void step()
+  {
+    `bg.action();
+  }
+  public void bgDraw(int layerno)
+  {
+    .laydraw(
+      .com.scrrect=, (float)`posx, (float)`posy, 1.0,
+      layerno, `bg=, `bg_lay=);
+  }
+  public void draw(int layerno, int time, ^&.fnt.Font f)
+  {:<-
+    if(`counter_fontn >= 0){
+      .laytext(
+        (float)`posx, (float)`posy, 1.0, layerno,
+        time >= 0 ? .s.iToS(time/`framespercount) : "o",
+        f[`counter_fontn]=, `counter_fontb, `counter_fonta,
+        `counter_lay=);
+    }
+  }
+  public void setup(^&.sff.Sff sf)
+  {
+    `counter_lay.scale.x *= .cfg.LifebarFontScale;
+    `counter_lay.scale.y *= .cfg.LifebarFontScale;
+    `counter_lay.setup();
+    `bg.setup(sf);
+    `bg_lay.setup();
+  }
+  public void reset()
+  {
+    `bg.reset();
+  }
+}
+
+
+public &Fight
+{
+  &.com.ParseMethod!self? parseMethod;
+  public ^/char sff;
+  public ^/char snd;
+  public ^/char fightfx_sff;
+  public ^/char fightfx_air;
+  public ^/char common_snd;
+  public %^/char font;
+  public ^&.sff.Sff sf, fsf;
+  public ^&.snd.Snd sn, fsn;
+  public ^&.fnt.Font fnt;
+  public &.ActionList al;
+  public %&.act.Action actionList;
+  public ^^&.Lifebar lb;
+  public ^&.Powerbar pb;
+  public ^^&.Face fa;
+  public ^^&.Name nm;
+  public ^&.WinIcon wi;
+  public &.Time ti;
+  public &.Combo co;
+  public &.Round ro;
+  new()
+  {
+    `lb.new(3);
+    `lb[0].new(2);
+    `lb[1].new(4);
+    `lb[2].new(2);
+    `pb.new(2);
+    `fa.new(3);
+    `fa[0].new(2);
+    `fa[1].new(4);
+    `fa[2].new(2);
+    `nm.new(3);
+    `nm[0].new(2);
+    `nm[1].new(4);
+    `nm[2].new(2);
+    `wi.new(2);
+  }
+  public ^&.act.Action getAction(int no)
+  {
+    ^&.act.Action a;
+    loop{index i = 0; while; do:
+      if(`actionList[i].no == no){
+        a.new(1);
+        a~copy(`actionList[i]=);
+        break, break;
+      }
+      i++;
+    while i< #`actionList:
+    }
+    ret a;
+  }
+  public bool load(^/char sysdef, ^/char def=)
+  {:<-
+    public void begin(^^/char lines, index i=, ^/char section)
+    {
+      index fnd = .s.cFind(" "\t, section);
+      ^/char name = .s.toLower()<, section[0..fnd];
+      if(fnd >= 0) loop{while; do:
+        fnd++;
+      while fnd < #section && .s.cMatch!char?(" "\t, section[fnd]):
+      }
+      ^/char sec = section[fnd..-1];
+      branch{
+      cond .s.equ(name, "action"):
+        {
+          int no;
+          no = .com.atoi(sec);
+          ^&.bg.Action act = `al.getAction(no);
+          if(#act > 0) break;
+          `al.actionList.new[-1].no = no;
+          act = `al.actionList[#`al.actionList-1..-1];
+          act~read(lines, i=);
+        }
+      }
+    }
+    void action(^^/char lines, index i=)
+    {
+      if(#lines[i] == 0 || lines[i][0] != '[') ret;
+      index f = .s.find("]", lines[i]);
+      if(f < 0) ret;
+      ^/char sec = lines[i][1..f];
+      i++;
+      index fnd = .s.cFind(" "\t, sec);
+      ^/char secname = .s.toLower()<, sec[0..fnd];
+      if(fnd >= 0) loop{while; do:
+        fnd++;
+      while fnd < #sec && .s.cMatch!char?(" "\t, sec[fnd]):
+      }
+      sec = sec[fnd..-1];
+      branch{
+      cond .s.equ(secname, "begin"):
+        `load:<-begin(lines, i=, sec);
+      }
+    }
+    public void files(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name, "sff"):
+        `sff = data;
+      cond .s.equ(name, "snd"):
+        `snd = data;
+      cond .s.equ(name, "fightfx.sff"):
+        `fightfx_sff = data;
+      cond .s.equ(name, "fightfx.air"):
+        `fightfx_air = data;
+      cond .s.equ(name, "common.snd"):
+        `common_snd = data;
+      cond .s.equ(name, "font0"):
+        `font.new[0] = data;
+      cond .s.equ(name, "font1"):
+        `font.new[1] = data;
+      cond .s.equ(name, "font2"):
+        `font.new[2] = data;
+      cond .s.equ(name, "font3"):
+        `font.new[3] = data;
+      cond .s.equ(name, "font4"):
+        `font.new[4] = data;
+      cond .s.equ(name, "font5"):
+        `font.new[5] = data;
+      cond .s.equ(name, "font6"):
+        `font.new[6] = data;
+      cond .s.equ(name, "font7"):
+        `font.new[7] = data;
+      cond .s.equ(name, "font8"):
+        `font.new[8] = data;
+      cond .s.equ(name, "font9"):
+        `font.new[9] = data;
+      }
+    }
+    public void lifebar(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name[0..3], "p1."):
+        `lb[0][0].read(name[3..-1], data);
+      cond .s.equ(name[0..3], "p2."):
+        `lb[0][1].read(name[3..-1], data);
+      }
+    }
+    public void powerbar(
+      ^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name[0..3], "p1."):
+        `pb[0].read(name[3..-1], data);
+      cond .s.equ(name[0..3], "p2."):
+        `pb[1].read(name[3..-1], data);
+      cond .s.equ(name[0..5], "level"):
+        `pb[0].read(name, data);
+        `pb[1].read(name, data);
+      }
+    }
+    public void face(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name[0..3], "p1."):
+        `fa[0][0].read(name[3..-1], data);
+      cond .s.equ(name[0..3], "p2."):
+        `fa[0][1].read(name[3..-1], data);
+      }
+    }
+    public void name(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name[0..3], "p1."):
+        `nm[0][0].read(name[3..-1], data);
+      cond .s.equ(name[0..3], "p2."):
+        `nm[0][1].read(name[3..-1], data);
+      }
+    }
+    public void simul(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(.s.toLower(sec[0..7]), "lifebar"):
+        branch{
+        cond .s.equ(name[0..3], "p1."):
+          `lb[1][0].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p2."):
+          `lb[1][1].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p3."):
+          `lb[1][2].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p4."):
+          `lb[1][3].read(name[3..-1], data);
+        }
+      cond .s.equ(.s.toLower(sec[0..4]), "face"):
+        branch{
+        cond .s.equ(name[0..3], "p1."):
+          `fa[1][0].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p2."):
+          `fa[1][1].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p3."):
+          `fa[1][2].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p4."):
+          `fa[1][3].read(name[3..-1], data);
+        }
+      cond .s.equ(.s.toLower(sec[0..4]), "name"):
+        branch{
+        cond .s.equ(name[0..3], "p1."):
+          `nm[1][0].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p2."):
+          `nm[1][1].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p3."):
+          `nm[1][2].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p4."):
+          `nm[1][3].read(name[3..-1], data);
+        }
+      }
+    }
+    public void turns(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(.s.toLower(sec[0..7]), "lifebar"):
+        branch{
+        cond .s.equ(name[0..3], "p1."):
+          `lb[2][0].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p2."):
+          `lb[2][1].read(name[3..-1], data);
+        }
+      cond .s.equ(.s.toLower(sec[0..4]), "face"):
+        branch{
+        cond .s.equ(name[0..3], "p1."):
+          `fa[2][0].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p2."):
+          `fa[2][1].read(name[3..-1], data);
+        }
+      cond .s.equ(.s.toLower(sec[0..4]), "name"):
+        branch{
+        cond .s.equ(name[0..3], "p1."):
+          `nm[2][0].read(name[3..-1], data);
+        cond .s.equ(name[0..3], "p2."):
+          `nm[2][1].read(name[3..-1], data);
+        }
+      }
+    }
+    public void winicon(^/char sec, ^/char name, ^/char data)
+    {
+      branch{
+      cond .s.equ(name[0..3], "p1."):
+        `wi[0].read(name[3..-1], data);
+      cond .s.equ(name[0..3], "p2."):
+        `wi[1].read(name[3..-1], data);
+      cond .s.equ(name, "useiconupto"):
+        `wi[0].read(name, data);
+        `wi[1].read(name, data);
+      }
+    }
+    public void time(^/char sec, ^/char name, ^/char data)
+    {
+      `ti.read(name, data);
+    }
+    public void combo(^/char sec, ^/char name, ^/char data)
+    {
+      `co.read(name, data);
+    }
+    public void round(^/char sec, ^/char name, ^/char data)
+    {
+      `ro.read(name, data);
+    }
+    void section(^^/char lines, index i=)
+    {
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      branch{
+      cond .s.equ(secname, "files"):
+        `parse!`load:<-files?(lines, i=, sec);
+      cond .s.equ(secname, "lifebar"):
+        `parse!`load:<-lifebar?(lines, i=, sec);
+      cond .s.equ(secname, "powerbar"):
+        `parse!`load:<-powerbar?(lines, i=, sec);
+      cond .s.equ(secname, "face"):
+        `parse!`load:<-face?(lines, i=, sec);
+      cond .s.equ(secname, "name"):
+        `parse!`load:<-name?(lines, i=, sec);
+      cond .s.equ(secname, "simul"):
+        `parse!`load:<-simul?(lines, i=, sec);
+      cond .s.equ(secname, "turns"):
+        `parse!`load:<-turns?(lines, i=, sec);
+      cond .s.equ(secname, "winicon"):
+        `parse!`load:<-winicon?(lines, i=, sec);
+      cond .s.equ(secname, "time"):
+        `parse!`load:<-time?(lines, i=, sec);
+      cond .s.equ(secname, "combo"):
+        `parse!`load:<-combo?(lines, i=, sec);
+      cond .s.equ(secname, "round"):
+        `parse!`load:<-round?(lines, i=, sec);
+      }
+    }
+    public void beginf(^^/char lines, index i=, ^/char section)
+    {
+      index fnd = .s.cFind(" "\t, section);
+      ^/char name = .s.toLower()<, section[0..fnd];
+      if(fnd >= 0) loop{while; do:
+        fnd++;
+      while fnd < #section && .s.cMatch!char?(" "\t, section[fnd]):
+      }
+      ^/char sec = section[fnd..-1];
+      branch{
+      cond .s.equ(name, "action"):
+        {
+          int no;
+          no = .com.atoi(sec);
+          ^&.act.Action act = `getAction(no);
+          if(#act == 0){
+            `actionList.new[-1].no = no;
+            act = `actionList[#`actionList-1..-1];
+          }
+          act~read(lines, i=);
+        }
+      }
+    }
+    void actionf(^^/char lines, index i=)
+    {
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      branch{
+      cond .s.equ(secname, "begin"):
+        `load:<-beginf(lines, i=, sec);
+      }
+    }
+    ^char mainbuf;
+    if(
+      !.com.loadFile(sysdef, def=)<, [
+        bool(^/char f){
+          ret #(mainbuf = .file.loadAsciiText(f)) > 0;}]) ret false;
+    ^^/char lines = .com.splitLines(mainbuf);
+    .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
+    `clear();
+    loop{index i = 0; while; do:
+      action(lines, i=);
+      i++;
+    while i < #lines:
+    }
+    void setal<_t>(_t x)
+    {
+      loop{index j = 0; while; do:
+        loop{index i = 0; while; do:
+          x[j][i].al.actionList = `al.actionList;
+          i++;
+        while i < #x[j]:
+        }
+        j++;
+      while j < #x:
+      }
+    }
+    setal!`lb.self?(`lb);
+    `pb[0].al.actionList = `al.actionList;
+    `pb[1].al.actionList = `al.actionList;
+    setal!`fa.self?(`fa);
+    setal!`nm.self?(`nm);
+    `wi[0].al.actionList = `al.actionList;
+    `wi[1].al.actionList = `al.actionList;
+    `ti.al.actionList = `al.actionList;
+    `ro.al.actionList = `al.actionList;
+    loop{index i = 0; while; do:
+      section(lines, i=);
+      i++;
+    while i < #lines:
+    }
+    `sf.new(1);
+    if(
+      !.com.loadFile(def, `sff=)<,
+      [bool(^/char f){ret `sf~loadFile(f);}]) ret false;
+    `fsf.new(1);
+    if(
+      !.com.loadFile(def, `fightfx_sff=)<,
+      [bool(^/char f){ret `fsf~loadFile(f);}]) ret false;
+    if(
+      !.com.loadFile(def, `fightfx_air=)<, [
+        bool(^/char f){
+          ret
+            (mainbuf = .file.loadAsciiText(f)) $ #mainbuf > 0;}]) ret false;
+    lines = .com.splitLines(mainbuf);
+    .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
+    `actionList.new(0);
+    loop{index i = 0; while; do:
+      actionf(lines, i=);
+      i++;
+    while i < #lines:
+    }
+    loop{index i = 0; while; do:
+      `actionList[i].ani.setup(`fsf);
+      i++;
+    while i < #`actionList:
+    }
+    `sn.new(1);
+    if(
+      #`snd > 0 && !.com.loadFile(def, `snd=)<,
+      [bool(^/char f){ret `sn~loadFile(f);}]) ret false;
+    `fsn.new(1);
+    if(
+      #`common_snd > 0 && !.com.loadFile(def, `common_snd=)<,
+      [bool(^/char f){ret `fsn~loadFile(f);}]) ret false;
+    `fnt.new(#`font);
+    loop{index i = 0; while; do:
+      if(
+        #`font[i] > 0 && !.com.loadFile(def, `font[i]=)<,
+        [bool(^/char f){ret `fnt[i].loadFile(f);}]) ret false;
+      i++;
+    while i < #`font:
+    }
+    void setup<_t>(_t x)
+    {
+      loop{index j = 0; while; do:
+        loop{index i = 0; while; do:
+          x[j][i].setup(`sf);
+          i++;
+        while i < #x[j]:
+        }
+        j++;
+      while j < #x:
+      }
+    }
+    setup!`lb.self?(`lb);
+    `pb[0].setup(`sf, `sn);
+    `pb[1].setup(`sf, `sn);
+    setup!`fa.self?(`fa);
+    setup!`nm.self?(`nm);
+    `wi[0].setup(`sf);
+    `wi[1].setup(`sf);
+    `ti.setup(`sf);
+    `co.setup();
+    `ro.setup(`sf, `fnt, `sn);
+    ret true;
+  }
+  public void step(
+    ^/int tm, ^/&.LifePower life, ^/bool hit, ^/int combo, &.snd.Sound syssnd=)
+  {
+    loop{index i = 0; while; do:
+      `lb[tm[0]][i].step(life[i].l, hit[i]);
+      i += 2;
+    while i < #`lb[tm[0]]:
+    }
+    loop{index i = 1; while; do:
+      `lb[tm[1]][i].step(life[i].l, hit[i]);
+      i += 2;
+    while i < #`lb[tm[1]]:
+    }
+    `pb[0].step(life[0].p, life[tm[0] != 1 ? 0 : 2].lv, syssnd=);
+    `pb[1].step(life[1].p, life[tm[1] != 1 ? 1 : 3].lv, syssnd=);
+    loop{index i = 0; while; do:
+      `fa[tm[0]][i].step();
+      i += 2;
+    while i < #`fa[tm[0]]:
+    }
+    loop{index i = 1; while; do:
+      `fa[tm[1]][i].step();
+      i += 2;
+    while i < #`fa[tm[1]]:
+    }
+    loop{index i = 0; while; do:
+      `nm[tm[0]][i].step();
+      i += 2;
+    while i < #`nm[tm[0]]:
+    }
+    loop{index i = 1; while; do:
+      `nm[tm[1]][i].step();
+      i += 2;
+    while i < #`nm[tm[1]]:
+    }
+    `wi[0].step();
+    `wi[1].step();
+    `ti.step();
+    `co.step(combo);
+  }
+  public void draw(
+    ^/int tm, int layerno, ^/&.LifePower life, ^/^/char name,
+    int time, bool nbd)
+  {
+    int ob = .com.brightness;
+    .com.brightness = 256;
+    if(!nbd){
+      loop{index i = 0; while; do:
+        `lb[tm[0]][i].bgDraw(layerno);
+        i += 2;
+      while i < #`lb[tm[0]]:
+      }
+      loop{index i = 1; while; do:
+        `lb[tm[1]][i].bgDraw(layerno);
+        i += 2;
+      while i < #`lb[tm[1]]:
+      }
+      `pb[0].bgDraw(layerno);
+      `pb[1].bgDraw(layerno);
+      loop{index i = #`fa[tm[0]]-2; while; do:
+        `fa[tm[0]][i].bgDraw(layerno);
+        i -= 2;
+      while i >= 0:
+      }
+      loop{index i = #`fa[tm[1]]-1; while; do:
+        `fa[tm[1]][i].bgDraw(layerno);
+        i -= 2;
+      while i >= 0:
+      }
+      loop{index i = 0; while; do:
+        `nm[tm[0]][i].bgDraw(layerno);
+        i += 2;
+      while i < #`nm[tm[0]]:
+      }
+      loop{index i = 1; while; do:
+        `nm[tm[1]][i].bgDraw(layerno);
+        i += 2;
+      while i < #`nm[tm[1]]:
+      }
+      `ti.bgDraw(layerno);
+      loop{index i = 0; while; do:
+        `lb[tm[0]][i].draw(layerno, life[i].l);
+        i += 2;
+      while i < #`lb[tm[0]]:
+      }
+      loop{index i = 1; while; do:
+        `lb[tm[1]][i].draw(layerno, life[i].l);
+        i += 2;
+      while i < #`lb[tm[1]]:
+      }
+      `pb[0].draw(layerno, life[0].p, life[tm[0] != 1 ? 0 : 2].lv, `fnt);
+      `pb[1].draw(layerno, life[1].p, life[tm[1] != 1 ? 1 : 3].lv, `fnt);
+      loop{index i = #`fa[tm[0]]-2; while; do:
+        `fa[tm[0]][i].draw(layerno);
+        i -= 2;
+      while i >= 0:
+      }
+      loop{index i = #`fa[tm[1]]-1; while; do:
+        `fa[tm[1]][i].draw(layerno);
+        i -= 2;
+      while i >= 0:
+      }
+      loop{index i = 0; while; do:
+        `nm[tm[0]][i].draw(layerno, `fnt, name[i]);
+        i += 2;
+      while i < #`nm[tm[0]]:
+      }
+      loop{index i = 1; while; do:
+        `nm[tm[1]][i].draw(layerno, `fnt, name[i]);
+        i += 2;
+      while i < #`nm[tm[1]]:
+      }
+      `wi[0].draw(layerno, `fnt);
+      `wi[1].draw(layerno, `fnt);
+      `ti.draw(layerno, time, `fnt);
+    }
+    `co.draw(layerno, `fnt);
+    .com.brightness = ob;
+  }
+  public void clear()
+  {
+    `sff = "";
+    `snd = "";
+    `fightfx_sff = "";
+    `fightfx_air = "";
+    `common_snd = "";
+    `font.new(0);
+  }
+  public void reset()
+  {
+    void foo<_t>(_t x)
+    {
+      loop{index j = 0; while; do:
+        loop{index i = 0; while; do:
+          x[j][i].reset();
+          i++;
+        while i < #x[j]:
+        }
+        j++;
+      while j < #x:
+      }
+    }
+    foo!`lb.self?(`lb);
+    `pb[0].reset();
+    `pb[1].reset();
+    foo!`nm.self?(`nm);
+    `wi[0].reset();
+    `wi[1].reset();
+    `ti.reset();
+    `co.reset();
+    `ro.reset();
+  }
+}
+

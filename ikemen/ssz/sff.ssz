@@ -1,0 +1,525 @@
+﻿
+lib file = <file.ssz>;
+lib s = <string.ssz>;
+lib sdl = <alpha/sdlplugin.ssz>;
+lib consts = <consts.ssz>;
+lib m = <math.ssz>;
+lib tbl = <table.ssz>;
+lib cfg = "config.ssz";
+lib com = "common.ssz";
+
+void error(^/char m)
+{
+  lib al = <alert.ssz>;
+  al.alert!.self?(m);
+}
+
+public &PcxHeader
+{
+  public ubyte manufacturer;
+  public ubyte version;
+  public ubyte encoding;
+  public ubyte bpp;
+  public ushort x, y, w, h;
+  public ushort hdpi, vdpi;
+  //ここに48byte
+  public ubyte reserved;
+  public ubyte nPlanes;
+  public ushort bytesPerLine;
+  public ushort palletInfo;
+  //ここに58byte
+}
+
+public &SffHeader
+{
+  ushort ver, ver2;
+  public uint subHeaderOffset, sizeOfSubheader;
+  public uint numberOfGroups, numberOfImage;
+  public ubyte paletteType;
+  public bool read(&.file.File f=)
+  {
+    ubyte ub;
+    loop{
+      index i = 0;
+      %char s;
+    do:
+      if(!f.read!ubyte?(ub=)) ret false;
+      s .= (char)ub;
+      i++;
+    while i < 12:
+      if(!.s.equ(s, "ElecbyteSpr"\0)){
+        .error("ElecbyteSprじゃない");
+        ret false;
+      }
+    }
+    if(!f.read!ubyte?(ub=)) ret false;
+    `ver = ub << 0d8;
+    if(!f.read!ubyte?(ub=)) ret false;
+    `ver |= ub;
+    if(!f.read!ubyte?(ub=)) ret false;
+    `ver2 = ub << 0d8;
+    if(!f.read!ubyte?(ub=)) ret false;
+    `ver2 |= ub;
+    if(!f.read!uint?(`numberOfGroups=)) ret false;
+    if(!f.read!uint?(`numberOfImage=)) ret false;
+    if(!f.read!uint?(`subHeaderOffset=)) ret false;
+    if(!f.read!uint?(`sizeOfSubheader=)) ret false;
+    `sizeOfSubheader = 0d32;//ちゃんと設定してないファイルがある
+    if(!f.read!ubyte?(`paletteType=)) ret false;
+    ret true;
+  }
+}
+
+public &Sprite
+{
+  public &.PcxHeader pcxHeader;
+  public ^uint colorPallet;
+  public ^ubyte pxl;
+  public %byte pluginbuf;
+  public &.sdl.Rect rct;
+  public short imageGroup, imageNumber;
+  public index link = -1;
+  public int rle = 0;
+  public void shareCopy(`self sp=)
+  {
+    `pcxHeader = sp.pcxHeader;
+    `colorPallet = sp.colorPallet;
+    `pxl = sp.pxl;
+    `rct.w = sp.rct.w;
+    `rct.h = sp.rct.h;
+    `rle = sp.rle;
+  }
+  public bool readHeader(&.file.File f=, long offset)
+  {
+    f.seek(offset, .file.Seek::SET);
+    if(!f.read!ubyte?(`pcxHeader.manufacturer=)) ret false;
+    if(!f.read!ubyte?(`pcxHeader.version=)) ret false;
+    if(!f.read!ubyte?(`pcxHeader.encoding=)) ret false;
+    if(!f.read!ubyte?(`pcxHeader.bpp=)) ret false;
+    if(!f.read!ushort?(`pcxHeader.x=)) ret false;
+    if(!f.read!ushort?(`pcxHeader.y=)) ret false;
+    if(!f.read!ushort?(`pcxHeader.w=)) ret false;
+    if(!f.read!ushort?(`pcxHeader.h=)) ret false;
+    if(!f.read!ushort?(`pcxHeader.hdpi=)) ret false;
+    if(!f.read!ushort?(`pcxHeader.vdpi=)) ret false;
+    f.seek(offset+64, .file.Seek::SET);
+    if(!f.read!ubyte?(`pcxHeader.reserved=)) ret false;
+    if(!f.read!ubyte?(`pcxHeader.nPlanes=)) ret false;
+    if(!f.read!ushort?(`pcxHeader.bytesPerLine=)) ret false;
+    if(!f.read!ushort?(`pcxHeader.palletInfo=)) ret false;
+    `rct.w = `pcxHeader.w-`pcxHeader.x + 0x1;
+    `rct.h = `pcxHeader.h-`pcxHeader.y + 0x1;
+    `rle =
+      `pcxHeader.encoding == 0x1 ? (int)`pcxHeader.bytesPerLine : 0;
+    ret true;
+  }
+  public bool read(
+    &.file.File f=, &.SffHeader sh=, long offset,
+    uint lenghtOfSubheader, ^`self prev, bool palletSame=)
+  {
+    if(!f.read!bool?(palletSame=)) ret false;
+    if(!`readHeader(f=, offset)) ret false;
+    if(`pcxHeader.bpp != 0d8){
+      .error("256色じゃない");
+      ret false;
+    }
+    f.seek(offset + 128, .file.Seek::SET);
+    `pxl.new((index)lenghtOfSubheader - (128+(palletSame?0:768)));
+    f.readAry!ubyte?(`pxl);
+    loop{
+      index i = 0;
+      ubyte r, g, b;
+      if(palletSame){
+        branch{
+        cond #prev == 0:
+          if(#`colorPallet == 0) `colorPallet.new(256);
+        else:
+          `colorPallet = prev~colorPallet;
+        }
+        break, break;
+      }
+      `colorPallet.new(256);
+    do:
+      if(!f.read!ubyte?(r=)) ret false;
+      if(!f.read!ubyte?(g=)) ret false;
+      if(!f.read!ubyte?(b=)) ret false;
+      `colorPallet[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
+      i++;
+    while i < 256:
+    }
+    if(
+      !.cfg.SaveMemory
+      || (index)`rct.w*(index)`rct.h
+      < (`rct.w >= 0d256 ? (#`pxl/256)*(index)`rct.w : #`pxl))
+    {
+      `rleDecode();
+    }
+    ret true;
+  }
+  public void rleDecode()
+  {
+    if(#`pxl == 0 || `rle <= 0) ret;
+    ^/ubyte rle = `pxl;
+    `pxl.new((index)((uint)`rct.w * `rct.h));
+    loop{
+      int w = (int)`rct.w;
+      int leng = #`pxl;
+      index i = 0, j = 0, k = 0;
+    do:
+      loop{
+        int size;
+        ubyte d = rle[i++];
+        branch{
+        cond d >= 0xC0:
+          size = (int)(d & 0x3F);
+          d = rle[i++];
+        else:
+          size = 1;
+        }
+        while;
+      do:
+        `pxl[j] = d;
+        j += (int)(k < w);
+        if(++k == `rle){
+          k = 0;
+          size = 0;
+        }
+      while --size >= 0:
+      }
+    while j < leng:
+    }
+    `rle = 0;
+  }
+  public bool loadFromSff(^/char fn, short ig, short in)
+  {
+    &.file.File f;
+    if(!f.open(fn, "rb")) ret false;
+    &.SffHeader h;
+    if(!h.read(f=)) ret false;
+    uint shofs = h.subHeaderOffset, lenghtOfSubheader;
+    loop{
+      index i = 0;
+      %uint newSubHeaderOffset;
+      ushort indexOfPrevious;
+      bool palletSame;
+      ~$bool() foo = [bool(){
+        if(!f.read!uint?(lenghtOfSubheader=)) ret false;
+        if(!f.read!short?(`rct.x=)) ret false;
+        if(!f.read!short?(`rct.y=)) ret false;
+        if(!f.read!short?(`imageGroup=)) ret false;
+        if(!f.read!short?(`imageNumber=)) ret false;
+        if(!f.read!ushort?(indexOfPrevious=)) ret false;
+        ret true;
+      }];
+      while;
+    do:
+      f.seek((long)shofs, .file.Seek::SET);
+      if(!f.read!uint?(newSubHeaderOffset.new[-1]=) || !foo(::)) ret false;
+      if(
+        #`colorPallet > 0
+        && (`imageGroup != ig || `imageNumber != in)) continue;
+      loop{
+        index ip = !(index)indexOfPrevious;
+        uint dummy;
+        while;
+      do:
+        if(ip == (index)indexOfPrevious) ret false;
+        ip = (index)indexOfPrevious;
+        shofs = ip == 0 ? h.subHeaderOffset : newSubHeaderOffset[ip-1];
+        f.seek((long)shofs, .file.Seek::SET);
+        if(!f.read!uint?(dummy=) || !foo(::)) ret false;
+      while lenghtOfSubheader == 0d0:
+      }
+      if(
+        !`read(
+          f=, h=, (long)(shofs + h.sizeOfSubheader),
+          lenghtOfSubheader, .consts.null!`self?(), palletSame=)) ret false;
+      if(`imageGroup == ig && `imageNumber == in) break;
+      if(palletSame) `colorPallet.new(0);
+    continue:
+      shofs = newSubHeaderOffset[-1];
+      i++;
+    while i < (index)h.numberOfImage:
+      ret false;
+    }
+    ret true;
+  }
+  public void draw(float x, float y, float xscale, float yscale)
+  {
+    &.sdl.Rect tile;
+    tile.set(0, 0, 0d0, 0d0);
+    float x2 = x - xscale*(float)`rct.x;
+    float y2 = y - yscale*(float)`rct.y;
+    if(xscale < 0.0) x2 *= -1.0;
+    if(yscale < 0.0) y2 = -y2 + 240.0;
+    .sdl.screen.renderMugenZoom(
+      .com.scrrect=, 0.0, 0.0,
+      `pxl, `colorPallet, 0, `rct=,
+      -x2*.com.WidthScale, -y2*.com.HeightScale,
+      tile=, xscale*.com.WidthScale, xscale*.com.WidthScale,
+      yscale*.com.HeightScale, 0.0, 0x0, 255, `rle, `pluginbuf=);
+  }
+}
+
+
+public &Sff
+{
+  public &.SffHeader head;
+  public &.tbl.IntTable!uint, &.Sprite? spriteTable;
+  public void clear()
+  {
+    `spriteTable.clear();
+  }
+  public bool loadFile(^/char filename)
+  {
+    &.file.File f;
+    if(!f.open(filename, "rb")) ret false;
+    `clear();
+    if(!`head.read(f=)) ret false;
+    uint shofs = `head.subHeaderOffset, lenghtOfSubheader;
+    loop{
+      index i = 0;
+      uint newSubHeaderOffset;
+      ^&.Sprite spriteList;
+      spriteList.new((index)`head.numberOfImage);
+      ushort indexOfPrevious;
+      while;
+    do:
+      f.seek((long)shofs, .file.Seek::SET);
+      if(!f.read!uint?(newSubHeaderOffset=)) ret false;
+      if(!f.read!uint?(lenghtOfSubheader=)) ret false;
+      if(!f.read!short?(spriteList[i].rct.x=)) ret false;
+      if(!f.read!short?(spriteList[i].rct.y=)) ret false;
+      if(!f.read!short?(spriteList[i].imageGroup=)) ret false;
+      if(!f.read!short?(spriteList[i].imageNumber=)) ret false;
+      if(!f.read!ushort?(indexOfPrevious=)) ret false;
+      branch{
+        bool ps;
+      cond lenghtOfSubheader != 0d0:
+        if(
+          !spriteList[i].read(
+            f=, `head=, (long)(shofs + `head.sizeOfSubheader),
+            lenghtOfSubheader, spriteList[i-1..i], ps=)) ret false;
+      else:
+        spriteList[i].shareCopy(spriteList[(index)indexOfPrevious]=);
+        spriteList[i].link = (index)indexOfPrevious;
+      }
+      `spriteTable.operate(
+        (uint)spriteList[i].imageGroup
+        | (uint)spriteList[i].imageNumber<<0d16,
+        [void(^&.Sprite s=){if(#s == 0) s = spriteList[i..i+1];}]);
+      shofs = newSubHeaderOffset;
+      i++;
+    while i < (index)`head.numberOfImage:
+    }
+    ret true;
+  }
+  public ^&.Sprite getSprite(short group, short number)
+  {
+    ret `spriteTable.get((uint)group | (uint)number<<0d16);
+  }
+}
+
+public &Anim<frame_t>
+{
+  public ^&.Sff sff;
+  public ^&.Sprite spr;
+  public %frame_t frames;
+  public &.sdl.Rect tile;
+  public index loopstart = 0, current = 0, drawidx = 0;
+  public int nrepeat = -1;
+  public int time = 0;
+  public int repeatcnt = 0;
+  public int mask = -1;
+  public short salpha = -1, dalpha = 0;
+  public byte h = 1, v = 1;
+  public bool newframe = true, loopend = false;
+  new()
+  {
+    `tile.set(0, 0, 0d0, 0d0);
+  }
+  public void reset()
+  {
+    `current = 0;
+    `drawidx = 0;
+    `time = 0;
+    `repeatcnt = 0;
+    `newframe = true;
+    `loopend = false;
+  }
+  public void copy(`self a=)
+  {
+    `sff = a.sff;
+    `spr = a.spr;
+    `frames = a.frames;
+    `tile = a.tile;
+    `loopstart = a.loopstart;
+    `current = a.current;
+    `drawidx = a.drawidx;
+    `nrepeat = a.nrepeat;
+    `time = a.time;
+    `repeatcnt = a.repeatcnt;
+    `mask = a.mask;
+    `salpha = a.salpha;
+    `dalpha = a.dalpha;
+    `h = a.h;
+    `v = a.v;
+    `newframe = a.newframe;
+    `loopend = a.loopend;
+  }
+  public void setFrames(%`frame_t f, index l, int r)
+  {
+    `frames = f;
+    `loopstart = l;
+    `nrepeat = r;
+  }
+  public ^frame_t currentFrame()
+  {
+    ret `frames[`current..`current+1];
+  }
+  public int animTime()
+  {
+    if(#`frames == 0) ret 0;
+    if(`loopend && `time == 0 && `current == `loopstart) ret 0;
+    int at = `time-1;
+    loop{
+      index i = `current;
+      if(i < #`frames && `frames[i].time != 0){
+        at += (int)(`frames[i].time < 0) + 1;
+      }
+      while;
+    do:
+      at -= `frames[i].time;
+      i++;
+    while i < #`frames && `frames[i].time >= 0:
+    }
+    ret at;
+  }
+  public void setAnimElem(int e)
+  {
+    `current = .m.max!index?(0, e-1);
+    if(`current  >= #`frames){
+      `current = `loopstart + `current % (#`frames-`loopstart);
+    }
+    `drawidx = `current;
+    `time = 0;
+    `newframe = true;
+    `loopend = `current < e-1;
+  }
+  public void updateSprite()
+  {
+    if(#`frames == 0) ret;
+    if(`newframe){
+      `spr =
+        `sff~getSprite(
+          `frames[`current].group, `frames[`current].number);
+    }
+    `newframe = false;
+    `drawidx = `current;
+  }
+  public void action()
+  {
+    if(#`frames == 0) ret;
+    `updateSprite();
+    `frames[`current].action(`=);
+  }
+  int alphaFoo()
+  {
+    ubyte sa, da;
+    branch{
+    cond `salpha >= 0:
+      sa = (ubyte)`salpha;
+      da = (ubyte)`dalpha;
+    else:
+      sa = `frames[`drawidx].salpha;
+      da = `frames[`drawidx].dalpha;
+    }
+    branch{
+    cond sa == 0d1 && da == 0d255:
+      ret -2;
+    else:
+      sa = (ubyte)((int)sa * .com.brightness >> 8);
+      branch{
+      cond sa == 0d0 && da == 0d255:
+        ret 0;
+      cond sa == 0d255 && da == 0d255:
+        ret -1;
+      }
+    }
+    int alpha = (int)sa;
+    if((uint)sa+da < 0d254 || 0d256 < (uint)sa+da){
+      alpha |= (int)da << 10 | 1 << 9;
+    }
+    ret alpha;
+  }
+  ^uint palFoo(^&.com.PalFX fx)
+  {
+    if(#fx == 0 || fx~time == 0) ret `spr~colorPallet;
+    ret fx~getFxPal(`spr~colorPallet, `alphaFoo() == -2);
+  }
+  public void draw(
+    &.sdl.Rect rect=, float x, float y, float cscalex, float cscaley,
+    float xtscale, float xbscale, float yscale, float rasterxadd,
+    float rx, ^&.com.PalFX fx)
+  {
+    if(#`spr == 0 || #`spr~pxl == 0) ret;
+    int h = `h*`frames[`drawidx].h;
+    int v = `v*`frames[`drawidx].v;
+    float xs = (float)h*cscalex*xtscale, ys = (float)v*cscaley*yscale;
+    float x2 =
+      cscalex*x - xs*(float)(`spr~rct.x - `frames[`drawidx].x) + rx;
+    float y2 =
+      cscaley*y - ys*(float)(`spr~rct.y - `frames[`drawidx].y);
+    if(xs < 0.0){
+      x2 *= -1.0;
+      x2 += rx*2.0;
+      if(rx != 0.0) x2 += xs;
+    }
+    if(ys < 0.0){
+      y2 *= -1.0;
+      y2 += 240.0;
+      if(rx != 0.0) y2 += ys;
+    }
+    .sdl.screen.renderMugenZoom(
+      rect=, rx*.com.WidthScale, 0.0, `spr~pxl,
+      `palFoo(fx), `mask, `spr~rct=,
+      (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,
+      `tile=, xs*.com.WidthScale,
+      cscalex*xbscale*(float)h*.com.WidthScale, ys*.com.HeightScale,
+      cscalex*rasterxadd*(.com.WidthScale/.com.HeightScale),
+      0x0, `alphaFoo(), `spr~rle, `spr~pluginbuf=);
+  }
+  public void angleDraw(
+    float x, float y, float xscale, float yscale, float angle,
+    ^&.com.PalFX fx)
+  {
+    if(#`spr == 0 || #`spr~pxl == 0) ret;
+    float rx = x + 160.0;
+    int h = `h*`frames[`drawidx].h;
+    int v = `v*`frames[`drawidx].v;
+    float agl =
+      angle*(float)(
+        `h * `v * (xscale < 0.0 ? -1: 1) * (yscale < 0.0 ? -1: 1));
+    uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
+    if(uagl == 0x0){
+      `draw(
+        .com.scrrect=, x+160.0 - xscale*(float)(h*`frames[`drawidx].x),
+        y - yscale*(float)(v*`frames[`drawidx].y),
+        1.0, 1.0, xscale, xscale, yscale, 0.0, 0.0, fx);
+      ret;
+    }
+    .sdl.screen.renderMugenZoom(
+      .com.scrrect=, rx*.com.WidthScale, y*.com.HeightScale,
+      `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
+      #xscale*(float)`spr~rct.x*.com.WidthScale,
+      #yscale*(float)`spr~rct.y*.com.HeightScale,
+      `tile=, xscale*(float)h*.com.WidthScale,
+      xscale*(float)h*.com.WidthScale, yscale*(float)v*.com.HeightScale,
+      0.0, uagl, `alphaFoo(), `spr~rle, `spr~pluginbuf=);
+  }
+  public void setup(^&.Sff sff)
+  {
+    `sff = sff;
+  }
+}
+

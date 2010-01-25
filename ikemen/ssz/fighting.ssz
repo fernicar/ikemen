@@ -1,0 +1,445 @@
+﻿
+lib mes = <alpha/mesdialog.ssz>;
+lib sdl = <alpha/sdlplugin.ssz>;
+lib s = <string.ssz>;
+lib m = <math.ssz>;
+lib se = <alpha/sdlevent.ssz>;
+lib al = <alert.ssz>;
+lib sff = "sff.ssz";
+lib stage = "stage.ssz";
+lib p1 = "state0p.ssz";
+lib p2 = "state1p.ssz";
+lib p3 = "state2p.ssz";
+lib p4 = "state3p.ssz";
+lib chr = "char.ssz";
+lib cfg = "config.ssz";
+lib com = "common.ssz";
+lib fnt = "font.ssz";
+lib sha = "share.ssz";
+lib tbl = <table.ssz>;
+lib file = <file.ssz>;
+lib cmd = "command.ssz";
+
+&WincntMgr
+{
+  /^/char wincFN = "autolevel.txt";
+  &.tbl.NameTable!int? winct;
+  public void init()
+  {
+    if(!.com.autolevel) ret;
+    ^char buf;
+    buf = .s.u8ToS()<, .file.readAll!ubyte?(`wincFN);
+    if(#buf > 0 && buf[0] == '\xfeff') buf = buf[1..-1];
+    ^^/char lines = .s.splitLines(buf);
+    loop{
+      index i = 0;
+      ^^/char tmp;
+      ^int item;
+      while;
+    do:
+      tmp = .s.split(",", lines[i]);
+      if(#tmp < 2) continue;
+      item.new(1);
+      item<> = .s.sToN!int?(tmp[1]);
+      `winct.set(tmp[0], item);
+    continue:
+      i++;
+    while i < #lines:
+    }
+  }
+  delete()
+  {:<-
+    if(
+      !.com.autolevel
+      || (.chr.p1wins < .chr.p1mw && .chr.p2wins < .chr.p2mw)) ret;
+    void foo(index i)
+    {
+      if(#.chr.chars[i] > 0) branch{
+      cond .chr.chars[i][0]~isWin():
+        `win(i);
+      cond .chr.chars[i][0]~isLose():
+        `lose(i);
+      }
+    }
+    foo(0);
+    foo(1);
+    foo(2);
+    foo(3);
+    %char buf;
+    buf .= '\xfeff';
+    `winct.forEach()<,
+      [void(^/char name, ^int cnt){
+        buf .= name .= ',' .= .s.iToS(cnt<>) .= \r\n;
+      }];
+    &.file.File f;
+    f.open(`wincFN, "wb");
+    f.writeAry!ubyte?(.s.sToU8(buf));
+  }
+  ^int getItem(^/char name)
+  {
+    ^int item = `winct.get(name);
+    if(#item == 0){
+      item.new(1);
+      item<> = 0;
+    }
+    ret item;
+  }
+  void win(index i)
+  {
+    ^int item = `getItem(.chr.chars[i][0]~def);
+    item<> +=
+      .chr.tmode[i+1&1] == (int).chr.TeamMode::Simul
+      && .chr.tmode[i&1] != (int).chr.TeamMode::Simul ? 2 : 1;
+    `winct.set(.chr.chars[i][0]~def, item);
+  }
+  void lose(index i)
+  {
+    ^int item = `getItem(.chr.chars[i][0]~def);
+    item<> -=
+      .chr.tmode[i+1&1] == (int).chr.TeamMode::Simul
+      && .chr.tmode[i&1] != (int).chr.TeamMode::Simul ? 2 : 1;
+    `winct.set(.chr.chars[i][0]~def, item);
+  }
+  public int getLevel(^/char name)
+  {
+    ^int item = `getItem(name);
+    ret item<>;
+  }
+}
+&WincntMgr wm;
+
+void game()
+{
+  &.fnt.Font f;
+  f.loadFile("font/jg.fnt");
+  void drawDebug(&.chr.Char p=, float x)
+  {:<-
+    float y = 0.0;
+    void put(float x, float y=, ^/char txt)
+    {
+      `f.drawText(
+        x, y+=(float)`f.sizey/.com.HeightScale,
+        1.0/.com.WidthScale,  1.0/.com.HeightScale, 0, 1, txt);
+    }
+    //put(x, y=, .s.iToS(#p.ani > 0 ? p.ani~ani.time : -1));
+    //put(x, y=, .s.iToS(#p.ani > 0 ? p.ani~ani.current : -1));
+    //put(x, y=, .s.iToS(.chr.v.setI(0)$p.trHelper()$(#.chr.c > 0 ? .chr.c~helperid : -1)));
+    //put(x, y=, .s.iToS(.chr.v.setI(1705)$p.trNumHelper()$.chr.v.toInt()));
+    //put(x, y=, .s.iToS(.chr.v.setI(10000)$p.trHelper()$(#.chr.c > 0 ? .chr.c~stVal.hb.damage : -1)));
+    //put(x, y=, .s.iToS(p.stVal.time));
+    //put(x, y=, .s.iToS(p.stVal.prevno));
+    //put(x, y=, .s.iToS(p.stVal.no));
+    //put(x, y=, .s.iToS((long)(p.sysfvar[.chr.fY]*1000.0)));
+    //put(x, y=, .s.iToS((long)(p.sysfvar[.chr.fVY]*1000.0)));
+  }
+  loop{
+    ^&.stage.Stage stg;
+    int stagetime;
+    ^&.sha.Share share;
+    &.com.SuperDangerousRef oldshare;
+    oldshare.copyRef!&.sha.Share?(share=);
+    ^char ss;
+    .mes.GetSharedString(:ss=:);
+    ^^/char sss = .s.split("<>", ss);
+    &.com.SuperDangerousRef sdr;
+    sdr.pos = 0;
+    sdr.l = sizeof(&.sha.Share);
+    sdr.p = .s.sToN!index?(sss[1]);
+    sdr.copyToRef!&.sha.Share?(share=);
+    .chr.chars = share~c;
+    .chr.fight = share~f;
+    stg = share~st;
+    stagetime = share~stt;
+    .chr.tmode = share~tm;
+    .chr.numturns = share~nt;
+    .chr.rexisted = share~re;
+    .chr.home = share~chr_home;
+    .chr.round = share~chr_round;
+    .chr.p1mw = share~chr_p1mw;
+    .chr.p2mw = share~chr_p2mw;
+    .chr.p1wins = share~chr_p1w;
+    .chr.p2wins = share~chr_p2w;
+    .chr.draws = share~chr_drw;
+    .com.com = share~com;
+    .cmd.net = share~net;
+    .cmd.replay = share~rep;
+    .chr.clsndraw = share~clsndw;
+    .com.powershare = share~powsh;
+    .com.autolevel = share~alvl;
+    .se.eventKeys.new(1);
+    .se.eventKeys[0].key = .sdl.SDLKey::c;
+    .se.eventKeys[0].ctrl = true;
+    .cmd.synchronize();
+    .wm.init();
+    ^int level;
+    level.new(4);
+    if(#.chr.chars[0] > 0){
+      .chr.chars[0][0]~stateInit0P();
+      level[0] = level[2] = .wm.getLevel(.chr.chars[0][0]~def);
+    }
+    if(#.chr.chars[1] > 0){
+      .chr.chars[1][0]~stateInit1P();
+      level[1] = level[3] = .wm.getLevel(.chr.chars[1][0]~def);
+    }
+    if(#.chr.chars[2] > 0){
+      .chr.chars[2][0]~stateInit2P();
+      level[2] = .wm.getLevel(.chr.chars[2][0]~def);
+      if(.com.powershare){
+        int pmax =
+          .m.max!int?(
+            .chr.chars[0][0]~sysivar[.chr.iPOWERMAX],
+            .chr.chars[2][0]~sysivar[.chr.iPOWERMAX]);
+        .chr.chars[0][0]~sysivar[.chr.iPOWERMAX] = pmax;
+        .chr.chars[2][0]~sysivar[.chr.iPOWERMAX] = pmax;
+      }
+    }
+    if(#.chr.chars[3] > 0){
+      .chr.chars[3][0]~stateInit3P();
+      level[3] = .wm.getLevel(.chr.chars[3][0]~def);
+      if(.com.powershare){
+        int pmax =
+          .m.max!int?(
+            .chr.chars[1][0]~sysivar[.chr.iPOWERMAX],
+            .chr.chars[3][0]~sysivar[.chr.iPOWERMAX]);
+        .chr.chars[1][0]~sysivar[.chr.iPOWERMAX] = pmax;
+        .chr.chars[3][0]~sysivar[.chr.iPOWERMAX] = pmax;
+      }
+    }
+    int minlv =
+      .m.min!int?(level[0])<, .m.min!int?(level[1])<,
+      .m.min!int?(level[2])<, level[3];
+    int maxlv =
+      .m.max!int?(level[0])<, .m.max!int?(level[1])<,
+      .m.max!int?(level[2])<, level[3];
+    branch{
+    cond minlv > 0 && maxlv > 0:
+      level[0] -= minlv;
+      level[1] -= minlv;
+      level[2] -= minlv;
+      level[3] -= minlv;
+    cond minlv < 0 && maxlv < 0:
+      level[0] -= maxlv;
+      level[1] -= maxlv;
+      level[2] -= maxlv;
+      level[3] -= maxlv;
+    }
+    loop{index i = 0; do:
+      if(#.chr.chars[i] == 0) continue;
+      .chr.players.add(.chr.chars[i][0]);
+      {
+        float lm = (float).chr.chars[i][0]~sysivar[.chr.iLIFEMAX];
+        lm *= (float).cfg.Life / 100.0;
+        switch(.chr.tmode[i&1]){
+        case (int).chr.TeamMode::Single:
+          if(.chr.tmode[i+1 & 1] != (int).chr.TeamMode::Single){
+            lm *= (float).cfg.Team_1VS2Life / 100.0;
+          }
+        case (int).chr.TeamMode::Simul:<-
+          if(.chr.tmode[i+1 & 1] == (int).chr.TeamMode::Turns){
+            lm *= 2.0 / (float).chr.fight~ro.match_wins;
+          }
+        case (int).chr.TeamMode::Turns:
+          lm *= 3.0 / (float).chr.numturns[i&1];
+        }
+        double tmp = 1.2**((double)-(level[i]+level[i+2&3])*0.5);
+        .chr.chars[i][0]~sysivar[.chr.iLIFEMAX] = (int).m.ceil(tmp * lm);
+        if(.chr.rexisted[i&1] > 0){
+          .chr.chars[i][0]~sysivar[.chr.iLIFE] =
+            (int).m.ceil(tmp * (float).chr.chars[i][0]~sysivar[.chr.iLIFE]);
+        }
+      }
+      if(
+        .chr.round == 1 || (
+          .chr.tmode[i&1] == (int).chr.TeamMode::Turns
+          && .chr.rexisted[i&1] == 0))
+      {
+        .chr.chars[i][0]~sysivar[.chr.iLIFE] =
+          .chr.chars[i][0]~sysivar[.chr.iLIFEMAX];
+        if(.chr.round == 1) .chr.chars[i][0]~sysivar[.chr.iPOWER] = 0;
+      }
+    continue:
+      i++;
+    while i < #.chr.chars:
+    }
+    .chr.id = .cfg.HelperMax;
+    stg~reset();//bgctrlの都合(循環参照可能な型を操作する)でfightingでreset
+    loop{int i = 0; while; do:
+      stg~action();
+      i++;
+    while i < stagetime:
+    }
+    .chr.nextRound(stg<>=);
+    if(.chr.round == 1) .sdl.playBGM("plugins", stg~bgmusic);
+    float x = (float)stg~cam.startx , y = 0.0;
+    float bl = (float)(stg~cam.boundleft - stg~cam.startx);
+    float br = (float)(stg~cam.boundright - stg~cam.startx);
+    float bt = (float)stg~cam.boundhigh;
+    float xminscl = 320.0 / (320.0+(float)(-bl + br));
+    float yminscl = 240.0 / (240.0-bt);
+    float minscl =
+      .m.max!float?(.cfg.MinScale)<, .m.max!float?(xminscl, yminscl);
+    float scl = 1.0, sclmul = 1.0, l = x, r = x;
+    float newx = x, newy = y, tmp;
+  do:
+    if(.chr.roundOver()) branch{
+      .chr.round++;
+      loop{index i = 0; while; do:
+        .chr.rexisted[i]++;
+        i++;
+      while i < #.chr.tmode:
+      }
+      if(.chr.time > 0) loop{index i = 0; while; do:
+        if(
+          .chr.tmode[i] == (int).chr.TeamMode::Turns
+          && .chr.chars[i][0]~isWin())
+        {
+          .chr.chars[i][0]~sysivar[.chr.iLIFE] +=
+            (int)(
+              (float).chr.chars[i][0]~sysivar[.chr.iLIFEMAX]
+              * (float).chr.time * (1.0/60.0) * .cfg.TurnsRecoveryRate);
+          .m.limMax!int?(
+            .chr.chars[i][0]~sysivar[.chr.iLIFE]=,
+            .chr.chars[i][0]~sysivar[.chr.iLIFEMAX]);
+        }
+        i++;
+      while i < #.chr.tmode:
+      }
+    cond
+      .chr.p1wins < .chr.p1mw && .chr.p2wins < .chr.p2mw
+      && (
+        .chr.tmode[0] != (int).chr.TeamMode::Turns
+        || .chr.chars[0][0]~isWin())
+      && (
+        .chr.tmode[1] != (int).chr.TeamMode::Turns
+        || .chr.chars[1][0]~isWin())
+      :
+      loop{index i = 0; while; do:
+        if(
+          .chr.tmode[i] != (int).chr.TeamMode::Turns
+          || !.chr.chars[i][0]~isWin())
+        {
+          .chr.chars[i][0]~sysivar[.chr.iLIFE] =
+            .chr.chars[i][0]~sysivar[.chr.iLIFEMAX];
+          if(#.chr.chars[i+2] > 0){
+            .chr.chars[i+2][0]~sysivar[.chr.iLIFE] =
+              .chr.chars[i+2][0]~sysivar[.chr.iLIFEMAX];
+          }
+        }
+        i++;
+      while i < #.chr.tmode:
+      }
+      .chr.nextRound(stg<>=);
+      x = newx = (float)stg~cam.startx;
+      l = r = 0.0;
+      scl = sclmul = 1.0;
+    else:
+      loop{index i = 0; while; do:
+        branch{
+          double tmp;
+        cond
+          .chr.chars[i][0]~isWin()
+          || (
+            !.chr.chars[i][0]~isLose()
+            && .chr.tmode[i] != (int).chr.TeamMode::Turns)
+          :
+          tmp = 1.2**((double)(level[i]+level[i+2&3])*0.5);
+          .chr.chars[i][0]~sysivar[.chr.iLIFE] =
+            .m.max!int?(1)<, (int).m.ceil(
+              tmp * (float)(
+                .chr.chars[i][0]~isWin()
+                ? .chr.chars[i][0]~sysivar[.chr.iLIFE]
+                : .chr.chars[i][0]~sysivar[.chr.iLIFEMAX]));
+          if(#.chr.chars[i+2] > 0){
+            .chr.chars[i+2][0]~sysivar[.chr.iLIFE] =
+              .m.max!int?(1)<, (int).m.ceil(
+                tmp * (float)(
+                  .chr.chars[i+2][0]~isWin()
+                  ? .chr.chars[i+2][0]~sysivar[.chr.iLIFE]
+                  : .chr.chars[i+2][0]~sysivar[.chr.iLIFEMAX]));
+          }
+        else:
+          .chr.chars[i][0]~sysivar[.chr.iLIFE] = 0;
+        }
+        i++;
+      while i < #.chr.tmode:
+      }
+      break, break;
+    }
+    tmp =
+      #((l + r)*scl - (newx - x)) < 80.0
+      ? 160.0 : .m.max!float?(0.0)<, .m.min!float?(160.0)<,
+      .m.max!float?(-(l*scl-(newx-x)), r*scl-(newx-x));
+    if(.chr.speed < 1.0) sclmul **= .chr.speed;
+    scl *= sclmul;
+    branch{
+    cond !.cfg.Zoom:
+      scl = 1.0;
+    else:
+      scl =
+        .m.max!float?(minscl)<, .m.min!float?(.cfg.MaxScale)<, scl;
+    }
+    tmp /= scl;
+    x =
+      .m.max!float?(bl-160.0 + 160.0/scl)<,
+      .m.min!float?(br+160.0 - 160.0/scl)<,
+      .m.min!float?(x + l + tmp)<,
+      .m.max!float?(x + r - tmp)<, newx;
+    tmp = .m.max!float?(0.0, 240.0 - (float)stg~zoffset);
+    y =
+      .m.max!float?(bt-240.0 + 240.0/scl)<,
+      .m.min!float?(0.0)<, .m.min!float?(tmp*(1.0/scl - 1.0))<, (
+        newy + 240.0*(1.0 - .m.min!float?(1.0, scl)));
+    if(
+      .com.tickFrame() && (.chr.super <= 0 || .chr.superpausebg == 0)
+      && (.chr.pause <= 0 || .chr.pausebg == 0)) 
+    {
+      stg~action();
+      stagetime++;
+    }
+    newx = x;
+    newy = y;
+    sclmul = .chr.action(stg<>=, newx=, newy=, l=, r=, scl);
+    branch{
+      .com.oldTickCount = .com.tickCount;
+    cond (int).com.tickCountF > .com.tickCount:
+      .com.tickCount++;
+      break, do;
+    cond (int)(.com.tickCountF += .chr.speed) > .com.tickCount:
+      .com.tickCount++;
+    }
+    if(.se.fskip) while;
+    .chr.draw(stg<>=, x, y, scl);
+    if(#.chr.chars[0] > 0) drawDebug(.chr.chars[0][0]<>=, 0.0);
+    if(#.chr.chars[2] > 0) drawDebug(.chr.chars[2][0]<>=, 80.0);
+    if(#.chr.chars[1] > 0) drawDebug(.chr.chars[1][0]<>=, 160.0);
+    if(#.chr.chars[3] > 0) drawDebug(.chr.chars[3][0]<>=, 240.0);
+    .sdl.screen.flip();
+  while !.se.esc && .cmd.update():
+    if(.se.esc) .mes.SetSharedString(:"esc":);
+  break:
+    stg~bgctl.clear();//bgctrlをでfightingで開放
+    if(#.cmd.net > 0) .cmd.net~stop();
+    share~chr_round = .chr.round;
+    share~chr_p1w = .chr.p1wins;
+    share~chr_p2w = .chr.p2wins;
+    share~chr_drw = .chr.draws;
+    share~stt = stagetime;
+    share~clsndw = .chr.clsndraw;
+    oldshare.copyToRef!&.sha.Share?(share=);
+  }
+}
+
+void main()
+{
+  if(!.sdl.shareScreen()){
+    .al.alert!.self?("初期化に失敗");
+    ret;
+  }
+  ret .game();
+}
+
+main();
+
+if(se.end) mes.SetSharedString(:"end":);
+
+
