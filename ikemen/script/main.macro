@@ -323,7 +323,7 @@ p1NameTxt#newTextImg
   #`162#=__
   #`#p1Selected#[#=___
     #`%| setPos | 10 | #__#,
-      %| setText | #{| #___ #getCharName #}
+      %| setText | %;|;#{| #___ #getCharName #}|;%;
       %| draw
       %#\p1NameTxt#each
     #`7.0+#__#calc#=__
@@ -352,7 +352,7 @@ p1NameTxt#newTextImg
       %| draw
       %#\p1Cursor#each
     #`%| setPos | 10 | #__#,
-      %| setText | #{| #_ #getCharName #}
+      %| setText | %;|;#{| #_ #getCharName #}|;%;
       %| draw
       %#\p1NameTxt#each
     #`| 1 | #_#, | #{| p1Cmd #btnPalNo#!#echo#} #selectChar#=__
@@ -391,7 +391,7 @@ p2NameTxt#newTextImg
   #`162#=__
   #`#p2Selected#[#=___
     #`%| setPos | 310 | #__#,
-      %| setText | #{| #___ #getCharName #}
+      %| setText | %;|;#{| #___ #getCharName #}|;%;
       %| draw
       %#\p2NameTxt#each
     #`7.0+#__#calc#=__
@@ -420,7 +420,7 @@ p2NameTxt#newTextImg
       %| draw
       %#\p2Cursor#each
     #`%| setPos | 310 | #__#,
-      %| setText | #{| #_ #getCharName #}
+      %| setText | %;|;#{| #_ #getCharName #}|;%;
       %| draw
       %#\p2NameTxt#each
     #`| 2 | #_#, | #{| p2Cmd #btnPalNo#!#echo#} #selectChar#=__
@@ -456,7 +456,7 @@ SelStageTxt#newTextImg
     #`| play | 100 | 0 #sysSnd
     #`|#stageNo#,+1#setStage#=~stageNo
   #}
-  #`%| setText | Stage #stageNo#,: #{|#stageNo#getStageName#}
+  #`%| setText | Stage #stageNo#,: %;|;#{|#stageNo#getStageName#}|;%;
     %| draw
     %#\SelStageTxt#each
   #`| p1Cmd #anyBtn#! #if #{#`false#=~SelMode#}
@@ -665,7 +665,7 @@ inputdia#newInputDialog
   true#set4PCom
   false#setAutoLevel
 
-  #`| setText | Port Change(#{#getListenPort#}) #portChange
+  #`| setText | Port Change(|;#{#getListenPort#}|;) #portChange
 
   #refresh
   #`#[ #`| input | 1 #p1Cmd #]#=cmdInput
@@ -705,7 +705,7 @@ inputdia#newInputDialog
     #`| popup | Input Server #inputdia
     #`$ $ #[ !(#{| isDone #inputdia#}) #] $ #\`#\refresh $ $ #for #!
     #`| setText
-      | Now connecting.. #{| getStr #inputdia#} #{#getListenPort#}
+      | Now connecting.. |;#{| getStr #inputdia#} #{#getListenPort#}|;
     #connecting
     #`| getStr #inputdia #enterNetPlay
     #`$ $ #[ !(#{ #connected #}) #] $ #\`#\refresh $ $

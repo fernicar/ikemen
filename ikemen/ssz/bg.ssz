@@ -264,7 +264,7 @@ public &BackGround
       branch{
       cond #xy >= 2:
         `anim.tile.y = xy[1];
-      else:
+      cond `anim.tile.x != 0:
         `anim.tile.h = 0d0;
       }
     }

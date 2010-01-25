@@ -989,10 +989,38 @@ public &Script
 
 public ^^/char splitArgs(^char arg)
 {
-  ^^/char spl;
+  %^/char spl;
   branch{
   cond #arg > 0:
-    spl = .s.split(arg[0..1], arg[1..-1]);
+    loop{
+      ^^/char tmp = .s.split(arg[0..1], arg[1..-1]);
+      index i = 0;
+      bool semi = false;
+      %char buf;
+      while;
+    do:
+      branch{
+      cond i > 0 && #tmp[i] > 0 && tmp[i][0] == ';':
+        tmp[i] = tmp[i][1..-1];
+        branch{
+        cond !!semi:
+          buf.new(0);
+          buf .= spl[-1] .= tmp[i];
+        else:
+          spl[-1] = (buf .= tmp[i]);
+        }
+      else:
+        branch{
+        cond semi:
+          buf .= arg[0] .= tmp[i];
+        else:
+          spl.new[-1] = tmp[i];
+        }
+      }
+      i++;
+    while i < #tmp:
+      if(semi) spl[-1] = buf;
+    }
   else:
     spl.new(1);
   }
