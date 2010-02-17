@@ -355,7 +355,7 @@ public &NetInput
   }
   public bool accept(^/char port)
   {
-    if(!`liso~listen(port, 1)) ret false;
+    if(!`liso~listen(port, 1, true)) ret false;
     `host = true;
     `setlore(`lo=, `re=);
     `cansel<> = false;
