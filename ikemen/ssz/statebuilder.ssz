@@ -549,9 +549,11 @@ public &StateBuilder
       branch{
         ^/char oldin = in;
         ^/char token = `tokenizer(in=);
-        bool not = .s.equ("!", token);
+        bool not = .s.equ("!", token), kakko = false;
         if(not) token = `tokenizer(in=);
       cond .s.equ("=", token):
+      cond .s.equ("(", token):
+        kakko = true;
       cond .s.equ("!=", token):
         not!!;
       else:
@@ -564,7 +566,12 @@ public &StateBuilder
       comm:
         {
           int re = proc(::);
-          if(re <= 0) ret re;
+          if(re < 0) ret re;
+          if(kakko && !.s.equ(")", `tokenizer(in=))){
+            `lasterror = ")がありません";
+            ret -1;
+          }
+          if(re == 0) ret re;
         }
         if(not) out .= "$`trBoolNot()";
       }
