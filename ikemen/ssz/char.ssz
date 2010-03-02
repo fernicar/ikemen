@@ -5284,10 +5284,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           }
         }
       }
-      if(hit.p1stateno >= 0) branch{
+      if(hitting && hit.p1stateno >= 0) branch{
       cond
         (by.cs1tmp == 0 || by.stVal.playerno == by.playerno)
-        && (!hitting || hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s)
+        && (hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s)
         :
         by.changeState1(by.playerno, hit.p1stateno);
       else:
