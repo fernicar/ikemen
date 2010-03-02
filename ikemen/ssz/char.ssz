@@ -5126,7 +5126,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           `pyr.sysivar[.iCTRL] = 0;
           `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno);
           branch{
-          cond hit.p2stateno >= 0 && hit.p2getp1state != 0:
+          cond hitting && hit.p2stateno >= 0 && hit.p2getp1state != 0:
             rtn = damageable = false;
           else:
             rtn = true;
@@ -5137,7 +5137,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         i++;
       while i < #`pyr.stVal.ho:
       }
-      if(hit.p2stateno >= 0 && hit.p2getp1state != 0){
+      if(hitting && hit.p2stateno >= 0 && hit.p2getp1state != 0){
         if(by.cs1tmp != 0 && by.stVal.playerno != by.playerno){
           rtn = damageable = false;
           break, break;
@@ -5287,7 +5287,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       if(hit.p1stateno >= 0) branch{
       cond
         (by.cs1tmp == 0 || by.stVal.playerno == by.playerno)
-        && (hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s)
+        && (!hitting || hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s)
         :
         by.changeState1(by.playerno, hit.p1stateno);
       else:
