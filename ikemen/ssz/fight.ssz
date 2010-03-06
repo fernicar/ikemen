@@ -167,16 +167,16 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public void step(float life, bool hit)
   {
     branch{
-    cond hit:
+    cond #`mid.frames > 0 && hit:
       if(`mlifetime < 30){
         `mlifetime = 30;
         `midlife = `midlifelim = `oldlife;
       }
     else:
       if(`mlifetime > 0) `mlifetime--;
-      if(`mlifetime <= 0) `midlife -= 1.0 / 144.0;
+      if(#`mid.frames == 0 || `mlifetime <= 0) `midlife -= 1.0 / 144.0;
       branch{
-      cond `mlifetime <= 0 && life < `midlifelim:
+      cond #`mid.frames > 0 && `mlifetime <= 0 && life < `midlifelim:
         `midlifelim +=
           (life - `midlifelim) * (1.0 / (12.0 - (life - `midlifelim)*144.0));
       else:
@@ -222,7 +222,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
           (ushort)((float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
       }
     }
-    setLifeWidth(lrct=, life);
+    setLifeWidth(lrct=, #`mid.frames > 0 ? life : `midlife);
     setLifeWidth(mrct=, `midlife);
     .laydraw(
       mrct=, (float)`posx, (float)`posy, 1.0, layerno, `mid=, `mid_lay=);
