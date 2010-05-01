@@ -2655,6 +2655,7 @@ public &Char
         .m.max!float?(`sysfvar[.fY], lowest);
     }
     if(#`ani > 0 && !`ls(.lsINVISIBLE)){
+      if(#`ani~ani.spr == 0) `ani~ani.updateSprite();
       int sp = `sprpriority;
       int br = 256 >> (int)(
         .super > 0 && .superdarken != 0 && `playerno != .superplayer);
