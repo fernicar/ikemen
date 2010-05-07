@@ -128,6 +128,7 @@ void game()
     //put(x, y=, .s.iToS(p.stVal.time));
     //put(x, y=, .s.iToS(p.stVal.prevno));
     //put(x, y=, .s.iToS(p.stVal.no));
+    //put(x, y=, .s.iToS(.chr.super));
     //put(x, y=, .s.iToS((long)(p.sysfvar[.chr.fY]*1000.0)));
     //put(x, y=, .s.iToS((long)(p.sysfvar[.chr.fVY]*1000.0)));
   }

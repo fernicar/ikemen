@@ -2547,6 +2547,13 @@ public &Char
   }
   public void tickTimer()
   {
+    if(!`isPaused() || (.super > 0 && `playerno == .superplayer)) branch{
+    cond `stVal.mctime > 0:
+      if(`sysivar[.iHITPAUSETIME] <= 0) `stVal.mctime++;
+    cond `stVal.mctime < 0:
+      `stVal.mctime *= -1;
+      `stVal.juggle = 0;
+    }
     if(!`isPaused()){
       if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
       branch{
@@ -2560,13 +2567,6 @@ public &Char
         }
       cond `stVal.hb.fall.recovertime > 0:
         `stVal.hb.fall.recovertime--;
-      }
-      branch{
-      cond `stVal.mctime > 0:
-        if(`sysivar[.iHITPAUSETIME] <= 0) `stVal.mctime++;
-      cond `stVal.mctime < 0:
-        `stVal.mctime *= -1;
-        `stVal.juggle = 0;
       }
       branch{
       cond `stVal.hb.hitshaketime <= 0 && `stVal.hb.hittime <= 0:
@@ -2655,7 +2655,6 @@ public &Char
         .m.max!float?(`sysfvar[.fY], lowest);
     }
     if(#`ani > 0 && !`ls(.lsINVISIBLE)){
-      if(#`ani~ani.spr == 0) `ani~ani.updateSprite();
       int sp = `sprpriority;
       int br = 256 >> (int)(
         .super > 0 && .superdarken != 0 && `playerno != .superplayer);
@@ -5967,7 +5966,7 @@ public float action(
     .fight~ro.act(
       .com.intro, .com.round, .syssnd=, .ko,
       .com.win >= 0 && .com.tmode[.com.win] == (int).com.TeamMode::Simul)
-      && .com.tickFrame())
+    && .com.tickFrame())
   {
     .com.gametime++;
     branch{
