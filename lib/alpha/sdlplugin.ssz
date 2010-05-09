@@ -1,10 +1,10 @@
 ﻿
-plugin void End(::)                         = <dll/sdlplugin.dll>;
-plugin bool PollEvent(:&Event=:)            = <dll/sdlplugin.dll>;
-plugin bool KeyState(:|SDLKey:)             = <dll/sdlplugin.dll>;
-plugin bool JoystickButtonState(:int, int:) = <dll/sdlplugin.dll>;
-plugin void Delay(:uint:)                   = <dll/sdlplugin.dll>;
-plugin uint GetTicks(::)                    = <dll/sdlplugin.dll>;
+plugin void End(::)                         = "dll/sdlplugin.dll";
+plugin bool PollEvent(:&Event=:)            = "dll/sdlplugin.dll";
+plugin bool KeyState(:|SDLKey:)             = "dll/sdlplugin.dll";
+plugin bool JoystickButtonState(:int, int:) = "dll/sdlplugin.dll";
+plugin void Delay(:uint:)                   = "dll/sdlplugin.dll";
+plugin uint GetTicks(::)                    = "dll/sdlplugin.dll";
 
 const int SNDFREQ = 44100;
 const index SNDBUFLEN = 4096;
@@ -12,25 +12,25 @@ const index SNDBUFLEN = 4096;
 public bool setSndBuf(^int buf)
 {
   if(#buf != .SNDBUFLEN) ret false;
-  plugin bool SetSndBuf(:int=:) = <dll/sdlplugin.dll>;
+  plugin bool SetSndBuf(:int=:) = "dll/sdlplugin.dll";
   ret SetSndBuf(:buf<>=:);
 }
 
 public bool playBGM(^/char pldir, ^/char fn)
 {
-  plugin bool PlayBGM(:^/char, ^/char:) = <dll/sdlplugin.dll>;
+  plugin bool PlayBGM(:^/char, ^/char:) = "dll/sdlplugin.dll";
   ret PlayBGM(:pldir, fn:);
 }
 
 public void pauseBGM(bool pause)
 {
-  plugin void PauseBGM(:bool:) = <dll/sdlplugin.dll>;
+  plugin void PauseBGM(:bool:) = "dll/sdlplugin.dll";
   PauseBGM(:pause:);
 }
 
 public void setVolume(int vol)
 {
-  plugin void SetVolume(:int:) = <dll/sdlplugin.dll>;
+  plugin void SetVolume(:int:) = "dll/sdlplugin.dll";
   SetVolume(:vol:);
 }
 
@@ -512,58 +512,58 @@ public &Surface
   }
   public void free()
   {
-    plugin void FreeSurface(:index:) = <dll/sdlplugin.dll>;
+    plugin void FreeSurface(:index:) = "dll/sdlplugin.dll";
     FreeSurface(:`sur:);
     `sur = 0;
   }
   public void allocSurface(int w, int h)
   {
-    plugin index AllocSurface(:int, int:) = <dll/sdlplugin.dll>;
+    plugin index AllocSurface(:int, int:) = "dll/sdlplugin.dll";
     `free();
     `sur = AllocSurface(:w, h:);
   }
   public void fill(&.Rect r=, uint c)
   {
-    plugin void Fill(:index, &.Rect=, uint:) = <dll/sdlplugin.dll>;
+    plugin void Fill(:index, &.Rect=, uint:) = "dll/sdlplugin.dll";
     Fill(:`sur, r=, c:);
   }
   public void imgLoad(^/char fn)
   {
-    plugin index IMGLoad(:^/char:) = <dll/sdlplugin.dll>;
+    plugin index IMGLoad(:^/char:) = "dll/sdlplugin.dll";
     `free();
     `sur = IMGLoad(:fn:);
   }
   public void flip()
   {
-    plugin void Flip(:index:) = <dll/sdlplugin.dll>;
+    plugin void Flip(:index:) = "dll/sdlplugin.dll";
     Flip(:`sur:);
   }
   public void setAlpha(ubyte a)
   {
-    plugin void SetAlpha(:index, ubyte:) = <dll/sdlplugin.dll>;
+    plugin void SetAlpha(:index, ubyte:) = "dll/sdlplugin.dll";
     SetAlpha(:`sur, a:);
   }
   public void blitEx(&.Rect dr=, `self src, &.Rect sr=)
   {
     plugin void BlitSurfaceEx(:
-      `self, &.Rect=, `self, &.Rect=:) = <dll/sdlplugin.dll>;
+      `self, &.Rect=, `self, &.Rect=:) = "dll/sdlplugin.dll";
     BlitSurfaceEx(:src, sr=, `, dr=:);
   }
   public void blit(&.Rect dr=, `self src)
   {
     plugin void BlitSurface(:`self, `self, &.Rect=:) =
-      <dll/sdlplugin.dll>;
+      "dll/sdlplugin.dll";
     BlitSurface(:src, `, dr=:);
   }
   public void createPaletteSurface(^ubyte img, ^uint pal, int w, int h)
   {
     plugin index CreatePaletteSurface(:ubyte=, uint=, int, int:) =
-      <dll/sdlplugin.dll>;
+      "dll/sdlplugin.dll";
     `sur = CreatePaletteSurface(:img<>=, pal<>=, w, h:);
   }
   public void setColorKey(int key)
   {
-    plugin index SetColorKey(:index, int:) = <dll/sdlplugin.dll>;
+    plugin index SetColorKey(:index, int:) = "dll/sdlplugin.dll";
     SetColorKey(:`sur, key:);
   }
   public bool renderMugenZoom(
@@ -576,7 +576,7 @@ public &Surface
     plugin bool RenderMugenZoom(:
       ^/ubyte, uint=, short, &.Rect=, float, float, &.Rect=,
       float, float, float, float, uint, int, `self, &.Rect=,
-      float, float, int, %byte=:) = <dll/sdlplugin.dll>;
+      float, float, int, %byte=:) = "dll/sdlplugin.dll";
     ret
       RenderMugenZoom(:
         pxl, pal<>=, ckey, sr=, cx, ty, tile=, xtopscl, xbotscl,
@@ -593,13 +593,13 @@ public &Font
   }
   public void close()
   {
-    plugin void CloseFont(:index:) = <dll/sdlplugin.dll>;
+    plugin void CloseFont(:index:) = "dll/sdlplugin.dll";
     if(`font != 0) CloseFont(:`font:);
     `font = 0;
   }
   public void open(^/char fn, int size)
   {
-    plugin index OpenFont(:^/char, int:) = <dll/sdlplugin.dll>;
+    plugin index OpenFont(:^/char, int:) = "dll/sdlplugin.dll";
     `close();
     `font = OpenFont(:fn, size:);
   }
@@ -609,7 +609,7 @@ public &Font
   {
     plugin void RenderFont(:
       index, uint, bool, short, short, ^/char,
-      &.Surface:) = <dll/sdlplugin.dll>;
+      &.Surface:) = "dll/sdlplugin.dll";
     RenderFont(:`font, color, srcalpha, x, y, str, sur:);
   }
 }
@@ -620,7 +620,7 @@ public &Surface screen;
 {
   delete()
   {
-    plugin void SetSurfaceNull(:&.Surface=:) = <dll/sdlplugin.dll>;
+    plugin void SetSurfaceNull(:&.Surface=:) = "dll/sdlplugin.dll";
     SetSurfaceNull(:.screen=:);
   }
 }
@@ -630,28 +630,28 @@ public &Surface screen;
 public bool init(^/char t, int w, int h)
 {
   plugin void Init(:&.Surface=, ^/char, int, int:) =
-    <dll/sdlplugin.dll>;
+    "dll/sdlplugin.dll";
   Init(:.screen=, t, w, h:);
   ret !.screen.null();
 }
 
 public bool shareScreen()
 {
-  plugin void ShareScreen(:&.Surface=:) = <dll/sdlplugin.dll>;
+  plugin void ShareScreen(:&.Surface=:) = "dll/sdlplugin.dll";
   ShareScreen(:.screen=:);
   ret !.screen.null();
 }
 
 public bool fullScreen(bool full)
 {
-  plugin void FullScreen(:&.Surface=, bool:) = <dll/sdlplugin.dll>;
+  plugin void FullScreen(:&.Surface=, bool:) = "dll/sdlplugin.dll";
   FullScreen(:.screen=, full:);
   ret !.screen.null();
 }
 
 public void showCursor(bool show)
 {
-  plugin void CursorShow(:bool:) = <dll/sdlplugin.dll>;
+  plugin void CursorShow(:bool:) = "dll/sdlplugin.dll";
   CursorShow(:show:);
 }
 
