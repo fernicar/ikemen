@@ -1190,24 +1190,42 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         `round[i].sndg = `round_default.sndg;
         `round[i].sndi = `round_default.sndi;
       }
-      if(`round[i].noDisplay()){
+      branch{
+      cond `round[i].noDisplay():
         `round[i].fontn = `round_default.fontn;
         `round[i].fontb = `round_default.fontb;
         `round[i].fonta = `round_default.fonta;
         `round[i].text = `round_default.text;
         `round[i].anim.copy(`round_default.anim=);
         `round[i].lay = `round_default.lay;
+      else:
+        `round[i].lay.offset.x += `round_default.lay.offset.x;
+        `round[i].lay.offset.y += `round_default.lay.offset.y;
       }
       i++;
     while i < #`round:
     }
     `fight.setup(sf);
+    `fight.lay.offset.x += `round_default.lay.offset.x;
+    `fight.lay.offset.y += `round_default.lay.offset.y;
     `ko.setup(sf);
+    `ko.lay.offset.x += `round_default.lay.offset.x;
+    `ko.lay.offset.y += `round_default.lay.offset.y;
     `dko.setup(sf);
+    `dko.lay.offset.x += `round_default.lay.offset.x;
+    `dko.lay.offset.y += `round_default.lay.offset.y;
     `to.setup(sf);
+    `to.lay.offset.x += `round_default.lay.offset.x;
+    `to.lay.offset.y += `round_default.lay.offset.y;
     `win.setup(sf);
+    `win.lay.offset.x += `round_default.lay.offset.x;
+    `win.lay.offset.y += `round_default.lay.offset.y;
     `win2.setup(sf);
+    `win2.lay.offset.x += `round_default.lay.offset.x;
+    `win2.lay.offset.y += `round_default.lay.offset.y;
     `drawn.setup(sf);
+    `drawn.lay.offset.x += `round_default.lay.offset.x;
+    `drawn.lay.offset.y += `round_default.lay.offset.y;
     `fnt = f;
     `sn = s;
   }
