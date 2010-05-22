@@ -1182,7 +1182,16 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   }
   public void setup(
     ^&.sff.Sff sf, ^&.fnt.Font f, ^&.snd.Snd s)
-  {
+  {:<-
+    void foo(&.AnimFontSnd afs=)
+    {
+      if(afs.lay.offset.x == 0.0){
+        afs.lay.offset.x = `round_default.lay.offset.x;
+      }
+      if(afs.lay.offset.y == 0.0){
+        afs.lay.offset.y = `round_default.lay.offset.y;
+      }
+    }
     `round_default.setup(sf);
     loop{index i = 0; while; do:
       `round[i].setup(sf);
@@ -1199,33 +1208,25 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         `round[i].anim.copy(`round_default.anim=);
         `round[i].lay = `round_default.lay;
       else:
-        `round[i].lay.offset.x += `round_default.lay.offset.x;
-        `round[i].lay.offset.y += `round_default.lay.offset.y;
+        foo(`round[i]=);
       }
       i++;
     while i < #`round:
     }
     `fight.setup(sf);
-    `fight.lay.offset.x += `round_default.lay.offset.x;
-    `fight.lay.offset.y += `round_default.lay.offset.y;
+    foo(`fight=);
     `ko.setup(sf);
-    `ko.lay.offset.x += `round_default.lay.offset.x;
-    `ko.lay.offset.y += `round_default.lay.offset.y;
+    foo(`ko=);
     `dko.setup(sf);
-    `dko.lay.offset.x += `round_default.lay.offset.x;
-    `dko.lay.offset.y += `round_default.lay.offset.y;
+    foo(`dko=);
     `to.setup(sf);
-    `to.lay.offset.x += `round_default.lay.offset.x;
-    `to.lay.offset.y += `round_default.lay.offset.y;
+    foo(`to=);
     `win.setup(sf);
-    `win.lay.offset.x += `round_default.lay.offset.x;
-    `win.lay.offset.y += `round_default.lay.offset.y;
+    foo(`win=);
     `win2.setup(sf);
-    `win2.lay.offset.x += `round_default.lay.offset.x;
-    `win2.lay.offset.y += `round_default.lay.offset.y;
+    foo(`win2=);
     `drawn.setup(sf);
-    `drawn.lay.offset.x += `round_default.lay.offset.x;
-    `drawn.lay.offset.y += `round_default.lay.offset.y;
+    foo(`drawn=);
     `fnt = f;
     `sn = s;
   }
