@@ -206,18 +206,24 @@ public &BackGround
       {
         ^float xy = .s.svToAry!xy<>.self?(",", data);
         float mul = hires ? 0.5 : 1.0;
-        if(#xy >= 2){
-          `startx = xy[0]*mul;
+        `startx = xy[0]*mul;
+        branch{
+        cond #xy >= 2:
           `starty = xy[1]*mul;
+        else:
+          `starty = 0.0;
         }
       }
     cond .s.equ(name, "delta"):
       {
         ^float xy = .s.svToAry!xy<>.self?(",", data);
         float mul = hires ? 0.5 : 1.0;
-        if(#xy >= 2){
-          `deltax = xy[0]*mul;
+        `deltax = xy[0]*mul;
+        branch{
+        cond #xy >= 2:
           `deltay = xy[1]*mul;
+        else:
+          `deltay = `deltax;
         }
       }
     cond .s.equ(name, "trans"):
@@ -293,7 +299,6 @@ public &BackGround
         ^float xy = .s.svToAry!float?(",", data);
         float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
         float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
-        if(#xy < 1) break;
         `windowdeltax = xy[0]*mulx;
         branch{
         cond #xy >= 2:
@@ -308,9 +313,12 @@ public &BackGround
       {
         ^float xy = .s.svToAry!xy<>.self?(",", data);
         float mul = hires ? 0.5 : 1.0;
-        if(#xy >= 2){
-          `startvx = `bga.vx = xy[0]*mul;
+        `startvx = `bga.vx = xy[0]*mul;
+        branch{
+        cond #xy >= 2:
           `startvy = `bga.vy = xy[1]*mul;
+        else:
+          `startvy = `bga.vy = 0.0;
         }
       }
     cond .s.equ(name, "sin.x"):
