@@ -4484,7 +4484,7 @@ public &Char
     loop{index i = 0; while; do:
       if(
         .explods[`playerno][i].player == `id && (
-          (id < 0 && .explods[`playerno][i].id > .com.IERR+1)
+          (id <= 0 && .explods[`playerno][i].id > .com.IERR+1)
           || .explods[`playerno][i].id == id)) .v.i++;
       i++;
     while i < #.explods[`playerno]:
