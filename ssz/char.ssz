@@ -1179,7 +1179,7 @@ public &PlayerList!&Char? players;
 public int id = cfg.HelperMax;
 /int pause = 0, pausetime = 0, pausebg = 0;
 /int super = 0, supertime = 0, superpausebg = 0;
-int superplayer = -1;
+int pauseplayer = -1, superplayer = -1;
 ^&.act.Action superanim;
 float superposx = 0.0, superposy = 0.0;
 int superfacing = 1;
@@ -2547,9 +2547,13 @@ public &Char
   }
   public void tickTimer()
   {
-    if(!`isPaused() || (.super > 0 && `playerno == .superplayer)) branch{
+    if(
+      !`isPaused() || (
+        .super > 0 ? `playerno == .superplayer
+        : .pause > 0 && `playerno == .pauseplayer)) branch
+    {
     cond `stVal.mctime > 0:
-      if(`sysivar[.iHITPAUSETIME] <= 0) `stVal.mctime++;
+      if(`sysivar[.iHITPAUSETIME] <= 0 || `isPaused()) `stVal.mctime++;
     cond `stVal.mctime < 0:
       `stVal.mctime *= -1;
       `stVal.juggle = 0;

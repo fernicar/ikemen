@@ -3328,7 +3328,8 @@ public &StateBuilder
           `state.ctrlList[-1].task .= "int a=0,s=0,st=-1,t=1,f=0;";
         cond .s.equ(s, "pause"):
           `state.ctrlList[-1].typ = .CtrlTy::Pause;
-          `state.ctrlList[-1].task .= ".pausebg=1;";
+          `state.ctrlList[-1].task .=
+            ".pauseplayer=" .= .s.iToS(`playerno) .= ";.pausebg=1;";
         cond .s.equ(s, "superpause"):
           `state.ctrlList[-1].typ = .CtrlTy::SuperPause;
           `state.ctrlList[-1].task .=
