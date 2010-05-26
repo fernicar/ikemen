@@ -4446,7 +4446,7 @@ public &Char
     loop{index i = 0; while; do:
       if(
         .explods[`playerno][i].player == `id && (
-          (id < 0 && .explods[`playerno][i].id > .com.IERR+1)
+          (id <= 0 && .explods[`playerno][i].id > .com.IERR+1)
           || .explods[`playerno][i].id == id))
       {
         .explods[`playerno][i].bindtime = bt + (bt > 0 ? 1 : 0);
@@ -4461,7 +4461,7 @@ public &Char
     loop{index i = #.expdrawlist[`playerno]-1; while; do:
       if(
         (
-          id < 0 && .explods[`playerno][.expdrawlist[`playerno][i]].id
+          id <= 0 && .explods[`playerno][.expdrawlist[`playerno][i]].id
           > .com.IERR+1)
         || .explods[`playerno][.expdrawlist[`playerno][i]].id == id)
       {
@@ -4796,7 +4796,7 @@ public void Explod::setPos(&.Char c=)
 }
 public void Explod::modify(&.Char c=, &.ModifyExplod mod=)
 {
-  if(`player != c.id || `id <= .com.IERR+1 || (mod.id >= 0 && mod.id != `id)){
+  if(`player != c.id || `id <= .com.IERR+1 || (mod.id > 0 && mod.id != `id)){
     ret;
   }
   if(mod.bindtime != .com.IERR) `bindtime = mod.bindtime;
