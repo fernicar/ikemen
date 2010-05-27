@@ -1468,7 +1468,7 @@ public &Projectile
     cond .pause > 0:
       if(`pausemovetime == 0) ret;
     }
-    if(`hitpause > 0) ret;
+    if(`hitpause != 0) ret;
     if(.com.tickFrame()){
       `velocityx += `accelx;
       `velocityy += `accely;
@@ -1568,7 +1568,7 @@ public &Projectile
     void animAct(bool pau)
     {
       if(#`ani > 0) branch{
-      cond !pau && (`hitpause <= 0 || `anim < 0):
+      cond !pau && (`hitpause == 0 || `anim < 0):
         `ani~ani.action();
       else:
         `ani~ani.updateSprite();
@@ -1629,10 +1629,11 @@ public &Projectile
         else:
           `ani.new(0);
         comm:
-          if(`hitpause <= 0) `id = -1;
+          if(`hitpause == 0) `id = -1;
         }
       }
-      `hitpause--;
+      if(`hitpause < 0) `hitpause *= -1;
+      if(`hitpause > 0) `hitpause--;
     }
     branch{
     cond `pctime > 0:
@@ -1655,7 +1656,7 @@ public &Projectile
     if(.com.tickFrame()){
       animAct(p);
       if(p) break;
-      if(`hitpause > 0) break;
+      if(`hitpause != 0) break;
       if(`timemiss > 0){
         `timemiss *= -1;
         `hits--;
@@ -5422,8 +5423,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       pyr.inguarddist = true;
     }
     if(
-      p~c~stVal.hit.hitonce >= 0
-      && (
+      p~c~stVal.hit.hitonce >= 0 && (
         pyr.hittmp < 2 || p~c~ls(.lsNOJUGGLECHECK)
         || juggcheck(
           pyr.stVal.hb.juggle, p~c~stVal.juggle + p~c~stVal.hit.air_juggle))
@@ -5492,7 +5492,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         pyr.inguarddist = true;
       }
       if(
-        (
+        .projs[i][j].hit.hitonce >= 0 && (
           pyr.hittmp < 2 || .chars[i][0]~ls(.lsNOJUGGLECHECK)
           || juggcheck(pyr.stVal.hb.juggle, .projs[i][j].hit.air_juggle))
         && .projs[i][j].timemiss >= 0
@@ -5526,13 +5526,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               .projs[i][j].pctyp == .ProjContact::Hit;
               .projs[i][j].pctime = -1;
               .projs[i][j].hitpause =
-                .m.max!int?(1, .projs[i][j].hit.pausetime+1);
+                -.m.max!int?(1, .projs[i][j].hit.pausetime+1);
             else:
               .projs[i][j].pctyp == .ProjContact::Guarded;
               .projs[i][j].pctime = -1;
               .projs[i][j].hitpause =
-                .m.max!int?(1, .projs[i][j].hit.guard_pausetime+1);
+                -.m.max!int?(1, .projs[i][j].hit.guard_pausetime+1);
             }
+            if(.projs[i][j].hit.hitonce > 0) .projs[i][j].hit.hitonce = -1;
           }
           if(.projs[i][j].misstime == 0) .projs[i][j].hits = 0;
         }
