@@ -4242,30 +4242,34 @@ public &StateBuilder
                 `state.ctrlList[-1].task .= "b=f;";
               }
               `state.ctrlList[-1].task .=
-                "`sysivar[.iSPECIALFLAG]|=.lsFEDGECHANGE|.lsBEDGECHANGE;"
-                "`setFEdge(f);`setBEdge(b);";
+                ".chars[`playerno]<>~sysivar[.iSPECIALFLAG]|="
+                ".lsFEDGECHANGE|.lsBEDGECHANGE;"
+                ".chars[`playerno]<>~setFEdge(f);"
+                ".chars[`playerno]<>~setBEdge(b);";
               if(name[0] == 'v'){
                 `state.ctrlList[-1].task .=
-                  "`sysivar[.iSPECIALFLAG]|=.lsFRONTWCHANGE|.lsBACKWCHANGE;"
-                  "`frontw=`defFW()+f;"
-                  "`backw=`defBW()+b;";
+                  ".chars[`playerno]<>~sysivar[.iSPECIALFLAG]"
+                  "|=.lsFRONTWCHANGE|.lsBACKWCHANGE;"
+                  ".chars[`playerno]<>~frontw=.chars[`playerno]<>~defFW()+f;"
+                  ".chars[`playerno]<>~backw=.chars[`playerno]<>~defBW()+b;";
               }
             }
           cond .s.equ(name, "player"):
             `state.ctrlList[-1].task .=
-              "`sysivar[.iSPECIALFLAG]|=.lsFRONTWCHANGE;"
-              "`frontw=`defFW()+";
+              ".chars[`playerno]<>~sysivar[.iSPECIALFLAG]|=.lsFRONTWCHANGE;"
+              ".chars[`playerno]<>~frontw=`defFW()+";
             if(
               !`expression(
                 `state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toFloat();";
             if(.s.equ(",")<, `tokenizer(text=)){
               `state.ctrlList[-1].task .=
-                "`sysivar[.iSPECIALFLAG]|=.lsBACKWCHANGE;";
+                ".chars[`playerno]<>~sysivar[.iSPECIALFLAG]|=.lsBACKWCHANGE;";
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, text=,
-                  "`backw=`defBW()+", "$.v.toFloat();")) ret false;
+                  ".chars[`playerno]<>~backw=`defBW()+",
+                  "$.v.toFloat();")) ret false;
             }
           else:
             break, default;

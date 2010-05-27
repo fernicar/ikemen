@@ -2817,10 +2817,12 @@ public &Char
       else:
         `curFrame.new(0);
       }
-      if(!`ls(.lsFRONTWCHANGE)) `frontw = `defFW();
-      if(!`ls(.lsBACKWCHANGE)) `backw = `defBW();
-      if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
-      if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
+      if(!`isHitPaused()){
+        if(!`ls(.lsFRONTWCHANGE)) `frontw = `defFW();
+        if(!`ls(.lsBACKWCHANGE)) `backw = `defBW();
+        if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
+        if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
+      }
     }
   }
   public float move(float tension)
