@@ -3194,7 +3194,8 @@ public &StateBuilder
             "$!.v.isTrue())`clearHitCount();")) ret false;
         `state.hitcountpersist = 1;
       cond .s.equ(name, "velset"):
-        `state.deftask .= "`trSetSysFVar(.v.setI(.fVX)$.v,";
+        `state.deftask .=
+          "`sysivar[.iBINDTIME]=.com.IERR;`trSetSysFVar(.v.setI(.fVX)$.v,";
         if(!`expression(`state.deftask=, text=)) ret false;
         `state.deftask .= "$.v);";
         branch{
