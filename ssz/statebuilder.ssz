@@ -6471,9 +6471,15 @@ public &StateBuilder
     {
       branch{
       cond .s.equ(name, "xscale"):
-        `c.s.xscale = .s.sToN!`c.s.xscale.self?(data);
+        {
+          ^float ary = .s.svToAry!float?(",", data);
+          `c.s.xscale = ary<>;
+        }
       cond .s.equ(name, "yscale"):
-        `c.s.yscale = .s.sToN!`c.s.yscale.self?(data);
+        {
+          ^float ary = .s.svToAry!float?(",", data);
+          `c.s.yscale = ary<>;
+        }
       cond .s.equ(name, "ground.back"):
         `c.s.ground_back = .s.sToN!`c.s.ground_back.self?(data);
       cond .s.equ(name, "ground.front"):
