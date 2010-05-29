@@ -84,20 +84,20 @@ trigger2 = abs(vel x)+abs(vel y) < 0.01
 sysvar(55) = -1;RECOVERTIME
 
 [State -4, Landing1]
+type = ChangeState
+triggerall = Active
+trigger1 = vel y > 0
+trigger1 = pos y >= 0
+trigger1 = (sysvar(58) & 8) || Physics = A
+trigger1 = (sysvar(58) & 8) && (1 || sysvar(58) := (sysvar(58) | ifelse(Physics = A, 8, 0)));SYSFLAG
+value = 52
+
+[State -4, Landing2]
 type = VarSet
 trigger1 = Physics != A
 trigger2 = vel y <= 0
 trigger3 = pos y < 0
 sysvar(58) = sysvar(58) & ~8;SYSFLAG
-
-[State -4, Landing2]
-type = ChangeState
-triggerall = Active
-triggerall = Physics = A
-trigger1 = vel y > 0
-trigger1 = pos y >= 0
-trigger1 = (sysvar(58) & 8) && sysvar(58) := (sysvar(58) | 8);SYSFLAG
-value = 52
 
 [State -4, Turn Cond]
 type = VarSet
