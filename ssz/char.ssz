@@ -3181,6 +3181,11 @@ public &Char
   {
     ret `sysivar[.iCTRL] != 0;
   }
+  public void setCtrl(bool c)
+  {
+    if(.roundState() < 2) ret;
+    `sysivar[.iCTRL] = (int)c;
+  }
   public void destroySelf()
   {
     if(`id == .com.IERR || `helperindex <= 0) ret;
@@ -6015,7 +6020,7 @@ public float action(
     }
     if(.com.intro == 0) loop{index i = 0; while; do:
       if(#.chars[i] > 0 && .chars[i][0]~stVal.no == 0){
-        .chars[i][0]~sysivar[.iCTRL] = 1;
+        .chars[i][0]~setCtrl(true);
       }
       i++;
     while i < #.chars:

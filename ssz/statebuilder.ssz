@@ -3186,7 +3186,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.deftask=, text=,
-            "`sysivar[.iCTRL]=(int)(", "$.v.isTrue());")) ret false;
+            "`setCtrl(", "$.v.isTrue());")) ret false;
       cond .s.equ(name, "hitcountpersist"):
         if(
           !`fullExpression(
@@ -3611,7 +3611,7 @@ public &StateBuilder
               %char buf;
               if(
                 !`fullExpression(
-                  buf=, text=, "`sysivar[.iCTRL]=(int)(",
+                  buf=, text=, "`setCtrl(",
                   "$.v.isTrue());")) ret false;
               buf .= `state.ctrlList[-1].task;
               `state.ctrlList[-1].task = buf;
@@ -3989,7 +3989,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`sysivar[.iCTRL]=(int)(", "$.v.isTrue());")) ret false;
+                "`setCtrl(", "$.v.isTrue());")) ret false;
           else:
             break, default;
           }
@@ -6249,7 +6249,7 @@ public &StateBuilder
             " + (int)(`stVal.typ == .StTy::A)*51)$`trSelfState();"\r\n
             \t"}"\r\n
             \t"branch{"\r\n
-            \t"cond `sysivar[.iCTRL] != 0:"\r\n
+            \t"cond `ctrl():"\r\n
             \t\t"branch{"\r\n
             \t\t"cond `stVal.typ == .StTy::S"
             " && `trCommand("\""holddown"\"")$.v.isTrue():"\r\n
@@ -6280,7 +6280,7 @@ public &StateBuilder
             " && `trCommand("\""holdback"\"")$!.v.isTrue()):"\r\n
             \t\t\t".v.setI(0)$`trSelfState();"\r\n
             \t\t"}"\r\n
-            \t\t"if(`sysivar[.iCTRL] != 0 && `inguarddist"
+            \t\t"if(`ctrl() && `inguarddist"
             " && (`stVal.no < 120 || `stVal.no >= 160)"
             " && ((`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))"
             " || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))"
