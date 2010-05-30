@@ -4121,7 +4121,10 @@ public &StateBuilder
             break, default;
           }
         case .CtrlTy::AssertSpecial:
-          if(!.s.equ(name, "flag") && !.s.equ(name, "flag2")){
+          if(
+            !.s.equ(name, "flag")
+            && !.s.equ(name, "flag2") && !.s.equ(name, "flag3"))
+          {
             break, default;
           }
           text = .s.toLower(text);
