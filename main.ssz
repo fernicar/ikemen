@@ -38,6 +38,7 @@ const float LifebarFontScale = 1.0;
 
 const ^/char system = "\""script/main.macro"\"";
 const ^/char fight = "\""data/fight.def"\"";
+const ^/char debugfont = "\""font/jg.fnt"\"";
 
 lib sdl = <alpha/sdlplugin.ssz>;
 type k_t = |sdl.SDLKey;

@@ -110,27 +110,39 @@ lib cmd = "command.ssz";
 void game()
 {
   &.fnt.Font f;
-  f.loadFile("font/jg.fnt");
-  void drawDebug(&.chr.Char p=, float x)
+  f.loadFile(.cfg.debugfont);
+  void put(float x, float y=, ^/char txt)
+  {
+    `f.drawText(
+      x, y+=(float)`f.sizey/.com.HeightScale,
+      1.0/.com.WidthScale,  1.0/.com.HeightScale, 0, 1, txt);
+  }
+  void drawDebug()
   {:<-
-    float y = 0.0;
-    void put(float x, float y=, ^/char txt)
-    {
-      `f.drawText(
-        x, y+=(float)`f.sizey/.com.HeightScale,
-        1.0/.com.WidthScale,  1.0/.com.HeightScale, 0, 1, txt);
+    if(!.com.debugdraw) ret;
+    float pdraw(&.chr.Char p=, float x)
+    {:<-
+      float y = 0.0;
+      `put(x, y=, .s.iToS(p.stVal.time));
+      `put(x, y=, .s.iToS(p.stVal.prevno));
+      `put(x, y=, .s.iToS(p.stVal.no));
+      ret y;
     }
-    //put(x, y=, .s.iToS(#p.ani > 0 ? p.ani~ani.time : -1));
-    //put(x, y=, .s.iToS(#p.ani > 0 ? p.ani~ani.current : -1));
-    //put(x, y=, .s.iToS(.chr.v.setI(0)$p.trHelper()$(#.chr.c > 0 ? .chr.c~helperid : -1)));
-    //put(x, y=, .s.iToS(.chr.v.setI(1705)$p.trNumHelper()$.chr.v.toInt()));
-    //put(x, y=, .s.iToS(.chr.v.setI(10000)$p.trHelper()$(#.chr.c > 0 ? .chr.c~stVal.hb.damage : -1)));
-    //put(x, y=, .s.iToS(p.stVal.time));
-    //put(x, y=, .s.iToS(p.stVal.prevno));
-    //put(x, y=, .s.iToS(p.stVal.no));
-    //put(x, y=, .s.iToS(.chr.super));
-    //put(x, y=, .s.iToS((long)(p.sysfvar[.chr.fY]*1000.0)));
-    //put(x, y=, .s.iToS((long)(p.sysfvar[.chr.fVY]*1000.0)));
+    float y = 48.0;
+    if(#.chr.chars[0] > 0) y=.m.max!float?(y,pdraw(.chr.chars[0][0]<>=,0.0));
+    if(#.chr.chars[2] > 0) y=.m.max!float?(y,pdraw(.chr.chars[2][0]<>=,80.0));
+    if(#.chr.chars[1] > 0) y=.m.max!float?(y,pdraw(.chr.chars[1][0]<>=,160.0));
+    if(#.chr.chars[3] > 0) y=.m.max!float?(y,pdraw(.chr.chars[3][0]<>=,240.0));
+    if(#.com.clipboardText > 40){
+      ^%char tmp = .com.clipboardText[#.com.clipboardText-40..-1];
+      .com.clipboardText.new(0);
+      .s.append!%char?(.com.clipboardText=, tmp);
+    }
+    loop{index i = 0; while; do:
+      `put(0.0, y=, .com.clipboardText[i]);
+      i++;
+    while i < #.com.clipboardText:
+    }
   }
   loop{
     ^&.stage.Stage stg;
@@ -163,12 +175,15 @@ void game()
     .com.com = share~com;
     .cmd.net = share~net;
     .cmd.replay = share~rep;
+    .com.debugdraw = share~dbgdw;
     .com.clsndraw = share~clsndw;
     .com.powershare = share~powsh;
     .com.autolevel = share~alvl;
-    .se.eventKeys.new(1);
+    .se.eventKeys.new(2);
     .se.eventKeys[0].key = .sdl.SDLKey::c;
     .se.eventKeys[0].ctrl = true;
+    .se.eventKeys[1].key = .sdl.SDLKey::d;
+    .se.eventKeys[1].ctrl = true;
     .cmd.synchronize();
     .wm.init();
     ^int level;
@@ -282,6 +297,7 @@ void game()
     float newx = x, newy = y, tmp;
   do:
     if(.se.eventKeys[0].down) .com.clsndraw!!;
+    if(.se.eventKeys[1].down) .com.debugdraw!!;
     if(.chr.roundOver()) branch{
       .com.round++;
       loop{index i = 0; while; do:
@@ -407,10 +423,7 @@ void game()
     }
     if(.se.fskip) while;
     .chr.draw(stg<>=, x, y, scl);
-    if(#.chr.chars[0] > 0) drawDebug(.chr.chars[0][0]<>=, 0.0);
-    if(#.chr.chars[2] > 0) drawDebug(.chr.chars[2][0]<>=, 80.0);
-    if(#.chr.chars[1] > 0) drawDebug(.chr.chars[1][0]<>=, 160.0);
-    if(#.chr.chars[3] > 0) drawDebug(.chr.chars[3][0]<>=, 240.0);
+    drawDebug();
     .sdl.screen.flip();
   while !.se.esc && .cmd.update():
     if(.se.esc) .mes.SetSharedString(:"esc":);
@@ -422,6 +435,7 @@ void game()
     share~chr_p2w = .com.p2wins;
     share~chr_drw = .com.draws;
     share~stt = stagetime;
+    share~dbgdw = .com.debugdraw;
     share~clsndw = .com.clsndraw;
     oldshare.copyToRef!&.sha.Share?(share=);
   }

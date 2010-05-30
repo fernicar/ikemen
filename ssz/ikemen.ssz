@@ -487,6 +487,7 @@ int game()
     .mes.SetSharedString(:ss:);
     bool b = .ssz.run("ssz/fighting.ssz");
     .sdl.shareScreen();
+    .com.debugdraw = share~dbgdw;
     .com.clsndraw = share~clsndw;
     bool w1 = share~chr_p1w >= share~chr_p1mw;
     bool w2 = share~chr_p2w >= share~chr_p2mw;
@@ -590,6 +591,7 @@ int game()
     share~com = .com.com;
     share~net = .cmd.net;
     share~rep = .cmd.replay;
+    share~dbgdw = .com.debugdraw;
     share~clsndw = .com.clsndraw;
     share~powsh = .com.powershare;
     share~alvl = .com.autolevel;

@@ -3524,10 +3524,14 @@ public &StateBuilder
             "int ch=-1;float p=0.0;^float x=`sysfvar[.fX...fX+1];";
         cond .s.equ(s, "displaytoclipboard"):
           `state.ctrlList[-1].typ = .CtrlTy::DisplayToClipboard;
+          `state.ctrlList[-1].task .=
+            "^/char text;%&.Var vars;.com.clipboardText.new(0);";
         cond .s.equ(s, "appendtoclipboard"):
           `state.ctrlList[-1].typ = .CtrlTy::AppendToClipboard;
+          `state.ctrlList[-1].task .= "^/char text;%&.Var vars;";
         cond .s.equ(s, "clearclipboard"):
           `state.ctrlList[-1].typ = .CtrlTy::ClearClipboard;
+          `state.ctrlList[-1].task .= ".com.clipboardText.new(0);";
         cond .s.equ(s, "forcefeedback"):
           `state.ctrlList[-1].typ = .CtrlTy::ForceFeedback;
         cond .s.equ(s, "null"):
@@ -5616,15 +5620,11 @@ public &StateBuilder
             }
           cond .s.equ(name, "mul"):
             `state.ctrlList[-1].task .= pf .= "mulr=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toFloat()/256.0;";
             if(.s.equ(",")<, `tokenizer(text=)){
               `state.ctrlList[-1].task .= pf .= "mulg=";
-              if(
-                !`expression(
-                  `state.ctrlList[-1].task=, text=)) ret false;
+              if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
               `state.ctrlList[-1].task .= "$.v.toFloat()/256.0;";
               if(.s.equ(",")<, `tokenizer(text=)){
                 `state.ctrlList[-1].task .= pf;
@@ -5636,21 +5636,15 @@ public &StateBuilder
             }
           cond .s.equ(name, "sinadd"):
             `state.ctrlList[-1].task .= pf .= "amplr=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toInt();";
             if(.s.equ(",")<, `tokenizer(text=)){
               `state.ctrlList[-1].task .= pf .= "amplg=";
-              if(
-                !`expression(
-                  `state.ctrlList[-1].task=, text=)) ret false;
+              if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
               `state.ctrlList[-1].task .= "$.v.toInt();";
               if(.s.equ(",")<, `tokenizer(text=)){
                 `state.ctrlList[-1].task .= pf .= "amplb=";
-                if(
-                  !`expression(
-                    `state.ctrlList[-1].task=, text=)) ret false;
+                if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
                 `state.ctrlList[-1].task .= "$.v.toInt();";
                 if(.s.equ(",")<, `tokenizer(text=)){
                   `state.ctrlList[-1].task .= pf;
@@ -5726,9 +5720,7 @@ public &StateBuilder
                 "e~ontop=(int)(", "$!.v.isTrue());")) ret false;
           cond .s.equ(name, "pos"):
             `state.ctrlList[-1].task .= "e~offsetx=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toFloat();";
             if(.s.equ(",")<, `tokenizer(text=)){
               if(
@@ -5738,9 +5730,7 @@ public &StateBuilder
             }
           cond .s.equ(name, "random"):
             `state.ctrlList[-1].task .= "rx=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toFloat();";
             if(.s.equ(",")<, `tokenizer(text=)){
               if(
@@ -5761,10 +5751,30 @@ public &StateBuilder
           else:
             break, default;
           }
+        case .CtrlTy::DisplayToClipboard, .CtrlTy::AppendToClipboard:
+          branch{
+          cond .s.equ(name, "text"):
+            branch{
+            cond #text > 0 && text[0] == '"':
+              text = text[1...s.find(\", text[1..-1])+1];
+            else:
+              if(.s.find(\", text) >= 0){
+                `lasterror = \""が含まれています";
+                ret false;
+              }
+            }
+            `state.ctrlList[-1].task .= "text="\" .= text .= \"";";
+          cond .s.equ(name, "params"):
+            loop{do:
+              `state.ctrlList[-1].task .= "vars.new[-1]=";
+              if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
+              `state.ctrlList[-1].task .= "$.v;";
+            while .s.equ(",")<, `tokenizer(text=):
+            }
+          else:
+            break, default;
+          }
         case .CtrlTy::MakeDust:
-        case .CtrlTy::DisplayToClipboard:
-        case .CtrlTy::AppendToClipboard:
-        case .CtrlTy::ClearClipboard:
         case .CtrlTy::ForceFeedback:
         case .CtrlTy::Null:
         default:
@@ -6193,6 +6203,8 @@ public &StateBuilder
             dbuf .= "`aimg.setupPalfx();";
           case .CtrlTy::EnvShake:
             dbuf .= ".stage.envShake.setDefPhase();";
+          case .CtrlTy::DisplayToClipboard, .CtrlTy::AppendToClipboard:
+            dbuf .= ".appendToClipboard(text, vars);";
           }
           branch{
           cond #dbuf > 64:

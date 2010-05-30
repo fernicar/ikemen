@@ -16,6 +16,11 @@ lib mes = <alpha/mesdialog.ssz>;
 //Simulでのパワーの共有フラグ
 public bool powershare = true;
 
+//デバッグ表示フラグ
+public bool debugdraw = false;
+
+public %%char clipboardText;
+
 //コリジョン表示フラグ
 public bool clsndraw = false;
 

@@ -13,6 +13,7 @@ lib cfg = "config.ssz";
 lib snd = "sound.ssz";
 lib fgt = "fight.ssz";
 lib act = "action.ssz";
+lib mes = <alpha/mesdialog.ssz>;
 
 
 int changeStateNest = 0;
@@ -520,6 +521,54 @@ public &Var
 }
 public &Var v;//work
 public ^&Char c;//work
+
+void appendToClipboard(^/char text, ^&.Var vars)
+{
+  loop{
+    index i = 0, vi = 0;
+    .com.clipboardText.new[-1];
+    ^%char line = .com.clipboardText[#.com.clipboardText-1..-1];
+    while;
+  do:
+    switch(text[i]){
+    case '%':
+      switch(text[++i]){
+      case '%':
+        line<> .= '%';
+      case 'd':
+        if(#vars > 0) line<> .= .s.iToS(vars[vi++].toInt());
+      case 'f':
+        if(#vars > 0){
+          ^char tmp;
+          .mes.DoubleToStr(:tmp=, vars[vi++].toFloat():);
+          line<> .= tmp;
+        }
+      default:
+        line<> .= '%' .= text[i];
+      }
+    case '\\':
+      switch(text[++i]){
+      case '\\':
+        line<> .= '\\';
+      case 'n':
+        .com.clipboardText.new[-1];
+        line = .com.clipboardText[#.com.clipboardText-1..-1];
+      case 't':
+        loop{index j = 0, n = 8 - #line<>%8; do:
+          line<> .= ' ';
+          j++;
+        while j < n:
+        }
+      default:
+        line<> .= '\\' .= text[i];
+      }
+    default:
+      line<> .= text[i];
+    }
+    i++;
+  while i < #text:
+  }
+}
 
 |StTy
 {
