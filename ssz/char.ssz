@@ -2850,6 +2850,7 @@ public &Char
         if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
         `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       }
+      if(`cs1tmp < 0) `cs1tmp = 0;
       `minus = 0;
       `state(::);
     break:
@@ -3237,7 +3238,7 @@ public &Char
   }
   public bool ctrl()
   {
-    ret `sysivar[.iCTRL] != 0;
+    ret `sysivar[.iCTRL] != 0 && `cs1tmp >= 0;
   }
   public void setCtrl(bool c)
   {
@@ -3960,8 +3961,10 @@ public &Char
   }
   public void changeState2()
   {
-    if(`cs1tmp != 0) `state(::);
-    `cs1tmp = 0;
+    if(`cs1tmp > 0){
+      `state(::);
+      `cs1tmp = `minus == -1 ? -1 : 0;
+    }
   }
   public void trChangeState(int p)
   {
