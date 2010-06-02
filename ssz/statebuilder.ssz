@@ -5818,7 +5818,10 @@ public &StateBuilder
       `stnoList .= `state.no;
       `state.clear();
       i++;
-      if(.s.equ(fn[0..4], "ssz/") && .s.equ(lines[i], "SSZ_CODE:")){
+      if(
+        .s.equ(fn[0..4], "ssz/") && .s.find("..", fn) < 0
+        && .s.equ(lines[i], "SSZ_CODE:"))
+      {
         i++;
         loop{
           ^/char tmp;
