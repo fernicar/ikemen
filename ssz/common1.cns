@@ -1,0 +1,2491 @@
+
+[Statedef 0]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(
+      (`animno != 0 && `animno != 5)
+      || (`animno == 5 && `trAnimTime()$.v.toInt() == 0))
+    {
+      `trChangeAnim(0);
+    }
+    if(`stVal.time == 0){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `setYV(0.0);
+    }
+    if(`sysfvar[.fVX] < 2.0 || `stVal.time == 4){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = 0.0;
+    }
+    if(`sysivar[.iLIFE] <= 0){
+      .v.setI(5050)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 10]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0) `sysfvar[.fVX] *= 0.75;
+    if(`trAnimTime()$.v.toInt() == 0){
+      .v.setI(11)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::C;
+  `stVal.mov = .MovTy::I;
+  `trChangeAnim(10);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 11]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`animno == 5 && `trAnimTime()$.v.toInt() == 0) `trChangeAnim(11);
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::C;
+  `stVal.mov = .MovTy::I;
+  `trChangeAnim(11);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 12]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`trAnimTime()$.v.toInt() == 0){
+      .v.setI(0)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
+  `stVal.mov = .MovTy::I;
+  `trChangeAnim(12);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 20]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`trCommand("holdfwd")$.v.isTrue()){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = `sysfvar[.fWALK_FWD];
+    }
+    if(`trCommand("holdback")$.v.isTrue()){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = `sysfvar[.fWALK_BACK];
+    }
+    if(
+      `sysfvar[.fVX] > 0.0 && (
+        (`animno != 20 && `animno != 5)
+        || (`animno == 5 && `trAnimTime()$.v.toInt() == 0)))
+    {
+      `trChangeAnim(20);
+    }
+    if(
+      `sysfvar[.fVX] < 0.0 && (
+        (`animno != 21 && `animno != 5)
+        || (`animno == 5 && `trAnimTime()$.v.toInt() == 0)))
+    {
+      `trChangeAnim(21);
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 40]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0) `sysivar[1] = 0;
+    if(`trCommand("holdfwd")$.v.isTrue()) `sysivar[1] = 1;
+    if(`trCommand("holdback")$.v.isTrue()) `sysivar[1] = -1;
+    if(`trAnimTime()$.v.toInt() == 0){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      branch{
+      cond `stVal.prevno == 100 && `sysivar[1] == 1:
+        `sysfvar[.fVX] = `sysfvar[.fRUNJUMP_FWDX];
+      else:
+        `sysfvar[.fVX] =
+          `sysivar[1] == 0 ? `sysfvar[.fJUMP_NEUX] : (
+            `sysivar[1] == 1 ? `sysfvar[.fJUMP_FWD] : `sysfvar[.fJUMP_BACK]);
+      }
+      `setYV(`sysfvar[.fJUMP_NEUY]);
+      `setCtrl(true);
+      .v.setI(50)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
+  `stVal.mov = .MovTy::I;
+  `trChangeAnim(40);
+  `setCtrl(false);
+  `sprpriority = 1;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 45]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    branch{
+    cond #`getAction(44) > 0:
+      `trChangeAnim(44);
+    else:
+      `trChangeAnim(41);
+    }
+    if(`stVal.time == 0) `sysivar[1] = 0;
+    if(`trCommand("holdfwd")$.v.isTrue()) `sysivar[1] = 1;
+    if(`trCommand("holdback")$.v.isTrue()) `sysivar[1] = -1;
+    if(`stVal.time == 2){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] =
+        `sysivar[1] == 0 ? `sysfvar[.fAIRJUMP_NEUX] : (
+          `sysivar[1] == 1
+          ? `sysfvar[.fAIRJUMP_FWD] : `sysfvar[.fAIRJUMP_BACK]);
+      `setYV(`sysfvar[.fAIRJUMP_NEUY]);
+      `setCtrl(true);
+      .v.setI(50)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `setCtrl(false);
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 50]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      `sysivar[1] = 0;
+      `trChangeAnim(
+        `sysfvar[.fVX] == 0.0 ? 41 : (`sysfvar[.fVX] > 0.0 ? 42 : 43));
+    }
+    if(
+      --`stVal.ps[0].p <= 0
+      && `sysfvar[.fVX] > -2.0 && #`getAction(`animno + 3) > 0)
+    {
+      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `trChangeAnim(`animno + 3);
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::A;
+  `stVal.mov = .MovTy::I;
+  `stVal.ps.new(1);
+  `stVal.ps[0].p = 0;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 51]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()) `stVal.time++;
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::A;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 52]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    switch(`stVal.time){
+    case 0:
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `setYV(0.0);
+      `sysfvar[.fY] = 0.0;
+    case 3:
+      `setCtrl(true);
+    }
+    if(`trAnimTime()$.v.toInt() == 0){
+      `setCtrl(true);
+      .v.setI(0)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
+  `stVal.mov = .MovTy::I;
+  `setCtrl(false);
+  `trChangeAnim(47);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 100]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    `sysivar[.iBINDTIME] = .com.IERR;
+    `sysfvar[.fVX] = `sysfvar[.fRUN_FWDX];
+    `sysivar[.iSPECIALFLAG] |= .lsNOWALK | .lsNOAUTOTURN;
+    if(`trCommand("holdfwd")$!.v.isTrue()){
+      .v.setI(0)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
+  `stVal.mov = .MovTy::I;
+  `trChangeAnim(100);
+  `sprpriority = 1;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 105]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    switch(`stVal.time){
+    case 0:
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = `sysfvar[.fRUN_BACKX];
+      `setYV(`sysfvar[.fRUN_BACKY]);
+    case 2:
+      `setCtrl(true);
+    }
+    if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0){
+      .v.setI(106)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::A;
+  `stVal.mov = .MovTy::I;
+  `setCtrl(false);
+  `trChangeAnim(105);
+  `sprpriority = 1;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 106]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    switch(`stVal.time){
+    case 0:
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `setYV(0.0);
+      `sysfvar[.fY] = 0.0;
+    case 2:
+      //MakeDust
+    case 7:
+      `setCtrl(true);
+      .v.setI(0)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
+  `stVal.mov = .MovTy::I;
+  `setCtrl(false);
+  `trChangeAnim(47);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 110]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      `setCtrl(false);
+      `trChangeAnim(110);
+      `stVal.hb.hitf1 = 9351;
+      `stVal.hb.hitt1 = 30;
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = 0.0;
+    }
+    if(`trAnimTime()$.v.toInt() == 0){
+      `setCtrl(true);
+      .v.setI(0)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 115]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      `setCtrl(false);
+      `trChangeAnim(110);
+      `stVal.hb.hitf1 = 9351;
+      `stVal.hb.hitt1 = 30;
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = 0.0;
+    }
+    if(`trAnimTime()$.v.toInt() == 0){
+      `setCtrl(true);
+      .v.setI(0)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 120]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      `trChangeAnim(
+        120 + (int)(`stVal.typ == .StTy::C) + (int)(`stVal.typ == .StTy::A)*2);
+      switch(`stVal.typ){
+      case .StTy::S:
+        `stVal.phy = .StTy::S;
+      case .StTy::C:
+        `stVal.phy = .StTy::C;
+      case .StTy::A:
+        `stVal.phy = .StTy::A;
+      }
+    }
+    switch(`stVal.typ){
+    case .StTy::S:
+      if(`trCommand("holddown")$.v.isTrue()){
+        `stVal.typ = .StTy::C;
+        `stVal.phy = .StTy::C;
+      }
+    case .StTy::C:
+      if(`trCommand("holddown")$!.v.isTrue()){
+        `stVal.typ = .StTy::S;
+        `stVal.phy = .StTy::S;
+      }
+    }
+    if(`trAnimTime()$.v.toInt() == 0){
+      .v.setI(
+        130 + (int)(`stVal.typ == .StTy::C) + (int)(`stVal.typ == .StTy::A)*2);
+      `trChangeState(@@);
+      ret;
+    }
+    if(`trCommand("holdback")$!.v.isTrue() || !`inguarddist){
+      .v.setI(140)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 130]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`animno != 130) `trChangeAnim(130);
+    if(`trCommand("holddown")$.v.isTrue()){
+      .v.setI(131)$`trChangeState(@@);
+      ret;
+    }
+    if(`trCommand("holdback")$!.v.isTrue() || !`inguarddist){
+      .v.setI(140)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 131]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`animno != 131) `trChangeAnim(131);
+    if(`trCommand("holddown")$!.v.isTrue()){
+      .v.setI(130)$`trChangeState(@@);
+      ret;
+    }
+    if(`trCommand("holdback")$!.v.isTrue() || !`inguarddist){
+      .v.setI(140)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::C;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 132]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`animno != 132) `trChangeAnim(132);
+    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    `sysivar[0] = (int)(`sysfvar[.fY] >= 0.0 && `sysfvar[.fVY] > 0.0);
+    if(`sysivar[0] != 0){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `setYV(0.0);
+      `sysfvar[.fY] = 0.0;
+      if(`trCommand("holdback")$.v.isTrue() && `inguarddist){
+        .v.setI(130)$`trChangeState(@@);
+        ret;
+      }
+      .v.setI(52)$`trChangeState(@@);
+      ret;
+    }
+    if(`trCommand("holdback")$!.v.isTrue() || !`inguarddist){
+      .v.setI(140)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 140]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      `trChangeAnim(
+        140 + (int)(`stVal.typ == .StTy::C) + (int)(`stVal.typ == .StTy::A)*2);
+      switch(`stVal.typ){
+      case .StTy::S:
+        `stVal.phy = .StTy::S;
+      case .StTy::C:
+        `stVal.phy = .StTy::C;
+      case .StTy::A:
+        `stVal.phy = .StTy::A;
+      }
+    }
+    switch(`stVal.typ){
+    case .StTy::S:
+      if(`trCommand("holddown")$.v.isTrue()){
+        `stVal.typ = .StTy::C;
+        `stVal.phy = .StTy::C;
+      }
+    case .StTy::C:
+      if(`trCommand("holddown")$!.v.isTrue()){
+        `stVal.typ = .StTy::S;
+        `stVal.phy = .StTy::S;
+      }
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.mov = .MovTy::I;
+  `setCtrl(true);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 150]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    `trChangeAnim(150);
+    if(`trHitShakeOver()$.v.isTrue()){
+      .v.setI(151 + `trCommand("holddown")$(.v.toInt()*2));
+      `trChangeState(@@);
+      ret;
+    }
+    switch(`stVal.typ){
+    case .StTy::S:
+      if(`trCommand("holddown")$.v.isTrue()){
+        `stVal.typ = .StTy::C;
+        `stVal.phy = .StTy::C;
+      }
+    case .StTy::C:
+      if(`trCommand("holddown")$!.v.isTrue()){
+        `stVal.typ = .StTy::S;
+        `stVal.phy = .StTy::S;
+      }
+    }
+    if(`stVal.time == 0){
+      //ForceFeedback
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 151]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0) `trHitVelSetX();
+    if(`stVal.time == `stVal.hb.slidetime || `stVal.hb.hittime <= 0){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = 0.0;
+    }
+    if(`stVal.time == `stVal.hb.ctrltime) `setCtrl(true);
+    switch(`stVal.typ){
+    case .StTy::S:
+      if(`trCommand("holddown")$.v.isTrue()){
+        `stVal.typ = .StTy::C;
+        `stVal.phy = .StTy::C;
+      }
+    case .StTy::C:
+      if(`trCommand("holddown")$!.v.isTrue()){
+        `stVal.typ = .StTy::S;
+        `stVal.phy = .StTy::S;
+      }
+    }
+    if(`stVal.hb.hittime <= 0){
+      `setCtrl(true);
+      .v.setI(130)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
+  `stVal.mov = .MovTy::H;
+  `trChangeAnim(150);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 152]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    `trChangeAnim(151);
+    if(`trHitShakeOver()$.v.isTrue()){
+      .v.setI(151 + `trCommand("holddown")$(.v.toInt()*2));
+      `trChangeState(@@);
+      ret;
+    }
+    switch(`stVal.typ){
+    case .StTy::S:
+      if(`trCommand("holddown")$.v.isTrue()){
+        `stVal.typ = .StTy::C;
+        `stVal.phy = .StTy::C;
+      }
+    case .StTy::C:
+      if(`trCommand("holddown")$!.v.isTrue()){
+        `stVal.typ = .StTy::S;
+        `stVal.phy = .StTy::S;
+      }
+    }
+    if(`stVal.time == 0){
+      //ForceFeedback
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 153]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0) `trHitVelSetX();
+    if(`stVal.time == `stVal.hb.slidetime || `stVal.hb.hittime <= 0){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = 0.0;
+    }
+    if(`stVal.time == `stVal.hb.ctrltime) `setCtrl(true);
+    switch(`stVal.typ){
+    case .StTy::S:
+      if(`trCommand("holddown")$.v.isTrue()){
+        `stVal.typ = .StTy::C;
+        `stVal.phy = .StTy::C;
+      }
+    case .StTy::C:
+      if(`trCommand("holddown")$!.v.isTrue()){
+        `stVal.typ = .StTy::S;
+        `stVal.phy = .StTy::S;
+      }
+    }
+    if(`stVal.hb.hittime <= 0){
+      `setCtrl(true);
+      .v.setI(131)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::C;
+  `stVal.mov = .MovTy::H;
+  `trChangeAnim(151);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 154]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    `trChangeAnim(152);
+    if(`trHitShakeOver()$.v.isTrue()){
+      .v.setI(155)$`trChangeState(@@);
+      ret;
+    }
+    if(`stVal.time == 0){
+      //ForceFeedback
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 155]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      `trHitVelSetX();
+      `trHitVelSetY();
+    }
+    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    if(`stVal.time == `stVal.hb.ctrltime) `setCtrl(true);
+    `sysivar[0] = (int)(`sysfvar[.fY] >= 0.0 && `sysfvar[.fVY] > 0.0);
+    if(`sysivar[0] != 0){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `setYV(0.0);
+      `sysfvar[.fY] = 0.0;
+      if(`trCommand("holdback")$.v.isTrue() && `inguarddist){
+        .v.setI(130)$`trChangeState(@@);
+        ret;
+      }
+      .v.setI(52)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `trChangeAnim(152);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 170]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    `stVal.hb.hitf1 = -8;
+    `stVal.hb.hitt1 = 1;
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `setCtrl(false);
+  `trChangeAnim(170);
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+[Statedef 175]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      if(#`getAction(175) == 0){
+        .v.setI(170)$`trChangeState(@@);
+        ret;
+      }
+      `trChangeAnim(175);
+    }
+    `stVal.hb.hitf1 = -8;
+    `stVal.hb.hitt1 = 1;
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `setCtrl(false);
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 190]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(#`getAction(190) > 0) `trChangeAnim(190);
+    if(`stVal.time == 0){
+      .v.setI(191)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `setCtrl(false);
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 191]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      .v.setI(0)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `setCtrl(false);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5000]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    branch{
+    cond `stVal.time == 0:
+      switch(`stVal.hb.animtype){
+      case 4, 5:
+        if(#`getAction(5047 + `stVal.hb.animtype) > 0){
+          `trChangeAnim(5047 + `stVal.hb.animtype);
+          break, break;
+        }
+      case 3:<-
+        `trChangeAnim(5030);
+      default:
+        `trChangeAnim(
+          (`stVal.hb.groundtype == 1 ? 5000 : 5010) + `stVal.hb.animtype);
+      }
+    cond `stVal.time > 0:
+      `trChangeAnim(`animno);
+    }
+    if(
+      (`stVal.time == 0 && (`stVal.hb.yvel != 0.0 || `stVal.hb.fallf != 0))
+      || `sysfvar[.fY] != 0.0)
+    {
+      `stVal.typ=.StTy::A;
+    }
+    if(`trHitShakeOver()$.v.isTrue()){
+      if(`stVal.hb.yvel == 0.0 && `stVal.hb.fallf == 0){
+        .v.setI(5001)$`trChangeState(@@);
+        ret;
+      }
+      .v.setI(5030)$`trChangeState(@@);
+      ret;
+    }
+    switch(`animno){
+    case 5000, 5010:
+      if(--`stVal.ps[0].p > 0) break;
+      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      //ForceFeedback
+    case 5001, 5011:
+      if(--`stVal.ps[1].p > 0) break;
+      .v.setI(0)$`trSetPersistent(`stVal.ps[1].p=);
+      //ForceFeedback
+    case 5012, 5002, 5030:
+      if(--`stVal.ps[2].p > 0) break;
+      .v.setI(0)$`trSetPersistent(`stVal.ps[2].p=);
+      //ForceFeedback
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `stVal.ps.new(3);
+  loop{index i = 0; do:
+    `stVal.ps[i].p = 0;
+  while ++i < 3:
+  }
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5001]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0) `trHitVelSetX();
+    if(`trAnimTime()$.v.toInt() == 0){
+      `trChangeAnim(
+        5005 + `stVal.hb.animtype + (int)(`stVal.hb.groundtype == 2)*10);
+    }
+    if(`stVal.time >= `stVal.hb.slidetime) `sysfvar[.fVX] *= 0.6;
+    if(`stVal.hb.hittime <= 0){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = 0.0;
+      `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
+      `setCtrl(true);
+      .v.setI(0)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
+  `stVal.mov = .MovTy::H;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5010]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    branch{
+    cond `stVal.time == 0:
+      switch(`stVal.hb.animtype){
+      case 4, 5:
+        if(#`getAction(5047 + `stVal.hb.animtype) > 0){
+          `trChangeAnim(5047 + `stVal.hb.animtype);
+          break, break;
+        }
+      case 3:<-
+        `trChangeAnim(5030);
+      default:
+        `trChangeAnim(5020 + `stVal.hb.animtype);
+      }
+    cond `stVal.time > 0:
+      `trChangeAnim(`animno);
+    }
+    if(
+      (`stVal.time == 0 && (`stVal.hb.yvel != 0.0 || `stVal.hb.fallf != 0))
+      || `sysfvar[.fY] != 0.0)
+    {
+      `stVal.typ=.StTy::A;
+    }
+    if(`trHitShakeOver()$.v.isTrue()){
+      if(`stVal.hb.yvel == 0.0 && `stVal.hb.fallf == 0){
+        .v.setI(5011)$`trChangeState(@@);
+        ret;
+      }
+      .v.setI(5030)$`trChangeState(@@);
+      ret;
+    }
+    switch(`animno){
+    case 5020:
+      if(--`stVal.ps[0].p > 0) break;
+      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      //ForceFeedback
+    case 5021:
+      if(--`stVal.ps[1].p > 0) break;
+      .v.setI(0)$`trSetPersistent(`stVal.ps[1].p=);
+      //ForceFeedback
+    case 5022:
+      if(--`stVal.ps[2].p > 0) break;
+      .v.setI(0)$`trSetPersistent(`stVal.ps[2].p=);
+      //ForceFeedback
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `stVal.ps.new(3);
+  loop{index i = 0; do:
+    `stVal.ps[i].p = 0;
+  while ++i < 3:
+  }
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5011]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0) `trHitVelSetX();
+    if(`trAnimTime()$.v.toInt() == 0) `trChangeAnim(5025 + `stVal.hb.animtype);
+    if(`stVal.time >= `stVal.hb.slidetime) `sysfvar[.fVX] *= 0.6;
+    if(`stVal.hb.hittime <= 0){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = 0.0;
+      `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
+      `setCtrl(true);
+      .v.setI(11)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::C;
+  `stVal.mov = .MovTy::H;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5020]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    branch{
+    cond `stVal.time == 0:
+      switch(`stVal.hb.animtype){
+      case 4, 5:
+        if(#`getAction(5047 + `stVal.hb.animtype) > 0){
+          `trChangeAnim(5047 + `stVal.hb.animtype);
+          break, break;
+        }
+      case 3:<-
+        `trChangeAnim(5030);
+      default:
+        `trChangeAnim(
+          (`stVal.hb.airtype == 1 ? 5000 : 5010) + `stVal.hb.animtype);
+      }
+    cond `stVal.time > 0:
+      `trChangeAnim(`animno);
+    }
+    if(`trHitShakeOver()$.v.isTrue()){
+      .v.setI(5030)$`trChangeState(@@);
+      ret;
+    }
+    switch(`animno){
+    case 5000, 5010:
+      if(--`stVal.ps[0].p > 0) break;
+      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      //ForceFeedback
+    case 5001, 5011:
+      if(--`stVal.ps[1].p > 0) break;
+      .v.setI(0)$`trSetPersistent(`stVal.ps[1].p=);
+      //ForceFeedback
+    case
+      5012, 5002, 5030, 5051, 5052, 5053, 5054, 5055, 5056, 5057, 5058, 5059
+      :
+      if(--`stVal.ps[2].p > 0) break;
+      .v.setI(0)$`trSetPersistent(`stVal.ps[2].p=);
+      //ForceFeedback
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `stVal.ps.new(3);
+  loop{index i = 0; do:
+    `stVal.ps[i].p = 0;
+  while ++i < 3:
+  }
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5030]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    if(`stVal.time == 0){
+      `trHitVelSetX();
+      `trHitVelSetY();
+    }
+    if(
+      `stVal.hb.hittime <= 0 || (
+        `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 10.0))
+    {
+      branch{
+      cond `stVal.hb.fallf == 0:
+        .v.setI(5040)$`trChangeState(@@);
+      else:
+        .v.setI(5050)$`trChangeState(@@);
+      }
+      ret;
+    }
+    if(`trAnimTime()$.v.toInt() == 0){
+      .v.setI(5035)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `setCtrl(false);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5035]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(
+      `stVal.time == 0 && #`getAction(5035) > 0
+      && !.m.inRange!int?(`animno, 5051, 5059) && `animno != 5090)
+    {
+      `trChangeAnim(5035);
+    }
+    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    if(
+      `stVal.hb.hittime <= 0 || `trAnimTime()$.v.toInt() == 0
+      || (`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 10.0)
+      || (`stVal.time == 0 && `animno != 5035))
+    {
+      branch{
+      cond `stVal.hb.fallf == 0:
+        .v.setI(5040)$`trChangeState(@@);
+      else:
+        .v.setI(5050)$`trChangeState(@@);
+      }
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5040]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`sysivar[.iLIFE] <= 0){
+      .v.setI(5050)$`trChangeState(@@);
+      ret;
+    }
+    if(
+      (`trAnimTime()$.v.toInt() == 0 && `animno != 5040)
+      || (`stVal.time == 0 && `animno != 5035))
+    {
+      `trChangeAnim(5040);
+    }
+    if(`stVal.hb.hittime <= 0){
+      `setCtrl(true);
+      `stVal.mov = .MovTy::I;
+    }
+    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0){
+      .v.setI(52)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5050]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(
+      (`trAnimTime()$.v.toInt() == 0 && `animno == 5035) || (
+        `stVal.time == 0 && `animno != 5035
+        && !.m.inRange!int?(`animno, 5051, 5059)
+        && !.m.inRange!int?(`animno, 5061, 5069) && `animno != 5090))
+    {
+      `trChangeAnim(5050);
+    }
+    if(
+      --`stVal.ps[0].p <= 0 && .m.inRange!int?(`animno, 5050, 5059)
+      && `sysfvar[.fVY] >= (`animno == 5050 ? 1.0 : -2.0)
+      && #`getAction(`animno + 10) > 0)
+    {
+      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `trChangeAnim(`animno + 10);
+    }
+    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    if(
+      `sysivar[.iLIFE] > 0 && `trCanRecover()$.v.isTrue()
+      && `trCommand("recovery")$.v.isTrue())
+    {
+      branch{
+      cond `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= -20.0:
+        .v.setI(5200)$`trChangeState(@@);
+        ret;
+      cond `sysfvar[.fVY] > -1.0:
+        .v.setI(5210)$`trChangeState(@@);
+        ret;
+      }
+    }
+    if(
+      `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= (
+          .m.inRange!int?(`animno, 5051, 5059)
+          || .m.inRange!int?(`animno, 5061, 5069) ? 0.0 : 25.0))
+    {
+      .v.setI(5100)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `stVal.ps.new(1);
+  `stVal.ps[0].p = 0;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5070]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    `trChangeAnim(5070);
+    if(`trHitShakeOver()$.v.isTrue()){
+      .v.setI(5071)$`trChangeState(@@);
+      ret;
+    }
+    if(`stVal.time == 0){
+      //ForceFeedback
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5071]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      `trHitVelSetX();
+      `trHitVelSetY();
+    }
+    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 15.0){
+      .v.setI(5110)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5080]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      `sysivar[2] = `stVal.hb.yvel == 0.0 ? 5080 : 5090;
+      if(
+        (
+          .m.inRange!int?(`animno, 5081, 5089)
+          || .m.inRange!int?(`animno, 5111, 5119))
+        && #`getAction(`sysivar[2] + `animno%10) > 0)
+      {
+        `sysivar[2] += `animno%10;
+      }
+      if(`sysivar[2] == 5090 && #`getAction(5090) == 0) `sysivar[2] = 5030;
+    }
+    `trChangeAnim(`sysivar[2]);
+    if(`trHitShakeOver()$.v.isTrue()){
+      branch{
+      cond `stVal.hb.yvel == 0.0:
+        .v.setI(5081)$`trChangeState(@@);
+      else:
+        .v.setI(5030)$`trChangeState(@@);
+      }
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5081]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      `trHitVelSetX();
+      `sysivar[0] = 1;
+    }
+    if(`stVal.hb.hittime <= 0){
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = 0.0;
+      .v.setI(5110)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::C;
+  `stVal.mov = .MovTy::H;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5100]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    switch(`stVal.time){
+    case 0:
+      `sysivar[.iBINDTIME] = .com.IERR;
+      if(`stVal.hb.fall.yvelocity == 0.0 && `sysfvar[.fVX] > 1.0){
+        `sysfvar[.fVX] = 1.0;
+      }
+      .stage.envShake.time = `stVal.hb.fall.envshake_time;
+      .stage.envShake.freq = (`stVal.hb.fall.envshake_freq / 180.0) * .m.PI;
+      .stage.envShake.ampl = `stVal.hb.fall.envshake_ampl;
+      .stage.envShake.phase = `stVal.hb.fall.envshake_phase;
+      `sysivar[1] = (int).m.floor(`sysfvar[.fVY]);
+      branch{
+      cond
+        (
+          !.m.inRange!int?(`animno, 5051, 5059)
+          && !.m.inRange!int?(`animno, 5061, 5069))
+        || #`getAction(5100 + `animno%10) == 0
+        :
+        `trChangeAnim(5100);
+      else:
+        `trChangeAnim(5100 + `animno%10);
+      }
+      `sysfvar[.fY] = 0.0;
+      `setYV(0.0);
+      `sysfvar[.fVX] *= 0.75;
+      if(`stVal.hb.fall.yvelocity == 0.0){
+        .v.setI(5110)$`trChangeState(@@);
+        ret;
+      }
+    case 1:
+      {
+        ^&.Explod e = `newExplod();
+        if(#e > 0){
+          e~sprpriority = -5;
+          e~ownpal = 1;
+          e~ani =
+            .fight~getAction(
+              60 + (int)(`sysivar[1] > 5) + (int)(`sysivar[1] > 14));
+          e~offsetx = 0.0;
+          e~offsety = 0.0;
+          e~ontop = (int)(`sysivar[1] > 14);
+          e~setPos(`=);
+          e~player=`id;
+        }
+        `playSound(
+          true, false, false, 7,
+          (int)(`sysivar[1] > 5) + (int)(`sysivar[1] > 14), -1,
+          `sysivar[.iVOLUME], 0.0, 1.0, `sysfvar[.fX...fX+1]);
+      }
+    case 3:
+      `trHitFallDamage();
+    }
+    `sysivar[.iSPECIALFLAG] |= .lsPOSFREEZEX | .lsPOSFREEZEY;
+    if(`trAnimTime()$.v.toInt() == 0){
+      .v.setI(5101)$`trChangeState(@@);
+      ret;
+    }
+    if(`stVal.time == 0){
+      //ForceFeedback
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5101]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    switch(`stVal.time){
+    case 0:
+      branch{
+      cond
+        !.m.inRange!int?(`animno, 5101, 5109)
+        || #`getAction(5160 + `animno%10) == 0
+        :
+        `trChangeAnim(5160);
+      else:
+        `trChangeAnim(5160 + `animno%10);
+      }
+      `trHitFallVel();
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fY] = 20.0;
+      `sysfvar[.fVX] *= 0.75;
+    }
+    `sysfvar[.fVY] += 0.4;
+    if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 12.0){
+      .v.setI(5110)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5110]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(
+      --`stVal.ps[0].p <= 0 && #`getAction(5110 + `animno%10) > 0
+      && .m.inRange!int?(`animno, 5081, 5089))
+    {
+      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `trChangeAnim(5110 + `animno%10);
+    }
+    if(`stVal.time == 0){
+      .stage.envShake.time = `stVal.hb.fall.envshake_time;
+      .stage.envShake.freq = (`stVal.hb.fall.envshake_freq / 180.0) * .m.PI;
+      .stage.envShake.ampl = `stVal.hb.fall.envshake_ampl;
+      .stage.envShake.phase = `stVal.hb.fall.envshake_phase;
+      if(!.m.inRange!int?(`animno, 5110, 5119)) branch{
+      cond
+        !.m.inRange!int?(`animno, 5161, 5169)
+        || #`getAction(5170 + `animno%10) == 0
+        :
+        `trChangeAnim(5170);
+      else:
+        `trChangeAnim(5170 + `animno%10);
+      }
+      `trHitFallDamage();
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fY] = 0.0;
+      if(`stVal.hb.fall.yvelocity != 0.0){
+        `sysivar[1] = (int).m.floor(`sysfvar[.fVY]);
+      }
+      if(`sysivar[0] == 0){
+        `playSound(
+          true, false, false, 7,
+          (int)(`sysivar[1] > 5) + (int)(`sysivar[1] > 14), -1,
+          `sysivar[.iVOLUME], 0.0, 1.0, `sysfvar[.fX...fX+1]);
+        ^&.Explod e = `newExplod();
+        if(#e > 0){
+          e~sprpriority = -5;
+          e~ownpal = 1;
+          e~ani =
+            .fight~getAction(
+              60 + (int)(`sysivar[1] > 5) + (int)(`sysivar[1] > 14));
+          e~offsetx = 0.0;
+          e~offsety = 0.0;
+          e~ontop = (int)(`sysivar[1] > 14);
+          e~setPos(`=);
+          e~player=`id;
+        }
+      }
+      `setYV(0.0);
+    }
+    if(
+      --`stVal.ps[1].p <= 0 && .m.inRange!int?(`animno, 5171, 5171)
+      && #`getAction(5110 + `animno%10) > 0 && (
+        `trAnimTime()$.v.toInt() == 0 || `sysivar[0] != 0))
+    {
+      .v.setI(0)$`trSetPersistent(`stVal.ps[1].p=);
+      `trChangeAnim(5110 + `animno%10);
+    }
+    if(
+      --`stVal.ps[2].p <= 0 && !.m.inRange!int?(`animno, 5111, 5119) && (
+        `trAnimTime()$.v.toInt() == 0 || `sysivar[0] != 0))
+    {
+      .v.setI(0)$`trSetPersistent(`stVal.ps[2].p=);
+      `trChangeAnim(5110);
+    }
+    if(
+      `sysivar[.iLIFE] <= 0 && (
+      `trAnimTime()$.v.toInt() == 0 || `sysivar[0] != 0
+      || .m.inRange!int?(`animno, 5110, 5119)))
+    {
+      .v.setI(5150)$`trChangeState(@@);
+      ret;
+    }
+    if(`stVal.time == 0){
+      `sysivar[0] = 0;
+      branch{
+      cond `sysivar[.iLIFE] > 0:
+        //ForceFeedback
+      else:
+        //ForceFeedback
+      }
+    }
+    `sysfvar[.fVX] *= 0.85;
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `stVal.ps.new(3);
+  loop{index i = 0; do:
+    `stVal.ps[i].p = 0;
+  while ++i < 3:
+  }
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5120]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      branch{
+      cond
+        !.m.inRange!int?(`animno, 5111, 5119)
+        || #`getAction(5120 + `animno%10) == 0
+        :
+        `trChangeAnim(5120);
+      else:
+        `trChangeAnim(5120 + `animno%10);
+      }
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = 0.0;
+    }
+    `stVal.hb.hitf1 = -8;
+    `stVal.hb.hitt1 = 1;
+    if(`trAnimTime()$.v.toInt() == 0){
+      `trHitFallSet(1, .com.FERR, .com.FERR);
+      `stVal.hb.hitf1 = -9345;
+      `stVal.hb.hitt1 = 12;
+      `stVal.hb.hitf2 = -8;
+      `stVal.hb.hitt2 = 3;
+      `setCtrl(true);
+      .v.setI(0)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5150]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0){
+      branch{
+      cond
+        (
+          !.m.inRange!int?(`animno, 5111, 5119)
+          && !.m.inRange!int?(`animno, 5171, 5179))
+        || #`getAction(5140 + `animno%10) == 0
+        :
+        if(#`getAction(5140) > 0) `trChangeAnim(5140);
+      else:
+        `trChangeAnim(5140 + `animno%10);
+      }
+      if(
+        !.m.inRange!int?(`animno, 5140, 5149)
+        && !.m.inRange!int?(`animno, 5110, 5119))
+      {
+        `trChangeAnim(5110);
+      }
+    }
+    if(
+      --`stVal.ps[0].p <= 0 && `trMatchOver()$.v.isTrue()
+      && .m.inRange!int?(`animno, 5140, 5149) && #`getAction(`animno + 10) > 0)
+    {
+      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `trChangeAnim(`animno + 10);
+    }
+    `sysfvar[.fVX] *= 0.85;
+    if(--`stVal.ps[1].p <= 0 && `sysfvar[.fVX] < 0.05){
+      .v.setI(0)$`trSetPersistent(`stVal.ps[1].p=);
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = 0.0;
+    }
+    `stVal.hb.hitf1 = -8;
+    `stVal.hb.hitt1 = 1;
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `stVal.ps.new(2);
+  loop{index i = 0; do:
+    `stVal.ps[i].p = 0;
+  while ++i < 2:
+  }
+  `sprpriority = -3;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5200]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`animno == 5035 && `trAnimTime()$.v.toInt() == 0) `trChangeAnim(5050);
+    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 10.0){
+      .v.setI(5201)$`trSelfState();
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::H;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5201]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    switch(`stVal.time){
+    case 0:
+      if(`trP2DistX()$.v.toFloat() < -5.0) `setFacing(-`facing);
+      `sysivar[.iBINDTIME] = .com.IERR;
+      `sysfvar[.fVX] = -0.15;
+      `setYV(-3.5);
+      `sysfvar[.fY] = 0.0;
+      {
+        ^&.com.PalFX fx = `getPalfx();
+        fx~clear();
+        fx~time = 3;
+        fx~addr = 128;
+        fx~addg = 128;
+        fx~addb = 128;
+      }
+    case 1:
+      {
+        ^&.Explod e = `newExplod();
+        if(#e > 0){
+          e~sprpriority = -5;
+          e~ownpal = 1;
+          e~ani = .fight~getAction(60);
+          e~offsetx = 0.0;
+          e~offsety = 0.0;
+          e~ontop = 0;
+          e~setPos(`=);
+          e~player=`id;
+        }
+      }
+    }
+    `stVal.hb.hitf1 = -8;
+    `stVal.hb.hitt1 = 1;
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret true;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::A;
+  `stVal.mov = .MovTy::H;
+  `trChangeAnim(5200);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5210]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    switch(`stVal.time){
+    case 0:
+      {
+        ^&.com.PalFX fx = `getPalfx();
+        fx~clear();
+        fx~time = 3;
+        fx~addr = 128;
+        fx~addg = 128;
+        fx~addb = 128;
+      }
+      `sysivar[.iSPECIALFLAG] |= .lsPOSFREEZEX | .lsPOSFREEZEY;
+      if(`trP2DistX()$.v.toFloat() < -20.0) `setFacing(-`facing);
+      `stVal.hb.hitf1 = -8;
+      `stVal.hb.hitt1 = 15;
+    case 4:
+      `sysfvar[.fVX] *= 0.8;
+      `sysfvar[.fVY] *= 0.8;
+      `sysfvar[.fVY] += -4.5;
+      if(`sysfvar[.fVY] > 0.0) `sysfvar[.fVY] *= 0.5;
+      if(`sysfvar[.fVY] > -3.0) `sysfvar[.fVY] += -2.0;
+      if(`sysfvar[.fVY] > -2.0) `sysfvar[.fVY] += -1.0;
+      if(`trCommand("holdup")$.v.isTrue()) `sysfvar[.fVY] += -2.0;
+      if(`trCommand("holddown")$.v.isTrue()) `sysfvar[.fVY] += 1.5;
+      if(`trCommand("holdback")$.v.isTrue()) `sysfvar[.fVX] += -1.0;
+    case 20:
+      `setCtrl(true);
+    }
+    if(`stVal.time >= 4) `sysfvar[.fVY] += 0.35;
+    if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0){
+      `setCtrl(true);
+      .v.setI(52)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `trChangeAnim(5210);
+  `setCtrl(false);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5500]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(`stVal.time == 0 && #`getAction(5500) > 0) `trChangeAnim(5500);
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `setCtrl(false);
+  `trChangeAnim(5300);
+  `sysivar[.iBINDTIME] = .com.IERR;
+  `sysfvar[.fVX] = 0.0;
+  `setYV(0.0);
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+
+
+[Statedef 5900]
+SSZ_CODE:
+void c.Char::s##_@@P()
+{
+  if(!`isHitPaused()){
+    if(.com.rexisted[`playerno&1] == 0){
+      `rangeSetIVar(0, 59, 0);
+      `rangeSetFVar(0, 39, 0.0);
+    }
+    if(.com.round == 1){
+      .v.setI(190)$`trChangeState(@@);
+      ret;
+    }
+    `stVal.time++;
+  }
+}
+bool c.Char::s##_@@PIsH()
+{
+  ret false;
+}
+void c.Char::s##_@@PInit()
+{
+  `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
+  `stVal.mov = .MovTy::I;
+  `sprpriority = 0;
+  `clearHitCount();
+  `clearHitDef();
+  `stVal.mctime = 0;
+  `stVal.juggle = 0;
+}
+

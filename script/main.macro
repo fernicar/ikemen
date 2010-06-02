@@ -4,13 +4,13 @@
 
 ############################################################
 sysSff#newSff
-#`| load | data/system.sff #sysSff
+#`| load | script/system.sff #sysSff
 
 sysSnd#newSnd
-#`| load | data/system.snd #sysSnd
+#`| load | script/system.snd #sysSnd
 
 jgFnt#newFont
-#`| load | font/jg.fnt #jgFnt
+#`| load | data/gms_lifebar/font2.fnt #jgFnt
 
 #`sound/Offenbach-Orpheus-in-the-Underworld.mp3#=bgm#playBGM
 
@@ -77,7 +77,7 @@ p1SelTmTxt#newTextImg
 %| setFont  | jgFnt
 %| setBank  | 0
 %| setAlign | 1
-%| setText  | Select team mode
+%| setText  | Team Mode
 %| setPos   | 20 | 30
 %#\p1SelTmTxt#each
 
@@ -171,7 +171,7 @@ p1TmIcon#newAnim
       #echo
     #}
     %#\p1TmIcon#each
-  #`%| setPos | 10 | #{50+15*#p1TeamMode#expr#}
+  #`%| setPos | 10 | #{47+15*#p1TeamMode#expr#}
     %| update
     %| draw
     %#\p1TmCursor#each
@@ -192,7 +192,7 @@ p2SelTmTxt#newTextImg
 %| setFont  | jgFnt
 %| setBank  | 0
 %| setAlign | -1
-%| setText  | Select team mode
+%| setText  | Team Mode
 %| setPos   | 300 | 30
 %#\p2SelTmTxt#each
 
@@ -286,7 +286,7 @@ p2TmIcon#newAnim
       #echo
     #}
     %#\p2TmIcon#each
-  #`%| setPos | 310 | #{50+15*#p2TeamMode#expr#}
+  #`%| setPos | 310 | #{47+15*#p2TeamMode#expr#}
     %| update
     %| draw
     %#\p2TmCursor#each
@@ -311,7 +311,7 @@ p1Cursor#newAnim
 p1NameTxt#newTextImg
 #`#;
 %| setFont  | jgFnt
-%| setBank  | 4
+%| setBank  | 0
 %| setAlign | 1
 %| setScale | 0.5 | 0.5
 %#\p1NameTxt#each
@@ -379,7 +379,7 @@ p2Cursor#newAnim
 p2NameTxt#newTextImg
 #`#;
 %| setFont  | jgFnt
-%| setBank  | 1
+%| setBank  | 0
 %| setAlign | -1
 %| setScale | 0.5 | 0.5
 %#\p2NameTxt#each
@@ -507,11 +507,11 @@ selBox2#newAnim
 
 #`& bgSub &
 #[
-  #`%| addPos | -1 | -1
+  #`%| addPos | 1 | 1
     %| update
     %| draw
     %#\selBG#each
-  #`%| addPos | -1 | 0
+  #`%| addPos | 1 | 0
     %| update
     %| draw
     %#\selBox#each
@@ -688,7 +688,7 @@ inputdia#newInputDialog
     #`| draw #netplay
     #`| draw #portChange
     #`| draw #replay
-    #`%| setPos | 95 | 80 + 20*#gameMode#,
+    #`%| setPos | 95 | 77 + 20*#gameMode#,
       %| update
       %| draw
       %#\p1TmCursor#each

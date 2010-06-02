@@ -95,7 +95,8 @@ public void readSpr(&.sff.Anim!&.bg.Frame? a=, ^/char data)
 
 public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
 {
-  ^&.bg.Action act = al.getAction(.s.sToN!int?(data));
+  ^int ary = .s.svToAry!int?(",", data);
+  ^&.bg.Action act = al.getAction(ary<>);
   if(#act == 0) ret;
   a.setFrames(act~frames, act~loopstart, act~nrepeat);
   a.mask = 0;

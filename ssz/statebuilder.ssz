@@ -5818,6 +5818,19 @@ public &StateBuilder
       `stnoList .= `state.no;
       `state.clear();
       i++;
+      if(.s.equ(lines[i], "SSZ_CODE:")){
+        i++;
+        loop{
+          ^/char tmp;
+          while;
+        do:
+          tmp = .s.join(.s.iToS(`state.no))<, .s.split("##", lines[i]);
+          buf .= .s.join(.s.iToS(`playerno))<, .s.split("@@", tmp) .= \r\n;
+          i++;
+        while #lines[i] <= 0 || lines[i][0] != '[' && i < #lines:
+        }
+        break, while;
+      }
       if(!`parse!`stateBulid:<-statedef?(lines, i=, "")){
         .errmes(fn, lines[i], i, `lasterror);
         ret false;
@@ -5838,7 +5851,7 @@ public &StateBuilder
         buf .=
           "void c.Char::" .= fname .= "()"\r\n
           "{"\r\n
-          \t"bool nh = `sysivar[.iHITPAUSETIME] <= 0;"\r\n
+          \t"bool nh = !`isHitPaused();"\r\n
           \t"byte ih;"\r\n;
         while;
       do:
@@ -6333,12 +6346,7 @@ public &StateBuilder
             && `state.phy != .chr.StTy::U
             && `state.phy != .chr.StTy::A)
           {
-            buf .=
-              \t"if(`stVal.typ == .StTy::A || `stVal.typ == .StTy::L"
-              " || `stVal.phy == .StTy::A){"\r\n
-              \t\t"if(`sysfvar[.fY] > 0.0) `sysfvar[.fY] = 0.0;"\r\n
-              \t\t"`setYV(0.0);"\r\n
-              \t"}"\r\n;
+            buf .= \t"`ifAlaSetVyZero();"\r\n;
           }
           switch(`state.typ){
           case .chr.StTy::S:

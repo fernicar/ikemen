@@ -3226,6 +3226,15 @@ public &Char
     sou~freqmul = fr;
     sou~fidx = 0.0;
   }
+  void ifAlaSetVyZero()
+  {
+    if(
+      `stVal.typ == .StTy::A
+      || `stVal.typ == .StTy::L || `stVal.phy == .StTy::A)
+    {
+      `setYV(0.0);
+    }
+  }
   public bool ctrl()
   {
     ret `sysivar[.iCTRL] != 0;
