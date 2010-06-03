@@ -3142,6 +3142,8 @@ public &StateBuilder
           `state.mov = .chr.MovTy::A;
         case 'h':
           `state.mov = .chr.MovTy::H;
+        case 'u':
+          `state.mov = .chr.MovTy::U;
         default:
           if(!.cfg.IgnoreMostErrors){
             %char buf;
@@ -6336,7 +6338,11 @@ public &StateBuilder
           buf .=
             "bool c.Char::" .= fname .= "IsH()"\r\n
             "{"\r\n
-            \t"ret " .= (`state.mov == .chr.MovTy::H ? "true" : "false")
+            \t"ret " .=
+            (
+              `state.mov == .chr.MovTy::H ? "true" : (
+              `state.mov == .chr.MovTy::U
+              ? "`stVal.mov == .MovTy::H" : "false"))
             .= ";"\r\n
             "}"\r\n
             "void c.Char::" .= fname .= "Init()"\r\n

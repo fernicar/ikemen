@@ -3942,7 +3942,7 @@ public &Char
   }
   public bool changeState1(int p, int n)
   {
-    if(`cs1tmp == 0) `stVal.prevno = `stVal.no;
+    if(`cs1tmp <= 0) `stVal.prevno = `stVal.no;
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
