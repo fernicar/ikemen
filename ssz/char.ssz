@@ -4630,7 +4630,7 @@ public &Char
   }
   public void trHitShakeOver()
   {
-    .v.setI((int)(`stVal.mov == .MovTy::H && `stVal.hb.hitshaketime <= 0));
+    .v.setI((int)(`stVal.mov != .MovTy::I && `stVal.hb.hitshaketime <= 0));
   }
   public void trCanRecover()
   {
