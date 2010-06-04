@@ -2830,7 +2830,10 @@ public &Char
       `enemyn.new(0);
       {
         bool p = `isSuperPaused() || `isNormalPaused();
-        if(`acttmp > 0 && `stVal.playerno == `playerno && #`ani > 0){
+        if(
+          `acttmp > 0 && `helperindex == 0
+          && `stVal.playerno == `playerno && #`ani > 0)
+        {
           `ani~ani.action();
         }
         `acttmp = -(int)p * 2;
@@ -2860,7 +2863,7 @@ public &Char
       cond #`ani > 0:
         `curFrame = `ani~ani.currentFrame();
         branch{
-        cond `acttmp > 0 && `stVal.playerno != `playerno:
+        cond `acttmp > 0 && (`helperindex > 0 || `stVal.playerno != `playerno):
           `ani~ani.action();
         else:
           `ani~ani.updateSprite();
