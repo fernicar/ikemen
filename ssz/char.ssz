@@ -2609,9 +2609,6 @@ public &Char
       `stVal.juggle = 0;
     }
     if(!`isPaused()){
-      if(!`isHitPaused()){
-        `sysivar[.iSPECIALFLAG] &= !(.lsANGLEDRAW | .lsTRANS);
-      }
       if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
       branch{
       cond `stVal.hb.hitshaketime > 0:
@@ -2785,7 +2782,8 @@ public &Char
     {
       `sysivar[.iCTRL] = 0;
     }
-    `sysivar[.iSPECIALFLAG] &= .lsNoMoveMask | .lsANGLEDRAW | .lsTRANS;
+    `sysivar[.iSPECIALFLAG] &=
+      .lsNoMoveMask | (`isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0);
     `sysivar[.iSPECIALFLAG] |=
       `player && (
         `sysivar[.iLIFE] > 0 || `sysivar[.iRECOVERTIME] > 0)
