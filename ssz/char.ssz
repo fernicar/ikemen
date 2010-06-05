@@ -4106,7 +4106,18 @@ public &Char
       .v.i = 0;
       ret;
     }
-    int foo = ((no-1) & !1) + ((no-1) + `playerno & 1);
+    int foo;
+    branch{
+    cond (no & 1) == 1 && no - 1 <= `playerno:
+      branch{
+      cond no == 1:
+        foo = `playerno;
+      else:
+        foo = ((no - 1) - 2) + (`playerno & 1);
+      }
+    else:
+      foo = (no - 1) ^ (`playerno & 1);
+    }
     .v.setI((int)(#.chars[foo] > 0 && .s.equ(name, .chars[foo][0]~name)));
   }
   public void trFrontEdgeDist()
