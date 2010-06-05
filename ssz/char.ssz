@@ -1979,9 +1979,7 @@ public &Char
     if(`stVal.hb.byid < 0) ret;
     ^`self c = .players.get(`stVal.hb.byid);
     if(#c > 0) c~removeTarget(`id);
-    if(`sysivar[.iBINDTOID] == `stVal.hb.byid){
-      `sysivar[.iBINDTIME] = 0;
-    }
+    if(`sysivar[.iBINDTOID] == `stVal.hb.byid) `sysivar[.iBINDTIME] = 0;
     `stVal.hb.byid = -1;
   }
   public bool isTarget(int id)
@@ -3964,7 +3962,7 @@ public &Char
   {
     if(`cs1tmp > 0){
       `state(::);
-      if(`stVal.mov != .MovTy::H) `sysivar[.iBINDTIME] = .com.IERR;
+      if(`stVal.mov != .MovTy::H) `sysivar[.iBINDTIME] = 0;
       `stVal.stmov = `stVal.mov;
       `cs1tmp = `minus == -1 ? -1 : 0;
     }
