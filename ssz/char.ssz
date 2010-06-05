@@ -5086,9 +5086,14 @@ public void PlayerList!&Char?::action()
 {
   loop{
     *`top.self p = `top;
+    bool foo = true;
     while;
   do:
     if(p~c~id < 0) p~c~id ^= -1;
+    if(foo && p~c~helperindex == 0){
+      foo = false;
+      .com.gametime++;
+    }
     p~c~action();
   continue:
     p = p~next;
@@ -6053,7 +6058,6 @@ public float action(
       .com.win >= 0 && .com.tmode[.com.win] == (int).com.TeamMode::Simul)
     && .com.tickFrame())
   {
-    .com.gametime++;
     branch{
     cond .com.intro > .fight~ro.ctrl_time:
       .com.intro--;
