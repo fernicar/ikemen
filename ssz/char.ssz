@@ -3964,6 +3964,7 @@ public &Char
   {
     if(`cs1tmp > 0){
       `state(::);
+      if(`stVal.mov != .MovTy::H) `sysivar[.iBINDTIME] = .com.IERR;
       `stVal.stmov = `stVal.mov;
       `cs1tmp = `minus == -1 ? -1 : 0;
     }
@@ -3975,9 +3976,7 @@ public &Char
     if(`minus == 1 && `stVal.no == n && `stVal.playerno == p) ret;
     branch{
     cond `changeState1(p, n):
-      if(`minus != 2){
-        `changeState2();
-      }
+      if(`minus != 2) `changeState2();
       if(`minus == 0){
         if(`id >= 0){
           .changeStateNest++;

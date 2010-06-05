@@ -273,7 +273,6 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
   `setCtrl(false);
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -849,7 +848,6 @@ void c.Char::s##_@@PInit()
   `stVal.typ = .StTy::S;
   `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -951,7 +949,6 @@ void c.Char::s##_@@PInit()
   `stVal.typ = .StTy::C;
   `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -1039,7 +1036,6 @@ void c.Char::s##_@@PInit()
   `stVal.typ = .StTy::A;
   `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -1118,7 +1114,6 @@ void c.Char::s##_@@PInit()
   `stVal.mov = .MovTy::I;
   `setCtrl(false);
   `trChangeAnim(170);
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -1157,7 +1152,6 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
   `setCtrl(false);
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -1193,7 +1187,6 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
   `setCtrl(false);
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -1305,7 +1298,6 @@ void c.Char::s##_@@PInit()
     `stVal.ps[i].p = 0;
   while ++i < 3:
   }
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -1425,7 +1417,6 @@ void c.Char::s##_@@PInit()
     `stVal.ps[i].p = 0;
   while ++i < 3:
   }
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -1534,7 +1525,6 @@ void c.Char::s##_@@PInit()
     `stVal.ps[i].p = 0;
   while ++i < 3:
   }
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -1776,7 +1766,6 @@ void c.Char::s##_@@PInit()
   `stVal.typ = .StTy::A;
   `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -1862,7 +1851,6 @@ void c.Char::s##_@@PInit()
   `stVal.typ = .StTy::L;
   `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
@@ -2444,7 +2432,6 @@ void c.Char::s##_@@PInit()
   `stVal.mov = .MovTy::I;
   `setCtrl(false);
   `trChangeAnim(5300);
-  `sysivar[.iBINDTIME] = .com.IERR;
   `sysfvar[.fVX] = 0.0;
   `setYV(0.0);
   `sprpriority = 0;
