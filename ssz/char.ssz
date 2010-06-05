@@ -5131,7 +5131,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     pxmi = .com.xmin+pyr.fedge; pxma = .com.xmax-pyr.bedge;
   }
   bool foo(
-    bool hitting, `pyr.self by=, &.Hitdef hit=, float y, bool pro, int hits)
+    bool hitting, `pyr.self by=, &.Hitdef hit=, float y, int pro, int hits)
   {
     void expreset(&.Explod e=, float x, float y)
     {
@@ -5179,7 +5179,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         e~ani = by.getAction(hit.guard_sparkno);
       }
     }
-    if(!pro) by.sprpriority = hit.p1sprpriority;
+    if(pro == 0) by.sprpriority = hit.p1sprpriority;
     `pyr.sprpriority = hit.p2sprpriority;
     if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
       `pyr.stVal.typ == .StTy::S;
@@ -5290,7 +5290,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       `pyr.sysivar[.iCOMBO] += hit.numhits*hits;
       if(
-        !pro && rtn && by.cs1tmp == 0 && `pyr.ls(.lsSCREENBOUNDX) && (
+        pro == 0 && rtn && by.cs1tmp == 0 && `pyr.ls(.lsSCREENBOUNDX) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
           || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
         ) switch(`pyr.stVal.typ)
@@ -5304,7 +5304,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(`pyr.hittmp < 2) `pyr.stVal.hb.juggle = by.sysivar[.iAIRJUGGLE];
       `pyr.stVal.hb.juggle -=
-        (pro ? 0 : by.stVal.juggle) + by.stVal.hit.air_juggle;
+        (pro != 0 ? 0 : by.stVal.juggle) + by.stVal.hit.air_juggle;
     else:
       by.addPower(hit.guardgetpower);
       if(
@@ -5336,7 +5336,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         sou~setDefaultParameter();
       }
       if(
-        !pro && rtn && by.cs1tmp == 0 && `pyr.ls(.lsSCREENBOUNDX) && (
+        pro == 0 && rtn && by.cs1tmp == 0 && `pyr.ls(.lsSCREENBOUNDX) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
           || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
         ) switch(`pyr.stVal.typ)
@@ -5348,14 +5348,19 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           by.stVal.hit.airguard_cornerpush_veloff * (float)by.facing;
       }
     comm:
-      {
+      branch{
+        int op2f = `pyr.facing, byf;
+      cond pro == 0 || hit.p1facing != 0:
         by.setFacing(
           (int)(`pyr.sysfvar[.fX] - by.sysfvar[.fX]) * hit.p1facing);
-        int op2f = `pyr.facing;
-        `pyr.setFacing(by.facing * -hit.p2facing);
+        byf = by.facing;
+      else:
+        byf = pro;
+      comm:
+        `pyr.setFacing(byf * -hit.p2facing);
         if(
           (hit.p2facing != 0 ? (op2f != `pyr.facing) == (hit.p2facing > 0)
-          : (`pyr.facing < 0) == (by.facing < 0)))
+          : (`pyr.facing < 0) == (byf < 0)))
         {
           `pyr.stVal.hb.xvel *= -1.0;
           if(`pyr.stVal.hb.fall.xvelocity != .com.FERR){
@@ -5514,7 +5519,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             p~c~stVal.hit=,
             !p~c~ls(.lsUNGUARDABLE) && pyr.ls(.lsGUARD))
           :
-          if(!foo(true, p~c<>=, p~c~stVal.hit=, 0.0, false, 1)) break;
+          if(!foo(true, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
           p~c~stVal.mctyp =
             p~c~stVal.hit.reversal_attr !=  0
             ? .MoveContact::Reversed : .MoveContact::Hit;
@@ -5522,7 +5527,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             .m.max!int?(1, p~c~stVal.hit.pausetime+1);
           p~c~sysivar[.iUNIQHITCOUNT]++;
         else:
-          if(!foo(false, p~c<>=, p~c~stVal.hit=, 0.0, false, 1)) break;
+          if(!foo(false, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
           p~c~stVal.mctyp = .MoveContact::Guarded;
           p~c~sysivar[.iHITPAUSETIME] =
             .m.max!int?(1, p~c~stVal.hit.guard_pausetime+1);
@@ -5587,7 +5592,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if(
             foo(
               hit, .chars[i][0]<>=, .projs[i][j].hit=,
-              .projs[i][j].y - .chars[i][0]~sysfvar[.fY], true,
+              .projs[i][j].y - .chars[i][0]~sysfvar[.fY],
+              .projs[i][j].facing * (.projs[i][j].velocityx < 0.0 ? -1 : 1),
               .projs[i][j].misstime == 0 ? .projs[i][j].hits : 1))
           {
             branch{
