@@ -1320,7 +1320,7 @@ public &StateBuilder
       cond .s.equ("fall.envshake.phase", token):
         out .= ".v.setF(" .= obj .= "stVal.hb.fall.envshake_phase)";
       cond .s.equ("isbound", token):
-        out .= ".v.setB(" .= obj .= "sysivar[.iBINDTIME]!=0)";
+        out .= ".v.setB(" .= obj .= "isBound())";
       else:
         break, else;
       }

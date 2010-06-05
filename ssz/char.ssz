@@ -2752,12 +2752,15 @@ public &Char
   {
     ret !`isPaused() && !`isHitPaused();
   }
+  public bool isBound()
+  {
+    ret `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTIME] != .com.IERR;
+  }
   public bool isFreezeX()
   {
     ret
       `ls(.lsPOSFREEZEX)
-      || (`sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTIME] != .com.IERR)
-      || (
+      || `isBound() || (
         `stVal.hb.hittime > 0 && (
           `stVal.hb.mindistx != .com.FERR || `stVal.hb.maxdistx != .com.FERR));
   }
@@ -3956,6 +3959,7 @@ public &Char
     }
     `cs1tmp = 1;
     `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
+    if(`sysivar[.iBINDTIME] == .com.IERR) `sysivar[.iBINDTIME] = 0;
     ret true;
   }
   public void changeState2()
