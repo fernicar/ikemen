@@ -5540,22 +5540,19 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           int h =
             pyr.stVal.setHb(
               p~c~stVal.hit=, !p~c~ls(.lsUNGUARDABLE) && pyr.ls(.lsGUARD));
-          if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)){
-            pyr.stVal.hb.hitshaketime = pyr.stVal.hb.hittime = 0;
-            break, break;
-          }
+          if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
         cond #h == 1:
           p~c~stVal.mctyp =
             p~c~stVal.hit.reversal_attr !=  0
             ? .MoveContact::Reversed : .MoveContact::Hit;
-          if(p~c~stVal.hb.hitshaketime <= 0 && p~c~stVal.hb.hittime <= 0){
+          if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
               .m.max!int?(1, p~c~stVal.hit.pausetime+1);
           }
           p~c~sysivar[.iUNIQHITCOUNT]++;
         else:
           p~c~stVal.mctyp = .MoveContact::Guarded;
-          if(p~c~stVal.hb.hitshaketime <= 0 && p~c~stVal.hb.hittime <= 0){
+          if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
               .m.max!int?(1, p~c~stVal.hit.guard_pausetime+1);
           }
@@ -5617,14 +5614,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         if(pyr.projHitCheck(.projs[i][j]=)){
           .projs[i][j].timemiss = .m.max!int?(0, .projs[i][j].misstime);
           int hit = pyr.stVal.setHb(.projs[i][j].hit=, pyr.ls(.lsGUARD));
-          branch{
-          cond
+          if(
             foo(
               hit, .chars[i][0]<>=, .projs[i][j].hit=,
               .projs[i][j].y - .chars[i][0]~sysfvar[.fY],
               .projs[i][j].facing * (.projs[i][j].velocityx < 0.0 ? -1 : 1),
-              .projs[i][j].misstime == 0 ? .projs[i][j].hits : 1)
-            :
+              .projs[i][j].misstime == 0 ? .projs[i][j].hits : 1))
+          {
             pyr.sysivar[.iHITPAUSETIME] = 0;
             branch{
             cond #hit == 1:
@@ -5639,8 +5635,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
                 -.m.max!int?(1, .projs[i][j].hit.guard_pausetime+1);
             }
             if(.projs[i][j].hit.hitonce > 0) .projs[i][j].hit.hitonce = -1;
-          else:
-            pyr.stVal.hb.hitshaketime = pyr.stVal.hb.hittime = 0;
           }
           if(.projs[i][j].misstime == 0) .projs[i][j].hits = 0;
         }
@@ -6088,11 +6082,18 @@ public float action(
     branch{
     cond .com.intro > .fight~ro.ctrl_time:
       .com.intro--;
-      if(.gs(.gsINTRO) && .com.intro <= .fight~ro.ctrl_time){
+      if(
+        .gs(.gsINTRO) && .com.intro <= .fight~ro.ctrl_time
+        && !.cmd.anybutton())
+      {
         .com.intro = .fight~ro.ctrl_time+1;
       }
       if(.com.intro == .fight~ro.ctrl_time) loop{index i = 0; while; do:
         if(#.chars[i] > 0){
+          .projs[i].new(0);
+          .explods[i].new(0);
+          .expdrawlist[i].new(0);
+          .sounds[i].new(256);
           .chars[i][0]~posReset((float)stg.p1.startx, (float)stg.p2.startx);
           .v.setI(0);
           .chars[i][0]~trSelfState();
