@@ -981,52 +981,50 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.typ = (int)hit.ground_type;
       `hb.animtype = (int)hit.animtype;
     }
-    {
-      if(guard && ((int)`typ&hit.guardflag) != 0){
-        `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
-        `hb.hittime = hit.guard_hittime;
-        `hb.slidetime = hit.guard_slidetime;
-        `hb.guarded = 1;
-        branch{
-        cond `typ == .StTy::A:
-          `hb.ctrltime = hit.airguard_ctrltime;
-          `hb.xvel = hit.airguard_velocityx;
-          `hb.yvel = hit.airguard_velocityy;
-        else:
-          `hb.ctrltime = hit.guard_ctrltime;
-          `hb.xvel = hit.guard_velocity;
-          `hb.yvel = hit.ground_velocityy;
-        }
-        `hb.damage = hit.guarddamage;
-        ret false;
-      }
-      `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
-      `hb.slidetime = hit.ground_slidetime;
+    if(guard && ((int)`typ&hit.guardflag) != 0){
+      `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
+      `hb.hittime = hit.guard_hittime;
+      `hb.slidetime = hit.guard_slidetime;
+      `hb.guarded = 1;
       branch{
       cond `typ == .StTy::A:
-        `hb.hittime = hit.air_hittime;
-        `hb.ctrltime = hit.air_hittime;
-        `hb.xvel = hit.air_velocityx;
-        `hb.yvel = hit.air_velocityy;
-        `hb.fallf = hit.air_fall;
-      cond `typ == .StTy::L:
-        `hb.hittime = hit.down_hittime;
-        `hb.ctrltime = hit.down_hittime;
-        `hb.xvel = hit.down_velocityx;
-        `hb.yvel = hit.down_bounce != 0 ? hit.down_velocityy : 0.0;
-        `hb.fallf = 1;
+        `hb.ctrltime = hit.airguard_ctrltime;
+        `hb.xvel = hit.airguard_velocityx;
+        `hb.yvel = hit.airguard_velocityy;
       else:
-        `hb.hittime = hit.ground_hittime;
-        `hb.ctrltime = hit.ground_hittime;
-        `hb.xvel = hit.ground_velocityx;
+        `hb.ctrltime = hit.guard_ctrltime;
+        `hb.xvel = hit.guard_velocity;
         `hb.yvel = hit.ground_velocityy;
-        `hb.fallf = hit.ground_fall;
       }
-      `hb.damage = hit.hitdamage;
-      `hb.hitcount = hc+1;
-      `hb.fallcount = fc;
-      `hb.fallf |= fall;
+      `hb.damage = hit.guarddamage;
+      ret false;
     }
+    `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
+    `hb.slidetime = hit.ground_slidetime;
+    branch{
+    cond `typ == .StTy::A:
+      `hb.hittime = hit.air_hittime;
+      `hb.ctrltime = hit.air_hittime;
+      `hb.xvel = hit.air_velocityx;
+      `hb.yvel = hit.air_velocityy;
+      `hb.fallf = hit.air_fall;
+    cond `typ == .StTy::L:
+      `hb.hittime = hit.down_hittime;
+      `hb.ctrltime = hit.down_hittime;
+      `hb.xvel = hit.down_velocityx;
+      `hb.yvel = hit.down_bounce != 0 ? hit.down_velocityy : 0.0;
+      `hb.fallf = 1;
+    else:
+      `hb.hittime = hit.ground_hittime;
+      `hb.ctrltime = hit.ground_hittime;
+      `hb.xvel = hit.ground_velocityx;
+      `hb.yvel = hit.ground_velocityy;
+      `hb.fallf = hit.ground_fall;
+    }
+    `hb.damage = hit.hitdamage;
+    `hb.hitcount = hc+1;
+    `hb.fallcount = fc;
+    `hb.fallf |= fall;
     ret true;
   }
 }
@@ -3948,19 +3946,21 @@ public &Char
   }
   public bool changeState1(int p, int n)
   {
+    if(.changeStateNest >= 2500){
+      lib al = <alert.ssz>;
+      %char buf .=
+        "2500 loops: " .= `name .= ", " .= .s.iToS(`stVal.prevno) .= " -> "
+        .= .s.iToS(`stVal.no) .= " -> " .= .s.iToS(n);
+      al.alert!.self?(buf);
+      ret false;
+    }
     if(`cs1tmp == 0) `stVal.prevno = `stVal.no;
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
     if(n < 0) ret false;
-    %char buf;
-    buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PInit";
+    %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PInit";
     if(!consteval(`state=, buf)) ret false;
-    if(.changeStateNest >= 2500){
-      lib al = <alert.ssz>;
-      al.alert!.self?(buf);
-      ret false;
-    }
     `cs1tmp = 1;
     `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     if(`sysivar[.iBINDTIME] == .com.IERR) `sysivar[.iBINDTIME] = 0;
@@ -3990,7 +3990,7 @@ public &Char
           .changeStateNest--;
         }
       }
-    else:
+    cond .changeStateNest < 2500:
       `trDestroySelf();
       if(`helperindex == 0 && n != 0){
         .v.setI(0);
@@ -5534,12 +5534,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(pyr.hitCheck(p~c<>=)){
         branch{
-        cond
-          pyr.stVal.setHb(
-            p~c~stVal.hit=,
-            !p~c~ls(.lsUNGUARDABLE) && pyr.ls(.lsGUARD))
-          :
-          if(!foo(true, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
+          bool h =
+            pyr.stVal.setHb(
+              p~c~stVal.hit=, !p~c~ls(.lsUNGUARDABLE) && pyr.ls(.lsGUARD));
+          if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)){
+            pyr.stVal.hb.hitshaketime = pyr.stVal.hb.hittime = 0;
+            break, break;
+          }
+        cond h:
           p~c~stVal.mctyp =
             p~c~stVal.hit.reversal_attr !=  0
             ? .MoveContact::Reversed : .MoveContact::Hit;
@@ -5549,16 +5551,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           }
           p~c~sysivar[.iUNIQHITCOUNT]++;
         else:
-          if(!foo(false, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
           p~c~stVal.mctyp = .MoveContact::Guarded;
           if(p~c~stVal.hb.hitshaketime <= 0 && p~c~stVal.hb.hittime <= 0){
             p~c~sysivar[.iHITPAUSETIME] =
               .m.max!int?(1, p~c~stVal.hit.guard_pausetime+1);
           }
         comm:
-          if(pyr.stVal.hb.hitshaketime > 0 || pyr.stVal.hb.hittime > 0){
-            pyr.sysivar[.iHITPAUSETIME] = 0;
-          }
+          pyr.sysivar[.iHITPAUSETIME] = 0;
           if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
           p~c~stVal.mctime = -1;
         break:
@@ -5614,15 +5613,16 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
         if(pyr.projHitCheck(.projs[i][j]=)){
           .projs[i][j].timemiss = .m.max!int?(0, .projs[i][j].misstime);
-          bool hit =
-            pyr.stVal.setHb(.projs[i][j].hit=, pyr.ls(.lsGUARD));
-          if(
+          bool hit = pyr.stVal.setHb(.projs[i][j].hit=, pyr.ls(.lsGUARD));
+          branch{
+          cond
             foo(
               hit, .chars[i][0]<>=, .projs[i][j].hit=,
               .projs[i][j].y - .chars[i][0]~sysfvar[.fY],
               .projs[i][j].facing * (.projs[i][j].velocityx < 0.0 ? -1 : 1),
-              .projs[i][j].misstime == 0 ? .projs[i][j].hits : 1))
-          {
+              .projs[i][j].misstime == 0 ? .projs[i][j].hits : 1)
+            :
+            pyr.sysivar[.iHITPAUSETIME] = 0;
             branch{
             cond hit:
               .projs[i][j].pctyp == .ProjContact::Hit;
@@ -5636,6 +5636,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
                 -.m.max!int?(1, .projs[i][j].hit.guard_pausetime+1);
             }
             if(.projs[i][j].hit.hitonce > 0) .projs[i][j].hit.hitonce = -1;
+          else:
+            pyr.stVal.hb.hitshaketime = pyr.stVal.hb.hittime = 0;
           }
           if(.projs[i][j].misstime == 0) .projs[i][j].hits = 0;
         }
