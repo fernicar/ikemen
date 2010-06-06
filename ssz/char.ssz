@@ -2855,6 +2855,12 @@ public &Char
       if(`cs1tmp < 0) `cs1tmp = 0;
       `minus = 0;
       `state(::);
+      if(
+        `stVal.phy == .StTy::A && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0)
+      {
+        .v.setI(52);
+        `trSelfState();
+      }
     break:
       `minus = 2;
       `acttmp += (int)`isActive() - (int)`isHitPaused();
