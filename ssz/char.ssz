@@ -2855,7 +2855,8 @@ public &Char
       `minus = 0;
       `state(::);
       if(
-        `stVal.phy == .StTy::A && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0)
+        `player && !`isHitPaused() && `stVal.phy == .StTy::A
+        && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0)
       {
         .v.setI(52);
         `trSelfState();
