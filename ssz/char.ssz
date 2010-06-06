@@ -5211,9 +5211,12 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     bool rtn = false, damageable = false, p2s = false;
     if(`pyr.cs1tmp == 0 || `pyr.stVal.playerno == by.playerno){
       damageable = true;
-      if(`pyr.stVal.hb.typ != 0){
+      branch{
+      cond `pyr.stVal.hb.typ != 0:
         `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
         rtn = true;
+      else:
+        `pyr.sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
       }
       loop{index i = 0; while; do:
         if(
@@ -5222,16 +5225,17 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0)
         {
           if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
-          `pyr.sysivar[.iCTRL] = 0;
-          `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno);
-          branch{
-          cond hitting && hit.p2stateno >= 0 && hit.p2getp1state != 0:
-            rtn = damageable = false;
-          else:
-            rtn = true;
-            if(!`pyr.isHitState()) damageable = false;
+          if(`pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno)){
+            `pyr.sysivar[.iCTRL] = 0;
+            branch{
+            cond hitting && hit.p2stateno >= 0 && hit.p2getp1state != 0:
+              rtn = damageable = false;
+            else:
+              rtn = true;
+              if(!`pyr.isHitState()) damageable = false;
+            }
+            break, break, break, break;
           }
-          break, break, break;
         }
         i++;
       while i < #`pyr.stVal.ho:
@@ -5241,9 +5245,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           rtn = damageable = false;
           break, break;
         }
-        `pyr.sysivar[.iCTRL] = 0;
-        `pyr.changeState1(by.playerno, hit.p2stateno);
-        p2s = true;
+        if(`pyr.changeState1(by.playerno, hit.p2stateno)){
+          `pyr.sysivar[.iCTRL] = 0;
+          p2s = true;
+        }
       }
     }
     `pyr.stVal.hb.damage =
