@@ -5207,7 +5207,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
       `pyr.stVal.typ == .StTy::S;
     }
-    bool rtn = false, damageable = false, p2s = false;
+    bool rtn = false, damageable = false;
+    int p2s = 0;
     if(`pyr.cs1tmp == 0 || `pyr.stVal.playerno == by.playerno){
       damageable = true;
       if(hitting > 0){
@@ -5240,9 +5241,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           rtn = damageable = false;
           break, break;
         }
+        p2s = 1;
         if(`pyr.changeState1(by.playerno, hit.p2stateno)){
           `pyr.sysivar[.iCTRL] = 0;
-          p2s = true;
+          p2s = 2;
         }
       }
     }
@@ -5379,7 +5381,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       comm:
         `pyr.setFacing(byf * -hit.p2facing);
         if(
-          hitting > 0 && (
+          (hitting > 0 || p2s == 2) && (
             hit.p2facing != 0 ? (op2f != `pyr.facing) == (hit.p2facing > 0)
             : (`pyr.facing < 0) == (byf < 0)))
         {
@@ -5392,7 +5394,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       if(#hitting == 1 && hit.p1stateno >= 0) branch{
       cond
         (by.cs1tmp == 0 || by.stVal.playerno == by.playerno)
-        && (hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s)
+        && (hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s > 0)
         :
         by.changeState1(by.playerno, hit.p1stateno);
       else:
