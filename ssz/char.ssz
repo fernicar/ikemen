@@ -5222,20 +5222,19 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         if(
           `pyr.stVal.ho[i].time != 0
           && (`pyr.stVal.ho[i].attr & hit.attr & 63) != 0
-          && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0)
+          && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0
+          && `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno))
         {
           if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
-          if(`pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno)){
-            `pyr.sysivar[.iCTRL] = 0;
-            branch{
-            cond hitting && hit.p2stateno >= 0 && hit.p2getp1state != 0:
-              rtn = damageable = false;
-            else:
-              rtn = true;
-              if(!`pyr.isHitState()) damageable = false;
-            }
-            break, break, break, break;
+          `pyr.sysivar[.iCTRL] = 0;
+          branch{
+          cond hitting && hit.p2stateno >= 0 && hit.p2getp1state != 0:
+            rtn = damageable = false;
+          else:
+            rtn = true;
+            if(!`pyr.isHitState()) damageable = false;
           }
+          break, break, break;
         }
         i++;
       while i < #`pyr.stVal.ho:
