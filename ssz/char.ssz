@@ -957,11 +957,14 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `mctyp = .MoveContact::Hit;
     `mctime = 0;
   }
-  public bool setHb(&.Hitdef hit=, bool guard)
+  public int setHb(&.Hitdef hit=, bool guard)
   {
+    int ty = `typ == .StTy::A ? (int)hit.air_type : (int)hit.ground_type;
+    if(ty == 0) ret -1 - (int)(guard && ((int)`typ&hit.guardflag) != 0);
     int fall = `hb.fallf, hc = `hb.hitcount, fc = `hb.fallcount;
     int bi = `hb.byid;
     `hb.clear();
+    `hb.typ = ty;
     `hb.byid = bi;
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
@@ -975,10 +978,10 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `hb.maxdisty = hit.maxdisty;
     branch{
     cond `typ == .StTy::A:
-      `hb.typ = (int)hit.air_type;
+      `hb.airtype = `hb.typ;
       `hb.animtype = (int)hit.air_animtype;
     else:
-      `hb.typ = (int)hit.ground_type;
+      `hb.groundtype = `hb.typ;
       `hb.animtype = (int)hit.animtype;
     }
     if(guard && ((int)`typ&hit.guardflag) != 0){
@@ -997,7 +1000,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
         `hb.yvel = hit.ground_velocityy;
       }
       `hb.damage = hit.guarddamage;
-      ret false;
+      ret 2;
     }
     `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
     `hb.slidetime = hit.ground_slidetime;
@@ -1025,7 +1028,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `hb.hitcount = hc+1;
     `hb.fallcount = fc;
     `hb.fallf |= fall;
-    ret true;
+    ret 1;
   }
 }
 const index iLIFE              = 10;
@@ -5151,7 +5154,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     pxmi = .com.xmin+pyr.fedge; pxma = .com.xmax-pyr.bedge;
   }
   bool foo(
-    bool hitting, `pyr.self by=, &.Hitdef hit=, float y, int pro, int hits)
+    int hitting, `pyr.self by=, &.Hitdef hit=, float y, int pro, int hits)
   {
     void expreset(&.Explod e=, float x, float y)
     {
@@ -5172,7 +5175,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     }
     ^&.snd.Sound sou;
     branch{
-    cond hitting:
+    cond #hitting == 1:
       branch{
         if(hit.sparkno == .com.IERR) break;
         ^&.Explod e = by.newExplod();
@@ -5204,42 +5207,35 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
       `pyr.stVal.typ == .StTy::S;
     }
-    if(`pyr.stVal.hb.hitshaketime <= 0){
-      `pyr.stVal.hb.hittime++;
-      if(`pyr.stVal.hb.hittime <= 0) `pyr.stVal.hb.fall.recovertime++;
-    }
     bool rtn = false, damageable = false, p2s = false;
     if(`pyr.cs1tmp == 0 || `pyr.stVal.playerno == by.playerno){
       damageable = true;
-      branch{
-      cond `pyr.stVal.hb.typ != 0:
+      if(hitting > 0){
         `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
         rtn = true;
-      else:
-        `pyr.sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
-      }
-      loop{index i = 0; while; do:
-        if(
-          `pyr.stVal.ho[i].time != 0
-          && (`pyr.stVal.ho[i].attr & hit.attr & 63) != 0
-          && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0
-          && `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno))
-        {
-          if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
-          `pyr.sysivar[.iCTRL] = 0;
-          branch{
-          cond hitting && hit.p2stateno >= 0 && hit.p2getp1state != 0:
-            rtn = damageable = false;
-          else:
-            rtn = true;
-            if(!`pyr.isHitState()) damageable = false;
+        loop{index i = 0; while; do:
+          if(
+            `pyr.stVal.ho[i].time != 0
+            && (`pyr.stVal.ho[i].attr & hit.attr & 63) != 0
+            && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0
+            && `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno))
+          {
+            if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
+            `pyr.sysivar[.iCTRL] = 0;
+            branch{
+            cond #hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0:
+              rtn = damageable = false;
+            else:
+              rtn = true;
+              if(!`pyr.isHitState()) damageable = false;
+            }
+            break, break, break, break;
           }
-          break, break, break;
+          i++;
+        while i < #`pyr.stVal.ho:
         }
-        i++;
-      while i < #`pyr.stVal.ho:
       }
-      if(hitting && hit.p2stateno >= 0 && hit.p2getp1state != 0){
+      if(#hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0){
         if(by.cs1tmp != 0 && by.stVal.playerno != by.playerno){
           rtn = damageable = false;
           break, break;
@@ -5253,10 +5249,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     `pyr.stVal.hb.damage =
       `pyr.getDamage(
         `pyr.stVal.hb.damage * hits,
-        hit.kill != 0 && (hitting || hit.guard_kill != 0),
+        hit.kill != 0 && (#hitting == 1 || hit.guard_kill != 0),
         false, by.attackmul);
     if(damageable) branch{
-    cond hitting:
+    cond #hitting == 1:
       by.addPower(hit.hitgetpower);
       if(`pyr.addLife(-`pyr.stVal.hb.damage, true, true)) branch{
       cond (by.playerno&1) == (`pyr.playerno&1):
@@ -5383,8 +5379,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       comm:
         `pyr.setFacing(byf * -hit.p2facing);
         if(
-          (hit.p2facing != 0 ? (op2f != `pyr.facing) == (hit.p2facing > 0)
-          : (`pyr.facing < 0) == (byf < 0)))
+          hitting > 0 && (
+            hit.p2facing != 0 ? (op2f != `pyr.facing) == (hit.p2facing > 0)
+            : (`pyr.facing < 0) == (byf < 0)))
         {
           `pyr.stVal.hb.xvel *= -1.0;
           if(`pyr.stVal.hb.fall.xvelocity != .com.FERR){
@@ -5392,7 +5389,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           }
         }
       }
-      if(hitting && hit.p1stateno >= 0) branch{
+      if(#hitting == 1 && hit.p1stateno >= 0) branch{
       cond
         (by.cs1tmp == 0 || by.stVal.playerno == by.playerno)
         && (hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s)
@@ -5538,14 +5535,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(pyr.hitCheck(p~c<>=)){
         branch{
-          bool h =
+          int h =
             pyr.stVal.setHb(
               p~c~stVal.hit=, !p~c~ls(.lsUNGUARDABLE) && pyr.ls(.lsGUARD));
           if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)){
             pyr.stVal.hb.hitshaketime = pyr.stVal.hb.hittime = 0;
             break, break;
           }
-        cond h:
+        cond #h == 1:
           p~c~stVal.mctyp =
             p~c~stVal.hit.reversal_attr !=  0
             ? .MoveContact::Reversed : .MoveContact::Hit;
@@ -5617,7 +5614,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
         if(pyr.projHitCheck(.projs[i][j]=)){
           .projs[i][j].timemiss = .m.max!int?(0, .projs[i][j].misstime);
-          bool hit = pyr.stVal.setHb(.projs[i][j].hit=, pyr.ls(.lsGUARD));
+          int hit = pyr.stVal.setHb(.projs[i][j].hit=, pyr.ls(.lsGUARD));
           branch{
           cond
             foo(
@@ -5628,7 +5625,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             :
             pyr.sysivar[.iHITPAUSETIME] = 0;
             branch{
-            cond hit:
+            cond #hit == 1:
               .projs[i][j].pctyp == .ProjContact::Hit;
               .projs[i][j].pctime = -1;
               .projs[i][j].hitpause =
