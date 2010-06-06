@@ -1505,6 +1505,8 @@ public &Projectile
   {
     `velocityx = `remvelocityx;
     `velocityy = `remvelocityy;
+    `accelx = `accely = 0.0;
+    `velmulx = `velmuly = 1.0;
     `anim = -1;
     `hits = 0;
     `prioritypoint = 0;
@@ -2620,19 +2622,16 @@ public &Char
       cond `stVal.hb.fall.recovertime > 0:
         `stVal.hb.fall.recovertime--;
       }
-      branch{
-      cond `stVal.hb.hitshaketime <= 0 && `stVal.hb.hittime <= 0:
-        if(`sysivar[.iHITPAUSETIME] > 0) `sysivar[.iHITPAUSETIME]--;
-      else:
-        `sysivar[.iHITPAUSETIME] = 0;
-      }
-      if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
-      if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
-      if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
-      loop{index i = 0; while; do:
-        if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
-        i++;
-      while i < #`stVal.ho:
+      if(`sysivar[.iHITPAUSETIME] > 0) `sysivar[.iHITPAUSETIME]--;
+      if(!`isHitPaused()){
+        if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
+        if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
+        if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
+        loop{index i = 0; while; do:
+          if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
+          i++;
+        while i < #`stVal.ho:
+        }
       }
     }
     if(`tmphit >= 0){
@@ -2965,14 +2964,13 @@ public &Char
   {
     if(.com.tickFrame()){
       `clearRdCache();
-      `atktmp =
-        `stVal.mov != .MovTy::I && `sysivar[.iHITPAUSETIME] <= 0
-        ? `stVal.no : -1;
+      `atktmp = `stVal.mov != .MovTy::I && !`isHitPaused() ? `stVal.no : -1;
       `hittmp =
         (int)(`stVal.mov == .MovTy::H) << (int)(
           `stVal.typ == .StTy::A && `stVal.hb.fallf != 0);
       if(`stVal.mov != .MovTy::H){
         `stVal.hb.hittime = 0;
+        `stVal.hb.hitshaketime = 0;
         `stVal.hb.fallf = 0;
         `stVal.hb.juggle = 0;
         `stVal.hb.hitcount = 0;
@@ -5545,15 +5543,22 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           p~c~stVal.mctyp =
             p~c~stVal.hit.reversal_attr !=  0
             ? .MoveContact::Reversed : .MoveContact::Hit;
-          p~c~sysivar[.iHITPAUSETIME] =
-            .m.max!int?(1, p~c~stVal.hit.pausetime+1);
+          if(p~c~stVal.hb.hitshaketime <= 0 && p~c~stVal.hb.hittime <= 0){
+            p~c~sysivar[.iHITPAUSETIME] =
+              .m.max!int?(1, p~c~stVal.hit.pausetime+1);
+          }
           p~c~sysivar[.iUNIQHITCOUNT]++;
         else:
           if(!foo(false, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
           p~c~stVal.mctyp = .MoveContact::Guarded;
-          p~c~sysivar[.iHITPAUSETIME] =
-            .m.max!int?(1, p~c~stVal.hit.guard_pausetime+1);
+          if(p~c~stVal.hb.hitshaketime <= 0 && p~c~stVal.hb.hittime <= 0){
+            p~c~sysivar[.iHITPAUSETIME] =
+              .m.max!int?(1, p~c~stVal.hit.guard_pausetime+1);
+          }
         comm:
+          if(pyr.stVal.hb.hitshaketime > 0 || pyr.stVal.hb.hittime > 0){
+            pyr.sysivar[.iHITPAUSETIME] = 0;
+          }
           if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
           p~c~stVal.mctime = -1;
         break:
