@@ -3977,13 +3977,13 @@ public &Char
       al.alert!.self?(buf);
       ret false;
     }
+    if(n < 0) ret false;
+    %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PInit";
+    if(!consteval(`state=, buf)) ret false;
     if(`cs1tmp == 0) `stVal.prevno = `stVal.no;
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
-    if(n < 0) ret false;
-    %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PInit";
-    if(!consteval(`state=, buf)) ret false;
     `cs1tmp = 1;
     `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     if(`sysivar[.iBINDTIME] == .com.IERR) `sysivar[.iBINDTIME] = 0;
