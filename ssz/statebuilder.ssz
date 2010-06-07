@@ -3271,13 +3271,13 @@ public &StateBuilder
         cond .s.equ(s, "posset"):
           `state.ctrlList[-1].typ = .CtrlTy::PosSet;
           `state.ctrlList[-1].task .=
-            "`enemyn.new(0);`sysivar[.iBINDTIME]=.com.IERR;";
+            "`enemyn.new(0);`sysivar[.iBINDTIME]=0;";
         cond .s.equ(s, "posadd"):
           `state.ctrlList[-1].typ = .CtrlTy::PosAdd;
           `state.ctrlList[-1].task .= "`enemyn.new(0);";
         cond .s.equ(s, "velset"):
           `state.ctrlList[-1].typ = .CtrlTy::VelSet;
-          `state.ctrlList[-1].task .= "`sysivar[.iBINDTIME]=.com.IERR;";
+          `state.ctrlList[-1].task .= "`sysivar[.iBINDTIME]=0;";
         cond .s.equ(s, "veladd"):
           `state.ctrlList[-1].typ = .CtrlTy::VelAdd;
         cond .s.equ(s, "velmul"):

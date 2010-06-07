@@ -2754,7 +2754,7 @@ public &Char
   }
   public bool isBound()
   {
-    ret `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTIME] != .com.IERR;
+    ret `sysivar[.iBINDTIME] != 0;
   }
   public bool isFreezeX()
   {
@@ -2994,7 +2994,6 @@ public &Char
         `outTarget();
       }
     }
-    if(`sysivar[.iBINDTIME] == .com.IERR) `sysivar[.iBINDTIME] = 0;
     `bind();
     ^`self c;
     if(`stVal.hb.hittime > 0 && #(c = .players.get(`stVal.hb.byid)) > 0){
@@ -3373,9 +3372,7 @@ public &Char
   public void setBindToId(`self to=)
   {
     `sysivar[.iBINDTOID] = to.id;
-    if(to.sysivar[.iBINDTOID] == `id && to.sysivar[.iBINDTIME] != .com.IERR){
-      to.sysivar[.iBINDTIME] = 0;
-    }
+    if(to.sysivar[.iBINDTOID] == `id) to.sysivar[.iBINDTIME] = 0;
   }
   public void trPlayerID()
   {
@@ -3986,7 +3983,6 @@ public &Char
     `stVal.time = 0;
     `cs1tmp = 1;
     `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
-    if(`sysivar[.iBINDTIME] == .com.IERR) `sysivar[.iBINDTIME] = 0;
     ret true;
   }
   public void changeState2()
@@ -4261,8 +4257,7 @@ public &Char
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
       if(
-        #c > 0 && (id < 0 || c~stVal.hb.hitid == id)
-        && c~sysivar[.iBINDTIME] != .com.IERR)
+        #c > 0 && (id < 0 || c~stVal.hb.hitid == id))
       {
         c~setBindToId(`=);
         c~sysivar[.iBINDTIME] = time;
