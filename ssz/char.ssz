@@ -2402,7 +2402,7 @@ public &Char
   {
     if(
       .super > 0 && .superunhittable != 0
-      && `sysivar[.iSUPERMOVETIME] != 0) ret false;
+      && `playerno == .superplayer) ret false;
     branch{
     cond `atktmp >= 0:
       if(
