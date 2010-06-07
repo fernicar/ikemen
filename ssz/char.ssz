@@ -5214,13 +5214,17 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       if(hitting > 0){
         `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
         rtn = true;
-        loop{index i = 0; while; do:
-          if(
-            `pyr.stVal.ho[i].time != 0
-            && (`pyr.stVal.ho[i].attr & hit.attr & 63) != 0
-            && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0
-            && `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno))
-          {
+      }
+      loop{index i = 0; while; do:
+        if(
+          `pyr.stVal.ho[i].time != 0
+          && (`pyr.stVal.ho[i].attr & hit.attr & 63) != 0
+          && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0)
+        {
+          if(hitting > 0){
+            if(!`pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno)){
+              break, break;
+            }
             if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
             `pyr.sysivar[.iCTRL] = 0;
             branch{
@@ -5228,13 +5232,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               rtn = damageable = false;
             else:
               rtn = true;
-              if(!`pyr.isHitState()) damageable = false;
             }
-            break, break, break, break;
           }
-          i++;
-        while i < #`pyr.stVal.ho:
+          if(!`pyr.isHitState()) damageable = false;
+          break, break, break;
         }
+        i++;
+      while i < #`pyr.stVal.ho:
       }
       if(#hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0){
         if(by.cs1tmp != 0 && by.stVal.playerno != by.playerno){
@@ -6090,10 +6094,7 @@ public float action(
       }
       if(.com.intro == .fight~ro.ctrl_time) loop{index i = 0; while; do:
         if(#.chars[i] > 0){
-          .projs[i].new(0);
-          .explods[i].new(0);
-          .expdrawlist[i].new(0);
-          .sounds[i].new(256);
+          if(.gs(.gsINTRO)) .charClear(i);
           .chars[i][0]~posReset((float)stg.p1.startx, (float)stg.p2.startx);
           .v.setI(0);
           .chars[i][0]~trSelfState();
@@ -6275,6 +6276,21 @@ void resetGbl()
   .zoomdelay = 0.0;
 }
 
+void charClear(int pn)
+{
+  loop{index j = 1; while; do:
+    .chars[pn][j]~destroySelf();
+    j++;
+  while j < #.chars[pn]:
+  }
+  .projs[pn].new(0);
+  .explods[pn].new(0);
+  .expdrawlist[pn].new(0);
+  .sounds[pn].new(256);
+  .chars[pn][0]~children.new(0);
+  .chars[pn][0]~targets.new(0);
+}
+
 public void nextRound(&.stage.Stage stg=)
 {
   .resetGbl();
@@ -6286,17 +6302,7 @@ public void nextRound(&.stage.Stage stg=)
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
     .id = .chars[i][0]~id + 1;
-    loop{index j = 1; while; do:
-      .chars[i][j]~destroySelf();
-      j++;
-    while j < #.chars[i]:
-    }
-    .projs[i].new(0);
-    .explods[i].new(0);
-    .expdrawlist[i].new(0);
-    .sounds[i].new(256);
-    .chars[i][0]~children.new(0);
-    .chars[i][0]~targets.new(0);
+    .charClear(i);
     .chars[i][0]~posReset((float)stg.p1.startx, (float)stg.p2.startx);
     .chars[i][0]~sysivar[.iCTRL] = 0;
     .chars[i][0]~stVal.clear();
