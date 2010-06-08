@@ -927,7 +927,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
   public int no, prevno, playerno;
   public int time;
   public |.StTy typ;
-  public |.StTy phy;
+  public |.StTy phy, foophy;
   public |.MovTy mov, stmov;
   public int juggle;
   public &.Hitdef hit;
@@ -948,7 +948,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `playerno = 0;
     `time = 0;
     `typ = .StTy::S;
-    `phy = .StTy::N;
+    `phy = `foophy = .StTy::N;
     `mov = `stmov = .MovTy::I;
     `juggle = 0;
     `hit.clear();
@@ -2843,35 +2843,34 @@ public &Char
     if(`helperindex == 0) `cmd.step(`key, `facing, `key < 0);
     {
       `enemyn.new(0);
+      bool p = `isSuperPaused() || `isNormalPaused();
+      if(
+        `acttmp > 0 && `helperindex == 0
+        && `stVal.playerno == `playerno && #`ani > 0)
       {
-        bool p = `isSuperPaused() || `isNormalPaused();
-        if(
-          `acttmp > 0 && `helperindex == 0
-          && `stVal.playerno == `playerno && #`ani > 0)
-        {
-          `ani~ani.action();
-        }
-        `acttmp = -(int)p * 2;
-        `changeState2();
-        `minus = 1;
-        if(!p){
-          `lSetNormal();
-          if(#`palfx > 0) `palfx~step();
-          if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
-          if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
-          if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
-          if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
-        }
-        if(`stVal.playerno == `playerno && `player) `state_3(::);
-        if(p) ret;
-        if(`player && .super <= 0 && .pause <= 0) `state_2(::);
-        if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
-        `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
+        `ani~ani.action();
       }
+      `acttmp = -(int)p * 2;
+      `changeState2();
+      `minus = 1;
+      if(!p){
+        `lSetNormal();
+        `stVal.foophy = `stVal.phy;
+        if(#`palfx > 0) `palfx~step();
+        if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
+        if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
+        if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
+        if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
+      }
+      if(`stVal.playerno == `playerno && `player) `state_3(::);
+      if(p) ret;
+      if(`player && .super <= 0 && .pause <= 0) `state_2(::);
+      if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
+      `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
       `state(::);
       if(
-        `player && !`isHitPaused() && `stVal.phy == .StTy::A
+        `player && !`isHitPaused() && `stVal.foophy == .StTy::A
         && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0)
       {
         .v.setI(52);
@@ -3998,6 +3997,7 @@ public &Char
       `state(::);
       if(`stVal.mov != .MovTy::H) `sysivar[.iBINDTIME] = 0;
       `stVal.stmov = `stVal.mov;
+      `stVal.foophy = `stVal.phy;
       `cs1tmp = 0;
     }
   }
