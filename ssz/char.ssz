@@ -5236,7 +5236,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     }
     bool rtn = false, damageable = false;
     int p2s = 0;
-    if(`pyr.cs1tmp == 0 || `pyr.stVal.playerno == by.playerno){
+    if(
+      `pyr.cs1tmp == 0 || `pyr.stVal.playerno == by.playerno
+      || !`pyr.ls(.lsGETHIT))
+    {
       damageable = true;
       if(hitting > 0){
         `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
