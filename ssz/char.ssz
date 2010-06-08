@@ -2824,6 +2824,19 @@ public &Char
         `stVal.typ == .StTy::A
         ? `sysivar[.iAIR_BACK] : `sysivar[.iGROUND_BACK]);
   }
+  public void targetAction()
+  {
+    loop{
+      index i = 0;
+      ^`self c;
+      while;
+    do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && c~stVal.playerno != c~playerno) c~action();
+      i++;
+    while i < #`targets:
+    }
+  }
   public void action()
   {
     if(`minus != 3) ret;
@@ -2885,16 +2898,7 @@ public &Char
         if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
         if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
       }
-      loop{
-        index i = 0;
-        ^`self c;
-        while;
-      do:
-        c = .players.get(`targets[i]);
-        if(#c > 0 && c~stVal.playerno != c~playerno) c~action();
-        i++;
-      while i < #`targets:
-      }
+      `targetAction();
     }
   }
   public float move(float tension)
@@ -5130,8 +5134,11 @@ public void PlayerList!&Char?::action()
       foo = false;
       .com.gametime++;
     }
-    if(p~c~stVal.hb.byid < 0 || p~c~stVal.playerno == p~c~playerno){
+    branch{
+    cond p~c~stVal.hb.byid < 0 || p~c~stVal.playerno == p~c~playerno:
       p~c~action();
+    else:
+      p~c~targetAction();
     }
   continue:
     p = p~next;
@@ -5261,10 +5268,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       while i < #`pyr.stVal.ho:
       }
       if(#hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0){
-        if(by.cs1tmp != 0 && by.stVal.playerno != by.playerno){
-          rtn = damageable = false;
-          break, break;
-        }
         p2s = 1;
         if(`pyr.changeState1(by.playerno, hit.p2stateno)){
           `pyr.sysivar[.iCTRL] = 0;
