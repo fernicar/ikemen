@@ -6144,11 +6144,12 @@ public float action(
           160.0 / .com.scale - .com.screenright);
     }
   }
-  if(
+  branch{
+  cond
     .fight~ro.act(
       .com.tickFrame(), .com.intro, .com.round, .syssnd=, .ko,
-      .com.win >= 0 && .com.tmode[.com.win] == (int).com.TeamMode::Simul))
-  {
+      .com.win >= 0 && .com.tmode[.com.win] == (int).com.TeamMode::Simul)
+    :
     branch{
     cond .com.intro > .fight~ro.ctrl_time:
       .com.intro--;
@@ -6162,12 +6163,6 @@ public float action(
       }
     cond .com.intro >= 1:
       .com.intro--;
-    else:
-      break;
-    comm:
-      if(.fight~ro.cur == 1 && .fight~ro.wt == .fight~ro.fight_time-1){
-        posreset();
-      }
     }
     branch{
     cond .roundEnd() || finish():
@@ -6186,6 +6181,8 @@ public float action(
       .com.intro == 0 && .com.time > 0 && !.gs(.gsTIMERFREEZE)
       && (.super <= 0 || .superpausebg == 0) 
       && (.pause <= 0 || .pausebg == 0)) .com.time--;
+  cond .fight~ro.cur == 1 && .com.tickFrame():
+    posreset();
   }
   if(.com.tickFrame()){
     branch{
