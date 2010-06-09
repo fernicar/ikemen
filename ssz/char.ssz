@@ -2984,7 +2984,8 @@ public &Char
       `atktmp = `stVal.mov != .MovTy::I && !`isHitPaused() ? `stVal.no : -1;
       `hittmp =
         (int)(`stVal.mov == .MovTy::H) << (int)(
-          `stVal.typ == .StTy::A && `stVal.hb.fallf != 0);
+          `stVal.playerno == `playerno
+          && `stVal.typ == .StTy::A && `stVal.hb.fallf != 0);
       if(`stVal.mov != .MovTy::H){
         `stVal.hb.hittime = 0;
         `stVal.hb.hitshaketime = 0;
