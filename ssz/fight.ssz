@@ -993,15 +993,18 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     ret true;
   }
   public bool act(
-    int roundState, int round, &.snd.Sound snd=, |.KOTy ko, bool simul)
+    bool tf, int roundState, int round,
+    &.snd.Sound snd=, |.KOTy ko, bool simul)
   {
     branch{
     cond roundState > `ctrl_time:
+      if(!tf) ret false;
       `cur = 0;
       `wt = `round_time;
       `swt = `round_sndtime;
       `dt = 0;
     cond roundState >= 0 || `cur < 2:
+      if(!tf) ret false;
       switch(`cur){
       case 0:
         if(`swt-- == 0) branch{
@@ -1114,7 +1117,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         }
       }
     }
-    ret true;
+    ret tf;
   }
   public void draw(int layerno, |.KOTy ko, ^/^/char name)
   {

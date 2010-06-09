@@ -6145,8 +6145,8 @@ public float action(
     }
   }
   if(
-    .com.tickFrame() && .fight~ro.act(
-      .com.intro, .com.round, .syssnd=, .ko,
+    .fight~ro.act(
+      .com.tickFrame(), .com.intro, .com.round, .syssnd=, .ko,
       .com.win >= 0 && .com.tmode[.com.win] == (int).com.TeamMode::Simul))
   {
     branch{
