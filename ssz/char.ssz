@@ -1214,7 +1214,7 @@ public int roundState()
 {
   ret
     .com.intro > .fight~ro.ctrl_time+1 ? 0 : (
-      .com.intro > .fight~ro.ctrl_time ? 1 : (
+      .fight~ro.cur == 0 ? 1 : (
         !.roundEnd() ? 2 : (
           .com.intro < -(
             .fight~ro.over_hittime
@@ -3984,7 +3984,7 @@ public &Char
     %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PInit";
     if(!consteval(`state=, buf)) ret false;
     if(`cs1tmp == 0) `stVal.prevno = `stVal.no;
-    if(`stVal.playerno != `playerno && p == `playerno) loop{
+    if(`stVal.playerno != `playerno && p != `stVal.playerno) loop{
       index i = 0;
       while;
     do:
@@ -6118,6 +6118,32 @@ public float action(
     }
     ret p1 || p2;
   }
+  void posreset()
+  {
+    loop{
+      index i = 0;
+      while;
+    do:
+      if(#.chars[i] > 0){
+        if(.gs(.gsINTRO)) .charClear(i);
+        .chars[i][0]~posReset((float)`stg.p1.startx, (float)`stg.p2.startx);
+        .v.setI(0);
+        .chars[i][0]~trSelfState();
+        .chars[i][0]~sysivar[.iCTRL] = 0;
+      }
+      i++;
+    while i < #.chars:
+      `x = 0.0;
+      `leftest =
+        .m.max!float?(
+          (float).m.min!int?(`stg.p1.startx, `stg.p2.startx),
+          -160.0 / .com.scale + .com.screenleft);
+      `rightest =
+        .m.min!float?(
+          (float).m.max!int?(`stg.p1.startx, `stg.p2.startx),
+          160.0 / .com.scale - .com.screenright);
+    }
+  }
   if(
     .fight~ro.act(
       .com.intro, .com.round, .syssnd=, .ko,
@@ -6127,40 +6153,28 @@ public float action(
     branch{
     cond .com.intro > .fight~ro.ctrl_time:
       .com.intro--;
-      if(
-        .gs(.gsINTRO) && .com.intro <= .fight~ro.ctrl_time
-        && !.cmd.anybutton())
-      {
-        .com.intro = .fight~ro.ctrl_time+1;
-      }
-      if(.com.intro == .fight~ro.ctrl_time) loop{index i = 0; while; do:
-        if(#.chars[i] > 0){
-          if(.gs(.gsINTRO)) .charClear(i);
-          .chars[i][0]~posReset((float)stg.p1.startx, (float)stg.p2.startx);
-          .v.setI(0);
-          .chars[i][0]~trSelfState();
-          .chars[i][0]~sysivar[.iCTRL] = 0;
+      if(.gs(.gsINTRO) && .com.intro <= .fight~ro.ctrl_time){
+        branch{
+        cond .cmd.anybutton():
+          posreset();
+        else:
+          .com.intro = .fight~ro.ctrl_time+1;
         }
-        i++;
-      while i < #.chars:
-        x = 0.0;
-        leftest =
-          .m.max!float?(
-            (float).m.min!int?(stg.p1.startx, stg.p2.startx),
-            -160.0 / .com.scale + .com.screenleft);
-        rightest =
-          .m.min!float?(
-            (float).m.max!int?(stg.p1.startx, stg.p2.startx),
-            160.0 / .com.scale - .com.screenright);
       }
     cond .com.intro >= 1:
       .com.intro--;
+    else:
+      break;
+    comm:
+      if(.roundState() == 2) posreset();
     }
     branch{
     cond .roundEnd() || finish():
       .com.intro--;
     else:
-      if(.com.intro < 0) .com.intro = 0;
+      if(.fight~ro.cur == 1 && .fight~ro.wt == .fight~ro.fight_time){
+        .com.intro = 0;
+      }
     }
     if(.com.intro == 0) loop{index i = 0; while; do:
       if(#.chars[i] > 0 && .chars[i][0]~stVal.no == 0){

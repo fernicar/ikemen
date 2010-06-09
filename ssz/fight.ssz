@@ -1181,8 +1181,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     }
     .com.brightness = ob;
   }
-  public void setup(
-    ^&.sff.Sff sf, ^&.fnt.Font f, ^&.snd.Snd s)
+  public void setup(^&.sff.Sff sf, ^&.fnt.Font f, ^&.snd.Snd s)
   {:<-
     void foo(&.AnimFontSnd afs=)
     {
