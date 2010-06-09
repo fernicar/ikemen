@@ -6145,10 +6145,9 @@ public float action(
     }
   }
   if(
-    .fight~ro.act(
+    .com.tickFrame() && .fight~ro.act(
       .com.intro, .com.round, .syssnd=, .ko,
-      .com.win >= 0 && .com.tmode[.com.win] == (int).com.TeamMode::Simul)
-    && .com.tickFrame())
+      .com.win >= 0 && .com.tmode[.com.win] == (int).com.TeamMode::Simul))
   {
     branch{
     cond .com.intro > .fight~ro.ctrl_time:
@@ -6166,15 +6165,15 @@ public float action(
     else:
       break;
     comm:
-      if(.roundState() == 2) posreset();
+      if(.fight~ro.cur == 1 && .fight~ro.wt == .fight~ro.fight_time-1){
+        posreset();
+      }
     }
     branch{
     cond .roundEnd() || finish():
       .com.intro--;
     else:
-      if(.fight~ro.cur == 1 && .fight~ro.wt == .fight~ro.fight_time){
-        .com.intro = 0;
-      }
+      if(.com.intro < 0) .com.intro = 0;
     }
     if(.com.intro == 0) loop{index i = 0; while; do:
       if(#.chars[i] > 0 && .chars[i][0]~stVal.no == 0){
