@@ -3984,6 +3984,18 @@ public &Char
     %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PInit";
     if(!consteval(`state=, buf)) ret false;
     if(`cs1tmp == 0) `stVal.prevno = `stVal.no;
+    if(`stVal.playerno != `playerno && p == `playerno) loop{
+      index i = 0;
+      while;
+    do:
+      if(.explods[`stVal.playerno][i].bindtime != 0
+        && .explods[`stVal.playerno][i].bindid == `id)
+      {
+        .explods[`stVal.playerno][i].id = .com.IERR;
+      }
+      i++;
+    while i < #.explods[`stVal.playerno]:
+    }
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
