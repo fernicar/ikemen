@@ -2598,7 +2598,7 @@ public &Char
     }
     ret false;
   }
-  public void tickTimer()
+  public void tickHitTimer()
   {
     if(
       !`isPaused() || (
@@ -2612,7 +2612,6 @@ public &Char
       `stVal.juggle = 0;
     }
     if(!`isPaused()){
-      if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
       branch{
       cond `stVal.hb.hitshaketime > 0:
         `stVal.hb.hitshaketime--;
@@ -2661,6 +2660,12 @@ public &Char
       `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
       `stVal.hb.fallcount = 0;
       `sysivar[.iCOMBO] = 0;
+    }
+  }
+  public void tickTimer()
+  {
+    if(!`isPaused()){
+      if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
     }
   }
   public void tickAndAnim(
@@ -5145,6 +5150,16 @@ public void PlayerList!&Char?::action()
     if(p~c~id < 0) p~c~id ^= -1;
     if(foo && p~c~helperindex == 0){
       foo = false;
+      .players.getHit();
+      loop{index i = 0; while; do:
+        loop{index j = 0; while; do:
+          .chars[i][j]~tickHitTimer();
+          j++;
+        while j < #.chars[i]:
+        }
+        i++;
+      while i < #.chars:
+      }
       .com.gametime++;
     }
     branch{
@@ -5459,7 +5474,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
   loop{
     *`top.self p = `top;
     float pl, pr, pv;
-    float sp = .m.min!float?(1.0, .com.turbo);
     branch{
     cond pyr.facing > 0:
       pl = pyr.sysfvar[.fX] - pyr.backw;
@@ -5468,7 +5482,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       pl = pyr.sysfvar[.fX] - pyr.frontw;
       pr = pyr.sysfvar[.fX] + pyr.backw;
     }
-    pv = pyr.acttmp > 0 ? pyr.sysfvar[.fVX]*(float)pyr.facing*sp : 0.0;
+    pv = pyr.acttmp > 0 ? pyr.sysfvar[.fVX]*(float)pyr.facing : 0.0;
     while;
   do:
     if(p~c~id < 0) continue;
@@ -5493,11 +5507,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         er = p~c~sysfvar[.fX] + p~c~backw;
       }
       if(el >= er) break;
-      float ev =
-        p~c~acttmp > 0
-        ? p~c~sysfvar[.fVX]*(float)p~c~facing*sp : 0.0;
+      float ev = p~c~acttmp > 0 ? p~c~sysfvar[.fVX]*(float)p~c~facing : 0.0;
       if((pl < el || pl < er)  && (el < pr || er < pr)){
-        float foo = (1.0 - (1.0 - 0.5)**(0.5*sp)) * 0.5;
+        const float foo = (1.0 - (1.0 - 0.5)**0.5) * 0.5;
         branch{
           float tmp = (pyr.sysfvar[.fX] - pv) - (p~c~sysfvar[.fX] -  ev);
         cond tmp < 0.0:
@@ -5945,7 +5957,6 @@ public float action(
     i++;
   while i < #.projs:
   }
-  .players.getHit();
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
       if(.projs[i][j].id >= 0) .projs[i][j].anime();
