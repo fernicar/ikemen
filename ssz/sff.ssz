@@ -385,7 +385,7 @@ public &Anim<frame_t>
     loop{
       index i = `current;
       if(i < #`frames && `frames[i].time != 0){
-        at += (int)(`frames[i].time < 0) + 1;
+        at += (int)(i > 0 && `frames[i].time < 0) + 1;
       }
       while;
     do:
