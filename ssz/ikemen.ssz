@@ -606,7 +606,7 @@ int game()
     {
       loop{while; do:
         if(p[0]~sysivar[.chr.iLIFE] <= 0){
-          if(winp == 2) break, break;
+          if(share~chr_p2w >= share~chr_p2mw) break, break;
           if(.com.tmode[0] == (int).com.TeamMode::Turns){
             share~f~fa[.com.tmode[0]][0].numko++;
             cha[0] =
@@ -623,7 +623,7 @@ int game()
           }
         }
         if(p[1]~sysivar[.chr.iLIFE] <= 0){
-          if(winp == 1) break, break;
+          if(share~chr_p1w >= share~chr_p1mw) break, break;
           if(.com.tmode[1] == (int).com.TeamMode::Turns){
             share~f~fa[.com.tmode[1]][1].numko++;
             cha[1] =
