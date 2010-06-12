@@ -3848,10 +3848,7 @@ public &Char
     `animno = no;
     `animpno = `playerno;
     `ani = `getAction(no);
-    branch{
-    cond #`ani > 0:
-      `ani~ani.updateSprite();
-    else:
+    if(#`ani == 0){
       `animpno = -1;
       `animno = 0;
       `ani = `getAction(0);
@@ -3859,13 +3856,13 @@ public &Char
     }
     `sysfvar[.fCLSNXSCALE] = `sysfvar[.fXSCALE];
     `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
+    if(#`ani > 0) `ani~ani.updateSprite();
   }
   public void trChangeAnim2(int pno, int no)
   {
     `animno = no;
     `animpno = pno;
     `ani = .chars[pno][0]~getAction(no);
-    if(#`ani > 0) `ani~ani.updateSprite();
     branch{
     cond #`ani > 0:
       `sysfvar[.fCLSNXSCALE] = .chars[pno][0]~sysfvar[.fXSCALE];
@@ -3878,6 +3875,7 @@ public &Char
       `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
       `trDestroySelf();
     }
+    if(#`ani > 0) `ani~ani.updateSprite();
   }
   public void trAnimExist(int pno)
   {
