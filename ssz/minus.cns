@@ -15,7 +15,7 @@ type = PlaySnd
 triggerall = !NoKosnd
 triggerall = !Alive
 triggerall = !IsHelper
-trigger1 = sysvar(58) & 4
+trigger1 = sysvar(58) & 4;SYSFLAG
 value = 11, 0
 channel = 0
 
@@ -100,17 +100,30 @@ trigger1 = sysvar(59);SYSTEMP
 
 [State -4, Win or Lose1]
 type = VarSet
-trigger1 = RoundState < 4
-sysvar(58) = sysvar(58) | 2;SYSFLAG
+trigger1 = RoundState < 3
+sysvar(58) = sysvar(58) | 2;SYSFLAG,WIN
 
 [State -4, Win or Lose2]
+type = VarSet
+trigger1 = RoundState < 3
+sysvar(56) = 900;WAITWIN
+
+[State -4, Win or Lose3]
+type = AssertSpecial
+triggerall = roundstate = 4
+triggerall = !ishelper
+triggerall = win
+triggerall = alive
+trigger1 = (sysvar(56) := sysvar(56)-1) >= 0;WAITWIN
+flag = roundnotover
+
+[State -4, Win or Lose4]
 type = ChangeState
-triggerall = Active
 triggerall = RoundState = 4
 triggerall = !IsHelper
-triggerall = sysvar(58) & 2;SYSFLAG
-trigger1 = StateNo = 0
-trigger1 = (Physics != S && Physics != C) || abs(vel x) < 0.01
-trigger1 = sysvar(58) := (sysvar(58) & ~2) || 1;SYSFLAG
+triggerall = Active
+triggerall = sysvar(58) & 2;SYSFLAG,WIN
+trigger1 = StateNo = [0,9]
+trigger1 = abs(vel x) < 0.01
 value = ifelse(Win, 180, ifelse(Lose, 170, 175))
 

@@ -1079,7 +1079,7 @@ const index iHITPAUSETIME      = 52;
 const index iALPHAS            = 53;
 const index iALPHAD            = 54;
 const index iRECOVERTIME       = 55;
-const index iCOMBO             = 56;
+const index iWAITWIN           = 56;
 const index iSPECIALFLAG       = 57;
 const index iSYSFLAG           = 58;
 const index iSYSTEMP           = 59;
@@ -1164,6 +1164,8 @@ public bool gs(uint mask)
   ret (.specialFlag & mask) != 0d0;
 }
 
+const int sfAIRJUMP = 0b00000000000000000000000000000001;
+const int sfWIN     = 0b00000000000000000000000000000010;
 
 &PlayerList<_t>
 {
@@ -1761,6 +1763,7 @@ public &Char
   public int palno, drawpalno;
   public int animno;
   public int animpno;
+  public int getcombo;
   public float frontw, backw, fedge, bedge;
   public float attackmul, defencemul, attackdist;
   public float offsetx, offsety;
@@ -1820,7 +1823,7 @@ public &Char
     `sysivar[.iALPHAS] = 255;
     `sysivar[.iALPHAD] = 0;
     `sysivar[.iRECOVERTIME] = 0;
-    `sysivar[.iCOMBO] = 0;
+    `getcombo = 0;
     `veloff = 0.0;
     `palfx.new(0);
     `aimg.timegap = -1;
@@ -2655,13 +2658,11 @@ public &Char
       if(.supertime < 0 && .supertime != .com.IERR){
         `defencemul *= .superp2defmul;
       }
-      if(`sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0){
-        `sysivar[.iCOMBO] = 0;
-      }
+      if(`sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0) `getcombo = 0;
     else:
       `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
       `stVal.hb.fallcount = 0;
-      `sysivar[.iCOMBO] = 0;
+      `getcombo = 0;
     }
   }
   public void tickTimer()
@@ -4000,6 +4001,10 @@ public &Char
     `stVal.time = 0;
     `cs1tmp = 1;
     `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
+    if(p == `playerno && n == 180){
+      `sysivar[.iSYSFLAG] &= !.sfWIN;
+      `sysivar[.iWAITWIN] = 180;
+    }
     ret true;
   }
   public void changeState2()
@@ -4435,7 +4440,7 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
-      if(#c > 0) c~sysivar[.iCOMBO] += h;
+      if(#c > 0) c~getcombo += h;
       i++;
     while i < #`targets:
     }
@@ -5143,6 +5148,15 @@ public void PlayerList!&Char?::action()
     if(p~c~id < 0) p~c~id ^= -1;
     if(foo && p~c~helperindex == 0){
       foo = false;
+      loop{index i = 0; while; do:
+        loop{index j = 0; while; do:
+          if(.projs[i][j].id >= 0) .projs[i][j].projClsn();
+          j++;
+        while j < #.projs[i]:
+        }
+        i++;
+      while i < #.projs:
+      }
       .players.getHit();
       loop{index i = 0; while; do:
         loop{index j = 0; while; do:
@@ -5361,7 +5375,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         .stage.envShake.phase = hit.envshake_phase;
         .stage.envShake.setDefPhase();
       }
-      `pyr.sysivar[.iCOMBO] += hit.numhits*hits;
+      `pyr.getcombo += hit.numhits*hits;
       if(
         pro == 0 && rtn && by.cs1tmp == 0 && `pyr.ls(.lsSCREENBOUNDX) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
@@ -5910,8 +5924,7 @@ public float action(
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
       cb[!i&1] =
-        .m.min!int?(999)<,
-        .m.max!int?(cb[!i&1], .chars[i][j]~sysivar[.iCOMBO]);
+        .m.min!int?(999)<, .m.max!int?(cb[!i&1], .chars[i][j]~getcombo);
       j++;
     while j < #.chars[i]:
     }
@@ -5940,15 +5953,6 @@ public float action(
       (float).superfacing, 1.0, 0.0, 255, 0, 256,
       .consts.null!&.com.PalFX?(), 0, 0.0);
     if(.superanim~ani.loopend) .superanim.new(0);
-  }
-  if(.com.tickFrame()) loop{index i = 0; while; do:
-    loop{index j = 0; while; do:
-      if(.projs[i][j].id >= 0) .projs[i][j].projClsn();
-      j++;
-    while j < #.projs[i]:
-    }
-    i++;
-  while i < #.projs:
   }
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:

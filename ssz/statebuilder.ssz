@@ -6270,10 +6270,10 @@ public &StateBuilder
             \t"branch{"\r\n
             \t"cond `stVal.typ == .StTy::A:"\r\n
             \t\t"if(`trCommand("\""holdup"\"")$!.v.isTrue())"
-            " `sysivar[.iSYSFLAG] |= 1;"\r\n
+            " `sysivar[.iSYSFLAG] |= .sfAIRJUMP;"\r\n
             \t"else:"\r\n
             \t\t"`sysivar[.iAIRJUMP_CNT] = 0;"\r\n
-            \t\t"`sysivar[.iSYSFLAG] &= !1;"\r\n
+            \t\t"`sysivar[.iSYSFLAG] &= !.sfAIRJUMP;"\r\n
             \t"}"\r\n
             \t"if(`stVal.no == 140"
             " && `trAnimTime()$.v.toInt() == 0){"\r\n
@@ -6295,12 +6295,12 @@ public &StateBuilder
             " || `trCommand("\""holdback"\"")$!.v.isTrue()):"\r\n
             \t\t\t".v.setI(40)$`trSelfState();"\r\n
             \t\t"cond `stVal.typ == .StTy::A"
-            " && (`sysivar[.iSYSFLAG]&1) != 0"
+            " && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0"
             " && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]"
             " && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]"
             " && `trCommand("\""holdup"\"")$.v.isTrue():"\r\n
             \t\t\t"`sysivar[.iAIRJUMP_CNT]++;"\r\n
-            \t\t\t"`sysivar[.iSYSFLAG] &= !1;"\r\n
+            \t\t\t"`sysivar[.iSYSFLAG] &= !.sfAIRJUMP;"\r\n
             \t\t\t".v.setI(45)$`trSelfState();"\r\n
             \t\t"cond !`ls(.lsNOWALK) && `stVal.typ == .StTy::S"
             " && (`trCommand("\""holdfwd"\"")$.v.isTrue()"
