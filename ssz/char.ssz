@@ -2601,12 +2601,7 @@ public &Char
   public void tickHitTimer()
   {
     if(`id < 0) ret;
-    if(#`ani > 0) branch{
-    cond `acttmp > 0:
-      `ani~ani.action();
-    else:
-      `ani~ani.updateSprite();
-    }
+    if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
     if(
       !`isPaused() || (
         .super > 0 ? `playerno == .superplayer
@@ -2888,6 +2883,7 @@ public &Char
       branch{
       cond #`ani > 0:
         `curFrame = `ani~ani.currentFrame();
+        `ani~ani.updateSprite();
       else:
         `curFrame.new(0);
       }
