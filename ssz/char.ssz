@@ -2600,6 +2600,13 @@ public &Char
   }
   public void tickHitTimer()
   {
+    if(`id < 0) ret;
+    if(#`ani > 0) branch{
+    cond `acttmp > 0:
+      `ani~ani.action();
+    else:
+      `ani~ani.updateSprite();
+    }
     if(
       !`isPaused() || (
         .super > 0 ? `playerno == .superplayer
@@ -2849,12 +2856,6 @@ public &Char
     {
       `enemyn.new(0);
       bool p = `isSuperPaused() || `isNormalPaused();
-      if(
-        `acttmp > 0 && `helperindex == 0
-        && `stVal.playerno == `playerno && #`ani > 0)
-      {
-        `ani~ani.action();
-      }
       `acttmp = -(int)p * 2;
       `changeState2();
       `minus = 1;
@@ -2887,12 +2888,6 @@ public &Char
       branch{
       cond #`ani > 0:
         `curFrame = `ani~ani.currentFrame();
-        branch{
-        cond `acttmp > 0 && (`helperindex > 0 || `stVal.playerno != `playerno):
-          `ani~ani.action();
-        else:
-          `ani~ani.updateSprite();
-        }
       else:
         `curFrame.new(0);
       }
@@ -3853,7 +3848,10 @@ public &Char
     `animno = no;
     `animpno = `playerno;
     `ani = `getAction(no);
-    if(#`ani == 0){
+    branch{
+    cond #`ani > 0:
+      `ani~ani.updateSprite();
+    else:
       `animpno = -1;
       `animno = 0;
       `ani = `getAction(0);
@@ -3867,6 +3865,7 @@ public &Char
     `animno = no;
     `animpno = pno;
     `ani = .chars[pno][0]~getAction(no);
+    if(#`ani > 0) `ani~ani.updateSprite();
     branch{
     cond #`ani > 0:
       `sysfvar[.fCLSNXSCALE] = .chars[pno][0]~sysfvar[.fXSCALE];

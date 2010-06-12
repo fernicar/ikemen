@@ -404,6 +404,7 @@ public &Anim<frame_t>
     `drawidx = `current;
     `time = 0;
     `newframe = true;
+    `updateSprite();
     `loopend = `current < e-1;
   }
   public void updateSprite()
