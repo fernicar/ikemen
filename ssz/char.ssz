@@ -2789,7 +2789,6 @@ public &Char
   }
   void lSetNormal()
   {
-    if(`sysivar[.iLIFE] <= 0) `setCtrl(false);
     `sysivar[.iSPECIALFLAG] &=
       .lsNoMoveMask | (`isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0);
     `sysivar[.iSPECIALFLAG] |=
@@ -3257,7 +3256,9 @@ public &Char
   }
   public bool ctrl()
   {
-    ret `sysivar[.iCTRL] != 0 && .com.intro <= 0 && .roundState() < 4;
+    ret
+      `sysivar[.iCTRL] != 0 && `sysivar[.iLIFE] > 0 && .m.inRange!int?(
+        -(.fight~ro.over_hittime + .fight~ro.over_waittime), 0, .com.intro);
   }
   public void setCtrl(bool c)
   {
