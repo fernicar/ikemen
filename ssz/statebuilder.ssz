@@ -1290,7 +1290,7 @@ public &StateBuilder
       cond .s.equ("yvel", token):
         out .= ".v.setF(" .= obj .= "stVal.hb.yvel)";
       cond .s.equ("yaccel", token):
-        out .= ".v.setF(" .= obj .= "stVal.hb.yaccel)";
+        out .= ".v.setF(" .= obj .= "stVal.hb.getYaccel())";
       cond .s.equ("hitid", token):
         out .= ".v.setI(" .= obj .= "stVal.hb.hitid)";
       cond .s.equ("chainid", token):
@@ -3784,9 +3784,12 @@ public &StateBuilder
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetIVar(" : "`trSetIVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
-            if(!.s.equ("=")<, `tokenizer(text=)){
-              `lasterror = "'='がありません";
-              ret false;
+            {
+              ^/char tmp = `tokenizer(text=);
+              if(!.s.equ("=", tmp) && !.s.equ(":=", tmp)){
+                `lasterror = "'='がありません";
+                ret false;
+              }
             }
             if(
               !`fullExpression(
@@ -3801,9 +3804,12 @@ public &StateBuilder
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetFVar(" : "`trSetFVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
-            if(!.s.equ("=")<, `tokenizer(text=)){
-              `lasterror = "'='がありません";
-              ret false;
+            {
+              ^/char tmp = `tokenizer(text=);
+              if(!.s.equ("=", tmp) && !.s.equ(":=", tmp)){
+                `lasterror = "'='がありません";
+                ret false;
+              }
             }
             if(
               !`fullExpression(
@@ -3818,9 +3824,12 @@ public &StateBuilder
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetSysIVar(" : "`trSetSysIVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
-            if(!.s.equ("=")<, `tokenizer(text=)){
-              `lasterror = "'='がありません";
-              ret false;
+            {
+              ^/char tmp = `tokenizer(text=);
+              if(!.s.equ("=", tmp) && !.s.equ(":=", tmp)){
+                `lasterror = "'='がありません";
+                ret false;
+              }
             }
             if(
               !`fullExpression(
@@ -3835,9 +3844,12 @@ public &StateBuilder
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetSysFVar(" : "`trSetSysFVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
-            if(!.s.equ("=")<, `tokenizer(text=)){
-              `lasterror = "'='がありません";
-              ret false;
+            {
+              ^/char tmp = `tokenizer(text=);
+              if(!.s.equ("=", tmp) && !.s.equ(":=", tmp)){
+                `lasterror = "'='がありません";
+                ret false;
+              }
             }
             if(
               !`fullExpression(

@@ -758,7 +758,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `guard_ctrltime = -1;
     `airguard_ctrltime = -1;
     `guard_dist = -1;
-    `yaccel = 0.35;
+    `yaccel = .com.FERR;
     `ground_velocityx = 0.0;
     `ground_velocityy = 0.0;
     `guard_velocity = .com.FERR;
@@ -889,6 +889,10 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `mindisty = .com.FERR;
     `maxdisty = .com.FERR;
     `fall.clear();
+  }
+  /float getYaccel()
+  {
+    ret `yaccel == .com.FERR ? 0.35 : `yaccel;
   }
 }
 &HitOverride
@@ -2932,7 +2936,9 @@ public &Char
     default:<-
       if(!`ls(.lsPOSFREEZEY)){
         `sysfvar[.fVY] +=
-          (`stVal.mov == .MovTy::H ? `stVal.hb.yaccel : `sysfvar[.fYACCEL])
+          (
+            `stVal.mov == .MovTy::H
+            ? `stVal.hb.getYaccel() : `sysfvar[.fYACCEL])
           * (float)((int)(`stVal.phy == .StTy::A) + (int)`ls(.lsGRAVITY));
       }
     }
@@ -5232,9 +5238,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       e.supermovetime = e.pausemovetime = -1;
       `by.setPos!e.self?(e=, e.postype, e.offsetx, e.offsety, e.relativef);
     }
-    if(`pyr.stVal.hb.yaccel == .com.FERR){
-      `pyr.stVal.hb.yaccel = `pyr.sysfvar[.fYACCEL];
-    }
     ^&.snd.Sound sou;
     branch{
     cond #hitting == 1:
@@ -5569,7 +5572,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
       }
     }
-    if(!.com.tickFrame()) continue;
     if(
       p~c~atktmp < 0 || p~c~id == pyr.id || (
         p~c~stVal.hit.affectteam != 0
@@ -5632,13 +5634,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     p = p~next;
   while #p > 0:
   }
-  if(!.com.tickFrame()) ret;
   loop{
     index i = 0;
     while;
   do:
     loop{
       index j = 0;
+      bool hoge;
       while;
     do:
       if(
@@ -5654,6 +5656,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       {
         pyr.inguarddist = true;
       }
+      hoge = true;
       if(
         .projs[i][j].hit.hitonce >= 0 && (
           pyr.hittmp < 2 || .chars[i][0]~ls(.lsNOJUGGLECHECK)
@@ -5666,6 +5669,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               && pyr.hitProjCheck(.projs[i][j]=);
           }]))
       {
+        hoge = false;
         if(
           .m.inRange!float?(
             0.0, (float).projs[i][j].hit.guard_dist,
@@ -5706,9 +5710,16 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
       }
       if(
-        .projs[i][j].prioritypoint > 0 && pyr.stVal.mov == .MovTy::A
+        .projs[i][j].prioritypoint > 0 && pyr.atktmp >= 0
+        && (
+          pyr.stVal.hit.affectteam == 0 || (
+           ((i&1) != (pyr.playerno&1)) == (pyr.stVal.hit.affectteam > 0)))
         && (pyr.stVal.hit.hitflag & (int).StTy::U) != 0
-        && pyr.hitProjCheck(.projs[i][j]=))
+        && pyr.hitProjCheck(.projs[i][j]=) && (
+          hoge || (
+            pyr.stVal.hit.priority == .projs[i][j].hit.priority
+            && .projs[i][j].hit.bothhittype != .PriTy::Dodge
+            && pyr.stVal.hit.bothhittype == .PriTy::Hit)))
       {
         .projs[i][j].hits = 0;
         .projs[i][j].prioritypoint = 0;
