@@ -1806,7 +1806,6 @@ public &Char
     .s.copy!float?(`sysfvar[10..-1], c.sysfvar[10..-1]);
     `sysivar[.iLIFE] = `sysivar[.iLIFEMAX];
     `sysivar[.iPOWER] = 0;
-    `sysivar[.iCTRL] = 0;
     `clearSpSysVar();
   }
   public void clearSpSysVar()
@@ -2790,13 +2789,7 @@ public &Char
   }
   void lSetNormal()
   {
-    if(
-      .com.intro > .fight~ro.ctrl_time
-      || .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime)
-      || `sysivar[.iLIFE] <= 0)
-    {
-      `sysivar[.iCTRL] = 0;
-    }
+    if(`sysivar[.iLIFE] <= 0) `setCtrl(false);
     `sysivar[.iSPECIALFLAG] &=
       .lsNoMoveMask | (`isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0);
     `sysivar[.iSPECIALFLAG] |=
@@ -3264,11 +3257,10 @@ public &Char
   }
   public bool ctrl()
   {
-    ret `sysivar[.iCTRL] != 0;
+    ret `sysivar[.iCTRL] != 0 && .com.intro <= 0 && .roundState() < 4;
   }
   public void setCtrl(bool c)
   {
-    if(.roundState() < 2) ret;
     `sysivar[.iCTRL] = (int)c;
   }
   public void destroySelf()
@@ -4343,7 +4335,7 @@ public &Char
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
       if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
-        c~sysivar[.iCTRL] = 0;
+        c~setCtrl(false);
         if(c~changeState1(pno, state)) c~minus = 3;
       }
       i++;
@@ -5294,7 +5286,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               break, break;
             }
             if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
-            `pyr.sysivar[.iCTRL] = 0;
+            `pyr.setCtrl(false);
             branch{
             cond #hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0:
               rtn = damageable = false;
@@ -5311,7 +5303,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       if(#hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0){
         p2s = 1;
         if(`pyr.changeState1(by.playerno, hit.p2stateno)){
-          `pyr.sysivar[.iCTRL] = 0;
+          `pyr.setCtrl(false);
           p2s = 2;
         }
       }
@@ -6149,7 +6141,7 @@ public float action(
         .chars[i][0]~posReset((float)`stg.p1.startx, (float)`stg.p2.startx);
         .v.setI(0);
         .chars[i][0]~trSelfState();
-        .chars[i][0]~sysivar[.iCTRL] = 0;
+        .chars[i][0]~setCtrl(true);
       }
       i++;
     while i < #.chars:
@@ -6189,13 +6181,6 @@ public float action(
       .com.intro--;
     else:
       if(.com.intro < 0) .com.intro = 0;
-    }
-    if(.com.intro == 0) loop{index i = 0; while; do:
-      if(#.chars[i] > 0 && .chars[i][0]~stVal.no == 0){
-        .chars[i][0]~setCtrl(true);
-      }
-      i++;
-    while i < #.chars:
     }
     if(
       .com.intro == 0 && .com.time > 0 && !.gs(.gsTIMERFREEZE)
@@ -6375,7 +6360,7 @@ public void nextRound(&.stage.Stage stg=)
     .id = .chars[i][0]~id + 1;
     .charClear(i);
     .chars[i][0]~posReset((float)stg.p1.startx, (float)stg.p2.startx);
-    .chars[i][0]~sysivar[.iCTRL] = 0;
+    .chars[i][0]~setCtrl(false);
     .chars[i][0]~stVal.clear();
     .chars[i][0]~clearSpSysVar();
     .chars[i][0]~rangeSetIVar(

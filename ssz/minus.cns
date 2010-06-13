@@ -123,7 +123,8 @@ triggerall = RoundState = 4
 triggerall = !IsHelper
 triggerall = Active
 triggerall = sysvar(58) & 2;SYSFLAG,WIN
-trigger1 = StateNo = [0,9]
+trigger1 = sysvar(42);iCTRL
+trigger1 = physics != a
 trigger1 = abs(vel x) < 0.01
 value = ifelse(Win, 180, ifelse(Lose, 170, 175))
 
