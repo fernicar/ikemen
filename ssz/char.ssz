@@ -726,8 +726,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
   {
     `attr = 0;
     `reversal_attr = 0;
-    `hitflag =
-      (int).StTy::S | (int).StTy::C | (int).StTy::A | (int).StTy::N;
+    `hitflag = (int).StTy::S | (int).StTy::C | (int).StTy::A | (int).StTy::N;
     `guardflag = 0;
     `affectteam = 1;
     `animtype = .AnimTy::Light;
@@ -4002,7 +4001,7 @@ public &Char
     `cs1tmp = 1;
     if(p == `playerno) switch(n){
     case 0:
-      `setCtrl(true);
+      if(`minus == 1) `setCtrl(true);
     case 180:
       `sysivar[.iSYSFLAG] &= !.sfWIN;
       `sysivar[.iWAITWIN] = 180;
@@ -6145,6 +6144,7 @@ public float action(
         .chars[i][0]~posReset((float)`stg.p1.startx, (float)`stg.p2.startx);
         .v.setI(0);
         .chars[i][0]~trSelfState();
+        .chars[i][0]~setCtrl(true);
       }
       i++;
     while i < #.chars:
