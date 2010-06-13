@@ -2649,6 +2649,7 @@ public &Char
       `stVal.hit.clear();
     }
     `tmphit = -1;
+    if(`cs1tmp != 0) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     if(`player){
       `enemyn.new(0);
       `minus = -1;
@@ -3999,8 +4000,10 @@ public &Char
     `stVal.playerno = p;
     `stVal.time = 0;
     `cs1tmp = 1;
-    `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
-    if(p == `playerno && n == 180){
+    if(p == `playerno) switch(n){
+    case 0:
+      `setCtrl(true);
+    case 180:
       `sysivar[.iSYSFLAG] &= !.sfWIN;
       `sysivar[.iWAITWIN] = 180;
     }
@@ -6142,7 +6145,6 @@ public float action(
         .chars[i][0]~posReset((float)`stg.p1.startx, (float)`stg.p2.startx);
         .v.setI(0);
         .chars[i][0]~trSelfState();
-        .chars[i][0]~setCtrl(true);
       }
       i++;
     while i < #.chars:
