@@ -979,7 +979,8 @@ public &StateBuilder
           branch{
           cond a:
             out .=
-              ".v.setB(.s.equ(" .= obj .= "author" .= ","\" .= token .= \""))";
+              ".v.setB(.s.equ(.s.toLower(" .= obj .= "author)"
+              .= ",.s.toLower("\" .= token .= \"")))";
           else:
             out .= obj .= "trPName(" .= .s.iToS(pn) .= ","\" .= token .= \"")";
           }

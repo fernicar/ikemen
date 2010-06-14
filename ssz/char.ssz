@@ -4166,7 +4166,10 @@ public &Char
     else:
       foo = (no - 1) ^ (`playerno & 1);
     }
-    .v.setI((int)(#.chars[foo] > 0 && .s.equ(name, .chars[foo][0]~name)));
+    .v.setI(
+      (int)(
+        #.chars[foo] > 0 && .s.equ(
+          .s.toLower(name), .s.toLower(.chars[foo][0]~name))));
   }
   public void trFrontEdgeDist()
   {
