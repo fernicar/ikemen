@@ -2851,6 +2851,18 @@ public &Char
     while i < #`targets:
     }
   }
+  public bool land()
+  {
+    if(
+      `player && `stVal.foophy == .StTy::A && `isActive()
+      && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0)
+    {
+      .v.setI(52);
+      `trSelfState();
+      ret true;
+    }
+    ret false;
+  }
   public void action()
   {
     if(`minus != 3) ret;
@@ -2877,13 +2889,7 @@ public &Char
       `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
       `state(::);
-      if(
-        `player && !`isHitPaused() && `stVal.foophy == .StTy::A
-        && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0)
-      {
-        .v.setI(52);
-        `trSelfState();
-      }
+      `land();
     break:
       `minus = 2;
       `acttmp += (int)`isActive() - (int)`isHitPaused();
@@ -4029,6 +4035,7 @@ public &Char
   {
     if(.v.typ == .VarTy::SFalse) ret;
     int n = .v.toInt();
+    if(`minus == 0 && n != 52 && `land()) ret;
     if(`minus == 1 && `stVal.no == n && `stVal.playerno == p) ret;
     branch{
     cond `changeState1(p, n):
@@ -4043,7 +4050,6 @@ public &Char
     cond .changeStateNest < 2500:
       `trDestroySelf();
       if(`helperindex == 0 && n != 0){
-        `setCtrl(true);
         .v.setI(0);
         `trSelfState();
       }
