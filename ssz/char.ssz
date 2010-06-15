@@ -405,6 +405,27 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
     while i < #`palfx:
     }
   }
+  public void recAfterImg(
+    &.act.Action a=, float x, float y, float xs, float ys, float an)
+  {
+    if(`time == 0){
+      `reccount = 0;
+      ret;
+    }
+    if(`time > 0) `time--;
+    if(`restgap <= 0){
+      `imgs[`imgidx].anim~copy(a=);
+      `imgs[`imgidx].x = x;
+      `imgs[`imgidx].y = y;
+      `imgs[`imgidx].xscl = xs;
+      `imgs[`imgidx].yscl = ys;
+      `imgs[`imgidx].angle = an;
+      `imgidx = `imgidx+1 & 63;
+      if(`reccount < #`imgs) `reccount++;
+      `restgap = `timegap;
+    }
+    `restgap--;
+  }
   public void recAndAddAL(
     &.act.Action a=, int p,
     float x, float y, float xs, float ys, float an, bool rec, int br)
@@ -414,10 +435,8 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
       || !.m.inRange!int?(1, 32767, `framegap))
     {
       `time = 0;
-      `reccount = 0;
       ret;
     }
-    if(rec && `time > 0) `time--;
     loop{
       index i = `framegap, end = .cfg.AfterImageMax*`framegap;
       if(end > `reccount) end = (`reccount/`framegap) * `framegap;
@@ -435,19 +454,7 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
       i += `framegap;
     while i <= end:
     }
-    if(!rec) ret;
-    if(`restgap <= 0){
-      `imgs[`imgidx].anim~copy(a=);
-      `imgs[`imgidx].x = x;
-      `imgs[`imgidx].y = y;
-      `imgs[`imgidx].xscl = xs;
-      `imgs[`imgidx].yscl = ys;
-      `imgs[`imgidx].angle = an;
-      `imgidx = `imgidx+1 & 63;
-      if(`reccount < #`imgs) `reccount++;
-      `restgap = `timegap;
-    }
-    `restgap--;
+    if(rec) `recAfterImg(a=, x, y, xs, ys, an);
   }
 }
 
@@ -2719,7 +2726,7 @@ public &Char
         .m.min!float?(0.0)<,
         .m.max!float?(`sysfvar[.fY], lowest);
     }
-    if(#`ani > 0 && !`ls(.lsINVISIBLE)){
+    if(#`ani > 0) branch{
       int sp = `sprpriority;
       int br = 256 >> (int)(
         .super > 0 && .superdarken != 0 && `playerno != .superplayer);
@@ -2731,6 +2738,7 @@ public &Char
         `ls(.lsANGLEDRAW) ? (
           `sysfvar[.fANGLE] == 0.0 ? 360.0 : `sysfvar[.fANGLE])
         : 0.0;
+    cond !`ls(.lsINVISIBLE):
       .addAnimList(
         .anims=, `ani, sp, x, y, .com.scale, xs, ys, an,
         `ls(.lsTRANS) ? `sysivar[.iALPHAS] : -1,
@@ -2738,6 +2746,8 @@ public &Char
         `ls(.lsNOSHADOW) ? 0 : -1, (float)`sysivar[.iSHADOWOFFSET]);
       `aimg.recAndAddAL(
         `ani<>=, sp, x, y, xs, ys, an, .com.tickFrame() && `acttmp > 0, br);
+    cond .com.tickFrame() && `acttmp > 0:
+      `aimg.recAfterImg(`ani<>=, x, y, xs, ys, an);
     }
     if(.com.tickFrame()) `tickTimer();
   }
