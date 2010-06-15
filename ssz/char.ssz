@@ -1706,6 +1706,7 @@ public &Projectile
       `pctime++;
     cond `pctime < 0:
       `pctime *= -1;
+      if(`misstime <= 0) `hits = 0;
     }
     if(.com.clsndraw && #`ani > 0){
       ^&.act.Frame frm = `ani~ani.currentFrame();
@@ -5719,7 +5720,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             }
             if(.projs[i][j].hit.hitonce > 0) .projs[i][j].hit.hitonce = -1;
           }
-          if(.projs[i][j].misstime == 0) .projs[i][j].hits = 0;
         }
       }
       if(
