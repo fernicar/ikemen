@@ -2900,15 +2900,12 @@ public &Char
         if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
         if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
       }
+      if(`destmp != 0) `destroySelf();
       `targetAction();
     }
   }
   public float move(float tension)
   {
-    if(`helperindex > 0 && `destmp != 0){
-      `destroySelf();
-      ret 0.0;
-    }
     if(`acttmp <= 0) ret 0.0;
     if(
       .m.inRange!int?(120, 159, `stVal.no)
@@ -5153,7 +5150,7 @@ public void PlayerList!&Char?::destroy(int id)
   while #p~next > 0:
   }
 }
-public void PlayerList!&Char?::action()
+public void PlayerList!&Char?::action(float x, float tension, float cvx=)
 {
   loop{
     *`top.self p = `top;
@@ -5163,6 +5160,7 @@ public void PlayerList!&Char?::action()
     if(p~c~id < 0) p~c~id ^= -1;
     if(foo && p~c~helperindex == 0){
       foo = false;
+      .update(x, tension, cvx=);
       loop{index i = 0; while; do:
         loop{index j = 0; while; do:
           if(.projs[i][j].id >= 0) .projs[i][j].projClsn();
@@ -5892,6 +5890,21 @@ void gSetNormal(&.stage.Stage stg=, float scl, float x, float y)
   ret lpl;
 }
 
+void update(float x, float tension, float cvx=)
+{
+  .players.move(tension, cvx=);
+  .players.update(x);
+  loop{index i = 0; while; do:
+    loop{index j = 0; while; do:
+      if(.projs[i][j].id >= 0) .projs[i][j].update();
+      j++;
+    while j < #.projs[i]:
+    }
+    i++;
+  while i < #.projs:
+  }
+}
+
 public float action(
   &.stage.Stage stg=, float x=, float y=,
   float leftest=, float rightest=, float scl)
@@ -5901,7 +5914,12 @@ public float action(
   .shadows.new(0);
   .resetDrawnClsnList();
   .gSetNormal(stg=, scl, x, y);
-  if(.com.tickFrame()){
+  float tension = (float)stg.cam.tension / .com.scale;
+  float cvx = 0.0;
+  float highest = 0.0, lowest = .com.screeny;
+  rightest = leftest = x;
+  branch{
+  cond .com.tickFrame():
     branch{
     cond .super > 0:
       .super--;
@@ -5922,7 +5940,9 @@ public float action(
     .stage.envShake.next();
     if(.super <= 0 && .pause <= 0) .specialFlag = 0d0;
     if(.envcol_time > 0) .envcol_time--;
-    .players.action();
+    .players.action(x, tension, cvx=);
+  else:
+    .update(x, tension, cvx=);
   }
   %bool hbuf;
   loop{index i = 0; while; do:
@@ -5952,21 +5972,6 @@ public float action(
   while i < #.chars:
   }
   .fight~step(.com.tmode, .getLifePower(), hbuf, cb, .syssnd=);
-  float tension = (float)stg.cam.tension / .com.scale;
-  float cvx = 0.0;
-  float highest = 0.0, lowest = .com.screeny;
-  rightest = leftest = x;
-  .players.move(tension, cvx=);
-  .players.update(x);
-  loop{index i = 0; while; do:
-    loop{index j = 0; while; do:
-      if(.projs[i][j].id >= 0) .projs[i][j].update();
-      j++;
-    while j < #.projs[i]:
-    }
-    i++;
-  while i < #.projs:
-  }
   if(#.superanim > 0){
     .addAnimList(
       .topanims=, .superanim, 5, .superposx, .superposy, .com.scale,
