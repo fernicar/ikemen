@@ -5292,11 +5292,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       `pyr.cs1tmp == 0 || `pyr.stVal.playerno == by.playerno
       || !`pyr.ls(.lsGETHIT))
     {
-      damageable = true;
-      if(hitting > 0){
-        `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
-        rtn = true;
-      }
+      rtn = damageable = true;
+      if(hitting > 0) `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
       loop{index i = 0; while; do:
         if(
           `pyr.stVal.ho[i].time != 0
