@@ -5580,10 +5580,10 @@ public &StateBuilder
             branch{
             cond .s.equ(text, "none"):
               `state.ctrlList[-1].task .= "`aimg.alphas=-1;";
-            cond .s.equ(text, "add"):
-              `state.ctrlList[-1].task .= "`aimg.alphas=255;`aimg.alphad=255;";
-           cond .s.equ(text, "add1"):
+            cond .s.equ(text, "add1"):
               `state.ctrlList[-1].task .= "`aimg.alphas=255;`aimg.alphad=128;";
+            cond .s.equ(text[0..3], "add"):
+              `state.ctrlList[-1].task .= "`aimg.alphas=255;`aimg.alphad=255;";
             cond .s.equ(text, "sub"):
               `state.ctrlList[-1].task .= "`aimg.alphas=1;`aimg.alphad=255;";
             else:
@@ -6229,9 +6229,7 @@ public &StateBuilder
           case .CtrlTy::LifeAdd:
             dbuf .= "`addLife(va,k!=0,a!=0);";
           case .CtrlTy::Trans:
-            dbuf .=
-              "`setAlpha(t,"
-              "`sysivar[.iALPHAS]=,`sysivar[.iALPHAD]=);";
+            dbuf .= "`setAlpha(t,`sysivar[.iALPHAS]=,`sysivar[.iALPHAD]=);";
           case .CtrlTy::AfterImage:
             dbuf .= "`aimg.setupPalfx();";
           case .CtrlTy::EnvShake:
