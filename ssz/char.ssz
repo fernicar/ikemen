@@ -3409,12 +3409,12 @@ public &Char
   }
   public void trParent()
   {
-    if(`parentindex < 0){
-      .c = .consts.null!`self?();
-      `trDestroySelf();
-      ret;
+    branch{
+    cond `parentindex < 0:
+      .c = .chars[`playerno][0];
+    else:
+      .c = .chars[`playerno][`parentindex];
     }
-    .c = .chars[`playerno][`parentindex];
   }
   public void trPartner()
   {
@@ -3998,16 +3998,21 @@ public &Char
     if(!consteval(`state=, buf)) ret false;
     if(`cs1tmp == 0) `stVal.prevno = `stVal.no;
     if(`stVal.playerno != `playerno && p != `stVal.playerno) loop{
-      index i = 0;
+      index i = #.expdrawlist[`stVal.playerno]-1;
       while;
     do:
-      if(.explods[`stVal.playerno][i].bindtime != 0
-        && .explods[`stVal.playerno][i].bindid == `id)
+      if(
+        .explods[`stVal.playerno][.expdrawlist[`stVal.playerno][i]].bindtime
+        != 0
+        && .explods[`stVal.playerno][.expdrawlist[`stVal.playerno][i]].bindid
+        == `id)
       {
-        .explods[`stVal.playerno][i].id = .com.IERR;
+        .explods[`stVal.playerno][.expdrawlist[`stVal.playerno][i]].id =
+          .com.IERR;
+        .delIL(.expdrawlist[`stVal.playerno]=, i);
       }
-      i++;
-    while i < #.explods[`stVal.playerno]:
+      i--;
+    while i >= 0:
     }
     `stVal.no = n;
     `stVal.playerno = p;
