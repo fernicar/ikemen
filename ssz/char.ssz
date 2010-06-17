@@ -2809,9 +2809,8 @@ public &Char
         .com.intro <= .fight~ro.ctrl_time && (
           `stVal.phy != .StTy::N
           || (
-            `stVal.mov == .MovTy::A && #`curFrame > 0 && (
+            `stVal.mov != .MovTy::H && #`curFrame > 0 && (
               #`curFrame~clsn1 > 0 || #`curFrame~clsn2 > 0))
-          || (`stVal.typ == .StTy::A && `stVal.mov == .MovTy::I)
           || `stVal.hb.hittime > 0
           || (
             `stVal.playerno == `playerno
