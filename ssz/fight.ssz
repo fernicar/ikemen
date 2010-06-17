@@ -401,7 +401,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       mrct=, (float)`posx, (float)`posy, 1.0, layerno, `mid=, `mid_lay=);
     .laydraw(
       lrct=, (float)`posx, (float)`posy, 1.0, layerno, `front=, `front_lay=);
-    if(`counter_fontn >= 0){
+    if(`counter_fontn >= 0 && #f > `counter_fontn){
       .laytext(
         (float)`posx, (float)`posy, 1.0, layerno, .s.iToS(level),
         f[`counter_fontn]=, `counter_fontb, `counter_fonta, `counter_lay=);
@@ -608,7 +608,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   }
   public void draw(int layerno, ^&.fnt.Font f, ^/char name)
   {
-    if(`name_fontn >= 0){
+    if(`name_fontn >= 0 && #f > `name_fontn){
       .laytext(
         (float)`posx, (float)`posy, 1.0, layerno, name,
         f[`name_fontn]=, `name_fontb, `name_fonta, `name_lay=);
@@ -707,7 +707,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     float haba(int n, ^&.fnt.Font f)
     {
       ret
-        `counter_fontn >= 0
+        `counter_fontn >= 0 && #f > `counter_fontn
         ? (float)f[`counter_fontn].textWidth(.s.iToS(n)) * `counter_lay.scale.x
         : 0.0;
     }
@@ -728,7 +728,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
           : -`start_x*((float)(15-`slidetime[i])/15.0 + 1.0))
         - (float)`posx + 320.0;
       t = .s.join(.s.iToS(`cur[i]))<, .s.split("%i")<, `text_text;
-      if(`text_fontn >= 0){
+      if(`text_fontn >= 0 && #f > `text_fontn){
         branch{
         cond (i&1) == 0:
           if(`posx != 0){
@@ -750,7 +750,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
             * `text_lay.scale.x * .cfg.LifebarFontScale;
         }
       }
-      if(`counter_fontn >= 0){
+      if(`counter_fontn >= 0 && #f > `counter_fontn){
         float z = 1.0 + (float)`shaketime[i]*(1.0/20.0)
           * .mat.sin((double)`shaketime[i] * (.mat.PI / 2.5));
         .laytext(
@@ -826,7 +826,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     branch{
     cond #`anim.frames > 0:
       .laydraw(.com.scrrect=, 0.0, 0.0, 1.0, layerno, `anim=, `lay=);
-    cond `fontn >= 0 && #`text > 0:
+    cond `fontn >= 0 && #f > `fontn && #`text > 0:
       .laytext(
         0.0, 0.0, 1.0, layerno, `text, f[`fontn]=, `fontb, `fonta, `lay=);
     }
@@ -1375,7 +1375,7 @@ public void setPerfect(|.WinTy wt=)
   {
     branch{
     cond #`wins > `useiconupto:
-      if(`counter_fontn < 0) break;
+      if(`counter_fontn < 0 || #f <= `counter_fontn) break;
       .laytext(
         (float)`posx, (float)`posy, 1.0, layerno, .s.iToS(#`wins),
         f[`counter_fontn]=, `counter_fontb, `counter_fonta, `counter_lay=);
@@ -1482,7 +1482,7 @@ public void setPerfect(|.WinTy wt=)
   }
   public void draw(int layerno, int time, ^&.fnt.Font f)
   {:<-
-    if(`counter_fontn >= 0){
+    if(`framespercount > 0 && `counter_fontn >= 0 && #f > `counter_fontn){
       .laytext(
         (float)`posx, (float)`posy, 1.0, layerno,
         time >= 0 ? .s.iToS(time/`framespercount) : "o",

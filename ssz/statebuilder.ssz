@@ -583,10 +583,17 @@ public &StateBuilder
       ^/char token = name;
     cond .s.equ("(", token) || .s.equ("[", token):
       if(!`expBoolOr(out=, in=)) ret false;
-      token = `tokenizer(in=);
-      if(!.s.equ(")", token) && !.s.equ("]", token)){
+      loop{continue; do:
+        if(.cfg.IgnoreMostErrors && .s.equ(",", token)){
+          *out.self o;
+          if(!`expBoolOr(o=, in=)) ret false;
+          break, continue;
+        }
         `lasterror = "括弧が閉じていません";
         ret false;
+      continue:
+        token = `tokenizer(in=);
+      while !.s.equ(")", token) && !.s.equ("]", token):
       }
     cond .s.equ("+", token):
       if(!`expPostNot(out=, in=)) ret false;
