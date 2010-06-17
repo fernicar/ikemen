@@ -2811,6 +2811,7 @@ public &Char
           || (
             `stVal.mov == .MovTy::A && #`curFrame > 0 && (
               #`curFrame~clsn1 > 0 || #`curFrame~clsn2 > 0))
+          || (`stVal.typ == .StTy::A && `stVal.mov == .MovTy::I)
           || `stVal.hb.hittime > 0
           || (
             `stVal.playerno == `playerno
@@ -5517,8 +5518,12 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       && !pyr.isFreezeX() && !p~c~isFreezeX()
       && pyr.ls(.lsPLAYERPUSH) && p~c~ls(.lsPLAYERPUSH)
       && (
-        (pyr.stVal.typ != .StTy::A || p~c~stVal.typ != .StTy::L)
-        && (pyr.stVal.typ != .StTy::L || p~c~stVal.typ != .StTy::A))
+        (
+          pyr.stVal.typ != .StTy::A || pyr.stVal.mov != .MovTy::A
+          || p~c~stVal.typ != .StTy::L)
+        && (
+          pyr.stVal.typ != .StTy::L
+          || p~c~stVal.typ != .StTy::A || p~c~stVal.mov != .MovTy::A))
       && pyr.sysfvar[.fY] - p~c~sysfvar[.fY] < pyr.getHeight()
       && p~c~sysfvar[.fY] - pyr.sysfvar[.fY] < p~c~getHeight())
     {
