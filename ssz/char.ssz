@@ -3693,7 +3693,8 @@ public &Char
   public void trVelX()
   {
     .v.setF(
-      `stVal.typ == .StTy::S && #`sysfvar[.fVX] < 1.0 ? 0.0 : `sysfvar[.fVX]);
+      (`stVal.typ == .StTy::S || `stVal.typ == .StTy::L)
+      && #`sysfvar[.fVX] < 1.0 ? 0.0 : `sysfvar[.fVX]);
   }
   public void trVelSetY()
   {
