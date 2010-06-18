@@ -2294,6 +2294,7 @@ public &Char
     loop{
       index i = 0, idx, n = no-1;
       if(n < 0) n = 0;
+      n += n % 6 < 3 ? 3 : -3;
       ubyte r, g, b;
     do:
       branch{
