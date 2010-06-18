@@ -226,14 +226,14 @@ public &Stage
     {
       branch{
       cond .s.equ(name, "bgmusic"):
-        `bgmusic = data;
+        `bgmusic = .com.readFileName(data);
       }
     }
     public void bgdef(^/char sec, ^/char name, ^/char data)
     {
       branch{
       cond .s.equ(name, "spr"):
-        `spr = data;
+        `spr = .com.readFileName(data);
       cond .s.equ(name, "debugbg"):
         `debugbg = .s.sToN!int?(data) != 0;
       }

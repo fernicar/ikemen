@@ -9,6 +9,7 @@ plugin void InputStr(:^/char, ^char=:) = "dll/mesdialog.dll";
 plugin bool UnCompress(:^ubyte=, ^/ubyte:) = "dll/mesdialog.dll";
 plugin void UbytesToStr(:|CodePage, ^char=, ^/ubyte:) = "dll/mesdialog.dll";
 plugin void StrToUbytes(:|CodePage, ^ubyte=, ^/char:) = "dll/mesdialog.dll";
+plugin void AsciiToLocal(:^char=, ^/char:) = "dll/mesdialog.dll";
 plugin void SetSharedString(:^/char:) = "dll/mesdialog.dll";
 plugin void GetSharedString(:^char=:) = "dll/mesdialog.dll";
 

@@ -2051,48 +2051,49 @@ public &Char
     }
     public void files(^/char sec, ^/char name, ^/char data)
     {
+      ^/char d = .com.readFileName(data);
       branch{
       cond .s.equ(name, "cmd"):
-        if(#`command == 0) `command = data;
+        if(#`command == 0) `command = d;
       cond .s.equ(name, "sprite"):
-        if(#`sprite == 0) `sprite = data;
+        if(#`sprite == 0) `sprite = d;
       cond .s.equ(name, "anim"):
-        if(#`anim == 0) `anim = data;
+        if(#`anim == 0) `anim = d;
       cond .s.equ(name, "sound"):
-        if(#`sound == 0) `sound = data;
+        if(#`sound == 0) `sound = d;
       cond .s.equ(name, "pal1"):
-        if(#`pal[0] == 0) `pal[0] = data;
+        if(#`pal[0] == 0) `pal[0] = d;
       cond .s.equ(name, "pal2"):
-        if(#`pal[1] == 0) `pal[1] = data;
+        if(#`pal[1] == 0) `pal[1] = d;
       cond .s.equ(name, "pal3"):
-        if(#`pal[2] == 0) `pal[2] = data;
+        if(#`pal[2] == 0) `pal[2] = d;
       cond .s.equ(name, "pal4"):
-        if(#`pal[3] == 0) `pal[3] = data;
+        if(#`pal[3] == 0) `pal[3] = d;
       cond .s.equ(name, "pal5"):
-        if(#`pal[4] == 0) `pal[4] = data;
+        if(#`pal[4] == 0) `pal[4] = d;
       cond .s.equ(name, "pal6"):
-        if(#`pal[5] == 0) `pal[5] = data;
+        if(#`pal[5] == 0) `pal[5] = d;
       cond .s.equ(name, "pal7"):
-        if(#`pal[6] == 0) `pal[6] = data;
+        if(#`pal[6] == 0) `pal[6] = d;
       cond .s.equ(name, "pal8"):
-        if(#`pal[7] == 0) `pal[7] = data;
+        if(#`pal[7] == 0) `pal[7] = d;
       cond .s.equ(name, "pal9"):
-        if(#`pal[8] == 0) `pal[8] = data;
+        if(#`pal[8] == 0) `pal[8] = d;
       cond .s.equ(name, "pal10"):
-        if(#`pal[9] == 0) `pal[9] = data;
+        if(#`pal[9] == 0) `pal[9] = d;
       cond .s.equ(name, "pal11"):
-        if(#`pal[10] == 0) `pal[10] = data;
+        if(#`pal[10] == 0) `pal[10] = d;
       cond .s.equ(name, "pal12"):
-        if(#`pal[11] == 0) `pal[11] = data;
+        if(#`pal[11] == 0) `pal[11] = d;
       }
     }
     public void arcade(^/char sec, ^/char name, ^/char data)
     {
       branch{
       cond .s.equ(name, "intro.storyboard"):
-        `intro = data;
+        `intro = .com.readFileName(data);
       cond .s.equ(name, "ending.storyboard"):
-        `ending = data;
+        `ending = .com.readFileName(data);
       }
     }
     void section(^^/char lines, index i=)

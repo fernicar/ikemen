@@ -33,7 +33,6 @@ public &Select
   public &Char
   {
     public ^/char def;
-    public ^/char stage;
     public ^/char dname;
     public ^/char name;
     public ^/char sprite;
@@ -99,7 +98,7 @@ public &Select
     {
       branch{
       cond .s.equ(name, "sprite"):
-        `charlist[-1].sprite = data;
+        `charlist[-1].sprite = .com.readFileName(data);
       }
     }
     void section(%^/char lines, index i=)
@@ -141,7 +140,6 @@ public &Select
       ret true;
     }
     `charlist[-1].def = d;
-    if(#defs >= 2) `charlist[-1].stage = defs[1];
     %^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     loop{index i = 0; while; do:
