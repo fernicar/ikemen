@@ -5950,7 +5950,8 @@ public &StateBuilder
                 cbuf .=
                   "bool c.Char::" .= item<> .= "()"\r\n
                   "{"\r\n
-                  \t"ret " .= `state.ctrlList[-1].triggerall .= ";"\r\n
+                  \t"ret "
+                  .= `okikae(`state.ctrlList[-1].triggerall) .= ";"\r\n
                   "}"\r\n;
               }
               buf .= '`' .= item<> .= "()&&(";
@@ -5977,7 +5978,8 @@ public &StateBuilder
                   cbuf .=
                     "bool c.Char::" .= item<> .= "()"\r\n
                     "{"\r\n
-                    \t"ret " .= `state.ctrlList[-1].trigger[m] .= ";"\r\n
+                    \t"ret "
+                    .= `okikae(`state.ctrlList[-1].trigger[m]) .= ";"\r\n
                     "}"\r\n;
                 }
                 buf .= '`' .= item<> .= "()";
@@ -6264,7 +6266,7 @@ public &StateBuilder
               "void c.Char::" .= item<> .= (
                 `state.ctrlList[-1].typ == .CtrlTy::Explod
                 ? "(int ih)" :  "()")
-              .= \r\n"{"\r\n\t .= dbuf .= \r\n"}"\r\n;
+              .= \r\n"{"\r\n\t .= `okikae(dbuf) .= \r\n"}"\r\n;
           }
           branch{
           cond<cs>
@@ -6417,7 +6419,7 @@ public &StateBuilder
               \t"}"\r\n;
           }
           if(#`state.deftask > 0){
-             buf .= '\t' .= `state.deftask .= \r\n;
+             buf .= '\t' .= `okikae(`state.deftask) .= \r\n;
           }
           if(`state.sprpriority == 0) buf .= \t"`sprpriority = 0;"\r\n;
           if(`state.hitcountpersist == 0){
@@ -6438,6 +6440,58 @@ public &StateBuilder
     while i < #lines:
     }
     ret true;
+  }
+  public ^/char okikae(^/char code)
+  {
+    type s_t = $^/char(^/^/char, index=);
+    *.s.ptn_t pt;
+    ^/char rep(^/char ptn, ~`s_t dlg, ^/char text)
+    {
+      %char buf;
+      loop{
+        index i = 0, j = 0;
+        `pt.compile(ptn);
+        ^/^/char cap;
+        continue;
+      do:
+        buf .= text[j..j+i];
+        cap = `pt.getCap();
+        j += i;
+        buf .= dlg(:cap, j=:);
+      continue:
+        i = `pt.search(text[j..-1]);
+      while i >= 0:
+        if(#buf == 0) ret text;
+        buf .= text[j..-1];
+      }
+      ret buf;
+    }
+    ^/char tmp = code;
+    tmp = rep(
+      ".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$`trMinus()",
+      [s_t(c, j=){
+        %char buf .=
+          (tmp[j+6] == 'I' ? ".v.setI(" : ".v.setF(") .= '-' .= c[0] .= ')';
+        j += 20 + #c[0];
+        ret buf;
+      }], tmp);
+    tmp = rep(
+      ".v.setI(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toInt()",
+      [s_t(c, j=){
+        %char buf .= c[0];
+        j += 20 + #c[0];
+        ret buf;
+      }], tmp);
+    tmp = rep(
+      ".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toFloat()",
+      [s_t(c, j=){
+        %char buf;
+        buf .= c[0];
+        if(tmp[j+6] == 'I') buf .= ".0";
+        j += 22 + #c[0];
+        ret buf;
+      }], tmp);
+    ret  tmp;
   }
   public bool build(int no, ^/char def)
   {:<-
