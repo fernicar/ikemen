@@ -937,7 +937,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
   public int no, prevno, playerno;
   public int time;
   public |.StTy typ;
-  public |.StTy phy, foophy;
+  public |.StTy phy;
   public |.MovTy mov, stmov;
   public int juggle;
   public &.Hitdef hit;
@@ -958,7 +958,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `playerno = 0;
     `time = 0;
     `typ = .StTy::S;
-    `phy = `foophy = .StTy::N;
+    `phy = .StTy::N;
     `mov = `stmov = .MovTy::I;
     `juggle = 0;
     `hit.clear();
@@ -2854,17 +2854,11 @@ public &Char
     while i < #`targets:
     }
   }
-  public bool land()
+  public bool landCondition()
   {
-    if(
-      `player && `stVal.foophy == .StTy::A && `isActive()
-      && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0)
-    {
-      .v.setI(52);
-      `trSelfState();
-      ret true;
-    }
-    ret false;
+    ret
+      `player && `stVal.phy == .StTy::A && `isActive()
+      && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0;
   }
   public void action()
   {
@@ -2878,13 +2872,13 @@ public &Char
       `minus = 1;
       if(!p){
         `lSetNormal();
-        `stVal.foophy = `stVal.phy;
         if(#`palfx > 0) `palfx~step();
         if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
         if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
         if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
         if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
       }
+      bool lc = `landCondition();
       if(`stVal.playerno == `playerno && `player) `state_3(::);
       if(p) ret;
       if(`player && .super <= 0 && .pause <= 0) `state_2(::);
@@ -2892,7 +2886,10 @@ public &Char
       `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
       `state(::);
-      `land();
+      if(lc){
+        .v.setI(52);
+        `trSelfState();
+      }
     break:
       `minus = 2;
       `acttmp += (int)`isActive() - (int)`isHitPaused();
@@ -4035,7 +4032,6 @@ public &Char
       `state(::);
       if(`stVal.mov != .MovTy::H) `sysivar[.iBINDTIME] = 0;
       `stVal.stmov = `stVal.mov;
-      `stVal.foophy = `stVal.phy;
       `cs1tmp = 0;
     }
   }
@@ -4043,7 +4039,6 @@ public &Char
   {
     if(.v.typ == .VarTy::SFalse) ret;
     int n = .v.toInt();
-    if(`minus == 0 && n != 52 && `land()) ret;
     if(`minus == 1 && `stVal.no == n && `stVal.playerno == p) ret;
     branch{
     cond `changeState1(p, n):
