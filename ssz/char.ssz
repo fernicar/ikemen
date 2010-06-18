@@ -2881,7 +2881,7 @@ public &Char
       bool lc = `landCondition();
       if(`stVal.playerno == `playerno && `player) `state_3(::);
       if(p) ret;
-      if(`player && .super <= 0 && .pause <= 0) `state_2(::);
+      if(`player && .super <= 0) `state_2(::);
       if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
@@ -5936,11 +5936,11 @@ public float action(
       .pause--;
     }
     if(.pausetime < 0 && .pausetime != .com.IERR){
-      .pausetime *= -1;
+      .pausetime = !.pausetime;
       .pause = .pausetime;
     }
     if(.supertime < 0 && .supertime != .com.IERR){
-      .supertime *= -1;
+      .supertime = !.supertime;
       .super = .supertime;
     }
     if(#.superanim > 0) .superanim~ani.action();

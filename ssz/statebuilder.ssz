@@ -4376,8 +4376,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                ".pausetime=.m.min!int?(.pausetime,-(",
-                "$.v.toInt()));")) ret false;
+                ".pausetime=", "$!.v.toInt();")) ret false;
           cond .s.equ(name, "movetime"):
             if(
               !`fullExpression(
@@ -4398,8 +4397,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                ".supertime=.m.min!int?(.supertime,-(",
-                "$.v.toInt()));")) ret false;
+                ".supertime=", "$!.v.toInt();")) ret false;
             `state.flag = 1;
           cond .s.equ(name, "anim"):
             if(#text > 0 && .s.toLowerChar(text[0]) == 's'){
