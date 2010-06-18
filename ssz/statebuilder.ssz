@@ -287,6 +287,64 @@ public &StateBuilder
   public ^/char lasterror;
   public &.Const c;
   public int playerno = 0;
+  *.s.ptn_t pt1, pt2, pt3;
+  new()
+  {
+    `pt1.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$`trMinus()");
+    `pt2.compile(".v.setI(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toInt()");
+    `pt3.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toFloat()");
+  }
+  public ^/char okikae(^/char code)
+  {
+    type s_t = $^/char(^/^/char, index=);
+    *.s.ptn_t pt;
+    ^/char rep(.s.ptn_t pt=, ~`s_t dlg, ^/char text)
+    {
+      %char buf;
+      loop{
+        index i = 0, j = 0;
+        ^/^/char cap;
+        continue;
+      do:
+        buf .= text[j..j+i];
+        cap = pt.getCap();
+        j += i;
+        buf .= dlg(:cap, j=:);
+      continue:
+        i = pt.search(text[j..-1]);
+      while i >= 0:
+        if(#buf == 0) ret text;
+        buf .= text[j..-1];
+      }
+      ret buf;
+    }
+    ^/char tmp = code;
+    tmp = rep(
+      `pt1=,
+      [s_t(c, j=){
+        %char buf .=
+          (tmp[j+6] == 'I' ? ".v.setI(" : ".v.setF(") .= '-' .= c[0] .= ')';
+        j += 20 + #c[0];
+        ret buf;
+      }], tmp);
+    tmp = rep(
+      `pt2=,
+      [s_t(c, j=){
+        %char buf .= c[0];
+        j += 20 + #c[0];
+        ret buf;
+      }], tmp);
+    tmp = rep(
+      `pt3=,
+      [s_t(c, j=){
+        %char buf;
+        buf .= c[0];
+        if(tmp[j+6] == 'I') buf .= ".0";
+        j += 22 + #c[0];
+        ret buf;
+      }], tmp);
+    ret  tmp;
+  }
   bool existState(int no)
   {
     loop{index i = 0; while; do:
@@ -6440,58 +6498,6 @@ public &StateBuilder
     while i < #lines:
     }
     ret true;
-  }
-  public ^/char okikae(^/char code)
-  {
-    type s_t = $^/char(^/^/char, index=);
-    *.s.ptn_t pt;
-    ^/char rep(^/char ptn, ~`s_t dlg, ^/char text)
-    {
-      %char buf;
-      loop{
-        index i = 0, j = 0;
-        `pt.compile(ptn);
-        ^/^/char cap;
-        continue;
-      do:
-        buf .= text[j..j+i];
-        cap = `pt.getCap();
-        j += i;
-        buf .= dlg(:cap, j=:);
-      continue:
-        i = `pt.search(text[j..-1]);
-      while i >= 0:
-        if(#buf == 0) ret text;
-        buf .= text[j..-1];
-      }
-      ret buf;
-    }
-    ^/char tmp = code;
-    tmp = rep(
-      ".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$`trMinus()",
-      [s_t(c, j=){
-        %char buf .=
-          (tmp[j+6] == 'I' ? ".v.setI(" : ".v.setF(") .= '-' .= c[0] .= ')';
-        j += 20 + #c[0];
-        ret buf;
-      }], tmp);
-    tmp = rep(
-      ".v.setI(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toInt()",
-      [s_t(c, j=){
-        %char buf .= c[0];
-        j += 20 + #c[0];
-        ret buf;
-      }], tmp);
-    tmp = rep(
-      ".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toFloat()",
-      [s_t(c, j=){
-        %char buf;
-        buf .= c[0];
-        if(tmp[j+6] == 'I') buf .= ".0";
-        j += 22 + #c[0];
-        ret buf;
-      }], tmp);
-    ret  tmp;
   }
   public bool build(int no, ^/char def)
   {:<-
