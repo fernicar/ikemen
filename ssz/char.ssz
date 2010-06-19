@@ -4965,11 +4965,9 @@ public void Explod::setPos(&.Char c=)
     c.setPos!`self?(`=, `postype, `offsetx, `offsety, `relativef);
   }
 }
-public void Explod::modify(&.Char c=, &.ModifyExplod mod=)
+public void Explod::modify(&.Char c=, &.ModifyExplod mod=, index i)
 {
-  if(`player != c.id || `id <= .com.IERR+1 || (mod.id > 0 && mod.id != `id)){
-    ret;
-  }
+  if(!c.matchExplodId(i, mod.id)) ret;
   if(mod.bindtime != .com.IERR) `bindtime = mod.bindtime;
   if(mod.scalex != .com.FERR) `scalex = mod.scalex;
   if(mod.scaley != .com.FERR) `scaley = mod.scaley;

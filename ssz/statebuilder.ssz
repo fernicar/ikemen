@@ -6300,8 +6300,8 @@ public &StateBuilder
               "if(m.offsety!=.com.FERR)m.offsety+=.m.randF(-ry,ry);"
               "`setAlpha(t,m.alphas=,m.alphad=);"
               "loop{index i=0;while;do:"
-              ".explods[`playerno][i++].modify(`=,m=);"
-              "while i<#.explods[`playerno]:}";
+              ".explods[`playerno][i].modify(`=,m=,i);"
+              "while ++i<#.explods[`playerno]:}";
           case .CtrlTy::LifeAdd:
             dbuf .= "`addLife(va,k!=0,a!=0);";
           case .CtrlTy::Trans:
