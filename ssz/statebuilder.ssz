@@ -3497,7 +3497,7 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::Explod;
           `state.ctrlList[-1].task .=
             "^&.Explod e=`newExplod(" .= .s.iToS(`stconcnt) .= ");"
-            "if(#e==0)ret;int t=0;float rx=0.0,ry=0.0;e~id=-1;";
+            "if(#e==0)ret;int t=0;float rx=0.0,ry=0.0;e~id=0;";
         cond .s.equ(s, "modifyexplod"):
           `state.ctrlList[-1].typ = .CtrlTy::ModifyExplod;
           `state.ctrlList[-1].task .= "&.ModifyExplod m;"
@@ -5094,7 +5094,7 @@ public &StateBuilder
                 ".id=", "$.v.toInt();")) ret false;
             if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
               `state.ctrlList[-1].task .=
-                "if(" .= exp .= ".id==.com.IERR)" .= exp .= ".id+=2;";
+                "if(" .= exp .= ".id<0)" .= exp .= ".id=0;";
             }
           cond .s.equ(name, "postype"):
             text = .s.toLower(text);
