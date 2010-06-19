@@ -4635,9 +4635,9 @@ public &Char
     if(id == .com.IERR) ret;
     loop{index i = #.expdrawlist[`playerno]-1; while; do:
       if(
-        (
-          id <= 0 && .explods[`playerno][.expdrawlist[`playerno][i]].id
-          > .com.IERR+1)
+        id < 0 || (
+          id == 0
+          && .explods[`playerno][.expdrawlist[`playerno][i]].player == `id)
         || .explods[`playerno][.expdrawlist[`playerno][i]].id == id)
       {
         .explods[`playerno][.expdrawlist[`playerno][i]].id = .com.IERR;
