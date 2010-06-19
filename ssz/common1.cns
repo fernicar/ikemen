@@ -1933,7 +1933,7 @@ void c.Char::s##_@@P()
       }
     case 1:
       {
-        ^&.Explod e = `newExplod();
+        ^&.Explod e = `newExplod(0);
         if(#e > 0){
           e~sprpriority = -5;
           e~ownpal = 1;
@@ -2067,7 +2067,7 @@ void c.Char::s##_@@P()
           true, false, false, 7,
           (int)(`sysivar[1] > 5) + (int)(`sysivar[1] > 14), -1,
           `sysivar[.iVOLUME], 0.0, 1.0, `sysfvar[.fX...fX+1]);
-        ^&.Explod e = `newExplod();
+        ^&.Explod e = `newExplod(0);
         if(#e > 0){
           e~sprpriority = -5;
           e~ownpal = 1;
@@ -2312,7 +2312,7 @@ void c.Char::s##_@@P()
       }
     case 1:
       {
-        ^&.Explod e = `newExplod();
+        ^&.Explod e = `newExplod(0);
         if(#e > 0){
           e~sprpriority = -5;
           e~ownpal = 1;

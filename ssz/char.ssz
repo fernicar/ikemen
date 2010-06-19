@@ -1212,6 +1212,13 @@ void delIL(%index l=, index i)
   l .= l1 .= l2;
 }
 
+void insIL(%index l=, index i, index x)
+{
+  ^index l1 = l[0..i], l2 = l[i..-1];
+  l.new(0);
+  l .= l1 .= x .= l2;
+}
+
 &RdCacheInfo
 {
   public int n, pn, hi;
@@ -1363,6 +1370,7 @@ public &Explod
   public int player;
   public int bindid;
   public int ignorehitpause;
+  public int stconno;
   new()
   {
     `clear();
@@ -1401,6 +1409,7 @@ public &Explod
     `player = -1;
     `bindid = -1;
     `ignorehitpause = 1;
+    `stconno = 0;
   }
   public void setFacing(int f)
   {
@@ -1933,22 +1942,31 @@ public &Char
     }
     ret a;
   }
-  public ^&.Explod newExplod()
+  public ^&.Explod newExplod(int stcn)
   {:<-
-    ^&.Explod foo(index i)
+    ^&.Explod foo(index i, int scn)
     {
       .explods[`playerno][i].clear();
       .explods[`playerno][i].id = .com.IERR+2;
-      .expdrawlist[`playerno] .= i;
+      .explods[`playerno][i].stconno = scn;
+      loop{index ii = 0; while; do:
+        if(.explods[`playerno][.expdrawlist[`playerno][ii]].stconno > scn){
+          .insIL(.expdrawlist[`playerno]=, ii, i);
+          break, break;
+        }
+        ii++;
+      while ii < #.expdrawlist[`playerno]:
+        .expdrawlist[`playerno] .= i;
+      }
       ret .explods[`playerno][i..i+1];
     }
     loop{index i = 0; while; do:
-      if(.explods[`playerno][i].id == .com.IERR) ret foo(i);
+      if(.explods[`playerno][i].id == .com.IERR) ret foo(i, stcn);
       i++;
     while i < #.explods[`playerno]:
       if(i < .cfg.ExplodMax){
         .explods[`playerno].new[i];
-        ret foo(i);
+        ret foo(i, stcn);
       }
     }
     ret .consts.null!&.Explod?();
@@ -5260,7 +5278,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     cond #hitting == 1:
       branch{
         if(hit.sparkno == .com.IERR) break;
-        ^&.Explod e = by.newExplod();
+        ^&.Explod e = by.newExplod(0);
         if(#e == 0) break;
         expreset(
           e<>=, (`pyr.sysfvar[.fX]-by.sysfvar[.fX])*(float)by.facing, y);
@@ -5274,7 +5292,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         (hit.attr&((int).AtTy::NT|(int).AtTy::ST|(int).AtTy::HT)) == 0) branch
       {
         if(hit.guard_sparkno == .com.IERR) break;
-        ^&.Explod e = by.newExplod();
+        ^&.Explod e = by.newExplod(0);
         if(#e == 0) break;
         expreset(
           e<>=, (`pyr.sysfvar[.fX]-by.sysfvar[.fX])*(float)by.facing, y);

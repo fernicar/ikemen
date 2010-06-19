@@ -287,6 +287,7 @@ public &StateBuilder
   public ^/char lasterror;
   public &.Const c;
   public int playerno = 0;
+  public int stconcnt = 0;
   *.s.ptn_t pt1, pt2, pt3;
   new()
   {
@@ -3495,7 +3496,7 @@ public &StateBuilder
         cond .s.equ(s, "explod"):
           `state.ctrlList[-1].typ = .CtrlTy::Explod;
           `state.ctrlList[-1].task .=
-            "^&.Explod e=`newExplod();"
+            "^&.Explod e=`newExplod(" .= .s.iToS(`stconcnt) .= ");"
             "if(#e==0)ret;int t=0;float rx=0.0,ry=0.0;e~id=-1;";
         cond .s.equ(s, "modifyexplod"):
           `state.ctrlList[-1].typ = .CtrlTy::ModifyExplod;
@@ -3515,7 +3516,7 @@ public &StateBuilder
         cond .s.equ(s, "gamemakeanim"):
           `state.ctrlList[-1].typ = .CtrlTy::GameMakeAnim;
           `state.ctrlList[-1].task .=
-            "^&.Explod e=`newExplod();if(#e==0)ret;"
+            "^&.Explod e=`newExplod(0);if(#e==0)ret;"
             "int t=0;float rx=0.0,ry=0.0;"
             "e~ontop=1;e~sprpriority=-5;e~ownpal=1;";
         cond .s.equ(s, "makedust"):
@@ -3608,6 +3609,9 @@ public &StateBuilder
             `lasterror = (buf .= data .= "が無効な値です");
             ret false;
           }
+          break;
+        comm:
+          `stconcnt++;
         }
       cond .s.equ(name, "triggerall"):
         if(#`state.ctrlList[-1].triggerall > 0){

@@ -465,6 +465,11 @@ public &Anim<frame_t>
     int h = `h*`frames[`drawidx].h;
     int v = `v*`frames[`drawidx].v;
     float xs = (float)h*cscalex*xtscale, ys = (float)v*cscaley*yscale;
+    float bs = xbscale;
+    .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
+    .m.limRange!float?(
+      ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
+    .m.limRange!float?(bs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
     float x2 =
       cscalex*x - xs*(float)(`spr~rct.x - `frames[`drawidx].x) + rx;
     float y2 =
@@ -483,7 +488,7 @@ public &Anim<frame_t>
       rect=, rx*.com.WidthScale, 0.0, `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
       (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,
       `tile=, xs*.com.WidthScale,
-      cscalex*xbscale*(float)h*.com.WidthScale, ys*.com.HeightScale,
+      cscalex*bs*(float)h*.com.WidthScale, ys*.com.HeightScale,
       cscalex*rasterxadd*(.com.WidthScale/.com.HeightScale),
       0x0, `alphaFoo(), `spr~rle, `spr~pluginbuf=);
   }
