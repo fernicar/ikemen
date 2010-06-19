@@ -5954,11 +5954,11 @@ public float action(
     cond .pause > 0:
       .pause--;
     }
-    if(.pausetime < 0 && .pausetime != .com.IERR){
+    if(.pausetime < 0){
       .pausetime = !.pausetime;
       .pause = .pausetime;
     }
-    if(.supertime < 0 && .supertime != .com.IERR){
+    if(.supertime < 0){
       .supertime = !.supertime;
       .super = .supertime;
     }
