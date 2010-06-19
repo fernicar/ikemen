@@ -291,7 +291,7 @@ public &StateBuilder
   *.s.ptn_t pt1, pt2, pt3;
   new()
   {
-    `pt1.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$`trMinus()");
+    `pt1.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.;;;)$`trMinus()");
     `pt2.compile(".v.setI(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toInt()");
     `pt3.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toFloat()");
   }
