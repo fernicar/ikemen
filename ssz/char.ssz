@@ -353,7 +353,7 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
     `palfx.new(.cfg.AfterImageMax);
     loop{index i = 0; do: `palfx[i].time = -1; while ++i < #`palfx:}
     `clear();
-    `timegap = -1;
+    `timegap = 0;
     `imgs.new(64);
   }
   public void clear()
@@ -409,7 +409,7 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
     &.act.Action a=, float x, float y, float xs, float ys, float an)
   {
     if(`time == 0){
-      `reccount = 0;
+      `reccount = `timegap = 0;
       ret;
     }
     if(`time > 0) `time--;
@@ -435,6 +435,7 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
       || !.m.inRange!int?(1, 32767, `framegap))
     {
       `time = 0;
+      `reccount = `timegap = 0;
       ret;
     }
     loop{
@@ -4615,15 +4616,18 @@ public &Char
     while i < #.chars[`playerno]:
     }
   }
+  public bool matchExplodId(index i, int id)
+  {
+    ret
+      .explods[`playerno][i].id > .com.IERR+2 && (
+        (id < 0 || .explods[`playerno][i].player == `id)
+        && (id <= 0 || .explods[`playerno][i].id == id));
+  }
   public void trExplodBindTime(int id, int bt)
   {
     if(bt == .com.IERR || id == .com.IERR) ret;
     loop{index i = 0; while; do:
-      if(
-        .explods[`playerno][i].player == `id && (
-          (id <= 0 && .explods[`playerno][i].id > .com.IERR+1)
-          || .explods[`playerno][i].id == id))
-      {
+      if(`matchExplodId(i, id)){
         .explods[`playerno][i].bindtime = bt + (bt > 0 ? 1 : 0);
       }
       i++;
@@ -4634,12 +4638,7 @@ public &Char
   {
     if(id == .com.IERR) ret;
     loop{index i = #.expdrawlist[`playerno]-1; while; do:
-      if(
-        id < 0 || (
-          id == 0
-          && .explods[`playerno][.expdrawlist[`playerno][i]].player == `id)
-        || .explods[`playerno][.expdrawlist[`playerno][i]].id == id)
-      {
+      if(`matchExplodId(.expdrawlist[`playerno][i], id)){
         .explods[`playerno][.expdrawlist[`playerno][i]].id = .com.IERR;
         .delIL(.expdrawlist[`playerno]=, i);
       }
@@ -4657,10 +4656,7 @@ public &Char
     .v.typ = .VarTy::Int;
     .v.i = 0;
     loop{index i = 0; while; do:
-      if(
-        .explods[`playerno][i].player == `id && (
-          (id <= 0 && .explods[`playerno][i].id > .com.IERR+1)
-          || .explods[`playerno][i].id == id)) .v.i++;
+      if(`matchExplodId(i, id)) .v.i++;
       i++;
     while i < #.explods[`playerno]:
     }
