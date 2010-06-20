@@ -1686,7 +1686,7 @@ public &Projectile
             `velocityy != 0.0 && (
               (float)`heightboundb < `y
               || `y < (float)`heightboundt))
-          || (`removetime >= 0 && --`removetime < 0)
+          || `removetime == 0
           :
           `ani = .chars[`playerno][0]~getAction(`remanim);
         else:
@@ -1708,8 +1708,14 @@ public &Projectile
           if(`hitpause == 0 && `removetime <= 0) `id = -1;
         }
       }
-      if(`hitpause < 0) `hitpause *= -1;
-      if(`hitpause > 0) `hitpause--;
+      branch{
+      cond `hitpause == 0:
+        if(`removetime > 0) `removetime--;
+      cond `hitpause > 0:
+        `hitpause--;
+      cond `hitpause < 0:
+        `hitpause *= -1;
+      }
     }
     branch{
     cond `pctime > 0:
