@@ -3315,9 +3315,14 @@ public &Char
       }
       i++;
     while i < #.chars[`playerno][`parentindex]~children:
+    break:
+      `parentindex *= -1;
     }
     loop{index i = 0; while; do:
-      if(`children[i] >= 0) .chars[`playerno][`children[i]]~parentindex *= -1;
+      if(`children[i] >= 0){
+        .chars[`playerno][`children[i]]~parentindex *= -1;
+        `children[i] = -1;
+      }
       i++;
     while i < #`children:
     }
