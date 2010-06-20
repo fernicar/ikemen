@@ -3018,7 +3018,6 @@ public &Char
         `stVal.hb.hitshaketime = 0;
         `stVal.hb.fallf = 0;
         `stVal.hb.juggle = 0;
-        `stVal.hb.damage = 0;
       }
       if(
         `stVal.playerno == `playerno && (
@@ -4619,7 +4618,7 @@ public &Char
   public bool matchExplodId(index i, int id)
   {
     ret
-      .explods[`playerno][i].id > .com.IERR+2 && (
+      .explods[`playerno][i].id >= 0 && (
         (id < 0 || .explods[`playerno][i].player == `id)
         && (id <= 0 || .explods[`playerno][i].id == id));
   }
@@ -4844,7 +4843,10 @@ public void Explod::update()
         ret;
       }
     }
-    if(`id == .com.IERR+1 || `removetime >= 0 && --`removetime < 0){
+    if(
+      (`removetime >= 0 && --`removetime < 0)
+      || (`removetime == -2 && (#`ani == 0 || `ani~ani.loopend)))
+    {
       `id = .com.IERR;
       ret;
     }
@@ -4922,12 +4924,6 @@ public void Explod::update()
       aal(:.topanims=:);
     else:
       aal(:.anims=:);
-    }
-    if(
-      `removetime == 0
-      || (`removetime == -2 && (#`ani == 0 || `ani~ani.loopend)))
-    {
-      `id = .com.IERR+1;
     }
   }
 }
@@ -5510,6 +5506,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     ret a <= 0 || a <= h;
   }
   pyr.inguarddist = false;
+  pyr.stVal.hb.damage = 0;
   loop{
     *`top.self p = `top;
     float pl, pr, pv;
