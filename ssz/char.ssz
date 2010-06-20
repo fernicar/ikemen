@@ -1705,7 +1705,7 @@ public &Projectile
         else:
           `ani.new(0);
         comm:
-          if(`hitpause == 0) `id = -1;
+          if(`hitpause == 0 && `removetime <= 0) `id = -1;
         }
       }
       if(`hitpause < 0) `hitpause *= -1;
