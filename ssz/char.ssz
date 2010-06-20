@@ -2632,9 +2632,27 @@ public &Char
     }
     ret false;
   }
-  public void tickHitTimer()
+  public void tickHitTimer(
+    float highest=, float lowest=, float leftest=, float rightest=)
   {
     if(`id < 0) ret;
+    if(`ls(.lsSCREENBOUNDX)){
+      float l, r;
+      branch{
+      cond `facing > 0:
+        l = `bedge; r = `fedge;
+      else:
+        l = `fedge; r = `bedge;
+      }
+      leftest = .m.min!float?(`sysfvar[.fX]-l, leftest);
+      rightest = .m.max!float?(`sysfvar[.fX]+r, rightest);
+    }
+    if(`ls(.lsSCREENBOUNDY)){
+      highest = .m.min!float?(`sysfvar[.fY], highest);
+      lowest =
+        .m.min!float?(0.0)<,
+        .m.max!float?(`sysfvar[.fY], lowest);
+    }
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
     if(
       !`isPaused() || (
@@ -2703,8 +2721,7 @@ public &Char
       if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
     }
   }
-  public void tickAndAnim(
-    float highest=, float lowest=, float leftest=, float rightest=)
+  public void tickAndAnim()
   {
     if(`id < 0) ret;
     float x = `sysfvar[.fX]+`offsetx;
@@ -2730,23 +2747,6 @@ public &Char
         clsn~b = 0;
         .drawwh.new[-1].set(clsn, x-`offsetx, y-`offsety, (float)`facing, 1.0);
       }
-    }
-    if(`ls(.lsSCREENBOUNDX)){
-      float l, r;
-      branch{
-      cond `facing > 0:
-        l = `bedge; r = `fedge;
-      else:
-        l = `fedge; r = `bedge;
-      }
-      leftest = .m.min!float?(`sysfvar[.fX]-l, leftest);
-      rightest = .m.max!float?(`sysfvar[.fX]+r, rightest);
-    }
-    if(`ls(.lsSCREENBOUNDY)){
-      highest = .m.min!float?(`sysfvar[.fY], highest);
-      lowest =
-        .m.min!float?(0.0)<,
-        .m.max!float?(`sysfvar[.fY], lowest);
     }
     if(#`ani > 0) branch{
       int sp = `sprpriority;
@@ -5172,7 +5172,9 @@ public void PlayerList!&Char?::destroy(int id)
   while #p~next > 0:
   }
 }
-public void PlayerList!&Char?::action(float x, float tension, float cvx=)
+public void PlayerList!&Char?::action(
+  float x, float tension, float cvx=,
+  float highest=, float lowest=, float leftest=, float rightest=)
 {
   loop{
     *`top.self p = `top;
@@ -5195,7 +5197,7 @@ public void PlayerList!&Char?::action(float x, float tension, float cvx=)
       .players.getHit();
       loop{index i = 0; while; do:
         loop{index j = 0; while; do:
-          .chars[i][j]~tickHitTimer();
+          .chars[i][j]~tickHitTimer(highest=, lowest=, leftest=, rightest=);
           j++;
         while j < #.chars[i]:
         }
@@ -5962,7 +5964,7 @@ public float action(
     .stage.envShake.next();
     if(.super <= 0 && .pause <= 0) .specialFlag = 0d0;
     if(.envcol_time > 0) .envcol_time--;
-    .players.action(x, tension, cvx=);
+    .players.action(x, tension, cvx=, highest=, lowest=, leftest=, rightest=);
   else:
     .update(x, tension, cvx=);
   }
@@ -6012,7 +6014,7 @@ public float action(
   }
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
-      .chars[i][j]~tickAndAnim(highest=, lowest=, leftest=, rightest=);
+      .chars[i][j]~tickAndAnim();
       j++;
     while j < #.chars[i]:
     }
