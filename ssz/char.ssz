@@ -1859,7 +1859,7 @@ public &Char
     `rangeSetIVar(0, 59, 0);
     `rangeSetFVar(0, 39, 0.0);
     `key = -1; `id = .com.IERR; `playerno = -1; `helperindex = -1;
-    `helperid = 0; `parentindex = -1;
+    `helperid = 0; `parentindex = .com.IERR;
     `facing = 1;
     `keyctrl = false;
     `player = false;
@@ -3318,7 +3318,7 @@ public &Char
     while i < #.chars[`playerno][`parentindex]~children:
     }
     loop{index i = 0; while; do:
-      if(`children[i] >= 0) .chars[`playerno][`children[i]]~parentindex = -1;
+      if(`children[i] >= 0) .chars[`playerno][`children[i]]~parentindex *= -1;
       i++;
     while i < #`children:
     }
@@ -3428,10 +3428,10 @@ public &Char
   public void trParent()
   {
     branch{
-    cond `parentindex < 0:
+    cond `parentindex == .com.IERR:
       .c = .chars[`playerno][0];
     else:
-      .c = .chars[`playerno][`parentindex];
+      .c = .chars[`playerno][#`parentindex];
     }
   }
   public void trPartner()
