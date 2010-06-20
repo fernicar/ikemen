@@ -1682,18 +1682,19 @@ public &StateBuilder
       out .= "$(#.c>0?";
       if(!`expRedirectable(".c~", `tokenizer(in=), out=, in=)) ret false;
       out .= ":.v.setSF())";
-    cond
-      .s.equ("root", token) || .s.equ("parent", token)
-      || .s.equ("partner", token)
-      :
-      out .=
-        token[0] == 'r' ? "`trRoot()"
-        : (token[3] == 'e' ?  "`trParent()" : "`trPartner()");
+    cond .s.equ("root", token) || .s.equ("parent", token):
+      out .= token[0] == 'r' ? "`trRoot()$" : "`trParent()$";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
       }
-      out .= "$(#.c>0?";
+      if(!`expRedirectable(".c~", `tokenizer(in=), out=, in=)) ret false;
+    cond .s.equ("partner", token):
+      out .= "`trPartner()$(#.c>0?";
+      if(!.s.equ(",")<, `tokenizer(in=)){
+        `lasterror = ",がありません";
+        ret false;
+      }
       if(!`expRedirectable(".c~", `tokenizer(in=), out=, in=)) ret false;
       out .= ":.v.setSF())";
     cond true:
@@ -3353,15 +3354,13 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::VarSet;
           if(s[0] == 'p'){
             `state.flag = 1;
-            `state.ctrlList[-1].task .=
-              "^`self p=`trParent()$.c;if(#p==0)ret;";
+            `state.ctrlList[-1].task .= "^`self p=`trParent()$.c;";
           }
         cond .s.equ(s, "varadd") || .s.equ(s, "parentvaradd"):
           `state.ctrlList[-1].typ = .CtrlTy::VarAdd;
           if(s[0] == 'p'){
             `state.flag = 1;
-            `state.ctrlList[-1].task .=
-              "^`self p=`trParent()$.c;if(#p==0)ret;";
+            `state.ctrlList[-1].task .= "^`self p=`trParent()$.c;";
           }
         cond .s.equ(s, "varrangeset"):
           `state.ctrlList[-1].typ = .CtrlTy::VarRangeSet;
@@ -3467,15 +3466,13 @@ public &StateBuilder
           `state.ctrlList[-1].task .=
             "`sysivar[.iBINDTIME]=1;`sysivar[.iBINDFACING]=0;"
             "`sysfvar[.fBINDPOSX]=0.0;`sysfvar[.fBINDPOSY]=0.0;"
-            "branch{cond #(`trParent()$.c)>0:`setBindToId(.c<>=);"
-            "else:`sysivar[.iBINDTOID]=.com.IERR;}";
+            "`trParent()$`setBindToId(.c<>=);";
         cond .s.equ(s, "bindtoroot"):
           `state.ctrlList[-1].typ = .CtrlTy::BindToRoot;
           `state.ctrlList[-1].task .=
             "`sysivar[.iBINDTIME]=1;`sysivar[.iBINDFACING]=0;"
             "`sysfvar[.fBINDPOSX]=0.0;`sysfvar[.fBINDPOSY]=0.0;"
-            "branch{cond #(`trRoot()$.c)>0:`setBindToId(.c<>=);"
-            "else:`sysivar[.iBINDTOID]=.com.IERR;}";
+            "`trRoot()$`setBindToId(.c<>=);";
         cond .s.equ(s, "bindtotarget"):
           `state.ctrlList[-1].typ = .CtrlTy::BindToTarget;
           `state.ctrlList[-1].task .=

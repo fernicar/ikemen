@@ -2635,7 +2635,7 @@ public &Char
   public void tickHitTimer(
     float highest=, float lowest=, float leftest=, float rightest=)
   {
-    if(`id < 0) ret;
+    if(`id < 0 || `helperindex < 0) ret;
     if(`ls(.lsSCREENBOUNDX)){
       float l, r;
       branch{
@@ -2723,7 +2723,7 @@ public &Char
   }
   public void tickAndAnim()
   {
-    if(`id < 0) ret;
+    if(`id < 0 || `helperindex < 0) ret;
     float x = `sysfvar[.fX]+`offsetx;
     float y = `sysfvar[.fY]+`offsety;
     float xs = (float)`facing * `sysfvar[.fXSCALE];
@@ -3298,7 +3298,7 @@ public &Char
   }
   public void destroySelf()
   {
-    if(`id == .com.IERR || `helperindex <= 0) ret;
+    if(`helperindex <= 0) ret;
     loop{
       index i = 0;
       ^`self c;
@@ -3323,7 +3323,7 @@ public &Char
     while i < #`children:
     }
     .players.destroy(`id);
-    `id = .com.IERR;
+    `helperindex = -1;
   }
   public void setX(float x)
   {
@@ -3445,7 +3445,7 @@ public &Char
     int id = .v.toInt();
     if(id != .com.IERR) loop{index i = 1; while; do:
       if(
-        .chars[`playerno][i]~id != .com.IERR
+        .chars[`playerno][i]~helperindex >= 0
         && (id <= 0 || id == .chars[`playerno][i]~helperid))
       {
         .c = .chars[`playerno][i];
@@ -4610,7 +4610,7 @@ public &Char
     .v.i = 0;
     loop{index i = 1; while; do:
       if(
-        .chars[`playerno][i]~id != .com.IERR
+        .chars[`playerno][i]~helperindex >= 0
         && (id <= 0 || id == .chars[`playerno][i]~helperid)) .v.i++;
       i++;
     while i < #.chars[`playerno]:
@@ -4967,6 +4967,7 @@ public void Explod::setPos(&.Char c=)
 }
 public void Explod::modify(&.Char c=, &.ModifyExplod mod=, index i)
 {
+  if(mod.id < 0) mod.id = 0;
   if(!c.matchExplodId(i, mod.id)) ret;
   if(mod.bindtime != .com.IERR) `bindtime = mod.bindtime;
   if(mod.scalex != .com.FERR) `scalex = mod.scalex;
@@ -5859,7 +5860,7 @@ public ^&Char create(int no)
 {
   index idx = 0;
   loop{while; do:
-    if(.chars[no][idx]~id == .com.IERR) break;
+    if(.chars[no][idx]~helperindex < 0) break;
     idx++;
   while idx < #.chars[no]:
     if(idx >= .cfg.HelperMax) ret .consts.null!&.Char?();
