@@ -4246,7 +4246,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setB(`helperindex > 0 && (id <= 0 || `helperid == id));
+    .v.setB(`helperindex != 0 && (id <= 0 || `helperid == id));
   }
   public void trIsPlayer()
   {
