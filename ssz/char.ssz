@@ -2724,11 +2724,7 @@ public &Char
   }
   public void tickAndAnim()
   {
-    if(`helperindex < 0) ret;
-    if(`id < 0){
-      `id ^= -1;
-      ret;
-    }
+    if(`helperindex < 0 || `id < 0) ret;
     float x = `sysfvar[.fX]+`offsetx;
     float y = `sysfvar[.fY]+`offsety;
     float xs = (float)`facing * `sysfvar[.fXSCALE];
@@ -2925,12 +2921,15 @@ public &Char
         if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
         if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
       }
-      if(`destmp != 0) `destroySelf();
       `targetAction();
     }
   }
   public float move(float tension)
   {
+    if(`destmp != 0){
+      `destroySelf();
+      ret 0.0;
+    }
     if(`acttmp <= 0) ret 0.0;
     if(
       .m.inRange!int?(120, 159, `stVal.no)
@@ -3445,7 +3444,8 @@ public &Char
     int id = .v.toInt();
     if(id != .com.IERR) loop{index i = 1; while; do:
       if(
-        .chars[`playerno][i]~helperindex >= 0
+        .chars[`playerno][i]~helperindex > 0
+        && .chars[`playerno][i]~destmp == 0
         && (id <= 0 || id == .chars[`playerno][i]~helperid))
       {
         .c = .chars[`playerno][i];
@@ -4610,7 +4610,8 @@ public &Char
     .v.i = 0;
     loop{index i = 1; while; do:
       if(
-        .chars[`playerno][i]~helperindex >= 0
+        .chars[`playerno][i]~helperindex > 0
+        && .chars[`playerno][i]~destmp == 0
         && (id <= 0 || id == .chars[`playerno][i]~helperid)) .v.i++;
       i++;
     while i < #.chars[`playerno]:
@@ -5184,7 +5185,7 @@ public void PlayerList!&Char?::action(
     bool foo = true;
     while;
   do:
-    if(p~c~id < 0) continue;
+    if(p~c~id < 0) p~c~id ^= -1;
     if(foo && p~c~helperindex == 0){
       foo = false;
       .update(x, tension, cvx=);
