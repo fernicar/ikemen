@@ -2641,7 +2641,7 @@ public &Char
   public void tickHitTimer(
     float highest=, float lowest=, float leftest=, float rightest=)
   {
-    if(`id < 0 || `helperindex < 0) ret;
+    if(`helperindex < 0 || `id < 0) ret;
     if(`ls(.lsSCREENBOUNDX)){
       float l, r;
       branch{
@@ -2694,6 +2694,7 @@ public &Char
           i++;
         while i < #`stVal.ho:
         }
+        if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
       }
     }
     if(`tmphit >= 0){
@@ -2721,15 +2722,13 @@ public &Char
       `getcombo = 0;
     }
   }
-  public void tickTimer()
-  {
-    if(!`isPaused()){
-      if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
-    }
-  }
   public void tickAndAnim()
   {
-    if(`id < 0 || `helperindex < 0) ret;
+    if(`helperindex < 0) ret;
+    if(`id < 0){
+      `id ^= -1;
+      ret;
+    }
     float x = `sysfvar[.fX]+`offsetx;
     float y = `sysfvar[.fY]+`offsety;
     float xs = (float)`facing * `sysfvar[.fXSCALE];
@@ -2777,7 +2776,6 @@ public &Char
     cond .com.tickFrame() && `acttmp > 0:
       `aimg.recAfterImg(`ani<>=, x, y, xs, ys, an);
     }
-    if(.com.tickFrame()) `tickTimer();
   }
   public bool isSuperPaused()
   {
@@ -2809,11 +2807,7 @@ public &Char
   }
   public bool isFreezeX()
   {
-    ret
-      `ls(.lsPOSFREEZEX)
-      || `isBound() || (
-        `stVal.hb.hittime > 0 && (
-          `stVal.hb.mindistx != .com.FERR || `stVal.hb.maxdistx != .com.FERR));
+    ret `ls(.lsPOSFREEZEX) || `isBound();
   }
   public bool isFall()
   {
@@ -3046,8 +3040,6 @@ public &Char
       else:
         `sysfvar[.fX] =
           .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.mindistx);
-      comm:
-        `stVal.hb.mindistx = .com.FERR;
       }
       if(`stVal.hb.maxdistx != .com.FERR) branch{
       cond c~facing < 0:
@@ -3056,8 +3048,6 @@ public &Char
       else:
         `sysfvar[.fX] =
           .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.maxdistx);
-      comm:
-        `stVal.hb.maxdistx = .com.FERR;
       }
       if(
         `stVal.playerno != `playerno
@@ -3067,16 +3057,16 @@ public &Char
           `sysfvar[.fY] =
             .m.max!float?(`sysfvar[.fY])<,
             (c~sysfvar[.fY] + `stVal.hb.mindisty);
-          `stVal.hb.mindisty = .com.FERR;
         }
         if(`stVal.hb.maxdisty != .com.FERR){
           `sysfvar[.fY] =
             .m.min!float?(`sysfvar[.fY])<,
             (c~sysfvar[.fY] + `stVal.hb.maxdisty);
-          `stVal.hb.maxdisty = .com.FERR;
         }
       }
     }
+    `stVal.hb.mindistx = `stVal.hb.maxdistx = .com.FERR;
+    `stVal.hb.mindisty = `stVal.hb.maxdisty = .com.FERR;
   }
   public void posReset(float p1x, float p2x)
   {
@@ -4855,7 +4845,7 @@ public void Explod::update()
       }
     }
     if(
-      (`removetime >= 0 && --`removetime < 0)
+      `removetime == 0
       || (`removetime == -2 && (#`ani == 0 || `ani~ani.loopend)))
     {
       `id = .com.IERR;
@@ -4885,6 +4875,8 @@ public void Explod::update()
       if(p) break;
       if(`supermovetime > 0) `supermovetime--;
       if(`pausemovetime > 0) `pausemovetime--;
+      if(!act) break;
+      if(`removetime > 0) `removetime--;
       if(`bindtime > 0) `bindtime--;
     }
     if(act && `bindtime == 0){
@@ -5037,37 +5029,33 @@ public ^&Char PlayerList!&Char?::enemy(int pno, int n)
     i++;
   while i < #.enemy[pno]:
   }
-  type p_t = `top<>.self;
-  int foo(`p_t p=)
+  void bar(int pn, int hi)
   {
-    void bar(int pno, int n)
-    {
-      .enemy[pno].new[-1].n = n;
-      .enemy[pno][-1].pn = `p.c~playerno;
-      .enemy[pno][-1].hi = `p.c~helperindex;
-    }
-    if(#p.next == 0) branch{
-    cond (p.c~playerno&1) != (`pno&1) && p.c~player:
-      if(`n == 0){
-        bar(`pno, `n);
-        ret -1;
-      }
-      ret 1;
-    else:
-      ret 0;
-    }
-    int tmp = self(p.next<>=);
-    if(tmp >= 0 && (p.c~playerno&1) != (`pno&1) && p.c~player){
-      if(`n == tmp){
-        bar(`pno, `n);
-        ret -1;
-      }
-      ret tmp+1;
-    }
-    ret tmp;
+    .enemy[`pno].new[-1].n = `n;
+    .enemy[`pno][-1].pn = pn;
+    .enemy[`pno][-1].hi = hi;
   }
-  if(n < 0 || #`top == 0 || foo(`top<>=) >= 0) ret .consts.null!`_t?();
-  ret .chars[.enemy[pno][-1].pn][.enemy[pno][-1].hi];
+  int cnt = 0;
+  loop{index i = 0; while; do:
+    if(#.chars[i] > 0 && (.chars[i][0]~playerno&1) != (pno&1) && n == cnt++){
+      bar(.chars[i][0]~playerno, 0);
+      ret .chars[i][0];
+    }
+    i++;
+  while i < #.chars:
+  }
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if((p~c~playerno&1) != (pno&1) && p~c~player && n == cnt++){
+      bar(p~c~playerno, p~c~helperindex);
+      ret p~c;
+    }
+    p = p~next;
+  while #p > 0 && p~c~helperindex != 0:
+  }
+  ret .consts.null!`_t?();
 }
 public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
 {
@@ -5080,6 +5068,10 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
   ^^pyr.self en.new(n+1);
   void add(^`pyr.self e, index rng)
   {
+    bool foo<_t>(_t a, _t b, int id1, int id2)
+    {
+      ret a <= b && (a < b || id1 < id2);
+    }
     loop{index i = rng; while; do:
       if(#`en[i] == 0){
         `en[i] = e;
@@ -5090,10 +5082,13 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
         || (
           e~sysivar[.iLIFE] > 0
           ? `en[i]~sysivar[.iLIFE] > 0
-          && #(e~sysfvar[.fX] - `pyr.sysfvar[.fX])
-          < #(`en[i]~sysfvar[.fX] - `pyr.sysfvar[.fX])
+          && foo!float?(
+            #(e~sysfvar[.fX] - `pyr.sysfvar[.fX]),
+            #(`en[i]~sysfvar[.fX] - `pyr.sysfvar[.fX]), e~id, `en[i]~id)
           : `en[i]~sysivar[.iLIFE] <= 0
-          && e~sysivar[.iRECOVERTIME] >= `en[i]~sysivar[.iRECOVERTIME]))
+          && foo!int?(
+            `en[i]~sysivar[.iRECOVERTIME], e~sysivar[.iRECOVERTIME],
+            e~id, `en[i]~id)))
       {
         self(`en[i], i+1);
         `en[i] = e;
@@ -5138,7 +5133,7 @@ public void PlayerList!&Char?::add(^&.Char c)
     `top~c = c;
     ret;
   }
-  if(`top~c~id >= 0){
+  if(`top~c~helperindex == 0){
     *`top.self tmp = `top;
     `top.new(1);
     `top~c = c;
@@ -5149,7 +5144,7 @@ public void PlayerList!&Char?::add(^&.Char c)
     *`top.self p = `top;
     while;
   do:
-    if(p~next~c~id >= 0){
+    if(p~next~c~helperindex == 0){
       *`top.self tmp = p~next;
       p~next.new(1);
       p~next~c = c;
@@ -5189,7 +5184,7 @@ public void PlayerList!&Char?::action(
     bool foo = true;
     while;
   do:
-    if(p~c~id < 0) p~c~id ^= -1;
+    if(p~c~id < 0) continue;
     if(foo && p~c~helperindex == 0){
       foo = false;
       .update(x, tension, cvx=);

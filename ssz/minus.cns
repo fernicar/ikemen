@@ -80,7 +80,7 @@ trigger1 = StateNo = 5110
 trigger2 = !Alive
 trigger2 = HitOver
 trigger2 = !gethitvar(isbound)
-trigger2 = abs(vel x)+abs(vel y) < 0.01
+trigger2 = abs(sysfvar(12))+abs(vel y) < 0.01;VX
 sysvar(55) = -1;RECOVERTIME
 
 [State -4, Turn Cond]
