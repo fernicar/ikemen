@@ -4055,7 +4055,7 @@ public &Char
       `cs1tmp = 0;
     }
   }
-  public void trChangeState(int p)
+  public void trChangeState2(int p)
   {
     if(.v.typ == .VarTy::SFalse) ret;
     int n = .v.toInt();
@@ -4078,9 +4078,13 @@ public &Char
       }
     }
   }
+  public void trChangeState()
+  {
+    `trChangeState2(`stVal.playerno);
+  }
   public void trSelfState()
   {
-    `trChangeState(`playerno);
+    `trChangeState2(`playerno);
   }
   public void trSetPersistent(int p=)
   {
@@ -4295,7 +4299,7 @@ public &Char
     h.sysfvar[.fVY] = 0.0;
     if(ownpal != 0) h.palfx.new(1);
     .v.setI(st);
-    h.trSelfState();
+    h.trChangeState2(`stVal.playerno);
   }
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
   {

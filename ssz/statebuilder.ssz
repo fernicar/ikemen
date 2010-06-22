@@ -3674,8 +3674,7 @@ public &StateBuilder
             cond `state.ctrlList[-1].typ == .CtrlTy::SelfState:
               `state.ctrlList[-1].task .= "`trSelfState();";
             else:
-              `state.ctrlList[-1].task .=
-                "`trChangeState(" .= .s.iToS(`playerno) .= ");";
+              `state.ctrlList[-1].task .= "`trChangeState();";
             }
           cond .s.equ(name, "ctrl"):
             {
