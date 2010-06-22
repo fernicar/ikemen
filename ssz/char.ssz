@@ -1946,8 +1946,17 @@ public &Char
       .explods[`playerno][i].clear();
       .explods[`playerno][i].id = .com.IERR+2;
       .explods[`playerno][i].stconno = scn;
-      loop{index ii = 0; while; do:
-        if(.explods[`playerno][.expdrawlist[`playerno][ii]].stconno > scn){
+      loop{
+        index ii = 0;
+        int p;
+        while;
+      do:
+        p = .explods[`playerno][.expdrawlist[`playerno][ii]].player;
+        if(
+          p >= `id && (
+          p > `id
+          || .explods[`playerno][.expdrawlist[`playerno][ii]].stconno > scn))
+        {
           .insIL(.expdrawlist[`playerno]=, ii, i);
           break, break;
         }
