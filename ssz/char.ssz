@@ -1659,7 +1659,12 @@ public &Projectile
       ret false;
     }
     bool p = pause();
-    if(.com.tickFrame() && !p){
+    if(.com.tickFrame()){
+      if(`timemiss > 0){
+        `timemiss *= -1;
+        `hits--;
+      }
+      if(p) break;
       if(`supermovetime > 0) `supermovetime--;
       if(`pausemovetime > 0) `pausemovetime--;
       branch{
@@ -1709,15 +1714,9 @@ public &Projectile
       branch{
       cond `hitpause == 0:
         if(`removetime > 0) `removetime--;
-        if(`timemiss > 0){
-          `timemiss *= -1;
-          `hits--;
-        }
         if(`timemiss < 0) `timemiss++;
       cond `hitpause > 0:
         `hitpause--;
-      cond `hitpause < 0:
-        `hitpause *= -1;
       }
     }
     if(.com.clsndraw && #`ani > 0){
@@ -5742,12 +5741,12 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               .projs[i][j].pctyp == .ProjContact::Hit;
               .projs[i][j].pctime = -1;
               .projs[i][j].hitpause =
-                -.m.max!int?(1, .projs[i][j].hit.pausetime+1);
+                .m.max!int?(0, .projs[i][j].hit.pausetime);
             else:
               .projs[i][j].pctyp == .ProjContact::Guarded;
               .projs[i][j].pctime = -1;
               .projs[i][j].hitpause =
-                -.m.max!int?(1, .projs[i][j].hit.guard_pausetime+1);
+                .m.max!int?(0, .projs[i][j].hit.guard_pausetime);
             }
             if(.projs[i][j].hit.hitonce > 0) .projs[i][j].hit.hitonce = -1;
           }
