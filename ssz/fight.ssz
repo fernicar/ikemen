@@ -992,24 +992,23 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     }
     ret true;
   }
-  public bool act(
-    bool tf, int roundState, int round,
-    &.snd.Sound snd=, |.KOTy ko, bool simul)
+  public bool act(&.snd.Sound snd=, |.KOTy ko)
   {
     branch{
-    cond roundState > `ctrl_time:
-      if(!tf) ret false;
+    cond .com.intro > `ctrl_time:
+      if(!.com.tickFrame()) ret false;
       `cur = 0;
       `wt = `round_time;
       `swt = `round_sndtime;
       `dt = 0;
-    cond roundState >= 0 || `cur < 2:
-      if(!tf) ret false;
+    cond .com.intro >= 0 || `cur < 2:
+      if(!.com.tickFrame()) ret false;
       switch(`cur){
       case 0:
         if(`swt-- == 0) branch{
-        cond round <= #`round:
-          snd.sound = `sn~getSound(`round[round-1].sndg, `round[round-1].sndi);
+        cond .com.round <= #`round:
+          snd.sound =
+            `sn~getSound(`round[.com.round-1].sndg, `round[.com.round-1].sndi);
           snd.setDefaultParameter();
         else:
           snd.sound = `sn~getSound(`round_default.sndg, `round_default.sndi);
@@ -1017,9 +1016,9 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         }
         if(`wt-- <= 0) branch{
           `dt++;
-        cond round <= #`round:
-          `round[round-1].action();
-          if(!`round[round-1].end(`dt)) break;
+        cond .com.round <= #`round:
+          `round[.com.round-1].action();
+          if(!`round[.com.round-1].end(`dt)) break;
         else:
           `round_default.action();
           if(!`round_default.end(`dt)) break;
@@ -1082,7 +1081,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
           `to.action();
         }
       }
-      if(roundState < -(`over_hittime + `over_waittime + `over_wintime)){
+      if(.com.intro < -(`over_hittime + `over_waittime + `over_wintime)){
         branch{
         cond ko == .KOTy::DKO || ko == .KOTy::TODraw:
           if(`swt2-- == 0){
@@ -1094,7 +1093,9 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
             `dt2++;
             `drawn.action();
           }
-        cond simul:
+        cond
+          .com.win >= 0 && .com.tmode[.com.win] == (int).com.TeamMode::Simul
+          :
           if(`swt2-- == 0){
             snd.sound = `sn~getSound(`win2.sndg, `win2.sndi);
             snd.setDefaultParameter();
@@ -1117,7 +1118,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         }
       }
     }
-    ret tf;
+    ret .com.tickFrame();
   }
   public void draw(int layerno, |.KOTy ko, ^/^/char name)
   {

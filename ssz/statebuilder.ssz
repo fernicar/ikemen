@@ -3338,11 +3338,9 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::ChangeAnim2;
         cond .s.equ(s, "posset"):
           `state.ctrlList[-1].typ = .CtrlTy::PosSet;
-          `state.ctrlList[-1].task .=
-            "`enemyn.new(0);`sysivar[.iBINDTIME]=0;";
+          `state.ctrlList[-1].task .= "`sysivar[.iBINDTIME]=0;";
         cond .s.equ(s, "posadd"):
           `state.ctrlList[-1].typ = .CtrlTy::PosAdd;
-          `state.ctrlList[-1].task .= "`enemyn.new(0);";
         cond .s.equ(s, "velset"):
           `state.ctrlList[-1].typ = .CtrlTy::VelSet;
           `state.ctrlList[-1].task .= "`sysivar[.iBINDTIME]=0;";
@@ -3748,8 +3746,8 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fX)$.v,"
-                "`trAdd(.v.setF(.com.camerax)$.v,", "$.v)$.v);")) ret false;
+                "`trAdd(.v.setF(.com.camerax)$.v,",
+                "$.v)$`trSetX();")) ret false;
           cond .s.equ(name, "y"):
             if(
               !`fullExpression(
@@ -3764,9 +3762,9 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fX)$.v,`trAdd("
-                "`trSysFVar()$.v,`trMul(.v.setI(`facing)$.v,",
-                "$.v)$.v)$.v);")) ret false;
+                "`trAdd(.v.setI(.fX)$`trSysFVar()$.v,"
+                "`trMul(.v.setI(`facing)$.v,",
+                "$.v)$.v)$`trSetX();")) ret false;
           cond .s.equ(name, "y"):
             if(
               !`fullExpression(

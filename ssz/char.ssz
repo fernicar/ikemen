@@ -1224,9 +1224,7 @@ void insIL(%index l=, index i, index x)
 {
   public int n, pn, hi;
 }
-^%&RdCacheInfo enemy;
 %&RdCacheInfo playerid;
-enemy.new(4);
 
 
 public ^&.fgt.Fight fight;
@@ -1711,18 +1709,16 @@ public &Projectile
       branch{
       cond `hitpause == 0:
         if(`removetime > 0) `removetime--;
+        if(`timemiss > 0){
+          `timemiss *= -1;
+          `hits--;
+        }
+        if(`timemiss < 0) `timemiss++;
       cond `hitpause > 0:
         `hitpause--;
       cond `hitpause < 0:
         `hitpause *= -1;
       }
-    }
-    branch{
-    cond `pctime > 0:
-      `pctime++;
-    cond `pctime < 0:
-      `pctime *= -1;
-      if(`misstime <= 0) `hits = 0;
     }
     if(.com.clsndraw && #`ani > 0){
       ^&.act.Frame frm = `ani~ani.currentFrame();
@@ -1738,13 +1734,13 @@ public &Projectile
     }
     if(.com.tickFrame()){
       animAct(p);
-      if(p) break;
-      if(`hitpause != 0) break;
-      if(`timemiss > 0){
-        `timemiss *= -1;
-        `hits--;
+      if(!p || `playerno == (.super > 0 ? .superplayer : .pauseplayer)) branch{
+      cond `pctime > 0:
+        `pctime++;
+      cond `pctime < 0:
+        `pctime *= -1;
+        if(`misstime <= 0) `hits = 0;
       }
-      if(`timemiss < 0) `timemiss++;
       if(`hits <= 0) `hit.attr = -1;
     }
     .addAnimList(
@@ -1893,11 +1889,6 @@ public &Char
   {
     `sysivar[.iHITCOUNT] = 0;
     `sysivar[.iUNIQHITCOUNT] = 0;
-  }
-  void clearRdCache()
-  {
-    .enemy[`playerno].new(0);
-    `enemyn.new(0);
   }
   public void rangeSetSysIVar(index start, index end, int n)
   {
@@ -2703,24 +2694,13 @@ public &Char
     }
     `tmphit = -1;
     if(`cs1tmp != 0) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
+    `enemyn.new(0);
     if(`player){
-      `enemyn.new(0);
       `minus = -1;
       `state_4(::);
     }
     `minus = 3;
     `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
-    branch{
-    cond `stVal.mov == .MovTy::H:
-      if(.supertime < 0 && .supertime != .com.IERR){
-        `defencemul *= .superp2defmul;
-      }
-      if(`sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0) `getcombo = 0;
-    else:
-      `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
-      `stVal.hb.fallcount = 0;
-      `getcombo = 0;
-    }
   }
   public void tickAndAnim()
   {
@@ -2771,6 +2751,12 @@ public &Char
         `ani<>=, sp, x, y, xs, ys, an, .com.tickFrame() && `acttmp > 0, br);
     cond .com.tickFrame() && `acttmp > 0:
       `aimg.recAfterImg(`ani<>=, x, y, xs, ys, an);
+    }
+    if(
+      .com.tickFrame() && .supertime < 0
+      && (`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H)
+    {
+      `defencemul *= .superp2defmul;
     }
   }
   public bool isSuperPaused()
@@ -2880,7 +2866,6 @@ public &Char
     if(`minus != 3) ret;
     if(`helperindex == 0) `cmd.step(`key, `facing, `key < 0);
     {
-      `enemyn.new(0);
       bool p = `isSuperPaused() || `isNormalPaused();
       `acttmp = -(int)p * 2;
       `changeState2();
@@ -2992,8 +2977,7 @@ public &Char
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     if(#c == 0) ret;
     if(`sysfvar[.fBINDPOSX] != .com.FERR){
-      `sysfvar[.fX] = c~sysfvar[.fX] + (float)c~facing*`sysfvar[.fBINDPOSX];
-      `enemyn.new(0);
+      `setX(c~sysfvar[.fX] + (float)c~facing*`sysfvar[.fBINDPOSX]);
     }
     if(`sysfvar[.fBINDPOSY] != .com.FERR){
       `sysfvar[.fY] = c~sysfvar[.fY] + `sysfvar[.fBINDPOSY];
@@ -3006,16 +2990,21 @@ public &Char
   public void update(float x)
   {
     if(.com.tickFrame()){
-      `clearRdCache();
       `atktmp = `stVal.mov != .MovTy::I && !`isHitPaused() ? `stVal.no : -1;
-      `hittmp =
-        (int)(`stVal.mov == .MovTy::H) << (int)(
-          `stVal.playerno == `playerno
-          && `stVal.typ == .StTy::A && `stVal.hb.fallf != 0);
-      if(`stVal.mov != .MovTy::H){
+      branch{
+      cond `stVal.mov == .MovTy::H:
+        `hittmp =
+          (int)(
+            `stVal.playerno == `playerno
+            && `stVal.typ == .StTy::A && `stVal.hb.fallf != 0) + 1;
+      else:
+        `hittmp = 0;
+        `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
+        `getcombo = 0;
         `stVal.hb.hittime = 0;
         `stVal.hb.hitshaketime = 0;
         `stVal.hb.fallf = 0;
+        `stVal.hb.fallcount = 0;
         `stVal.hb.juggle = 0;
       }
       if(
@@ -3024,6 +3013,7 @@ public &Char
           || (`sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0)))
       {
         `outTarget();
+        `getcombo = 0;
       }
     }
     `bind();
@@ -3070,9 +3060,9 @@ public &Char
   public void posReset(float p1x, float p2x)
   {
     `facing = (`playerno&1) == 0 ? 1 : -1;
-    `sysfvar[.fX] =
+    `setX(
       ((`playerno&1) == 0 ? p1x : p2x)
-      + (float)(`playerno*-`facing / 2) * .com.P1P3Dist;
+      + (float)(`playerno*-`facing / 2) * .com.P1P3Dist);
     `sysfvar[.fY] = 0.0;
     `sysfvar[.fVX] = 0.0;
     `setYV(0.0);
@@ -3327,6 +3317,16 @@ public &Char
   public void setX(float x)
   {
     `sysfvar[.fX] = x;
+    `enemyn.new(0);
+    if(`player) loop{index i = (`playerno+1) & 1; while; do:
+      loop{index j = 0; while; do:
+        .chars[i][j]~enemyn.new(0);
+        j++;
+      while j < #.chars[i]:
+      }
+      i += 2;
+    while i < #.chars:
+    }
   }
   public void setY(float y)
   {
@@ -3708,6 +3708,12 @@ public &Char
   public int trId()
   {
     ret `id < 0 ? !`id : `id;
+  }
+  public void trSetX()
+  {
+    float x = .v.toFloat();
+    if(x == .com.FERR) ret;
+    `setX(x);
   }
   public void trVelX()
   {
@@ -4293,7 +4299,7 @@ public &Char
     `self h=, int st, int pt, float x, float y, int facing, int ownpal)
   {
     `helproSetPos!h.self?(h=, pt, x, y, facing);
-    if(x == .com.FERR) h.sysfvar[.fX] = 0.0;
+    if(x == .com.FERR) h.setX(0.0);
     if(y == .com.FERR) h.sysfvar[.fY] = 0.0;
     h.sysfvar[.fVX] = 0.0;
     h.sysfvar[.fVY] = 0.0;
@@ -4337,7 +4343,6 @@ public &Char
           c~setYV(0.0);
         }
         c~bind();
-        if(c~player) `enemyn.new(0);
       }
       i++;
     while i < #`targets:
@@ -4550,6 +4555,10 @@ public &Char
       .v.setSF();
       ret;
     }
+    if(`helperindex != 0){
+      .v.setI(0);
+      ret;
+    }
     .v.typ = .VarTy::Int;
     branch{
     cond id < 0:
@@ -4575,6 +4584,10 @@ public &Char
     int id = .v.toInt();
     if(id == .com.IERR){
       .v.setSF();
+      ret;
+    }
+    if(`helperindex != 0){
+      .v.setI(0);
       ret;
     }
     .v.typ = .VarTy::Int;
@@ -4695,6 +4708,10 @@ public &Char
     int id = .v.toInt();
     if(id == .com.IERR){
       .v.setSF();
+      ret;
+    }
+    if(`helperindex != 0){
+      .v.setI(0);
       ret;
     }
     int d = .m.max!int?(0, id);
@@ -5029,21 +5046,9 @@ public ^&Char PlayerList!&Char?::get(int id)
 }
 public ^&Char PlayerList!&Char?::enemy(int pno, int n)
 {
-  loop{index i = 0; while; do:
-    if(.enemy[pno][i].n == n) ret .chars[.enemy[pno][i].pn][.enemy[pno][i].hi];
-    i++;
-  while i < #.enemy[pno]:
-  }
-  void bar(int pn, int hi)
-  {
-    .enemy[`pno].new[-1].n = `n;
-    .enemy[`pno][-1].pn = pn;
-    .enemy[`pno][-1].hi = hi;
-  }
   int cnt = 0;
   loop{index i = 0; while; do:
     if(#.chars[i] > 0 && (.chars[i][0]~playerno&1) != (pno&1) && n == cnt++){
-      bar(.chars[i][0]~playerno, 0);
       ret .chars[i][0];
     }
     i++;
@@ -5054,7 +5059,6 @@ public ^&Char PlayerList!&Char?::enemy(int pno, int n)
     while;
   do:
     if((p~c~playerno&1) != (pno&1) && p~c~player && n == cnt++){
-      bar(p~c~playerno, p~c~helperindex);
       ret p~c;
     }
     p = p~next;
@@ -6212,11 +6216,7 @@ public float action(
     }
   }
   branch{
-  cond
-    .fight~ro.act(
-      .com.tickFrame(), .com.intro, .com.round, .syssnd=, .ko,
-      .com.win >= 0 && .com.tmode[.com.win] == (int).com.TeamMode::Simul)
-    :
+  cond .fight~ro.act(.syssnd=, .ko):
     branch{
     cond .com.intro > .fight~ro.ctrl_time:
       .com.intro--;
