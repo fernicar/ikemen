@@ -5275,13 +5275,15 @@ public &StateBuilder
           cond .s.equ(name, "alpha"):
             `state.ctrlList[-1].task .= exp .= ".alphas=";
             if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
-            `state.ctrlList[-1].task .= "$.v.toInt();";
-            if(.s.equ(",")<, `tokenizer(text=)){
-              `state.ctrlList[-1].task .= exp;
+            `state.ctrlList[-1].task .= "$.v.toInt();" .= exp;
+            branch{
+            cond .s.equ(",")<, `tokenizer(text=):
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, text=,
                   ".alphad=", "$.v.toInt();")) ret false;
+            else:
+              `state.ctrlList[-1].task .= exp .= ".alphad=255;";
             }
           cond .s.equ(name, "ownpal"):
             if(`state.ctrlList[-1].typ != .CtrlTy::Explod) break, default;
@@ -5455,11 +5457,14 @@ public &StateBuilder
             `state.ctrlList[-1].task .= "`trSetSysIVar(.v.setI(.iALPHAS)$.v,";
             if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v);";
-            if(.s.equ(",")<, `tokenizer(text=)){
+            branch{
+            cond .s.equ(",")<, `tokenizer(text=):
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, text=,
                   "`trSetSysIVar(.v.setI(.iALPHAD)$.v,", "$.v);")) ret false;
+            else:
+              `state.ctrlList[-1].task .= "`sysivar[.iALPHAD]=255;";
             }
           else:
             break, default;
