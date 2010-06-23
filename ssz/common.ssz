@@ -427,7 +427,9 @@ public &ParseMethod<_t>
       line = lines[i][0..@s.find(";", lines[i])];
       f = @s.find("=", line);
       if(f > 0){
-        ^/char name = @s.toLower()<, @s.trim(line[0..f]);
+        ^/char name =
+          @s.toLower()<, @s.trim()<,
+          @s.join(" ")<, @s.split(\x81\x40)<, line[0..f];
         if(#name > 0){
           ^/char data = @s.trim(line[f+1..-1]);
           if(#data == 0) break;
