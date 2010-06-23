@@ -2767,18 +2767,6 @@ public &Char
       `defencemul *= .superp2defmul;
     }
   }
-  public bool isSuperPaused()
-  {
-    ret
-      .super > 0 && `sysivar[.iSUPERMOVETIME] == 0
-      && `sysivar[.iMOVETIMESUPER] <= 0;
-  }
-  public bool isNormalPaused()
-  {
-    ret
-      .super <= 0 && .pause > 0 && `sysivar[.iPAUSEMOVETIME] == 0
-      && `sysivar[.iMOVETIMEPAUSE] <= 0;
-  }
   public bool isPaused()
   {
     ret `acttmp <= -2;
@@ -2870,11 +2858,24 @@ public &Char
       && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0;
   }
   public void action()
-  {
+  {:<-
+    bool isSuperPaused()
+    {
+      ret
+        .super > 0 && `sysivar[.iSUPERMOVETIME] == 0
+        && `sysivar[.iMOVETIMESUPER] <= 0;
+    }
+    bool isNormalPaused()
+    {
+      ret
+        .super <= 0 && .pause > 0 && `sysivar[.iPAUSEMOVETIME] == 0
+        && `sysivar[.iMOVETIMEPAUSE] <= 0;
+    }
     if(`minus != 3) ret;
     if(`helperindex == 0) `cmd.step(`key, `facing, `key < 0);
     {
-      bool p = `isSuperPaused() || `isNormalPaused();
+      if(#`palfx > 0 && !`isPaused()) `palfx~step();
+      bool p = isSuperPaused() || isNormalPaused();
       `acttmp = -(int)p * 2;
       `changeState2();
       `minus = 1;
@@ -3759,41 +3760,12 @@ public &Char
   }
   public void trAnimElemTime()
   {
-    int t = .v.toInt();
-    if(t < 1 || #`ani == 0){
+    int e = .v.toInt();
+    if(e < 1 || #`ani == 0){
       .v.setSF();
       ret;
     }
-    if(t > #`ani~ani.frames){
-      `trAnimTime();
-      if(.v.toInt() > 0) .v.setI(0);
-      ret;
-    }
-    t--;
-    .v.typ = .VarTy::Int;
-    if(
-      `ani~ani.loopend && `ani~ani.time == 0
-      && `ani~ani.current == `ani~ani.loopstart)
-    {
-      .v.i = 0;
-      loop{index i = t; while; do:
-        .v.i += `ani~ani.frames[i].time;
-        i++;
-      while i < #`ani~ani.frames && `ani~ani.frames[i].time >= 0:
-      }
-      ret;
-    }
-    .v.i = `ani~ani.time;
-    loop{index i = t; while; do:
-      .v.i += `ani~ani.frames[i].time;
-      i++;
-    while i < `ani~ani.current && `ani~ani.frames[i].time >= 0:
-    }
-    loop{index i = `ani~ani.current; while; do:
-      .v.i -= `ani~ani.frames[i].time;
-      i++;
-    while i < t && `ani~ani.frames[i].time >= 0:
-    }
+    .v.setI(`ani~ani.animElemTime(e));
   }
   public void trAnimElemNo()
   {
@@ -3802,68 +3774,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    if(
-      tim == 0 && `ani~ani.loopend && `ani~ani.time == 0
-      && `ani~ani.current == `ani~ani.loopstart)
-    {
-      .v.setI(#`ani~ani.frames);
-      ret;
-    }
-    branch{
-    cond tim < 0:
-      loop{
-        index i = `ani~ani.current;
-        tim += `ani~ani.time;
-        bool lp = false;
-        continue;
-      do:
-        tim += `ani~ani.frames[i].time;
-      continue:
-        if(lp && `ani~ani.frames[i].time < 0){
-          .v.setI(i+1);
-          ret;
-        }
-        if(tim >= 0){
-          branch{
-          cond tim == 0 && `ani~ani.loopend && i == `ani~ani.loopstart:
-            .v.setI(#`ani~ani.frames);
-          else:
-            .v.setI(i+1);
-          }
-          ret;
-        }
-        i--;
-      while
-        i >= 0 && (
-          `ani~ani.current < `ani~ani.loopstart || i >= `ani~ani.loopstart)
-        :
-        lp = true;
-        i = #`ani~ani.frames - 1;
-        do;
-      }
-    else:
-      loop{
-        index i = `ani~ani.current;
-        tim -= `ani~ani.frames[i].time - `ani~ani.time;
-        continue;
-      do:
-        tim -= `ani~ani.frames[i].time;
-      continue:
-        if(tim <= 0 || `ani~ani.frames[i].time < 0){
-          branch{
-          cond tim == 0 && `ani~ani.loopend && i == `ani~ani.loopstart:
-            .v.setI(#`ani~ani.frames);
-          else:
-            .v.setI(i+1);
-          }
-          ret;
-        }
-        i++;
-        if(i >= #`ani~ani.frames) i = `ani~ani.loopstart;
-      while true:
-      }
-    }
-    .v.typ = .VarTy::SFalse;
+    .v.setI(`ani~ani.animElemNo(tim));
   }
   public void trAnimElemSpecial(^/char f)
   {
@@ -4563,10 +4474,6 @@ public &Char
       .v.setSF();
       ret;
     }
-    if(`helperindex != 0){
-      .v.setI(0);
-      ret;
-    }
     .v.typ = .VarTy::Int;
     branch{
     cond id < 0:
@@ -4592,10 +4499,6 @@ public &Char
     int id = .v.toInt();
     if(id == .com.IERR){
       .v.setSF();
-      ret;
-    }
-    if(`helperindex != 0){
-      .v.setI(0);
       ret;
     }
     .v.typ = .VarTy::Int;

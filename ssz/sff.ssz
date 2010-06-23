@@ -381,11 +381,19 @@ public &Anim<frame_t>
   {
     if(#`frames == 0) ret 0;
     if(`loopend && `time == 0 && `current == `loopstart) ret 0;
-    int at = `time-1;
+    int at = `time;
     loop{
       index i = `current;
-      if(i < #`frames && `frames[i].time != 0){
-        at += (int)(`frames[i].time < 0) + 1;
+      if(i < #`frames) branch{
+      cond `frames[i].time == 0:
+        at--;
+      cond `frames[i].time < 0:
+        at++;
+        loop{index j = 0; while; do:
+          at += `frames[j].time;
+          j++;
+        while j < i:
+        }
       }
       while;
     do:
@@ -394,6 +402,90 @@ public &Anim<frame_t>
     while i < #`frames && `frames[i].time >= 0:
     }
     ret at;
+  }
+  public int animElemTime(int elem)
+  {
+    int t;
+    if(elem > #`frames){
+      t = `animTime();
+      ret t > 0 ? 0 : t;
+    }
+    int e = elem - 1;
+    if(`loopend && `time == 0 && `current == `loopstart){
+      t = 0;
+      loop{index i = e; while; do:
+        t += `frames[i].time;
+        i++;
+      while i < #`frames && `frames[i].time >= 0:
+      }
+      ret t;
+    }
+    t = `time;
+    loop{index i = e; while; do:
+      t += `frames[i].time;
+      i++;
+    while i < `current && `frames[i].time >= 0:
+    }
+    loop{index i = `current; while; do:
+      t -= `frames[i].time;
+      i++;
+    while i < e && `frames[i].time >= 0:
+    }
+    ret t;
+  }
+  public int animElemNo(int time)
+  {
+    if(time == 0 && `loopend && `time == 0 && `current == `loopstart){
+      ret #`frames;
+    }
+    branch{
+      int t = time, oldt = 0;
+    cond t < 0:
+      loop{
+        index i = `current;
+        t += `time;
+        bool lp = false;
+        continue;
+      do:
+        t += `frames[i].time;
+      continue:
+        if(lp && `frames[i].time < 0){
+          ret i + 1;
+        }
+        if(t >= 0){
+          if(t == 0 && `loopend && i == `loopstart) ret #`frames;
+          ret i + 1;
+        }
+        i--;
+      while i >= 0 && (`current < `loopstart || i >= `loopstart):
+        if(t == oldt) break;
+        oldt = t;
+        lp = true;
+        i = #`frames - 1;
+        do;
+      }
+    else:
+      loop{
+        index i = `current;
+        t -= `frames[i].time - `time;
+        continue;
+      do:
+        t -= `frames[i].time;
+      continue:
+        if(t <= 0 || `frames[i].time < 0){
+          if(t == 0 && `loopend && i == `loopstart) ret #`frames;
+          ret i + 1;
+        }
+        i++;
+        if(i >= #`frames){
+          if(t == oldt) break, break;
+          oldt = t;
+          i = `loopstart;
+        }
+      while true:
+      }
+    }
+    ret 1;
   }
   public void setAnimElem(int e)
   {

@@ -126,6 +126,7 @@ void game()
       `put(x, y=, .s.iToS(p.stVal.time));
       `put(x, y=, .s.iToS(p.stVal.prevno));
       `put(x, y=, .s.iToS(p.stVal.no));
+      `put(x, y=, .s.iToS(p.animno));
       ret y;
     }
     float y = 48.0;

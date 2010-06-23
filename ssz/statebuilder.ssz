@@ -6401,7 +6401,8 @@ public &StateBuilder
             " && `trCommand("\""holdback"\"")$.v.isTrue()){"\r\n
             \t\t\t".v.setI(120)$`trSelfState();"\r\n
             \t\t"}"\r\n
-            \t"cond `sysivar[.iCTRL] != 0:"\r\n
+            \t"cond `sysivar[.iCTRL] != 0 || .roundState() == 4:"\r\n
+            \t\t"`setCtrl(true);"\r\n
             \t\t"switch(`stVal.no){"\r\n
             \t\t"case 11:"\r\n
             \t\t\t".v.setI(12)$`trSelfState();"\r\n
