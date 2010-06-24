@@ -124,6 +124,7 @@ triggerall = Active
 triggerall = alive
 triggerall = sysvar(58) & 2;SYSFLAG,WIN
 trigger1 = sysvar(42);CTRL
+trigger1 = statetype != a
 trigger1 = physics != a
 trigger1 = abs(sysfvar(12)) < 0.01;VX
 trigger1 = sysvar(58) := (sysvar(58) & ~2) || 1;SYSFLAG,WIN
