@@ -4461,8 +4461,7 @@ public &StateBuilder
                 "t=", "$!.v.toInt();")) ret false;
             `state.ctrlList[-1].task .=
               "if(.superplayer==" .= .s.iToS(`playerno)
-              .= "||t<.supertime){.supertime=t;.superplayer="
-              .= .s.iToS(`playerno) .= ";}";
+              .= "||t<.supertime){.supertime=t;.superplayer=`playerno;}";
             `state.flag = 1;
           cond .s.equ(name, "anim"):
             if(#text > 0 && .s.toLowerChar(text[0]) == 's'){
@@ -6209,7 +6208,9 @@ public &StateBuilder
             }
           case .CtrlTy::SuperPause:
             if(`state.flag == 0){
-              dbuf .= ".supertime=.m.min!int?(.supertime,-30);";
+              dbuf .=
+                "if(.superplayer==" .= .s.iToS(`playerno)
+                .= "||-30<.supertime){.supertime=-30;.superplayer=`playerno;}";
             }
             dbuf .= .sndend;
           case .CtrlTy::PlaySnd:
