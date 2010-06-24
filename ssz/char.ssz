@@ -2881,7 +2881,6 @@ public &Char
       `minus = 1;
       if(!p){
         `lSetNormal();
-        if(#`palfx > 0) `palfx~step();
         if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
         if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
         if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
