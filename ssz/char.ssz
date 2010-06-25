@@ -4931,6 +4931,7 @@ public void Explod::modify(&.Char c=, &.ModifyExplod mod=, index i)
   if(mod.supermovetime != .com.IERR) `supermovetime = mod.supermovetime;
   if(mod.pausemovetime != .com.IERR) `pausemovetime = mod.pausemovetime;
   if(mod.postype >= 0) `setPos(c=);
+  if(`ontop != 0) `sprpriority = 0;
 }
 
 
@@ -5817,7 +5818,7 @@ void gSetNormal(&.stage.Stage stg=, float scl, float x, float y)
   if(.com.xmin > .com.xmax){
     .com.xmin = .com.xmax = (.com.xmin + .com.xmax) * 0.5;
   }
-  .specialFlag &= !(.gsINTRO|.gsROUNDNOTOVER);
+  .specialFlag &= !.gsROUNDNOTOVER;
 }
 
 ^&.fgt.LifePower getLifePower()

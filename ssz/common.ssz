@@ -168,9 +168,8 @@ public &FXY
 public void readPair<_t>(_t x=, _t y=, ^/char data)
 {
   ^_t xy = .s.svToAry!_t?(",", data);
-  if(#xy == 0) ret;
   x = xy[0];
-  if(#xy >= 2) y = xy[1];
+  y = #xy >= 2 ? xy[1] : (_t)0;
 }
 
 
@@ -201,7 +200,11 @@ public &Layout
     cond .s.equ(name, "layerno"):
       `layerno = .m.min!int?(2)<, .s.sToN!int?(data);
     cond .s.equ(name, "scale"):
-      .readPair!float?(`scale.x=, `scale.y=, data);
+      {
+        ^float xy = .s.svToAry!float?(",", data);
+        `scale.x = xy[0];
+        `scale.y = #xy >= 2 ? xy[1] : 1.0;
+      }
     else:
       ret false;
     }

@@ -6294,7 +6294,7 @@ public &StateBuilder
               "`setAlpha(t,e~alphas=,e~alphad=);"
               "e~player=`id;";
             if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
-              dbuf .= "e~ignorehitpause=ih;";
+              dbuf .= "e~ignorehitpause=ih;if(e~ontop != 0)e~sprpriority=0;";
             }
           case .CtrlTy::ModifyExplod:
             dbuf .=
