@@ -4548,7 +4548,7 @@ public &Char
   {
     ret
       .explods[`playerno][i].id >= 0 && (
-        (id < 0 || .explods[`playerno][i].player == `id)
+        .explods[`playerno][i].player == `id
         && (id <= 0 || .explods[`playerno][i].id == id));
   }
   public void trExplodBindTime(int id, int bt)
@@ -4902,7 +4902,6 @@ public void Explod::setPos(&.Char c=)
 }
 public void Explod::modify(&.Char c=, &.ModifyExplod mod=, index i)
 {
-  if(mod.id < 0) mod.id = 0;
   if(!c.matchExplodId(i, mod.id)) ret;
   if(mod.bindtime != .com.IERR) `bindtime = mod.bindtime;
   if(mod.scalex != .com.FERR) `scalex = mod.scalex;
