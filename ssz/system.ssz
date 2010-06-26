@@ -29,7 +29,6 @@ void limit(int n=, int maxcnt, bool wrap)
 
 public &Select
 {
-  &.com.ParseMethod!self? parseMethod;
   public &Char
   {
     public ^/char def;
@@ -85,19 +84,16 @@ public &Select
   }
   public bool addChar(^/char def)
   {:<-
-    public void info(^/char sec, ^/char name, ^/char data)
+    public void info(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "displayname"):
-        `charlist[-1].dname = data;
-      cond .s.equ(name, "name"):
-        `charlist[-1].name = data;
-      }
+      ^/char data;
+      if(#(data = sc.get("displayname")) > 0) `charlist[-1].dname = data;
+      if(#(data = sc.get("name")) > 0) `charlist[-1].name = data;
     }
-    public void files(^/char sec, ^/char name, ^/char data)
+    public void files(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "sprite"):
+      ^/char data;
+      if(#(data = sc.get("sprite")) > 0){
         `charlist[-1].sprite = .com.readFileName(data);
       }
     }
@@ -107,11 +103,12 @@ public &Select
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
       i++;
+      &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "info"):
-        `parse!`addChar:<-info?(lines, i=, sec);
+        `addChar:<-info(sc=);
       cond .s.equ(secname, "files"):
-        `parse!`addChar:<-files?(lines, i=, sec);
+        `addChar:<-files(sc=);
       }
     }
     ^^/char defs =
@@ -166,12 +163,10 @@ public &Select
   }
   public bool addStage(^/char def)
   {:<-
-    public void info(^/char sec, ^/char name, ^/char data)
+    public void info(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "name"):
-        `stagelist[-1].name = data;
-      }
+      ^/char data;
+      if(#(data = sc.get("name")) > 0) `stagelist[-1].name = data;
     }
     void section(%^/char lines, index i=)
     {
@@ -179,9 +174,10 @@ public &Select
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
       i++;
+      &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "info"):
-        `parse!`addStage:<-info?(lines, i=, sec);
+        `addStage:<-info(sc=);
       }
     }
     ^char mainbuf;
