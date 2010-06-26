@@ -3385,7 +3385,7 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::Projectile;
           `state.ctrlList[-1].task .=
             "^&.Projectile pr=`newProj();if(#pr==0)ret;"
-            "int pt=0;float x=0.0,y=0.0;pr~id=0;";
+            "int pt=0;float x=0.0,y=0.0;";
         cond .s.equ(s, "reversaldef"):
           `state.ctrlList[-1].typ = .CtrlTy::ReversalDef;
           `state.ctrlList[-1].task .= "`stVal.hit.clear();";
@@ -3494,7 +3494,7 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::Explod;
           `state.ctrlList[-1].task .=
             "^&.Explod e=`newExplod(" .= .s.iToS(`stconcnt) .= ");"
-            "if(#e==0)ret;int t=0;float rx=0.0,ry=0.0;e~id=0;";
+            "if(#e==0)ret;int t=0;float rx=0.0,ry=0.0;";
         cond .s.equ(s, "modifyexplod"):
           `state.ctrlList[-1].typ = .CtrlTy::ModifyExplod;
           `state.ctrlList[-1].task .= "&.ModifyExplod m;"

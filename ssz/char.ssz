@@ -1753,7 +1753,6 @@ public &Projectile
 }
 public &Char
 {
-  &.com.ParseMethod!self? parseMethod;
   public ^/char def, name, displayname, author;
   public ^int pal_defaults;
   public ^/char command;
@@ -1944,7 +1943,7 @@ public &Char
     ^&.Explod foo(index i, int scn)
     {
       .explods[`playerno][i].clear();
-      .explods[`playerno][i].id = .com.IERR+2;
+      .explods[`playerno][i].id = -1;
       .explods[`playerno][i].stconno = scn;
       loop{
         index ii = 0;
@@ -1982,12 +1981,13 @@ public &Char
     loop{index i = 0; while; do:
       if(.projs[`playerno][i].id < 0){
         .projs[`playerno][i].clear();
+        .projs[`playerno][i].id = 0;
         ret .projs[`playerno][i..i+1];
       }
       i++;
     while i < #.projs[`playerno]:
       if(i < .cfg.PlayerProjectileMax){
-        .projs[`playerno].new[i];
+        .projs[`playerno].new[i].id = 0;
         ret .projs[`playerno][i..i+1];
       }
     }
@@ -2060,63 +2060,44 @@ public &Char
   }
   public bool load(^/char def)
   {:<-
-    public void info(^/char sec, ^/char name, ^/char data)
+    public void info(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "name"):
-        if(#`name == 0) `name = data;
-      cond .s.equ(name, "displayname"):
-        if(#`displayname == 0) `displayname = data;
-      cond .s.equ(name, "author"):
-        if(#`author == 0) `author = data;
-      cond .s.equ(name, "pal.defaults"):
+      ^/char data;
+      if(#(data = sc.get("name")) > 0) `name = data;
+      if(#(data = sc.get("displayname")) > 0) `displayname = data;
+      if(#(data = sc.get("author")) > 0) `author = data;
+      if(#(data = sc.get("pal.defaults")) > 0){
         `pal_defaults = .s.svToAry!int?(",", data);
       }
     }
-    public void files(^/char sec, ^/char name, ^/char data)
+    public void files(&.com.Section sc=)
     {
-      ^/char d = .com.readFileName(data);
-      branch{
-      cond .s.equ(name, "cmd"):
-        if(#`command == 0) `command = d;
-      cond .s.equ(name, "sprite"):
-        if(#`sprite == 0) `sprite = d;
-      cond .s.equ(name, "anim"):
-        if(#`anim == 0) `anim = d;
-      cond .s.equ(name, "sound"):
-        if(#`sound == 0) `sound = d;
-      cond .s.equ(name, "pal1"):
-        if(#`pal[0] == 0) `pal[0] = d;
-      cond .s.equ(name, "pal2"):
-        if(#`pal[1] == 0) `pal[1] = d;
-      cond .s.equ(name, "pal3"):
-        if(#`pal[2] == 0) `pal[2] = d;
-      cond .s.equ(name, "pal4"):
-        if(#`pal[3] == 0) `pal[3] = d;
-      cond .s.equ(name, "pal5"):
-        if(#`pal[4] == 0) `pal[4] = d;
-      cond .s.equ(name, "pal6"):
-        if(#`pal[5] == 0) `pal[5] = d;
-      cond .s.equ(name, "pal7"):
-        if(#`pal[6] == 0) `pal[6] = d;
-      cond .s.equ(name, "pal8"):
-        if(#`pal[7] == 0) `pal[7] = d;
-      cond .s.equ(name, "pal9"):
-        if(#`pal[8] == 0) `pal[8] = d;
-      cond .s.equ(name, "pal10"):
-        if(#`pal[9] == 0) `pal[9] = d;
-      cond .s.equ(name, "pal11"):
-        if(#`pal[10] == 0) `pal[10] = d;
-      cond .s.equ(name, "pal12"):
-        if(#`pal[11] == 0) `pal[11] = d;
-      }
+      type _t = .com.readFileName;
+      ^/char data;
+      if(#(data = sc.get("cmd")) > 0) `command = _t(data);
+      if(#(data = sc.get("sprite")) > 0) `sprite = _t(data);
+      if(#(data = sc.get("anim")) > 0) `anim = _t(data);
+      if(#(data = sc.get("sound")) > 0) `sound = _t(data);
+      if(#(data = sc.get("pal1")) > 0) `pal[0] = _t(data);
+      if(#(data = sc.get("pal2")) > 0) `pal[1] = _t(data);
+      if(#(data = sc.get("pal3")) > 0) `pal[2] = _t(data);
+      if(#(data = sc.get("pal4")) > 0) `pal[3] = _t(data);
+      if(#(data = sc.get("pal5")) > 0) `pal[4] = _t(data);
+      if(#(data = sc.get("pal6")) > 0) `pal[5] = _t(data);
+      if(#(data = sc.get("pal7")) > 0) `pal[6] = _t(data);
+      if(#(data = sc.get("pal8")) > 0) `pal[7] = _t(data);
+      if(#(data = sc.get("pal9")) > 0) `pal[8] = _t(data);
+      if(#(data = sc.get("pal10")) > 0) `pal[9] = _t(data);
+      if(#(data = sc.get("pal11")) > 0) `pal[10] = _t(data);
+      if(#(data = sc.get("pal12")) > 0) `pal[11] = _t(data);
     }
-    public void arcade(^/char sec, ^/char name, ^/char data)
+    public void arcade(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "intro.storyboard"):
+      ^/char data;
+      if(#(data = sc.get("intro.storyboard")) > 0){
         `intro = .com.readFileName(data);
-      cond .s.equ(name, "ending.storyboard"):
+      }
+      if(#(data = sc.get("ending.storyboard")) > 0){
         `ending = .com.readFileName(data);
       }
     }
@@ -2126,13 +2107,14 @@ public &Char
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
       i++;
+      &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "info"):
-        `parse!`load:<-info?(lines, i=, sec);
+        `load:<-info(sc=);
       cond .s.equ(secname, "files"):
-        `parse!`load:<-files?(lines, i=, sec);
+        `load:<-files(sc=);
       cond .s.equ(secname, "arcade"):
-        `parse!`load:<-arcade?(lines, i=, sec);
+        `load:<-arcade(sc=);
       }
     }
     public void begin(^^/char lines, index i=, ^/char section)
@@ -2168,8 +2150,9 @@ public &Char
         `load:<-begin(lines, i=, sec);
       }
     }
-    public void remap(^/char sec, ^/char name, ^/char data)
+    public void remap(&.com.Section sc=)
     {
+      ^/char data;
       void map(|.cmd.Key k=, |.cmd.Key nk=)
       {
         branch{
@@ -2196,47 +2179,41 @@ public &Char
           nk = .cmd.Key::ns;
         }
       }
-      branch{
-      cond .s.equ(name, "x"):
-        map(.cmd.x=, .cmd.nx=);
-      cond .s.equ(name, "y"):
-        map(.cmd.y=, .cmd.ny=);
-      cond .s.equ(name, "z"):
-        map(.cmd.z=, .cmd.nz=);
-      cond .s.equ(name, "a"):
-        map(.cmd.a=, .cmd.na=);
-      cond .s.equ(name, "b"):
-        map(.cmd.b=, .cmd.nb=);
-      cond .s.equ(name, "c"):
-        map(.cmd.c=, .cmd.nc=);
-      cond .s.equ(name, "s"):
-        map(.cmd.s=, .cmd.ns=);
-      }
+      if(#(data = sc.get("x")) > 0) map(.cmd.x=, .cmd.nx=);
+      if(#(data = sc.get("y")) > 0) map(.cmd.y=, .cmd.ny=);
+      if(#(data = sc.get("z")) > 0) map(.cmd.z=, .cmd.nz=);
+      if(#(data = sc.get("a")) > 0) map(.cmd.a=, .cmd.na=);
+      if(#(data = sc.get("b")) > 0) map(.cmd.b=, .cmd.nb=);
+      if(#(data = sc.get("c")) > 0) map(.cmd.c=, .cmd.nc=);
+      if(#(data = sc.get("s")) > 0) map(.cmd.s=, .cmd.ns=);
     }
-    public void defaults(
-      ^/char sec, ^/char name, ^/char data)
+    public void defaults(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "command.time"):
+      ^/char data;
+      if(#(data = sc.get("command.time")) > 0){
         `cmd.defaultTime = .s.sToN!`cmd.defaultTime.self?(data);
-      cond .s.equ(name, "command.buffer.time"):
+      }
+      if(#(data = sc.get("command.buffer.time")) > 0){
         `cmd.defaultBufferTime =
-          .s.sToN!`cmd.defaultBufferTime.self?(data);
+          .m.max!int?(1)<, .s.sToN!`cmd.defaultBufferTime.self?(data);
       }
     }
-    public void command(^/char sec, ^/char name, ^/char data)
+    public void command(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "name"):
-        `cmd.ctmp~name = data;
-      cond .s.equ(name, "command"):
-        `cmd.ctmp~readCmd(data);
-      cond .s.equ(name, "time"):
+      `cmd.ctmp.new(1);
+      `cmd.ctmp~time = `cmd.defaultTime;
+      `cmd.ctmp~buffertime = `cmd.defaultBufferTime;
+      ^/char data;
+      if(#(data = sc.get("name")) > 0) `cmd.ctmp~name = data;
+      if(#(data = sc.get("command")) > 0) `cmd.ctmp~readCmd(data);
+      if(#(data = sc.get("time")) > 0){
         `cmd.ctmp~time = .s.sToN!`cmd.ctmp<>.time.self?(data);
-      cond .s.equ(name, "buffer.time"):
-        `cmd.ctmp~buffertime =
-          .s.sToN!`cmd.ctmp<>.buffertime.self?(data);
       }
+      if(#(data = sc.get("buffer.time")) > 0){
+        `cmd.ctmp~buffertime =
+          .m.max!int?(1)<, .s.sToN!`cmd.ctmp<>.buffertime.self?(data);
+      }
+      `cmd.add(`cmd.ctmp<>=);
     }
     void commandlist(^^/char lines, index i=)
     {
@@ -2244,17 +2221,14 @@ public &Char
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
       i++;
+      &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "remap"):
-        `parse!`load:<-remap?(lines, i=, sec);
+        `load:<-remap(sc=);
       cond .s.equ(secname, "defaults"):
-        `parse!`load:<-defaults?(lines, i=, sec);
+        `load:<-defaults(sc=);
       cond .s.equ(secname, "command"):
-        `cmd.ctmp.new(1);
-        `cmd.ctmp~time = `cmd.defaultTime;
-        `cmd.ctmp~buffertime = `cmd.defaultBufferTime;
-        `parse!`load:<-command?(lines, i=, sec);
-        `cmd.add(`cmd.ctmp<>=);
+        `load:<-command(sc=);
       }
     }
     `def = def;

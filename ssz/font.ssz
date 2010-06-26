@@ -23,7 +23,6 @@ public &Font
     public int w;
     public ^&.sff.Sprite img;
   }
-  &.com.ParseMethod!self? parseMethod;
   public &.sff.Sprite img;
   %&CharOffset mpl;
   &.tbl.IntTable!char, &CharOffset? map;
@@ -35,29 +34,20 @@ public &Font
   int offsetx = 0, offsety = 0;
   public bool loadFile(^/char filename)
   {:<-
-    public void def(^/char sec, ^/char name, ^/char data)
+    public void def(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "size"):
-        {
-          ^int xy = .s.svToAry!xy<>.self?(",", data);
-          if(#xy >= 1) `sizex = xy[0];
-          if(#xy >= 2) `sizey = xy[1];
-        }
-      cond .s.equ(name, "spacing"):
-        {
-          ^int xy = .s.svToAry!xy<>.self?(",", data);
-          if(#xy >= 1) `spacingx = xy[0];
-          if(#xy >= 2) `spacingy = xy[1];
-        }
-      cond .s.equ(name, "colors"):
+      ^/char data;
+      if(#(data = sc.get("size")) > 0){
+        .com.readPair!int?(`sizex=, `sizey=, data);
+      }
+      if(#(data = sc.get("spacing")) > 0){
+        .com.readPair!int?(`spacingx=, `spacingx=, data);
+      }
+      if(#(data = sc.get("colors")) > 0){
         `colors = .mat.min!int?(255)<, .s.sToN!`colors.self?(data);
-      cond .s.equ(name, "offset"):
-        {
-          ^int xy = .s.svToAry!xy<>.self?(",", data);
-          if(#xy >= 1) `offsetx = xy[0];
-          if(#xy >= 2) `offsety = xy[1];
-        }
+      }
+      if(#(data = sc.get("offset")) > 0){
+        .com.readPair!int?(`offsetx=, `offsety=, data);
       }
     }
     public void map(^^/char lines, index i=)
@@ -125,11 +115,14 @@ public &Font
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
       i++;
+      if(.s.equ(secname, "map")){
+        `loadFile:<-map(lines, i=);
+        ret;
+      }
+      &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "def"):
-        `parse!`loadFile:<-def?(lines, i=, sec);
-      cond .s.equ(secname, "map"):
-        `loadFile:<-map(lines, i=);
+        `loadFile:<-def(sc=);
       }
     }
     &.file.File f;

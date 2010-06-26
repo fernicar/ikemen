@@ -5,6 +5,8 @@ lib m = <math.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
 lib cfg = "config.ssz";
 lib mes = <alpha/mesdialog.ssz>;
+lib tbl = <table.ssz>;
+lib file = <file.ssz>;
 
 
 //チームモードの種類
@@ -186,29 +188,29 @@ public &Layout
     `offset.set(0.0, 0.0);
     `scale.set(1.0, 1.0);
   }
-  public bool read(^/char name, ^/char data)
+  public void read(^/char img, &.Section sc=)
   {
-    branch{
-    cond .s.equ(name, "offset"):
+    ^/char data;
+    if(#(data = sc.benri(img, "offset")) > 0){
       .readPair!float?(`offset.x=, `offset.y=, data);
-    cond .s.equ(name, "displaytime"):
-      `displaytime = .s.sToN!int?(data);
-    cond .s.equ(name, "facing"):
-      `facing = .s.sToN!int?(data) < 0 ? -1: 1;
-    cond .s.equ(name, "vfacing"):
-      `vfacing = .s.sToN!int?(data) < 0 ? -1: 1;
-    cond .s.equ(name, "layerno"):
-      `layerno = .m.min!int?(2)<, .s.sToN!int?(data);
-    cond .s.equ(name, "scale"):
-      {
-        ^float xy = .s.svToAry!float?(",", data);
-        `scale.x = xy[0];
-        `scale.y = #xy >= 2 ? xy[1] : 1.0;
-      }
-    else:
-      ret false;
     }
-    ret true;
+    if(#(data = sc.benri(img, "displaytime")) > 0){
+      `displaytime = .s.sToN!int?(data);
+    }
+    if(#(data = sc.benri(img, "facing")) > 0){
+      `facing = .s.sToN!int?(data) < 0 ? -1: 1;
+    }
+    if(#(data = sc.benri(img, "vfacing")) > 0){
+      `vfacing = .s.sToN!int?(data) < 0 ? -1: 1;
+    }
+    if(#(data = sc.benri(img, "layerno")) > 0){
+      `layerno = .m.min!int?(2)<, .s.sToN!int?(data);
+    }
+    if(#(data = sc.benri(img, "scale")) > 0){
+      ^float xy = .s.svToAry!float?(",", data);
+      `scale.x = xy[0];
+      `scale.y = #xy >= 2 ? xy[1] : 1.0;
+    }
   }
   public void setup()
   {
@@ -397,6 +399,50 @@ public bool loadFile(^/char deffile, ^/char file=, ~$bool(^/char) load)
   ret true;
 }
 
+public &Section
+{
+  &.tbl.NameTable!char? params;
+  public void parse(^^/char lines, index i=)
+  {
+    loop{
+      index f;
+      ^/char line;
+      while;
+    do:
+      if(#lines[i] > 0 && lines[i][0] == '['){
+        if(.s.find("]", lines[i]) < 0) break, continue;
+        i--;
+        break, break;
+      }
+      line = lines[i][0...s.find(";", lines[i])];
+      f = .s.find("=", line);
+      if(f > 0){
+        ^/char name =
+          .s.toLower()<, .s.trim()<,
+          .s.join(" ")<, .s.split(\x81\x40)<, line[0..f];
+        if(#name > 0){
+          ^/char data = .s.trim(line[f+1..-1]);
+          if(#data == 0) break;
+          if(data[0] == '"') data = data[1...s.find(\", data[1..-1])+1];
+          if(#`params.get(name) == 0) `params.set(name, .s.clone!char?(data));
+        }
+      }
+    continue:
+      i++;
+    while i < #lines:
+    }
+  }
+  public ^/char get(^/char name)
+  {
+    ret `params.get(name);
+  }
+  public ^/char benri(^/char head, ^/char name)
+  {
+    %char buf;
+    ret `params.get(buf .= head .= name);
+  }
+}
+
 public ^/char sectionName(^/char sec=)
 {
   if(#sec == 0 || sec[0] != '[') ret "";
@@ -411,40 +457,6 @@ public ^/char sectionName(^/char sec=)
   }
   sec = sec[fnd..-1];
   ret secname;
-}
-
-public &ParseMethod<_t>
-{
-  void _t::parse<func_t>(^^/char lines, index i=, ^/char sec)
-  {
-    loop{
-      index f;
-      ^/char line;
-      while;
-    do:
-      if(#lines[i] > 0 && lines[i][0] == '['){
-        if(@s.find("]", lines[i]) < 0) break, continue;
-        i--;
-        break, break;
-      }
-      line = lines[i][0..@s.find(";", lines[i])];
-      f = @s.find("=", line);
-      if(f > 0){
-        ^/char name =
-          @s.toLower()<, @s.trim()<,
-          @s.join(" ")<, @s.split(\x81\x40)<, line[0..f];
-        if(#name > 0){
-          ^/char data = @s.trim(line[f+1..-1]);
-          if(#data == 0) break;
-          if(data[0] == '"') data = data[1..@s.find(\", data[1..-1])+1];
-          func_t(sec, name, data);
-        }
-      }
-    continue:
-      i++;
-    while i < #lines:
-    }
-  }
 }
 
 public &FrameActionMethod<_t>

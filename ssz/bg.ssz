@@ -187,46 +187,43 @@ public &BackGround
     `bga.sinxlooptime = `startsinxlt;
     `bga.sinylooptime = `startsinylt;
   }
-  public bool read(^/char name, ^/char data, bool hires)
+  public void read(&.com.Section sc=, bool hires)
   {
-    branch{
-    cond .s.equ(name, "spriteno"):
+    ^/char data;
+    if(#(data = sc.get("spriteno")) > 0){
       `anim.frames.new[0];
       .com.readPair!short?(`anim.frames~group=, `anim.frames~number=, data);
       `anim.frames[0].time = -1;
-    cond .s.equ(name, "actionno"):
-      {//////////
-        ^int no = .s.svToAry!int?(",", data);
-        `actionno = no[0];
-      }
+    }
+    if(#(data = sc.get("actionno")) > 0){
+      ^int no = .s.svToAry!int?(",", data);
+      `actionno = no[0];
       `anim.mask = 0;
-    cond .s.equ(name, "layerno"):
-      `toplayer = .s.sToN!int?(data) > 0;
-    cond .s.equ(name, "start"):
-      {
-        ^float xy = .s.svToAry!xy<>.self?(",", data);
-        float mul = hires ? 0.5 : 1.0;
-        `startx = xy[0]*mul;
-        branch{
-        cond #xy >= 2:
-          `starty = xy[1]*mul;
-        else:
-          `starty = 0.0;
-        }
+    }
+    if(#(data = sc.get("layerno")) > 0) `toplayer = .s.sToN!int?(data) > 0;
+    if(#(data = sc.get("start")) > 0){
+      ^float xy = .s.svToAry!xy<>.self?(",", data);
+      float mul = hires ? 0.5 : 1.0;
+      `startx = xy[0]*mul;
+      branch{
+      cond #xy >= 2:
+        `starty = xy[1]*mul;
+      else:
+        `starty = 0.0;
       }
-    cond .s.equ(name, "delta"):
-      {
-        ^float xy = .s.svToAry!xy<>.self?(",", data);
-        float mul = hires ? 0.5 : 1.0;
-        `deltax = xy[0]*mul;
-        branch{
-        cond #xy >= 2:
-          `deltay = xy[1]*mul;
-        else:
-          `deltay = `deltax;
-        }
+    }
+    if(#(data = sc.get("delta")) > 0){
+      ^float xy = .s.svToAry!xy<>.self?(",", data);
+      float mul = hires ? 0.5 : 1.0;
+      `deltax = xy[0]*mul;
+      branch{
+      cond #xy >= 2:
+        `deltay = xy[1]*mul;
+      else:
+        `deltay = `deltax;
       }
-    cond .s.equ(name, "trans"):
+    }
+    if(#(data = sc.get("trans")) > 0){
       branch{
         ^char d = .s.toLower(data);
       cond .s.equ(d, "add"):
@@ -243,28 +240,29 @@ public &BackGround
         `anim.dalpha = 0;
       }
       `anim.mask = 0;
-    cond .s.equ(name, "alpha"):
-      {
-        ^int sd = .s.svToAry!sd<>.self?(",", data);
-        if(#sd >= 2){
-          `anim.salpha = sd[0];
-          if(`anim.salpha > 255) `anim.salpha = 255;
-          `anim.dalpha = sd[1];
-          if(`anim.dalpha > 255) `anim.dalpha = 255;
-          if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
-        }
+    }
+    if(#(data = sc.get("alpha")) > 0){
+      ^int sd = .s.svToAry!sd<>.self?(",", data);
+      if(#sd >= 2){
+        `anim.salpha = sd[0];
+        if(`anim.salpha > 255) `anim.salpha = 255;
+        `anim.dalpha = sd[1];
+        if(`anim.dalpha > 255) `anim.dalpha = 255;
+        if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
       }
-    cond .s.equ(name, "mask"):
+    }
+    if(#(data = sc.get("mask")) > 0){
       if(`actionno < 0 && `anim.salpha < 0) branch{
         cond (.s.sToN!int?(data) != 0):
           `anim.mask = 0;
         else:
           `anim.mask = -1;
         }
-    cond .s.equ(name, "tile"):
+    }
+    if(#(data = sc.get("tile")) > 0){
       .com.readPair!ushort?(`anim.tile.w=, `anim.tile.h=, data);
-    cond .s.equ(name, "tilespacing"):
-    {//////////
+    }
+    if(#(data = sc.get("tilespacing")) > 0){
       ^short xy = .s.svToAry!xy<>.self?(",", data);
       `anim.tile.x = xy[0];
       branch{
@@ -274,83 +272,77 @@ public &BackGround
         `anim.tile.h = 0d0;
       }
     }
-    cond .s.equ(name, "width"):
+    if(#(data = sc.get("width")) > 0){
       .com.readPair!ushort?(`twidth=, `bwidth=, data);
-    cond .s.equ(name, "xscale"):
-      .com.readPair!float?(`rasterxtspeed=, `rasterxbspeed=, data);
-    cond .s.equ(name, "yscalestart"):
-      `yscalestart = 100.0 / .s.sToN!`yscalestart.self?(data);
-    cond .s.equ(name, "yscaledelta"):
-      `yscaledelta = .s.sToN!`yscaledelta.self?(data);
-    cond .s.equ(name, "window"):
-      {
-        ^float ltrb = .s.svToAry!float?(",", data);
-        float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
-        float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
-        if(#ltrb >= 4){
-          `startrect.x = (short)(ltrb[0]*mulx);
-          `startrect.y = (short)(ltrb[1]*muly);
-          `startrect.w = (ushort)(((ltrb[2]+1.0)-ltrb[0])*mulx + 0.5);
-          `startrect.h = (ushort)(((ltrb[3]+1.0)-ltrb[1])*muly + 0.5);
-        }
-      }
-    cond .s.equ(name, "windowdelta"):
-      {
-        ^float xy = .s.svToAry!float?(",", data);
-        float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
-        float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
-        `windowdeltax = xy[0]*mulx;
-        branch{
-        cond #xy >= 2:
-          `windowdeltay = xy[1]*muly;
-        else:
-          `windowdeltay = `windowdeltax;
-        }
-      }
-    cond .s.equ(name, "id"):
-      `id = .s.sToN!`id.self?(data);
-    cond .s.equ(name, "velocity"):
-      {
-        ^float xy = .s.svToAry!xy<>.self?(",", data);
-        float mul = hires ? 0.5 : 1.0;
-        `startvx = `bga.vx = xy[0]*mul;
-        branch{
-        cond #xy >= 2:
-          `startvy = `bga.vy = xy[1]*mul;
-        else:
-          `startvy = `bga.vy = 0.0;
-        }
-      }
-    cond .s.equ(name, "sin.x"):
-      {
-        ^float rp = .s.svToAry!rp<>.self?(",", data);
-        if(#rp < 2) break;
-        `startxrad = `bga.xradius = rp[0];
-        `startsinxlt = `bga.sinxlooptime = (int)rp[1];
-        if(#rp < 3) break;
-        if(`bga.sinxlooptime > 0){
-          `bga.sinxtime = (int)((float)rp[2]*rp[1]/360.0) % `bga.sinxlooptime;
-          if(`bga.sinxtime < 0) `bga.sinxtime += `bga.sinxlooptime;
-          `startsinxt = `bga.sinxtime;
-        }
-      }
-    cond .s.equ(name, "sin.y"):
-      {
-        ^float rp = .s.svToAry!rp<>.self?(",", data);
-        if(#rp < 2) break;
-        `startyrad = `bga.yradius = rp[0];
-        `startsinylt = `bga.sinylooptime = (int)rp[1];
-        if(#rp < 3) break;
-        if(`bga.sinylooptime > 0){
-          `bga.sinytime = (int)((float)rp[2]*rp[1]/360.0) % `bga.sinylooptime;
-          if(`bga.sinytime < 0) `bga.sinytime += `bga.sinylooptime;
-          `startsinyt = `bga.sinytime;
-        }
-      }
-    else:
-      ret false;
     }
-    ret true;
+    if(#(data = sc.get("xscale")) > 0){
+      .com.readPair!float?(`rasterxtspeed=, `rasterxbspeed=, data);
+    }
+    if(#(data = sc.get("yscalestart")) > 0){
+      `yscalestart = 100.0 / .s.sToN!`yscalestart.self?(data);
+    }
+    if(#(data = sc.get("yscaledelta")) > 0){
+      `yscaledelta = .s.sToN!`yscaledelta.self?(data);
+    }
+    if(#(data = sc.get("window")) > 0){
+      ^float ltrb = .s.svToAry!float?(",", data);
+      float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
+      float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
+      if(#ltrb >= 4){
+        `startrect.x = (short)(ltrb[0]*mulx);
+        `startrect.y = (short)(ltrb[1]*muly);
+        `startrect.w = (ushort)(((ltrb[2]+1.0)-ltrb[0])*mulx + 0.5);
+        `startrect.h = (ushort)(((ltrb[3]+1.0)-ltrb[1])*muly + 0.5);
+      }
+    }
+    if(#(data = sc.get("windowdelta")) > 0){
+      ^float xy = .s.svToAry!float?(",", data);
+      float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
+      float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
+      `windowdeltax = xy[0]*mulx;
+      branch{
+      cond #xy >= 2:
+        `windowdeltay = xy[1]*muly;
+      else:
+        `windowdeltay = `windowdeltax;
+      }
+    }
+    if(#(data = sc.get("id")) > 0) `id = .s.sToN!`id.self?(data);
+    if(#(data = sc.get("velocity")) > 0){
+      ^float xy = .s.svToAry!xy<>.self?(",", data);
+      float mul = hires ? 0.5 : 1.0;
+      `startvx = `bga.vx = xy[0]*mul;
+      branch{
+      cond #xy >= 2:
+        `startvy = `bga.vy = xy[1]*mul;
+      else:
+        `startvy = `bga.vy = 0.0;
+      }
+    }
+    if(#(data = sc.get("sin.x")) > 0){
+      ^float rp = .s.svToAry!rp<>.self?(",", data);
+      if(#rp < 2) break;
+      `startxrad = `bga.xradius = rp[0];
+      `startsinxlt = `bga.sinxlooptime = (int)rp[1];
+      if(#rp < 3) break;
+      if(`bga.sinxlooptime > 0){
+        `bga.sinxtime = (int)((float)rp[2]*rp[1]/360.0) % `bga.sinxlooptime;
+        if(`bga.sinxtime < 0) `bga.sinxtime += `bga.sinxlooptime;
+        `startsinxt = `bga.sinxtime;
+      }
+    }
+    if(#(data = sc.get("sin.y")) > 0){
+      ^float rp = .s.svToAry!rp<>.self?(",", data);
+      if(#rp < 2) break;
+      `startyrad = `bga.yradius = rp[0];
+      `startsinylt = `bga.sinylooptime = (int)rp[1];
+      if(#rp < 3) break;
+      if(`bga.sinylooptime > 0){
+        `bga.sinytime = (int)((float)rp[2]*rp[1]/360.0) % `bga.sinylooptime;
+        if(`bga.sinytime < 0) `bga.sinytime += `bga.sinylooptime;
+        `startsinyt = `bga.sinytime;
+      }
+    }
   }
   public void setup(
     ^&.sff.Sff sf, bool hires, float camstartx, ~$void(^&.Action=, int) getact)
@@ -427,10 +419,10 @@ public &BGCtrl
   public int n = 0;
   public bool setx = false, sety = false;
   public bool positionlink = false, positionlinkkamo = false;
-  public bool read(^/char name, ^/char data)
+  public void read(&.com.Section sc=)
   {
-    branch{
-    cond .s.equ(name, "type"):
+    ^/char data;
+    if(#(data = sc.get("type")) > 0){
       branch{
         ^char typ = .s.toLower(data);
       cond .s.equ(typ, "anim"):
@@ -454,38 +446,36 @@ public &BGCtrl
       cond .s.equ(typ, "veladd"):
         `typ = .BgcType::VelAdd;
       }
-    cond .s.equ(name, "time"):
-      {
-        ^int times = .s.svToAry!times<>.self?(",", data);
-        if(#times < 1) break;
-        `starttime = `endtime = times[0];
-        if(#times < 2) break;
-        `endtime = times[1];
-        if(#times < 3) break;
-        `looptime = times[2];
-      }
-    cond .s.equ(name, "positionlink"):
+    }
+    if(#(data = sc.get("time")) > 0){
+      ^int times = .s.svToAry!times<>.self?(",", data);
+      if(#times < 1) break;
+      `starttime = `endtime = times[0];
+      if(#times < 2) break;
+      `endtime = times[1];
+      if(#times < 3) break;
+      `looptime = times[2];
+    }
+    if(#(data = sc.get("positionlink")) > 0){
       `positionlink = .s.sToN!int?(data) != 0;
-    cond .s.equ(name, "value"):
-      {
-        ^float val = .s.svToAry!val<>.self?(",", data);
-        if(#val < 1) break;
-        `x = val[0];
-        if(#val < 2) break;
-        `y = val[1];
-        if(#val < 3) break;
-        `n = (int)val[1];
-      }
-    cond .s.equ(name, "x"):
+    }
+    if(#(data = sc.get("value")) > 0){
+      ^float val = .s.svToAry!val<>.self?(",", data);
+      if(#val < 1) break;
+      `x = val[0];
+      if(#val < 2) break;
+      `y = val[1];
+      if(#val < 3) break;
+      `n = (int)val[1];
+    }
+    if(#(data = sc.get("x")) > 0){
       `setx = true;
       `x = .s.sToN!`x.self?(data);
-    cond .s.equ(name, "y"):
+    }
+    if(#(data = sc.get("y")) > 0){
       `sety = true;
       `y = .s.sToN!`y.self?(data);
-    else:
-      ret false;
     }
-    ret true;
   }
 }
 

@@ -78,7 +78,6 @@ public &EnvShake envShake;
 
 public &Stage
 {
-  &.com.ParseMethod!self? parseMethod;
   public ^/char spr;
   public ^/char bgmusic;
   public ^/char name;
@@ -121,126 +120,112 @@ public &Stage
   }
   public bool load(^/char def)
   {:<-
-    public void info(^/char sec, ^/char name, ^/char data)
+    public void info(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "name"):
-        `name = data;
-      }
+      ^/char data;
+      if(#(data = sc.get("name")) > 0) `name = data;
     }
-    public void camera(^/char sec, ^/char name, ^/char data)
+    public void camera(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "startx"):
-        `cam.startx = .s.sToN!int?(data);
-      cond .s.equ(name, "boundleft"):
+      ^/char data;
+      if(#(data = sc.get("startx")) > 0) `cam.startx = .s.sToN!int?(data);
+      if(#(data = sc.get("boundleft")) > 0){
         `cam.boundleft = .s.sToN!int?(data);
-      cond .s.equ(name, "boundright"):
+      }
+      if(#(data = sc.get("boundright")) > 0){
         `cam.boundright = .s.sToN!int?(data);
-      cond .s.equ(name, "boundhigh"):
+      }
+      if(#(data = sc.get("boundhigh")) > 0){
         `cam.boundhigh = .s.sToN!int?(data);
-      cond .s.equ(name, "verticalfollow"):
+      }
+      if(#(data = sc.get("verticalfollow")) > 0){
         `cam.verticalfollow = .s.sToN!`cam.verticalfollow.self?(data);
-      cond .s.equ(name, "tension"):
-        `cam.tension = .s.sToN!int?(data);
-      cond .s.equ(name, "floortension"):
+      }
+      if(#(data = sc.get("tension")) > 0) `cam.tension = .s.sToN!int?(data);
+      if(#(data = sc.get("floortension")) > 0){
         `cam.floortension = .s.sToN!int?(data);
       }
     }
-    public void playerinfo(^/char sec, ^/char name, ^/char data)
+    public void playerinfo(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "p1startx"):
-        `p1.startx = .s.sToN!int?(data);
-      cond .s.equ(name, "p1starty"):
-        `p1.starty = .s.sToN!int?(data);
-      cond .s.equ(name, "p2startx"):
-        `p2.startx = .s.sToN!int?(data);
-      cond .s.equ(name, "p2starty"):
-        `p2.starty = .s.sToN!int?(data);
-      }
+      ^/char data;
+      if(#(data = sc.get("p1startx")) > 0) `p1.startx = .s.sToN!int?(data);
+      if(#(data = sc.get("p1starty")) > 0) `p1.starty = .s.sToN!int?(data);
+      if(#(data = sc.get("p2startx")) > 0) `p2.startx = .s.sToN!int?(data);
+      if(#(data = sc.get("p2starty")) > 0) `p2.starty = .s.sToN!int?(data);
     }
-    public void scaling(^/char sec, ^/char name, ^/char data)
+    public void scaling(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "topscale"):
+      ^/char data;
+      if(#(data = sc.get("topscale")) > 0){
         `ztopscale = .s.sToN!`ztopscale.self?(data);
       }
     }
-    public void bound(^/char sec, ^/char name, ^/char data)
+    public void bound(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "screenleft"):
-        `screenleft = .s.sToN!int?(data);
-      cond .s.equ(name, "screenright"):
+      ^/char data;
+      if(#(data = sc.get("screenleft")) > 0) `screenleft = .s.sToN!int?(data);
+      if(#(data = sc.get("screenright")) > 0){
         `screenright = .s.sToN!int?(data);
       }
     }
-    public void stageinfo(^/char sec, ^/char name, ^/char data)
+    public void stageinfo(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "zoffset"):
-        `zoffset = .s.sToN!int?(data);
-      cond .s.equ(name, "zoffsetlink"):
+      ^/char data;
+      if(#(data = sc.get("zoffset")) > 0) `zoffset = .s.sToN!int?(data);
+      if(#(data = sc.get("zoffsetlink")) > 0){
         `zoffsetlink = .s.sToN!`zoffsetlink.self?(data);
-      cond .s.equ(name, "hires"):
-        `hires = .s.sToN!int?(data) != 0;
-      cond .s.equ(name, "resetbg"):
-        `resetbg = .s.sToN!int?(data) != 0;
       }
+      if(#(data = sc.get("hires")) > 0) `hires = .s.sToN!int?(data) != 0;
+      if(#(data = sc.get("resetbg")) > 0) `resetbg = .s.sToN!int?(data) != 0;
     }
-    public void shadow(^/char sec, ^/char name, ^/char data)
+    public void shadow(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "intensity"):
+      ^/char data;
+      if(#(data = sc.get("intensity")) > 0){
         `sdw.intensity =
           .mat.max!int?(0)<, .mat.min!int?(255)<, .s.sToN!int?(data);
-      cond .s.equ(name, "color"):
-        {
-          ^ubyte c = .s.svToAry!c<>.self?(",", data);
-          if(#c >= 3){
-            `sdw.color = c[0]<<0d16 | c[1]<<0d8 | c[2];
-          }
-          loop{index i = 0; do:
-            `sdw.pal[i] = `sdw.color;
-          while ++i < 256:
-          }
+      }
+      if(#(data = sc.get("color")) > 0){
+        ^ubyte c = .s.svToAry!c<>.self?(",", data);
+        if(#c >= 3){
+          `sdw.color = c[0]<<0d16 | c[1]<<0d8 | c[2];
         }
-      cond .s.equ(name, "yscale"):
+        loop{index i = 0; do:
+          `sdw.pal[i] = `sdw.color;
+        while ++i < 256:
+        }
+      }
+      if(#(data = sc.get("yscale")) > 0){
         `sdw.yscale = .s.sToN!`sdw.yscale.self?(data);
-      cond .s.equ(name, "reflect"):
-        `reflect = .s.sToN!int?(data) != 0;
-      cond .s.equ(name, "fade.range"):
+      }
+      if(#(data = sc.get("reflect")) > 0) `reflect = .s.sToN!int?(data) != 0;
+      if(#(data = sc.get("fade.range")) > 0){
         .com.readPair!int?(`sdw.fadeend=, `sdw.fadebgn=, data);
       }
     }
-    public void reflection(^/char sec, ^/char name, ^/char data)
+    public void reflection(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "intensity"):
+      ^/char data;
+      if(#(data = sc.get("intensity")) > 0){
         `reflection =
           .mat.max!int?(0)<, .mat.min!int?(255)<, .s.sToN!int?(data);
       }
     }
-    public void music(^/char sec, ^/char name, ^/char data)
+    public void music(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "bgmusic"):
-        `bgmusic = .com.readFileName(data);
-      }
+      ^/char data;
+      if(#(data = sc.get("bgmusic")) > 0) `bgmusic = .com.readFileName(data);
     }
-    public void bgdef(^/char sec, ^/char name, ^/char data)
+    public void bgdef(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "spr"):
-        `spr = .com.readFileName(data);
-      cond .s.equ(name, "debugbg"):
-        `debugbg = .s.sToN!int?(data) != 0;
-      }
+      ^/char data;
+      if(#(data = sc.get("spr")) > 0) `spr = .com.readFileName(data);
+      if(#(data = sc.get("debugbg")) > 0) `debugbg = .s.sToN!int?(data) != 0;
     }
-    public void bg(^/char sec, ^/char name, ^/char data)
+    public void bg(&.com.Section sc=)
     {
-      `bg[-1].read(name, data, `hires);
+      `bg.new[-1].read(sc=, `hires);
     }
     public void begin(^^/char lines, index i=, ^/char section)
     {
@@ -264,85 +249,112 @@ public &Stage
         }
       }
     }
-    public void bgctrldef(^/char sec, ^/char name, ^/char data)
+    public void bgctrldef(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "ctrlid"):
-        {
-          ^int ids = .s.svToAry!ids<>.self?(",", data);
-          `bgcdef.ctrlbg.new(0);
-          `bgcdef.positionlinkkamo = false;
-          branch{
-          cond #ids == 1 && ids[0] == -1:
-            loop{index i = 0; while; do:
-              if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
-                `bgcdef.positionlink = true;
-              }
-              `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
-              i++;
-            while i < #`bg:
+      `bgcdef.ctrlbg.new(0);
+      `bgcdef.looptime = -1;
+      `bgcdef.positionlink = false;
+      `bgcdef.positionlinkkamo = false;
+      loop{index i = 0; while; do:
+        if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+          `bgcdef.positionlinkkamo = true;
+        }
+        `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
+        i++;
+      while i < #`bg:
+      }
+      ^/char data;
+      if(#(data = sc.get("ctrlid")) > 0){
+        ^int ids = .s.svToAry!ids<>.self?(",", data);
+        `bgcdef.ctrlbg.new(0);
+        `bgcdef.positionlinkkamo = false;
+        branch{
+        cond #ids == 1 && ids[0] == -1:
+          loop{index i = 0; while; do:
+            if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+              `bgcdef.positionlink = true;
             }
-          else:
-            loop{
-              index i = 0;
-              while;
-            do:
-              loop{index j = 0; while; do:
-                if(ids[j] == ids[i]) break, continue;
-                j++;
-              while j < i:
-              }
-              if(`zoffsetlink >= 0 && ids[i] == `zoffsetlink){
-                `bgcdef.positionlink = true;
-              }
-              `getBG(`bgcdef.ctrlbg=, ids[i]);
-            continue:
-              i++;
-            while i < #ids:
+            `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
+            i++;
+          while i < #`bg:
+          }
+        else:
+          loop{
+            index i = 0;
+            while;
+          do:
+            loop{index j = 0; while; do:
+              if(ids[j] == ids[i]) break, continue;
+              j++;
+            while j < i:
             }
+            if(`zoffsetlink >= 0 && ids[i] == `zoffsetlink){
+              `bgcdef.positionlink = true;
+            }
+            `getBG(`bgcdef.ctrlbg=, ids[i]);
+          continue:
+            i++;
+          while i < #ids:
           }
         }
-      cond .s.equ(name, "looptime"):
+      }
+      if(#(data = sc.get("looptime")) > 0){
         `bgcdef.looptime = .s.sToN!`bgcdef.looptime.self?(data);
       }
+      `bgcdef.positionlink |= `bgcdef.positionlinkkamo;
     }
-    public void bgctrl(^/char sec, ^/char name, ^/char data)
+    public void bgctrl(&.com.Section sc=)
     {
-      if(!`bgctrlList[-1].read(name, data)) branch{
-      cond .s.equ(name, "ctrlid"):
-        {
-          ^int ids = .s.svToAry!ids<>.self?(",", data);
-          `bgctrlList[-1].ctrlbg.new(0);
-          branch{
-          cond #ids == 1 && ids[0] == -1:
-            loop{index i = 0; while; do:
-              if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
-                `bgctrlList[-1].positionlink = true;
-              }
-              `bgctrlList[-1].ctrlbg.new[-1] = `bg[i..i+1];
-              i++;
-            while i < #`bg:
+      if(#`bgctrlList == 0 && #`bgcdef.ctrlbg == 0) loop{
+        index i = 0;
+        while;
+      do:
+        if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+          `bgcdef.positionlink = true;
+        }
+        `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
+        i++;
+      while i < #`bg:
+      }
+      `bgctrlList.new[-1].ctrlbg = `bgcdef.ctrlbg;
+      `bgctrlList[-1].looptime = `bgcdef.looptime;
+      ^/char data;
+      if(#(data = sc.get("ctrlid")) > 0){
+        ^int ids = .s.svToAry!ids<>.self?(",", data);
+        `bgctrlList[-1].ctrlbg.new(0);
+        branch{
+        cond #ids == 1 && ids[0] == -1:
+          loop{index i = 0; while; do:
+            if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+              `bgctrlList[-1].positionlink = true;
             }
-          else:
-            loop{
-              index i = 0;
-              while;
-            do:
-              loop{index j = 0; while; do:
-                if(ids[j] == ids[i]) break, continue;
-                j++;
-              while j < i:
-              }
-              if(`zoffsetlink >= 0 && ids[i] == `zoffsetlink){
-                `bgctrlList[-1].positionlink = true;
-              }
-              `getBG(`bgctrlList[-1].ctrlbg=, ids[i]);
-            continue:
-              i++;
-            while i < #ids:
+            `bgctrlList[-1].ctrlbg.new[-1] = `bg[i..i+1];
+            i++;
+          while i < #`bg:
+          }
+        else:
+          loop{
+            index i = 0;
+            while;
+          do:
+            loop{index j = 0; while; do:
+              if(ids[j] == ids[i]) break, continue;
+              j++;
+            while j < i:
             }
+            if(`zoffsetlink >= 0 && ids[i] == `zoffsetlink){
+              `bgctrlList[-1].positionlink = true;
+            }
+            `getBG(`bgctrlList[-1].ctrlbg=, ids[i]);
+          continue:
+            i++;
+          while i < #ids:
           }
         }
+      }
+      `bgctrlList[-1].read(sc=);
+      if(`bgctrlList[-1].ctrlbg == `bgcdef.ctrlbg){
+        `bgctrlList[-1].positionlink |= `bgcdef.positionlink;
       }
     }
     void section(^^/char lines, index i=)
@@ -351,65 +363,38 @@ public &Stage
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
       i++;
+      if(.s.equ(secname, "begin")){
+        `load:<-begin(lines, i=, sec);
+        ret;
+      }
+      &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "info"):
-        `parse!`load:<-info?(lines, i=, sec);
+        `load:<-info(sc=);
       cond .s.equ(secname, "camera"):
-        `parse!`load:<-camera?(lines, i=, sec);
+        `load:<-camera(sc=);
       cond .s.equ(secname, "playerinfo"):
-        `parse!`load:<-playerinfo?(lines, i=, sec);
+        `load:<-playerinfo(sc=);
       cond .s.equ(secname, "scaling"):
-        `parse!`load:<-scaling?(lines, i=, sec);
+        `load:<-scaling(sc=);
       cond .s.equ(secname, "bound"):
-        `parse!`load:<-bound?(lines, i=, sec);
+        `load:<-bound(sc=);
       cond .s.equ(secname, "stageinfo"):
-        `parse!`load:<-stageinfo?(lines, i=, sec);
+        `load:<-stageinfo(sc=);
       cond .s.equ(secname, "shadow"):
-        `parse!`load:<-shadow?(lines, i=, sec);
+        `load:<-shadow(sc=);
       cond .s.equ(secname, "reflection"):
-        `parse!`load:<-reflection?(lines, i=, sec);
+        `load:<-reflection(sc=);
       cond .s.equ(secname, "music"):
-        `parse!`load:<-music?(lines, i=, sec);
+        `load:<-music(sc=);
       cond .s.equ(secname, "bgdef"):
-        `parse!`load:<-bgdef?(lines, i=, sec);
+        `load:<-bgdef(sc=);
       cond .s.equ(secname, "bg"):
-        `bg.new[-1];
-        `parse!`load:<-bg?(lines, i=, sec);
-      cond .s.equ(secname, "begin"):
-        `load:<-begin(lines, i=, sec);
+        `load:<-bg(sc=);
       cond .s.equ(secname, "bgctrldef"):
-        `bgcdef.ctrlbg.new(0);
-        `bgcdef.looptime = -1;
-        `bgcdef.positionlink = false;
-        `bgcdef.positionlinkkamo = false;
-        loop{index i = 0; while; do:
-          if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
-            `bgcdef.positionlinkkamo = true;
-          }
-          `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
-          i++;
-        while i < #`bg:
-        }
-        `parse!`load:<-bgctrldef?(lines, i=, sec);
-        `bgcdef.positionlink |= `bgcdef.positionlinkkamo;
+        `load:<-bgctrldef(sc=);
       cond .s.equ(secname, "bgctrl"):
-        if(#`bgctrlList == 0 && #`bgcdef.ctrlbg == 0) loop{
-          index i = 0;
-          while;
-        do:
-          if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
-            `bgcdef.positionlink = true;
-          }
-          `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
-          i++;
-        while i < #`bg:
-        }
-        `bgctrlList.new[-1].ctrlbg = `bgcdef.ctrlbg;
-        `bgctrlList[-1].looptime = `bgcdef.looptime;
-        `parse!`load:<-bgctrl?(lines, i=, sec);
-        if(`bgctrlList[-1].ctrlbg == `bgcdef.ctrlbg){
-          `bgctrlList[-1].positionlink |= `bgcdef.positionlink;
-        }
+        `load:<-bgctrl(sc=);
       }
     }
     ^char buf = .file.loadAsciiText(def);
