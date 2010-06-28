@@ -509,7 +509,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       `teammate_ko_lay.read(buf, sc=);
     }
     if(#(data = sc.benri(p, "teammate.face.spr")) > 0){
-      .com.readPair!int?(`teammate_face_sprg=, `face_spri=, data);
+      .com.readPair!int?(`teammate_face_sprg=, `teammate_face_spri=, data);
     }
     {
       %char buf .= p .= "teammate.face.";
