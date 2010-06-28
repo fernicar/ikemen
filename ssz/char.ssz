@@ -2990,7 +2990,7 @@ public &Char
         `stVal.hb.juggle = 0;
       }
       if(
-        `stVal.playerno == `playerno && (
+        `stVal.playerno == `playerno && .roundState() == 2 && (
           `stVal.mov != .MovTy::H
           || (`sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0)))
       {
