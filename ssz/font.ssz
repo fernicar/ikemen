@@ -41,7 +41,7 @@ public &Font
         .com.readPair!int?(`sizex=, `sizey=, data);
       }
       if(#(data = sc.get("spacing")) > 0){
-        .com.readPair!int?(`spacingx=, `spacingx=, data);
+        .com.readPair!int?(`spacingx=, `spacingy=, data);
       }
       if(#(data = sc.get("colors")) > 0){
         `colors = .mat.min!int?(255)<, .s.sToN!`colors.self?(data);
