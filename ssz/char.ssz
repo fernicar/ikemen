@@ -6175,9 +6175,11 @@ public float action(
     tmp = .m.max!float?(15.0/16.0)<, (67.0/64.0 - tmp*2.0**(barbaz-6.0));
   else:
     tmp =
-      .m.min!float?(129.0/128.0)<, ((2.0**barbaz+3.0)/2.0**barbaz - tmp)**32.0;
+      .m.min!float?(129.0/128.0)<, ((2.0**barbaz+3.0)/2.0**barbaz - tmp)**64.0;
   }
   branch{
+  cond .super > 0 || .pause > 0:
+    tmp = 1.0;
   cond tmp > 1.0:
     tmp = (tmp - 1.0)*.zoomdelay**8.0 + 1.0;
     if(foobar*tmp > .com.xmax - .com.xmin){
