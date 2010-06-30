@@ -6253,7 +6253,7 @@ public &StateBuilder
               "{`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
               "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;}";
           case .CtrlTy::BindToParent, .CtrlTy::BindToRoot:
-            dbuf .= "`bind();";
+            dbuf .= "`bind(false);";
           case .CtrlTy::BindToTarget:
             dbuf .=
               `state.value .= "if(`sysivar[.iBINDTOID]>=0){switch(hmf){"
@@ -6263,7 +6263,7 @@ public &StateBuilder
               "case 2:"
               "`sysfvar[.fBINDPOSX]+=(float).c~sysivar[.iHEAD_POSX];"
               "`sysfvar[.fBINDPOSY]+=(float).c~sysivar[.iHEAD_POSY];"
-              "}`bind();}";
+              "}`bind(false);}";
           case .CtrlTy::HitFallSet:
             dbuf .= "`trHitFallSet(f,vx,vy);";
           case .CtrlTy::ExplodBindTime:

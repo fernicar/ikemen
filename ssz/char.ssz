@@ -2668,7 +2668,6 @@ public &Char
           i++;
         while i < #`stVal.ho:
         }
-        if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
       }
     }
     if(`tmphit >= 0){
@@ -2954,11 +2953,14 @@ public &Char
     }
     ret cvx;
   }
-  public void bind()
+  public void bind(bool tick)
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
-    if(#c == 0) ret;
+    if(#c == 0 || c~destmp != 0){
+      `sysivar[.iBINDTIME] = 0;
+      ret;
+    }
     if(`sysfvar[.fBINDPOSX] != .com.FERR){
       `setX(c~sysfvar[.fX] + (float)c~facing*`sysfvar[.fBINDPOSX]);
     }
@@ -2968,6 +2970,13 @@ public &Char
     branch{
     cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
     cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
+    }
+    if(tick && .com.tickFrame() && `isActive() && `sysivar[.iBINDTIME] > 0){
+      `sysivar[.iBINDTIME]--;
+      if(`sysivar[.iBINDTIME] == 0){
+        `sysfvar[.fVX] = c~sysfvar[.fVX];
+        `setYV(c~sysfvar[.fVY]);
+      }
     }
   }
   public void update(float x)
@@ -3001,7 +3010,7 @@ public &Char
         `getcombo = 0;
       }
     }
-    `bind();
+    `bind(true);
     ^`self c;
     if(`stVal.hb.hittime > 0 && #(c = .players.get(`stVal.hb.byid)) > 0){
       if(`stVal.hb.p1getp2facing != 0){
@@ -3720,7 +3729,10 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
-      if(#c > 0 && c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id){
+      if(#c > 0) branch{
+      cond c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id:
+        c~sysfvar[.fVX] = f;
+      cond `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id:
         c~sysfvar[.fVX] += f;
       }
       i++;
@@ -3735,7 +3747,10 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
-      if(#c > 0 && c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id){
+      if(#c > 0) branch{
+      cond c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id:
+        c~sysfvar[.fVY] = f;
+      cond `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id:
         c~sysfvar[.fVY] += f;
       }
       i++;
@@ -4261,11 +4276,7 @@ public &Char
         c~sysivar[.iBINDFACING] = 0;
         c~sysfvar[.fBINDPOSX] = x;
         c~sysfvar[.fBINDPOSY] = y;
-        if(c~sysivar[.iBINDTIME] != 0){
-          c~sysfvar[.fVX] = 0.0;
-          c~setYV(0.0);
-        }
-        c~bind();
+        c~bind(false);
       }
       i++;
     while i < #`targets:
