@@ -3712,6 +3712,36 @@ public &Char
     if(f == .com.FERR) ret;
     `setYV(f);
   }
+  public void trVelAddX()
+  {
+    float f = .v.toFloat();
+    if(f == .com.FERR) ret;
+    `sysfvar[.fVX] += f;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id){
+        c~sysfvar[.fVX] += f;
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
+  public void trVelAddY()
+  {
+    float f = .v.toFloat();
+    if(f == .com.FERR) ret;
+    `sysfvar[.fVY] += f;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id){
+        c~sysfvar[.fVY] += f;
+      }
+      i++;
+    while i < #`targets:
+    }
+  }
   public void trAnim()
   {
     .v.setI(`animno);
@@ -4225,9 +4255,7 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
-      if(
-        #c > 0 && (id < 0 || c~stVal.hb.hitid == id))
-      {
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
         c~setBindToId(`=);
         c~sysivar[.iBINDTIME] = time;
         c~sysivar[.iBINDFACING] = 0;
@@ -4235,7 +4263,7 @@ public &Char
         c~sysfvar[.fBINDPOSY] = y;
         if(c~sysivar[.iBINDTIME] != 0){
           c~sysfvar[.fVX] = 0.0;
-          c~setYV(2.0**-127);
+          c~setYV(0.0);
         }
         c~bind();
       }

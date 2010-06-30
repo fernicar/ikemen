@@ -3798,14 +3798,12 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fVX)$.v,`trAdd("
-                "`trSysFVar()$.v,", "$.v)$.v);")) ret false;
+                "", "$`trVelAddX();")) ret false;
           cond .s.equ(name, "y"):
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fVY)$.v,`trAdd("
-                "`trSysFVar()$.v,", "$.v)$.v);")) ret false;
+                "", "$`trVelAddY();")) ret false;
           else:
             break, default;
           }

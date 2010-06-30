@@ -721,7 +721,7 @@ void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
     if(`animno != 132) `trChangeAnim(132);
-    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    .v.setF(`sysfvar[.fYACCEL])$`trVelAddY();
     `sysivar[0] = (int)(`sysfvar[.fY] >= 0.0 && `sysfvar[.fVY] > 0.0);
     if(`sysivar[0] != 0){
       `sysivar[.iBINDTIME] = 0;
@@ -1055,7 +1055,7 @@ void c.Char::s##_@@P()
       `trHitVelSetX();
       `trHitVelSetY();
     }
-    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    .v.setF(`sysfvar[.fYACCEL])$`trVelAddY();
     if(`stVal.time == `stVal.hb.ctrltime) `setCtrl(true);
     `sysivar[0] = (int)(`sysfvar[.fY] >= 0.0 && `sysfvar[.fVY] > 0.0);
     if(`sysivar[0] != 0){
@@ -1540,7 +1540,7 @@ SSZ_CODE:
 void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
-    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    .v.setF(`sysfvar[.fYACCEL])$`trVelAddY();
     if(`stVal.time == 0){
       `trHitVelSetX();
       `trHitVelSetY();
@@ -1594,7 +1594,7 @@ void c.Char::s##_@@P()
     {
       `trChangeAnim(5035);
     }
-    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    .v.setF(`sysfvar[.fYACCEL])$`trVelAddY();
     if(
       `stVal.hb.hittime <= 0 || `trAnimTime()$.v.toInt() == 0
       || (`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 10.0)
@@ -1648,7 +1648,7 @@ void c.Char::s##_@@P()
       `setCtrl(true);
       `stVal.mov = .MovTy::I;
     }
-    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    .v.setF(`sysfvar[.fYACCEL])$`trVelAddY();
     if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0){
       .v.setI(52)$`trChangeState();
       ret;
@@ -1695,7 +1695,7 @@ void c.Char::s##_@@P()
       .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
       `trChangeAnim(`animno + 10);
     }
-    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    .v.setF(`sysfvar[.fYACCEL])$`trVelAddY();
     if(
       `sysivar[.iLIFE] > 0 && `trCanRecover()$.v.isTrue()
       && `trCommand("recovery")$.v.isTrue())
@@ -1785,7 +1785,7 @@ void c.Char::s##_@@P()
       `trHitVelSetX();
       `trHitVelSetY();
     }
-    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    .v.setF(`sysfvar[.fYACCEL])$`trVelAddY();
     if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 15.0){
       .v.setI(5110)$`trChangeState();
       ret;
@@ -2004,7 +2004,7 @@ void c.Char::s##_@@P()
       `sysfvar[.fY] = 20.0;
       `sysfvar[.fVX] *= 0.75;
     }
-    `sysfvar[.fVY] += 0.4;
+    .v.setF(0.4)$`trVelAddY();
     if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 12.0){
       .v.setI(5110)$`trChangeState();
       ret;
@@ -2264,7 +2264,7 @@ void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
     if(`animno == 5035 && `trAnimTime()$.v.toInt() == 0) `trChangeAnim(5050);
-    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    .v.setF(`sysfvar[.fYACCEL])$`trVelAddY();
     if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 10.0){
       .v.setI(5201)$`trSelfState();
       ret;
@@ -2371,17 +2371,17 @@ void c.Char::s##_@@P()
     case 4:
       `sysfvar[.fVX] *= 0.8;
       `sysfvar[.fVY] *= 0.8;
-      `sysfvar[.fVY] += -4.5;
+      .v.setF(-4.5)$`trVelAddY();
       if(`sysfvar[.fVY] > 0.0) `sysfvar[.fVY] *= 0.5;
-      if(`sysfvar[.fVY] > -3.0) `sysfvar[.fVY] += -2.0;
-      if(`sysfvar[.fVY] > -2.0) `sysfvar[.fVY] += -1.0;
-      if(`trCommand("holdup")$.v.isTrue()) `sysfvar[.fVY] += -2.0;
-      if(`trCommand("holddown")$.v.isTrue()) `sysfvar[.fVY] += 1.5;
-      if(`trCommand("holdback")$.v.isTrue()) `sysfvar[.fVX] += -1.0;
+      if(`sysfvar[.fVY] > -3.0) .v.setF(-2.0)$`trVelAddY();
+      if(`sysfvar[.fVY] > -2.0) .v.setF(-1.0)$`trVelAddY();
+      if(`trCommand("holdup")$.v.isTrue()) .v.setF(-2.0)$`trVelAddY();
+      if(`trCommand("holddown")$.v.isTrue()) .v.setF(1.5)$`trVelAddY();
+      if(`trCommand("holdback")$.v.isTrue()) .v.setF(-1.0)$`trVelAddX();
     case 20:
       `setCtrl(true);
     }
-    if(`stVal.time >= 4) `sysfvar[.fVY] += 0.35;
+    if(`stVal.time >= 4) .v.setF(0.35)$`trVelAddY();
     if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0){
       `setCtrl(true);
       .v.setI(52)$`trChangeState();
