@@ -3474,7 +3474,7 @@ public &Char
   public void trGr(&.Var v1, &.Var v2)
   {:<-
     void i(&.Var r=, int   i1, int   i2){r.setB(i1 > i2);}
-    void f(&.Var r=, float f1, float f2){r.setB(f1 > f2);}
+    void f(&.Var r=, float f1, float f2){r.setB(f1 >= f2);}
     `nikou!i, f?(.v=, v1, v2);
   }
   public void trGrE(&.Var v1, &.Var v2)
