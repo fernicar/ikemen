@@ -529,8 +529,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   }
   public void draw(int layerno)
   {
-    .layspr(
-      (float)`posx, (float)`posy, layerno, `face_spr, `face_lay=);
+    .layspr((float)`posx, (float)`posy, layerno, `face_spr, `face_lay=);
     loop{
       index i = 0;
       float x = (float)`teammate_posx, y = (float)`teammate_posy;
@@ -816,14 +815,13 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     `anim.action();
   }
-  public void draw(int layerno, ^&.fnt.Font f)
+  public void draw(float x, float y, int layerno, ^&.fnt.Font f)
   {
     branch{
     cond #`anim.frames > 0:
-      .laydraw(.com.scrrect=, 0.0, 0.0, 1.0, layerno, `anim=, `lay=);
+      .laydraw(.com.scrrect=, x, y, 1.0, layerno, `anim=, `lay=);
     cond `fontn >= 0 && #f > `fontn && #`text > 0:
-      .laytext(
-        0.0, 0.0, 1.0, layerno, `text, f[`fontn]=, `fontb, `fonta, `lay=);
+      .laytext(x, y, 1.0, layerno, `text, f[`fontn]=, `fontb, `fonta, `lay=);
     }
   }
   public bool noSound()
@@ -864,6 +862,8 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
 
 &Round
 {
+  public int posx = 0;
+  public int posy = 0;
   public int match_wins = 2;
   public int match_maxdrawgames = 1;
   public int start_waittime = 30;
@@ -914,6 +914,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public void read(&.com.Section sc=)
   {
     ^/char data;
+    if(#(data = sc.get("pos")) > 0) .com.readPair!int?(`posx=, `posy=, data);
     if(#(data = sc.get("match.wins")) > 0) `match_wins = .s.sToN!int?(data);
     if(#(data = sc.get("match.maxdrawgames")) > 0){
       `match_maxdrawgames = .s.sToN!int?(data);
@@ -1110,31 +1111,31 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         `round[.com.round-1].text =
           .s.join(.s.iToS(.com.round))<,
           .s.split("%i")<, `round[.com.round-1].text;
-        `round[.com.round-1].draw(layerno, `fnt);
+        `round[.com.round-1].draw((float)`posx, (float)`posy, layerno, `fnt);
         `round[.com.round-1].text = tmp;
       else:
         tmp = `round_default.text;
         `round_default.text =
           .s.join(.s.iToS(.com.round))<, .s.split("%i")<, `round_default.text;
-        `round_default.draw(layerno, `fnt);
+        `round_default.draw((float)`posx, (float)`posy, layerno, `fnt);
         `round_default.text = tmp;
       }
     case 1:
       if(`wt >= 0) break;
-      `fight.draw(layerno, `fnt);
+      `fight.draw((float)`posx, (float)`posy, layerno, `fnt);
     case 2:
       if(`wt < 0) switch(ko){
       case .KOTy::KO:
-        `ko.draw(layerno, `fnt);
+        `ko.draw((float)`posx, (float)`posy, layerno, `fnt);
       case .KOTy::DKO:
-        `dko.draw(layerno, `fnt);
+        `dko.draw((float)`posx, (float)`posy, layerno, `fnt);
       case .KOTy::TO, .KOTy::TODraw:
-        `to.draw(layerno, `fnt);
+        `to.draw((float)`posx, (float)`posy, layerno, `fnt);
       }
       if(`wt2 < 0) branch{
         ^/char tmp;
       cond ko == .KOTy::DKO || ko == .KOTy::TODraw:
-        `drawn.draw(layerno, `fnt);
+        `drawn.draw((float)`posx, (float)`posy, layerno, `fnt);
       cond #name >= 2:
         tmp = `win2.text;
         loop{
@@ -1150,12 +1151,12 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         while i < #sp:
           `win2.text = buf;
         }
-        `win2.draw(layerno, `fnt);
+        `win2.draw((float)`posx, (float)`posy, layerno, `fnt);
         `win2.text = tmp;
       else:
         tmp = `win.text;
         `win.text = .s.join(name[0])<, .s.split("%s")<, `win.text;
-        `win.draw(layerno, `fnt);
+        `win.draw((float)`posx, (float)`posy, layerno, `fnt);
         `win.text = tmp;
       }
     }
@@ -1163,15 +1164,6 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   }
   public void setup(^&.sff.Sff sf, ^&.fnt.Font f, ^&.snd.Snd s)
   {:<-
-    void foo(&.AnimFontSnd afs=)
-    {
-      if(afs.lay.offset.x == 0.0){
-        afs.lay.offset.x = `round_default.lay.offset.x;
-      }
-      if(afs.lay.offset.y == 0.0){
-        afs.lay.offset.y = `round_default.lay.offset.y;
-      }
-    }
     `round_default.setup(sf);
     loop{index i = 0; while; do:
       `round[i].setup(sf);
@@ -1179,34 +1171,24 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         `round[i].sndg = `round_default.sndg;
         `round[i].sndi = `round_default.sndi;
       }
-      branch{
-      cond `round[i].noDisplay():
+      if(`round[i].noDisplay()){
         `round[i].fontn = `round_default.fontn;
         `round[i].fontb = `round_default.fontb;
         `round[i].fonta = `round_default.fonta;
         `round[i].text = `round_default.text;
         `round[i].anim.copy(`round_default.anim=);
         `round[i].lay = `round_default.lay;
-      else:
-        foo(`round[i]=);
       }
       i++;
     while i < #`round:
     }
     `fight.setup(sf);
-    foo(`fight=);
     `ko.setup(sf);
-    foo(`ko=);
     `dko.setup(sf);
-    foo(`dko=);
     `to.setup(sf);
-    foo(`to=);
     `win.setup(sf);
-    foo(`win=);
     `win2.setup(sf);
-    foo(`win2=);
     `drawn.setup(sf);
-    foo(`drawn=);
     `fnt = f;
     `sn = s;
   }
