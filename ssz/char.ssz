@@ -4353,7 +4353,7 @@ public &Char
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
       if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
-        c~sysfvar[.fVX] = vx;
+        c~setXV(vx);
       }
       i++;
     while i < #`targets:
