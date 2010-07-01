@@ -3266,9 +3266,8 @@ public &StateBuilder
             "$!.v.isTrue())`clearHitCount();")) ret false;
         `state.hitcountpersist = 1;
       cond .s.equ(name, "velset"):
-        `state.deftask .= "`trSetSysFVar(.v.setI(.fVX)$.v,";
         if(!`expression(`state.deftask=, text=)) ret false;
-        `state.deftask .= "$.v);";
+        `state.deftask .= "$`trVelSetX();";
         branch{
           ^/char tmp = `tokenizer(text=);
         cond .s.equ(",", tmp):
@@ -3781,7 +3780,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fVX)$.v,", "$.v);")) ret false;
+                "", "$`trVelSetX();")) ret false;
           cond .s.equ(name, "y"):
             if(
               !`fullExpression(

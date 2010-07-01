@@ -3330,6 +3330,11 @@ public &Char
   {
     `sysfvar[.fY] = y;
   }
+  public void setXV(float xv)
+  {
+    `sysfvar[.fVX] = xv;
+    if(xv != 0.0) `sysivar[.iBINDTIME] = 0;
+  }
   public void setYV(float yv)
   {
     `sysfvar[.fVY] = yv;
@@ -3719,6 +3724,12 @@ public &Char
     .v.setF(
       (`stVal.typ == .StTy::S || `stVal.typ == .StTy::L)
       && #`sysfvar[.fVX] < 1.0 ? 0.0 : `sysfvar[.fVX]);
+  }
+  public void trVelSetX()
+  {
+    float f = .v.toFloat();
+    if(f == .com.FERR) ret;
+    `setXV(f);
   }
   public void trVelSetY()
   {
