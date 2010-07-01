@@ -2977,7 +2977,7 @@ public &Char
     }
     if(tick && .com.tickFrame() && `isActive() && `sysivar[.iBINDTIME] > 0){
       `sysivar[.iBINDTIME]--;
-      if(`sysivar[.iBINDTIME] == 0){
+      if(`sysivar[.iBINDTIME] == 0 && `stVal.hb.byid == c~id){
         `sysfvar[.fVX] = (float)(`facing*c~facing)*c~sysfvar[.fVX];
         `setYV(c~sysfvar[.fVY]);
       }
