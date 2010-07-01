@@ -2814,13 +2814,17 @@ public &Char
   }
   public void targetAction()
   {
+    if(`destmp < 0) `destmp = 1;
     loop{
       index i = 0;
       ^`self c;
       while;
     do:
       c = .players.get(`targets[i]);
-      if(#c > 0 && c~stVal.playerno != c~playerno) c~action();
+      if(#c > 0 && c~stVal.playerno != c~playerno){
+        if(`destmp > 0) `destmp = -1;
+        c~action();
+      }
       i++;
     while i < #`targets:
     }
@@ -2893,7 +2897,7 @@ public &Char
   }
   public float move(float tension)
   {
-    if(`destmp != 0){
+    if(`destmp > 0){
       `destroySelf();
       ret 0.0;
     }
@@ -2957,7 +2961,7 @@ public &Char
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
-    if(#c == 0 || c~destmp != 0){
+    if(#c == 0 || c~destmp > 0){
       `sysivar[.iBINDTIME] = 0;
       ret;
     }
@@ -2974,7 +2978,7 @@ public &Char
     if(tick && .com.tickFrame() && `isActive() && `sysivar[.iBINDTIME] > 0){
       `sysivar[.iBINDTIME]--;
       if(`sysivar[.iBINDTIME] == 0){
-        `sysfvar[.fVX] = c~sysfvar[.fVX];
+        `sysfvar[.fVX] = (float)(`facing*c~facing)*c~sysfvar[.fVX];
         `setYV(c~sysfvar[.fVY]);
       }
     }
@@ -3439,7 +3443,7 @@ public &Char
     if(id != .com.IERR) loop{index i = 1; while; do:
       if(
         .chars[`playerno][i]~helperindex > 0
-        && .chars[`playerno][i]~destmp == 0
+        && .chars[`playerno][i]~destmp <= 0
         && (id <= 0 || id == .chars[`playerno][i]~helperid))
       {
         .c = .chars[`playerno][i];
@@ -3731,9 +3735,9 @@ public &Char
       c = .players.get(`targets[i]);
       if(#c > 0) branch{
       cond c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id:
-        c~sysfvar[.fVX] = f;
+        c~sysfvar[.fVX] += (float)(`facing*c~facing)*f;
       cond `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id:
-        c~sysfvar[.fVX] += f;
+        c~sysfvar[.fVX] += (float)(`facing*c~facing)*f;
       }
       i++;
     while i < #`targets:
@@ -3749,7 +3753,7 @@ public &Char
       c = .players.get(`targets[i]);
       if(#c > 0) branch{
       cond c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id:
-        c~sysfvar[.fVY] = f;
+        c~sysfvar[.fVY] += f;
       cond `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id:
         c~sysfvar[.fVY] += f;
       }
@@ -4262,7 +4266,7 @@ public &Char
   public void trDestroySelf()
   {
     if(`helperindex <= 0) ret;
-    `destmp = 1;
+    `destmp = -1;
   }
   public void trTargetBind(int time, int id, float x, float y)
   {
@@ -4554,7 +4558,7 @@ public &Char
     loop{index i = 1; while; do:
       if(
         .chars[`playerno][i]~helperindex > 0
-        && .chars[`playerno][i]~destmp == 0
+        && .chars[`playerno][i]~destmp <= 0
         && (id <= 0 || id == .chars[`playerno][i]~helperid)) .v.i++;
       i++;
     while i < #.chars[`playerno]:
