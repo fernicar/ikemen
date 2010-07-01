@@ -3334,6 +3334,7 @@ public &Char
   {
     `sysfvar[.fVY] = yv;
     `sysivar[.iSPECIALFLAG] &= !.lsGRAVITY;
+    if(yv != 0.0) `sysivar[.iBINDTIME] = 0;
   }
   public void setPos<_t>(_t o=, int pt, float x, float y, int facing)
   {
@@ -3734,9 +3735,10 @@ public &Char
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
       if(#c > 0) branch{
-      cond c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id:
-        c~sysfvar[.fVX] += (float)(`facing*c~facing)*f;
-      cond `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id:
+      cond
+        (c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id)
+        || (`sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id)
+        :
         c~sysfvar[.fVX] += (float)(`facing*c~facing)*f;
       }
       i++;
@@ -3752,9 +3754,10 @@ public &Char
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
       if(#c > 0) branch{
-      cond c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id:
-        c~sysfvar[.fVY] += f;
-      cond `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id:
+      cond
+        (c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id)
+        || (`sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id)
+        :
         c~sysfvar[.fVY] += f;
       }
       i++;
