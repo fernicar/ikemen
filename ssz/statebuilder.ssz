@@ -778,7 +778,7 @@ public &StateBuilder
         oldin0 = in;
         branch{
           token = `tokenizer(in=);
-        cond .s.equ("=", token):
+        cond .s.equ("=", token) || .s.equ(">=", token):
           if(!`expAdsb(buf=, in=)) ret false;
           eq = true;
         cond .s.equ("(", token):
@@ -827,7 +827,6 @@ public &StateBuilder
             token = `tokenizer(in=);
           cond .s.equ("!=", token):
           cond .s.equ("<=", token):
-          cond .s.equ(">=", token):
           else:
             in = oldin;
             out .= "`trEqu(" .= buf .= "$.v,.v.setI(0)$.v)";

@@ -3831,7 +3831,6 @@ public &Char
       ret;
     }
     branch{
-    cond .s.equ(">=", f): .v.setB(n2 == n1);
     cond .s.equ("<=", f): .v.setB(n2 < n1);
     cond .s.equ("!=", f): .v.setB(n2 != n1);
     }
