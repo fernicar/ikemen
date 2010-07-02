@@ -1848,6 +1848,9 @@ public &Char
     `veloff = 0.0;
     `palfx.new(0);
     `aimg.timegap = -1;
+    `frontw = `defFW();
+    `backw = `defBW();
+    `fedge = `bedge = 0.0;
     `enemyn.new(0);
   }
   public void clearVal()
