@@ -3061,8 +3061,8 @@ public &Char
     `setX(
       ((`playerno&1) == 0 ? p1x : p2x)
       + (float)(`playerno*-`facing / 2) * .com.P1P3Dist);
-    `sysfvar[.fY] = 0.0;
-    `sysfvar[.fVX] = 0.0;
+    `setY(0.0);
+    `setXV(0.0);
     `setYV(0.0);
   }
   void nikou<if_t, ff_t>(&.Var rtn=, &.Var v1, &.Var v2)
@@ -3154,13 +3154,33 @@ public &Char
       }
     }
   }
+  void setFWidth(float f)
+  {
+    if(f != .com.FERR){
+      `frontw = `defFW() + f;
+      `sysivar[.iSPECIALFLAG] |= .lsFRONTWCHANGE;
+    }
+  }
+  void setBWidth(float b)
+  {
+    if(b != .com.FERR){
+      `backw = `defBW() + b;
+      `sysivar[.iSPECIALFLAG] |= .lsBACKWCHANGE;
+    }
+  }
   void setFEdge(float f)
   {
-    if(f != .com.FERR) `fedge = f;
+    if(f != .com.FERR){
+      `fedge = f;
+      `sysivar[.iSPECIALFLAG] |= .lsFEDGECHANGE;
+    }
   }
   void setBEdge(float b)
   {
-    if(b != .com.FERR) `bedge = b;
+    if(b != .com.FERR){
+      `bedge = b;
+      `sysivar[.iSPECIALFLAG] |= .lsBEDGECHANGE;
+    }
   }
   void setHitdefDefault(&.Hitdef h=, bool proj)
   {
@@ -6157,15 +6177,15 @@ public float action(
       }
       i++;
     while i < #.chars:
-      `x = 0.0;
+      `x = (float)`stg.cam.startx;
       `leftest =
         .m.max!float?(
-          (float).m.min!int?(`stg.p1.startx, `stg.p2.startx),
-          -160.0 / .com.scale + .com.screenleft);
+          (float).m.min!int?(`stg.p1.startx, `stg.p2.startx) - `x,
+          -160.0/.com.scale + .com.screenleft) + (`x - .oldx);
       `rightest =
         .m.min!float?(
-          (float).m.max!int?(`stg.p1.startx, `stg.p2.startx),
-          160.0 / .com.scale - .com.screenright);
+          (float).m.max!int?(`stg.p1.startx, `stg.p2.startx) - `x,
+          160.0/.com.scale - .com.screenright) + (`x - .oldx);
     }
   }
   branch{
@@ -6363,8 +6383,8 @@ public void nextRound(&.stage.Stage stg=)
   .com.intro = .fight~ro.start_waittime + .fight~ro.ctrl_time+1;
   .com.time = .cfg.Time;
   .id = .cfg.HelperMax;
-  .gSetNormal(stg=, 1.0, (float)stg.cam.startx, 0.0);
   if(stg.resetbg) stg.reset();
+  .gSetNormal(stg=, 1.0, (float)stg.cam.startx, 0.0);
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
     .id = .chars[i][0]~id + 1;

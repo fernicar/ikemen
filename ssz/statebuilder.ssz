@@ -4322,34 +4322,26 @@ public &StateBuilder
                 `state.ctrlList[-1].task .= "b=f;";
               }
               `state.ctrlList[-1].task .=
-                ".chars[`playerno]<>~sysivar[.iSPECIALFLAG]|="
-                ".lsFEDGECHANGE|.lsBEDGECHANGE;"
                 ".chars[`playerno]<>~setFEdge(f);"
                 ".chars[`playerno]<>~setBEdge(b);";
               if(name[0] == 'v'){
                 `state.ctrlList[-1].task .=
-                  ".chars[`playerno]<>~sysivar[.iSPECIALFLAG]"
-                  "|=.lsFRONTWCHANGE|.lsBACKWCHANGE;"
-                  ".chars[`playerno]<>~frontw=.chars[`playerno]<>~defFW()+f;"
-                  ".chars[`playerno]<>~backw=.chars[`playerno]<>~defBW()+b;";
+                  ".chars[`playerno]<>~setFWidth(f);"
+                  ".chars[`playerno]<>~setBWidth(b);";
               }
             }
           cond .s.equ(name, "player"):
-            `state.ctrlList[-1].task .=
-              ".chars[`playerno]<>~sysivar[.iSPECIALFLAG]|=.lsFRONTWCHANGE;"
-              ".chars[`playerno]<>~frontw=`defFW()+";
+            `state.ctrlList[-1].task .= ".chars[`playerno]<>~setFWidth(";
             if(
               !`expression(
                 `state.ctrlList[-1].task=, text=)) ret false;
-            `state.ctrlList[-1].task .= "$.v.toFloat();";
+            `state.ctrlList[-1].task .= "$.v.toFloat());";
             if(.s.equ(",")<, `tokenizer(text=)){
-              `state.ctrlList[-1].task .=
-                ".chars[`playerno]<>~sysivar[.iSPECIALFLAG]|=.lsBACKWCHANGE;";
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, text=,
-                  ".chars[`playerno]<>~backw=`defBW()+",
-                  "$.v.toFloat();")) ret false;
+                  ".chars[`playerno]<>~setBWidth(",
+                  "$.v.toFloat());")) ret false;
             }
           else:
             break, default;

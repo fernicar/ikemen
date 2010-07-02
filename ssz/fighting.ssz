@@ -257,11 +257,11 @@ void game()
         case (int).com.TeamMode::Turns:
           lm *= 3.0 / (float).com.numturns[i&1];
         }
-        double tmp = 1.2**((double)-(level[i]+level[i+2&3])*0.5);
-        .chr.chars[i][0]~sysivar[.chr.iLIFEMAX] = (int).m.ceil(tmp * lm);
+        double hoge = 1.2**((double)-(level[i]+level[i+2&3])*0.5);
+        .chr.chars[i][0]~sysivar[.chr.iLIFEMAX] = (int).m.ceil(hoge * lm);
         if(.com.rexisted[i&1] > 0){
           .chr.chars[i][0]~sysivar[.chr.iLIFE] =
-            (int).m.ceil(tmp * (float).chr.chars[i][0]~sysivar[.chr.iLIFE]);
+            (int).m.ceil(hoge * (float).chr.chars[i][0]~sysivar[.chr.iLIFE]);
         }
       }
       if(
@@ -353,23 +353,23 @@ void game()
     else:
       loop{index i = 0; while; do:
         branch{
-          double tmp;
+          double hoge;
         cond
           .chr.chars[i][0]~isWin() || (
             !.chr.chars[i][0]~isLose()
             && .com.tmode[i] != (int).com.TeamMode::Turns)
           :
-          tmp = 1.2**((double)(level[i]+level[i+2&3])*0.5);
+          hoge = 1.2**((double)(level[i]+level[i+2&3])*0.5);
           .chr.chars[i][0]~sysivar[.chr.iLIFE] =
             .m.max!int?(1)<, (int).m.ceil(
-              tmp * (float)(
+              hoge * (float)(
                 .chr.chars[i][0]~isWin()
                 ? .chr.chars[i][0]~sysivar[.chr.iLIFE]
                 : .chr.chars[i][0]~sysivar[.chr.iLIFEMAX]));
           if(#.chr.chars[i+2] > 0){
             .chr.chars[i+2][0]~sysivar[.chr.iLIFE] =
               .m.max!int?(1)<, (int).m.ceil(
-                tmp * (float)(
+                hoge * (float)(
                   .chr.chars[i+2][0]~isWin()
                   ? .chr.chars[i+2][0]~sysivar[.chr.iLIFE]
                   : .chr.chars[i+2][0]~sysivar[.chr.iLIFEMAX]));
