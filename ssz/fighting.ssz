@@ -383,7 +383,7 @@ void game()
       break, break;
     }
     tmp =
-      #((l + r)*scl - (newx - x)) < 80.0
+      #((l + r)*scl - (newx - x)*2.0) < 80.0
       ? 160.0 : .m.max!float?(0.0)<, .m.min!float?(160.0)<,
       .m.max!float?(-(l*scl-(newx-x)), r*scl-(newx-x));
     if(.com.turbo < 1.0) sclmul **= .com.turbo;
