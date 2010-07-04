@@ -940,7 +940,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
   public int time;
   public |.StTy typ;
   public |.StTy phy;
-  public |.MovTy mov, stmov;
+  public |.MovTy mov;
   public int juggle;
   public &.Hitdef hit;
   public &.HitBy hb;
@@ -961,7 +961,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `time = 0;
     `typ = .StTy::S;
     `phy = .StTy::N;
-    `mov = `stmov = .MovTy::I;
+    `mov = .MovTy::I;
     `juggle = 0;
     `hit.clear();
     `hb.clear();
@@ -4043,7 +4043,6 @@ public &Char
     if(`cs1tmp != 0){
       `state(::);
       if(`stVal.mov != .MovTy::H) `sysivar[.iBINDTIME] = 0;
-      `stVal.stmov = `stVal.mov;
       `cs1tmp = 0;
     }
   }
@@ -4719,10 +4718,7 @@ public &Char
   }
   public void trHitShakeOver()
   {
-    .v.setI(
-      (int)(
-        (!`player || `stVal.stmov != .MovTy::I)
-        && `stVal.hb.hitshaketime <= 0));
+    .v.setI((int)(`stVal.hb.hitshaketime <= 0));
   }
   public void trCanRecover()
   {
