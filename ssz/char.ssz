@@ -4719,7 +4719,10 @@ public &Char
   }
   public void trHitShakeOver()
   {
-    .v.setI((int)(`stVal.stmov == .MovTy::H && `stVal.hb.hitshaketime <= 0));
+    .v.setI(
+      (int)(
+        (!`player || `stVal.stmov == .MovTy::H)
+        && `stVal.hb.hitshaketime <= 0));
   }
   public void trCanRecover()
   {
