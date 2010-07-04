@@ -3751,7 +3751,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fY)$.v,", "$.v);")) ret false;
+                "", "$`trSetY();")) ret false;
           else:
             break, default;
           }
@@ -3768,8 +3768,8 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fY)$.v,`trAdd("
-                "`trSysFVar()$.v,", "$.v)$.v);")) ret false;
+                "`trAdd(.v.setI(.fY)$`trSysFVar()$.v,",
+                "$.v)$`trSetY();")) ret false;
           else:
             break, default;
           }
@@ -6241,7 +6241,7 @@ public &StateBuilder
               "if(st>=0&&t!=.com.IERR&&s>=0&&s<8)"
               "{`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
               "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;}";
-          case .CtrlTy::BindToParent, .CtrlTy::BindToRoot:
+          case .CtrlTy::BindToRoot:
             dbuf .= "`bind(false);";
           case .CtrlTy::BindToTarget:
             dbuf .=

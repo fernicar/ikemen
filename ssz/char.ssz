@@ -3742,6 +3742,12 @@ public &Char
     if(x == .com.FERR) ret;
     `setX(x);
   }
+  public void trSetY()
+  {
+    float y = .v.toFloat();
+    if(y == .com.FERR) ret;
+    `setY(y);
+  }
   public void trVelX()
   {
     .v.setF(
@@ -4507,7 +4513,7 @@ public &Char
   public void trHitVelSetX()
   {
     if(`stVal.mov != .MovTy::H) ret;
-    `sysfvar[.fVX] = `stVal.hb.xvel;
+    `setXV(`stVal.hb.xvel);
   }
   public void trHitVelSetY()
   {
