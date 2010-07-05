@@ -2894,11 +2894,14 @@ public &Char
         if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
       }
       `targetAction();
-      if(`destmp != 0) `destroySelf();
     }
   }
   public float move(float tension)
   {
+    if(`destmp != 0){
+      `destroySelf();
+      ret 0.0;
+    }
     if(`acttmp <= 0) ret 0.0;
     if(
       .m.inRange!int?(120, 159, `stVal.no)
@@ -2937,7 +2940,7 @@ public &Char
     if(!`ls(.lsPOSFREEZEY)) `sysfvar[.fY] += `sysfvar[.fVY] * sp;
     float cvx = 0.0;
     if(`ls(.lsSCREENBOUNDX)){
-      if(tension > 0.0) branch{
+      if(tension > 0.0 && !`isFreezeX()) branch{
       cond
         `sysfvar[.fX] < .com.xmin - .com.screenleft + tension
         || `sysfvar[.fX] > .com.xmax + .com.screenright - tension
@@ -2959,7 +2962,7 @@ public &Char
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
-    if(#c == 0){
+    if(#c == 0 || `destmp != 0){
       `sysivar[.iBINDTIME] = 0;
       ret;
     }
@@ -2975,9 +2978,13 @@ public &Char
     }
     if(tick && .com.tickFrame() && `isActive() && `sysivar[.iBINDTIME] > 0){
       `sysivar[.iBINDTIME]--;
-      if(`sysivar[.iBINDTIME] == 0 && `stVal.hb.byid == c~id){
-        `sysfvar[.fVX] = (float)(`facing*c~facing)*c~sysfvar[.fVX];
+      if(`sysivar[.iBINDTIME] == 0) branch{
+      cond `stVal.hb.byid == c~id:
+        `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
         `setYV(c~sysfvar[.fVY]);
+      cond c~stVal.hb.byid == `id:
+        c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
+        c~setYV(`sysfvar[.fVY]);
       }
     }
   }
@@ -3766,30 +3773,12 @@ public &Char
     float f = .v.toFloat();
     if(f == .com.FERR) ret;
     `sysfvar[.fVX] += f;
-    ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id){
-        c~sysfvar[.fVX] += (float)(`facing*c~facing)*f;
-      }
-      i++;
-    while i < #`targets:
-    }
   }
   public void trVelAddY()
   {
     float f = .v.toFloat();
     if(f == .com.FERR) ret;
     `sysfvar[.fVY] += f;
-    ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id){
-        c~sysfvar[.fVY] += f;
-      }
-      i++;
-    while i < #`targets:
-    }
   }
   public void trAnim()
   {
@@ -4313,6 +4302,21 @@ public &Char
       i++;
     while i < #`targets:
     }
+  }
+  public void trBindToTarget(int hmf)
+  {
+    if(`sysivar[.iBINDTIME] == 0) ret;
+    ^`self c = .players.get(`sysivar[.iBINDTOID]);
+    if(#c == 0) ret;
+    switch(hmf){
+    case 1:
+      `sysfvar[.fBINDPOSX] += (float)c~sysivar[.iMID_POSX];
+      `sysfvar[.fBINDPOSY] += (float)c~sysivar[.iMID_POSY];
+    case 2:
+      `sysfvar[.fBINDPOSX] += (float)c~sysivar[.iHEAD_POSX];
+      `sysfvar[.fBINDPOSY] += (float)c~sysivar[.iHEAD_POSY];
+    }
+    `bind(false);
   }
   public void trTargetDrop(int id, int keepone)
   {

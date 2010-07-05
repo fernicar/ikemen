@@ -6244,15 +6244,7 @@ public &StateBuilder
           case .CtrlTy::BindToRoot:
             dbuf .= "`bind(false);";
           case .CtrlTy::BindToTarget:
-            dbuf .=
-              `state.value .= "if(`sysivar[.iBINDTOID]>=0){switch(hmf){"
-              "case 1:"
-              "`sysfvar[.fBINDPOSX]+=(float).c~sysivar[.iMID_POSX];"
-              "`sysfvar[.fBINDPOSY]+=(float).c~sysivar[.iMID_POSY];"
-              "case 2:"
-              "`sysfvar[.fBINDPOSX]+=(float).c~sysivar[.iHEAD_POSX];"
-              "`sysfvar[.fBINDPOSY]+=(float).c~sysivar[.iHEAD_POSY];"
-              "}`bind(false);}";
+            dbuf .= `state.value .= "`trBindToTarget(hmf);";
           case .CtrlTy::HitFallSet:
             dbuf .= "`trHitFallSet(f,vx,vy);";
           case .CtrlTy::ExplodBindTime:
