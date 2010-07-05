@@ -2817,7 +2817,6 @@ public &Char
   }
   public void targetAction()
   {
-    if(`destmp < 0) `destmp = 1;
     loop{
       index i = 0;
       ^`self c;
@@ -2825,8 +2824,8 @@ public &Char
     do:
       c = .players.get(`targets[i]);
       if(#c > 0 && c~stVal.playerno != c~playerno){
-        if(`destmp > 0) `destmp = -1;
         c~action();
+        if(`destmp != 0) .v.setI(5050)$c~trSelfState();
       }
       i++;
     while i < #`targets:
@@ -2835,7 +2834,7 @@ public &Char
   public bool landCondition()
   {
     ret
-      `player && `stVal.phy == .StTy::A && `isActive()
+      `stVal.phy == .StTy::A && `isActive()
       && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0;
   }
   public void action()
@@ -2875,10 +2874,7 @@ public &Char
       `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
       `state(::);
-      if(lc){
-        .v.setI(52);
-        `trSelfState();
-      }
+      if(lc) .v.setI(52)$`trSelfState();
     break:
       `minus = 2;
       `acttmp += (int)`isActive() - (int)`isHitPaused();
@@ -2896,14 +2892,11 @@ public &Char
         if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
       }
       `targetAction();
+      if(`destmp != 0) `destroySelf();
     }
   }
   public float move(float tension)
   {
-    if(`destmp > 0){
-      `destroySelf();
-      ret 0.0;
-    }
     if(`acttmp <= 0) ret 0.0;
     if(
       .m.inRange!int?(120, 159, `stVal.no)
@@ -2964,7 +2957,7 @@ public &Char
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
-    if(#c == 0 || c~destmp > 0){
+    if(#c == 0){
       `sysivar[.iBINDTIME] = 0;
       ret;
     }
@@ -3472,7 +3465,7 @@ public &Char
     if(id != .com.IERR) loop{index i = 1; while; do:
       if(
         .chars[`playerno][i]~helperindex > 0
-        && .chars[`playerno][i]~destmp <= 0
+        && .chars[`playerno][i]~destmp == 0
         && (id <= 0 || id == .chars[`playerno][i]~helperid))
       {
         .c = .chars[`playerno][i];
@@ -3774,11 +3767,7 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
-      if(#c > 0) branch{
-      cond
-        (c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id)
-        || (`sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id)
-        :
+      if(#c > 0 && `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id){
         c~sysfvar[.fVX] += (float)(`facing*c~facing)*f;
       }
       i++;
@@ -3793,11 +3782,7 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
-      if(#c > 0) branch{
-      cond
-        (c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id)
-        || (`sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id)
-        :
+      if(#c > 0 && `sysivar[.iBINDTIME] != 0 && `sysivar[.iBINDTOID] == c~id){
         c~sysfvar[.fVY] += f;
       }
       i++;
@@ -4307,7 +4292,7 @@ public &Char
   public void trDestroySelf()
   {
     if(`helperindex <= 0) ret;
-    `destmp = -1;
+    `destmp = 1;
   }
   public void trTargetBind(int time, int id, float x, float y)
   {
@@ -4599,7 +4584,7 @@ public &Char
     loop{index i = 1; while; do:
       if(
         .chars[`playerno][i]~helperindex > 0
-        && .chars[`playerno][i]~destmp <= 0
+        && .chars[`playerno][i]~destmp == 0
         && (id <= 0 || id == .chars[`playerno][i]~helperid)) .v.i++;
       i++;
     while i < #.chars[`playerno]:
@@ -4843,7 +4828,7 @@ public void Explod::update()
     }
     if(
       `removetime == 0
-      || (`removetime == -2 && (#`ani == 0 || `ani~ani.loopend)))
+      || (`removetime <= -2 && (#`ani == 0 || `ani~ani.loopend)))
     {
       `id = .com.IERR;
       ret;
