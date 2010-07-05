@@ -2825,7 +2825,9 @@ public &Char
       c = .players.get(`targets[i]);
       if(#c > 0 && c~stVal.playerno != c~playerno){
         c~action();
-        if(`destmp != 0) .v.setI(5050)$c~trSelfState();
+        if(`destmp != 0 && c~stVal.playerno != c~playerno){
+          .v.setI(5050)$c~trSelfState();
+        }
       }
       i++;
     while i < #`targets:
