@@ -3810,14 +3810,12 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fVX)$.v,`trMul("
-                "`trSysFVar()$.v,", "$.v)$.v);")) ret false;
+                "", "$`trVelMulX();")) ret false;
           cond .s.equ(name, "y"):
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fVY)$.v,`trMul("
-                "`trSysFVar()$.v,", "$.v)$.v);")) ret false;
+                "", "$`trVelMulY();")) ret false;
           cond .s.equ(name, "z"):
           else:
             break, default;
