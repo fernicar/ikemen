@@ -2407,15 +2407,15 @@ public &Char
     if((hit.hitflag & (int).StTy::N) == 0 && `hittmp >= 2) ret false;
     if((hit.hitflag & (int).MovTy::I) != 0 && `hittmp != 0) ret false;
     if((hit.hitflag & (int).MovTy::H) != 0 && `hittmp == 0) ret false;
-    int at = hit.reversal_attr != 0 ? hit.reversal_attr : hit.attr;
+    if(hit.reversal_attr != 0) ret true;
     if(
       `stVal.hb.hitt1 != 0 && (
-        (`stVal.hb.hitf1 & at & 63) == 0
-        || (`stVal.hb.hitf1 & at & !63) == 0)) ret false;
+        (`stVal.hb.hitf1 & hit.attr & 63) == 0
+        || (`stVal.hb.hitf1 & hit.attr & !63) == 0)) ret false;
     if(
       `stVal.hb.hitt2 != 0 && (
-        (`stVal.hb.hitf2 & at & 63) == 0
-        || (`stVal.hb.hitf2 & at & !63) == 0)) ret false;
+        (`stVal.hb.hitf2 & hit.attr & 63) == 0
+        || (`stVal.hb.hitf2 & hit.attr & !63) == 0)) ret false;
     ret true;
   }
   public bool hittable(&.Hitdef hit=, ~$bool(&.Hitdef=) countercheck)
