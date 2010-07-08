@@ -2403,11 +2403,17 @@ public &Char
   }
   public bool attrCheck(&.Hitdef hit=)
   {
+    if(hit.reversal_attr != 0){
+      ret
+        `atktmp >= 0
+        && (`stVal.hit.attr & hit.reversal_attr & 63) != 0
+        && (`stVal.hit.attr & hit.reversal_attr & !63) != 0;
+    }
+    if(hit.attr == 0) ret false;
     if((hit.hitflag & (int)`stVal.typ) == 0) ret false;
     if((hit.hitflag & (int).StTy::N) == 0 && `hittmp >= 2) ret false;
     if((hit.hitflag & (int).MovTy::I) != 0 && `hittmp != 0) ret false;
     if((hit.hitflag & (int).MovTy::H) != 0 && `hittmp == 0) ret false;
-    if(hit.reversal_attr != 0) ret true;
     if(
       `stVal.hb.hitt1 != 0 && (
         (`stVal.hb.hitf1 & hit.attr & 63) == 0
@@ -2444,17 +2450,7 @@ public &Char
         hit.nochainid2 >= 0
         && `stVal.hb.hitid == hit.nochainid2) ret false;
     }
-    branch{
-    cond hit.reversal_attr != 0:
-      if(`atktmp < 0 || `stVal.hit.reversal_attr != 0) ret false;
-      if(
-        (`stVal.hit.attr & hit.reversal_attr & 63) == 0
-        || (`stVal.hit.attr & hit.reversal_attr & !63) == 0) ret false;
-    else:
-      if(hit.attr == 0) ret false;
-      if(!`attrCheck(hit=)) ret false;
-    }
-    ret true;
+    ret `attrCheck(hit=);
   }
   public bool hitCheck(`self atk=)
   {
