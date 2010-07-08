@@ -3771,28 +3771,28 @@ public &Char
   }
   public void trVelAddX()
   {
-    if(`ls(.lsVelSetX)) ret;
+    if(`stVal.phy != .StTy::N && `ls(.lsVelSetX)) ret;
     float f = .v.toFloat();
     if(f == .com.FERR) ret;
     `sysfvar[.fVX] += f;
   }
   public void trVelAddY()
   {
-    if(`ls(.lsVelSetY)) ret;
+    if(`stVal.phy != .StTy::N && `ls(.lsVelSetY)) ret;
     float f = .v.toFloat();
     if(f == .com.FERR) ret;
     `sysfvar[.fVY] += f;
   }
   public void trVelMulX()
   {
-    if(`ls(.lsVelSetX)) ret;
+    if(`stVal.phy != .StTy::N && `ls(.lsVelSetX)) ret;
     float f = .v.toFloat();
     if(f == .com.FERR) ret;
     `sysfvar[.fVX] *= f;
   }
   public void trVelMulY()
   {
-    if(`ls(.lsVelSetY)) ret;
+    if(`stVal.phy != .StTy::N && `ls(.lsVelSetY)) ret;
     float f = .v.toFloat();
     if(f == .com.FERR) ret;
     `sysfvar[.fVY] *= f;
@@ -4411,7 +4411,10 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id) && !c~ls(.lsVelSetX)){
+      if(
+        #c > 0 && (id < 0 || c~stVal.hb.hitid == id)
+        && (c~stVal.phy == .StTy::N || !c~ls(.lsVelSetX)))
+      {
         c~sysfvar[.fVX] += vx;
       }
       i++;
@@ -4424,7 +4427,10 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id) && !c~ls(.lsVelSetY)){
+      if(
+        #c > 0 && (id < 0 || c~stVal.hb.hitid == id)
+        && (c~stVal.phy == .StTy::N || !c~ls(.lsVelSetY)))
+      {
         c~sysfvar[.fVY] += vy;
       }
       i++;
