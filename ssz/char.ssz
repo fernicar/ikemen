@@ -2407,14 +2407,15 @@ public &Char
     if((hit.hitflag & (int).StTy::N) == 0 && `hittmp >= 2) ret false;
     if((hit.hitflag & (int).MovTy::I) != 0 && `hittmp != 0) ret false;
     if((hit.hitflag & (int).MovTy::H) != 0 && `hittmp == 0) ret false;
+    int at = hit.reversal_attr != 0 ? hit.reversal_attr : hit.attr;
     if(
       `stVal.hb.hitt1 != 0 && (
-        (`stVal.hb.hitf1 & hit.attr & 63) == 0
-        || (`stVal.hb.hitf1 & hit.attr & !63) == 0)) ret false;
+        (`stVal.hb.hitf1 & at & 63) == 0
+        || (`stVal.hb.hitf1 & at & !63) == 0)) ret false;
     if(
       `stVal.hb.hitt2 != 0 && (
-        (`stVal.hb.hitf2 & hit.attr & 63) == 0
-        || (`stVal.hb.hitf2 & hit.attr & !63) == 0)) ret false;
+        (`stVal.hb.hitf2 & at & 63) == 0
+        || (`stVal.hb.hitf2 & at & !63) == 0)) ret false;
     ret true;
   }
   public bool hittable(&.Hitdef hit=, ~$bool(&.Hitdef=) countercheck)
@@ -2422,20 +2423,19 @@ public &Char
     if(
       .super > 0 && .superunhittable != 0
       && `playerno == .superplayer) ret false;
-    branch{
-    cond `atktmp >= 0:
+    if(
+      `atktmp >= 0 && (`stVal.hit.attr != 0 || `stVal.hit.reversal_attr != 0)
+      && (`stVal.hit.reversal_attr == 0 || hit.reversal_attr == 0))
+    {
       if(
-        `stVal.hit.attr != 0 && (
-          `stVal.hit.reversal_attr == 0 || hit.reversal_attr == 0))
-      {
-        if(
+        `stVal.hit.reversal_attr != 0 || (
           hit.priority <= `stVal.hit.priority && (
             hit.priority < `stVal.hit.priority
             || `stVal.hit.bothhittype == .PriTy::Dodge
-            || hit.bothhittype != .PriTy::Hit)
-          && countercheck(:`stVal.hit=:)) ret false;
-      }
-    cond `hittmp != 0:
+            || hit.bothhittype != .PriTy::Hit))
+        && countercheck(:`stVal.hit=:)) ret false;
+    }
+    if(`hittmp != 0){
       if(hit.chainid >= 0 && `stVal.hb.hitid != hit.chainid) ret false;
       if(
         hit.nochainid1 >= 0
