@@ -3867,7 +3867,6 @@ public &Char
     `animpno = `playerno;
     `ani = `getAction(no);
     if(#`ani == 0){
-      `animpno = -1;
       `animno = 0;
       `ani = `getAction(0);
       `trDestroySelf();
@@ -3887,11 +3886,9 @@ public &Char
       `sysfvar[.fCLSNYSCALE] = .chars[pno][0]~sysfvar[.fYSCALE];
       `ani~ani.sff = `sf;
     else:
-      `animpno = -1;
       `ani = `getAction(0);
       `sysfvar[.fCLSNXSCALE] = `sysfvar[.fXSCALE];
       `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
-      `trDestroySelf();
     }
     if(#`ani > 0) `ani~ani.updateSprite();
   }
@@ -4041,6 +4038,7 @@ public &Char
       `state(::);
       if(`stVal.mov != .MovTy::H) `sysivar[.iBINDTIME] = 0;
       `cs1tmp = 0;
+      `destmp = 0;
     }
   }
   public void trChangeState2(int p)
@@ -6226,7 +6224,12 @@ public float action(
     }
     branch{
     cond .roundEnd() || finish():
-      .com.intro--;
+      if(
+        .roundState() != 3
+        || (.super <= 0 && .pause <= 0) || .cmd.anybutton())
+      {
+        .com.intro--;
+      }
     else:
       if(.com.intro < 0) .com.intro = 0;
     }

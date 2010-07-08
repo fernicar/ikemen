@@ -4421,8 +4421,7 @@ public &StateBuilder
                 "t=", "$!.v.toInt();")) ret false;
             `state.ctrlList[-1].task .=
               "if(.pauseplayer==" .= .s.iToS(`playerno)
-              .= "||t<.pausetime){.pausetime=t;.pauseplayer="
-              .= .s.iToS(`playerno) .= ";}";
+              .= "||t<.pausetime){.pausetime=t;.pauseplayer=`playerno;}";
           cond .s.equ(name, "movetime"):
             if(
               !`fullExpression(
@@ -6408,8 +6407,7 @@ public &StateBuilder
           buf .=
             "bool c.Char::" .= fname .= "IsH()"\r\n
             "{"\r\n
-            \t"ret " .=
-            (
+            \t"ret " .= (
               `state.mov == .chr.MovTy::H ? "true" : (
               `state.mov == .chr.MovTy::U
               ? "`stVal.mov == .MovTy::H" : "false"))
