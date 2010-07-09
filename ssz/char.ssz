@@ -1556,60 +1556,60 @@ public &Projectile
       `velocityy *= `velmuly;
     }
   }
-  public void projClsn()
-  {:<-
-    public bool hitCheck(&.Projectile pr=)
+  public bool hitCheck(&.Projectile pr=)
+  {
+    float xscl1 = pr.scalex, yscl1 = pr.scaley;
+    float xscl2 = `scalex, yscl2 = `scaley;
+    float xofs1 = pr.x, yofs1 = pr.y;
+    float xofs2 = `x, yofs2 = `y;
+    func$void(float=, float=, float, float) lrset1 =
+      (pr.facing > 0 ? .pLrSet : .mLrSet);
+    func$void(float=, float=, float, float) lrset2 =
+      (`facing > 0 ? .pLrSet : .mLrSet);
+    bool hentei(&.act.Rect c1, &.act.Rect c2)
     {
-      float xscl1 = pr.scalex, yscl1 = pr.scaley;
-      float xscl2 = `scalex, yscl2 = `scaley;
-      float xofs1 = pr.x, yofs1 = pr.y;
-      float xofs2 = `x, yofs2 = `y;
-      func$void(float=, float=, float, float) lrset1 =
-        (pr.facing > 0 ? .pLrSet : .mLrSet);
-      func$void(float=, float=, float, float) lrset2 =
-        (`facing > 0 ? .pLrSet : .mLrSet);
-      bool hentei(&.act.Rect c1, &.act.Rect c2)
-      {
-        float l1, r1, l2, r2;
-        `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
-        `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
+      float l1, r1, l2, r2;
+      `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
+      `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
+      branch{
+      cond l1*`xscl1+`xofs1 < l2*`xscl2+`xofs2:
+        if(r1*`xscl1+`xofs1 < l2*`xscl2+`xofs2) break;
+      else:
+        if(l1*`xscl1+`xofs1 > r2*`xscl2+`xofs2) break;
+      comm:
         branch{
-        cond l1*`xscl1+`xofs1 < l2*`xscl2+`xofs2:
-          if(r1*`xscl1+`xofs1 < l2*`xscl2+`xofs2) break;
+        cond
+          (float)c1.b*`yscl1+`yofs1 < (float)c2.b*`yscl2+`yofs2
+          :
+          if(
+            (float)(c2.t-1)*`yscl2+`yofs2
+            <= (float)c1.b*`yscl1+`yofs1) ret true;
         else:
-          if(l1*`xscl1+`xofs1 > r2*`xscl2+`xofs2) break;
-        comm:
-          branch{
-          cond
-            (float)c1.b*`yscl1+`yofs1 < (float)c2.b*`yscl2+`yofs2
-            :
-            if(
-              (float)(c2.t-1)*`yscl2+`yofs2
-              <= (float)c1.b*`yscl1+`yofs1) ret true;
-          else:
-            if(
-              (float)c2.b*`yscl2+`yofs2
-              >= (float)(c1.t-1)*`yscl1+`yofs1) ret true;
-          }
+          if(
+            (float)c2.b*`yscl2+`yofs2
+            >= (float)(c1.t-1)*`yscl1+`yofs1) ret true;
         }
-        ret false;
-      }
-      if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
-      if(#`ani == 0 || #`ani~ani.frames == 0) ret false;
-      ^&.act.Frame frm;
-      ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn1;
-      ^&.act.Rect clsn2 = `ani~ani.currentFrame()=>frm#frm~clsn2;
-      loop{index i = 0; while; do:
-        loop{index j = 0; while; do:
-          if(hentei(clsn1[i], clsn2[j])) ret true;
-          j++;
-        while j < #clsn2:
-        }
-        i++;
-      while i < #clsn1:
       }
       ret false;
     }
+    if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
+    if(#`ani == 0 || #`ani~ani.frames == 0) ret false;
+    ^&.act.Frame frm;
+    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn1;
+    ^&.act.Rect clsn2 = `ani~ani.currentFrame()=>frm#frm~clsn2;
+    loop{index i = 0; while; do:
+      loop{index j = 0; while; do:
+        if(hentei(clsn1[i], clsn2[j])) ret true;
+        j++;
+      while j < #clsn2:
+      }
+      i++;
+    while i < #clsn1:
+    }
+    ret false;
+  }
+  public void projClsn()
+  {:<-
     if(`hit.attr < 0) ret;
     loop{index i = 0; while; do:
       if(i != `playerno) loop{
@@ -1621,7 +1621,10 @@ public &Projectile
             .projs[i][j].hit.affectteam != 0 && (
               (`playerno&1) != (i&1)) != (.projs[i][j].hit.affectteam > 0))
           ) continue;
-        if(.projs[i][j].hit.attr >= 0 && hitCheck(.projs[i][j]=)){
+        if(
+          .projs[i][j].hit.attr >= 0
+          && `hitCheck(.projs[i][j]=) && .projs[i][j].hitCheck(`=))
+        {
           `prioritypoint -= .projs[i][j].priority;
         }
       continue:
@@ -1661,9 +1664,14 @@ public &Projectile
     }
     bool p = pause();
     if(.com.tickFrame()){
-      if(`timemiss > 0){
-        `timemiss *= -1;
-        `hits--;
+      if(`timemiss < 0){
+        `timemiss = !`timemiss;
+        branch{
+        cond `misstime <= 0 && `hitpause == 0:
+          `hits = 0;
+        else:
+          `hits--;
+        }
       }
       if(p) break;
       if(`supermovetime > 0) `supermovetime--;
@@ -1715,7 +1723,7 @@ public &Projectile
       branch{
       cond `hitpause == 0:
         if(`removetime > 0) `removetime--;
-        if(`timemiss < 0) `timemiss++;
+        if(`timemiss > 0) `timemiss--;
       cond `hitpause > 0:
         `hitpause--;
       }
@@ -1739,7 +1747,6 @@ public &Projectile
         `pctime++;
       cond `pctime < 0:
         `pctime *= -1;
-        if(`misstime <= 0) `hits = 0;
       }
       if(`hits <= 0) `hit.attr = -1;
     }
@@ -2423,7 +2430,7 @@ public &Char
     }
     if(hit.attr == 0) ret false;
     if((hit.hitflag & (int)`stVal.typ) == 0) ret false;
-    if((hit.hitflag & (int).StTy::N) == 0 && `hittmp >= 2) ret false;
+    if((hit.hitflag & (int).StTy::N) == 0 && `hittmp > 2) ret false;
     if((hit.hitflag & (int).MovTy::I) != 0 && `hittmp != 0) ret false;
     if((hit.hitflag & (int).MovTy::H) != 0 && `hittmp == 0) ret false;
     if(
@@ -2719,9 +2726,8 @@ public &Char
         ys *= `sysfvar[.fANGLESCALEY];
       }
       float an =
-        `ls(.lsANGLEDRAW) ? (
-          `sysfvar[.fANGLE] == 0.0 ? 360.0 : `sysfvar[.fANGLE])
-        : 0.0;
+        `ls(.lsANGLEDRAW)
+        ? (`sysfvar[.fANGLE] == 0.0 ? 360.0 : `sysfvar[.fANGLE]) : 0.0;
     cond !`ls(.lsINVISIBLE):
       .addAnimList(
         .anims=, `ani, sp, x, y, .com.scale, xs, ys, an,
@@ -2775,8 +2781,7 @@ public &Char
     `sysivar[.iSPECIALFLAG] &=
       .lsNoMoveMask | (`isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0);
     `sysivar[.iSPECIALFLAG] |=
-      `player && (
-        `sysivar[.iLIFE] > 0 || `sysivar[.iRECOVERTIME] > 0)
+      `player && (`sysivar[.iLIFE] > 0 || `sysivar[.iRECOVERTIME] > 0)
       ? .lsSCREENBOUNDX | .lsSCREENBOUNDY | (
         .com.intro <= .fight~ro.ctrl_time && (
           `stVal.phy != .StTy::N
@@ -2997,7 +3002,8 @@ public &Char
         `hittmp =
           (int)(
             `stVal.playerno == `playerno
-            && `stVal.typ == .StTy::A && `stVal.hb.fallf != 0) + 1;
+            && `stVal.typ == .StTy::A && `stVal.hb.fallf != 0)
+          * ((int)`isFall() + 1) + 1;
       else:
         `hittmp = 0;
         `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
@@ -5617,7 +5623,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     }
     if(
       p~c~stVal.hit.hitonce >= 0 && (
-        pyr.hittmp < 2 || p~c~ls(.lsNOJUGGLECHECK)
+        pyr.hittmp < 3 || p~c~ls(.lsNOJUGGLECHECK)
         || juggcheck(
           pyr.stVal.hb.juggle, p~c~stVal.juggle + p~c~stVal.hit.air_juggle))
       && pyr.hittable(
@@ -5654,7 +5660,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               .m.max!int?(1, p~c~stVal.hit.guard_pausetime+1);
           }
         comm:
-          pyr.sysivar[.iHITPAUSETIME] = 0;
+          if(h > 0) pyr.sysivar[.iHITPAUSETIME] = 0;
           if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
           p~c~stVal.mctime = -1;
         break:
@@ -5679,9 +5685,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         .projs[i][j].id < 0 || .projs[i][j].hits <= 0 || (
           .projs[i][j].hit.affectteam != 0 && ((pyr.playerno&1) != (i&1))
           != (.projs[i][j].hit.affectteam > 0))) continue;
-      if(pyr.stVal.hb.fallf == 0){
-        pyr.stVal.hb.juggle = .chars[i][0]~sysivar[.iAIRJUGGLE];
-      }
       if(
         (float).chars[i][0]~sysivar[.iPROJ_ATTACK_DIST]
         >= #(pyr.sysfvar[.fX] - .projs[i][j].x))
@@ -5691,9 +5694,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       hoge = true;
       if(
         .projs[i][j].hit.hitonce >= 0 && (
-          pyr.hittmp < 2 || .chars[i][0]~ls(.lsNOJUGGLECHECK)
+          pyr.hittmp < 3 || .chars[i][0]~ls(.lsNOJUGGLECHECK)
           || juggcheck(pyr.stVal.hb.juggle, .projs[i][j].hit.air_juggle))
-        && .projs[i][j].timemiss >= 0
+        && .projs[i][j].timemiss <= 0
         && .projs[i][j].hitpause <= 0 && pyr.hittable(
           .projs[i][j].hit=, [bool(&.Hitdef h=){
             ret
@@ -5711,7 +5714,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           pyr.inguarddist = true;
         }
         if(pyr.projHitCheck(.projs[i][j]=)){
-          .projs[i][j].timemiss = .m.max!int?(0, .projs[i][j].misstime);
           int hit =
             pyr.stVal.setHb(
               .projs[i][j].hit=, pyr.ls(.lsGUARD),
@@ -5721,9 +5723,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               hit, .chars[i][0]<>=, .projs[i][j].hit=,
               .projs[i][j].y - .chars[i][0]~sysfvar[.fY],
               .projs[i][j].facing * (.projs[i][j].velocityx < 0.0 ? -1 : 1),
-              .projs[i][j].misstime == 0 ? .projs[i][j].hits : 1))
+              .projs[i][j].misstime <= 0 && (
+                #hit == 1 ? .projs[i][j].hit.pausetime
+                : .projs[i][j].hit.guard_pausetime) <= 0
+              ? .projs[i][j].hits : 1))
           {
-            pyr.sysivar[.iHITPAUSETIME] = 0;
+            if(hit > 0) pyr.sysivar[.iHITPAUSETIME] = 0;
+            .projs[i][j].timemiss = !.m.max!int?(0, .projs[i][j].misstime);
             branch{
             cond #hit == 1:
               .projs[i][j].pctyp == .ProjContact::Hit;

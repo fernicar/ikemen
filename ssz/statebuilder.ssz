@@ -6397,7 +6397,8 @@ public &StateBuilder
             \t\t"case 20:"\r\n
             \t\t\t".v.setI(0)$`trSelfState();"\r\n
             \t\t"}"\r\n
-            \t"}"\r\n;
+            \t"}"\r\n
+            \t"`destmp=0;"\r\n;
         cond `state.no >= 0:
           buf .=
             \t"if(nh) `stVal.time++;"\r\n;
