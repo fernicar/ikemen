@@ -2798,8 +2798,7 @@ public &Char
         `stVal.typ == .StTy::A
         ? `sysivar[.iAIR_BACK] : `sysivar[.iGROUND_BACK]);
   }
-  public void targetAction(
-    float highest=, float lowest=, float leftest=, float rightest=)
+  public void targetAction()
   {
     loop{
       index i = 0;
@@ -2808,7 +2807,7 @@ public &Char
     do:
       c = .players.get(`targets[i]);
       if(#c > 0 && c~stVal.playerno != c~playerno){
-        c~action(highest=, lowest=, leftest=, rightest=);
+        c~action();
         if(`destmp != 0 && c~stVal.playerno != c~playerno){
           .v.setI(5050)$c~trSelfState();
         }
@@ -2823,8 +2822,7 @@ public &Char
       `stVal.phy == .StTy::A && `isActive()
       && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0;
   }
-  public void action(
-    float highest=, float lowest=, float leftest=, float rightest=)
+  public void action()
   {:<-
     bool isSuperPaused()
     {
@@ -2889,19 +2887,13 @@ public &Char
           l = `fedge; r = `bedge;
         }
         .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+l, .com.xmax-r);
-        leftest = .m.min!float?(`sysfvar[.fX]-l, leftest);
-        rightest = .m.max!float?(`sysfvar[.fX]+r, rightest);
       }
-      if(`ls(.lsSCREENBOUNDY)){
-        highest = .m.min!float?(`sysfvar[.fY], highest);
-        lowest =
-          .m.min!float?(0.0)<,
-          .m.max!float?(`sysfvar[.fY], lowest);
-      }
-      `targetAction(highest=, lowest=, leftest=, rightest=);
+      `targetAction();
     }
   }
-  public float move(float tension)
+  public float move(
+    float tension,
+    float highest=, float lowest=, float leftest=, float rightest=)
   {
     if(`destmp != 0){
       `destroySelf();
@@ -2964,6 +2956,14 @@ public &Char
         l = `fedge; r = `bedge;
       }
       .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+l, .com.xmax-r);
+      leftest = .m.min!float?(`sysfvar[.fX]-l, leftest);
+      rightest = .m.max!float?(`sysfvar[.fX]+r, rightest);
+    }
+    if(`ls(.lsSCREENBOUNDY)){
+      highest = .m.min!float?(`sysfvar[.fY], highest);
+      lowest =
+        .m.min!float?(0.0)<,
+        .m.max!float?(`sysfvar[.fY], lowest);
     }
     ret cvx;
   }
@@ -5207,15 +5207,15 @@ public void PlayerList!&Char?::action(
     if(p~c~id < 0) p~c~id ^= -1;
     branch{
     cond p~c~stVal.hb.byid < 0 || p~c~stVal.playerno == p~c~playerno:
-      p~c~action(highest=, lowest=, leftest=, rightest=);
+      p~c~action();
     else:
-      p~c~targetAction(highest=, lowest=, leftest=, rightest=);
+      p~c~targetAction();
     }
   continue:
     p = p~next;
   while #p > 0 && p~c~helperindex != 0:
   }
-  .update(tension, cvx=);
+  .update(tension, cvx=, highest=, lowest=, leftest=, rightest=);
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
       if(.projs[i][j].id >= 0) .projs[i][j].projClsn();
@@ -5226,16 +5226,18 @@ public void PlayerList!&Char?::action(
   while i < #.projs:
   }
   .com.gametime++;
-  .rootAction(highest=, lowest=, leftest=, rightest=);
+  .rootAction();
 }
-public void PlayerList!&Char?::move(float tension, float cvx=)
+public void PlayerList!&Char?::move(
+  float tension, float cvx=,
+  float highest=, float lowest=, float leftest=, float rightest=)
 {
   loop{
     *`top.self p = `top;
     while;
   do:
     if(p~c~id < 0) continue;
-    cvx += p~c~move(tension);
+    cvx += p~c~move(tension, highest=, lowest=, leftest=, rightest=);
   continue:
     p = p~next;
   while #p > 0:
@@ -5925,9 +5927,11 @@ void gSetNormal(&.stage.Stage stg=, float scl, float x, float y)
   ret lpl;
 }
 
-void update(float tension, float cvx=)
+void update(
+  float tension, float cvx=,
+  float highest=, float lowest=, float leftest=, float rightest=)
 {
-  .players.move(tension, cvx=);
+  .players.move(tension, cvx=, highest=, lowest=, leftest=, rightest=);
   .players.update();
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
@@ -5940,7 +5944,7 @@ void update(float tension, float cvx=)
   }
 }
 
-void rootAction(float highest=, float lowest=, float leftest=, float rightest=)
+void rootAction()
 {
   if(.com.tickNextFrame()) loop{
     .players.getHit();
@@ -5967,9 +5971,9 @@ void rootAction(float highest=, float lowest=, float leftest=, float rightest=)
       .chars[i][0]~stVal.hb.byid < 0
       || .chars[i][0]~stVal.playerno == .chars[i][0]~playerno
       :
-      .chars[i][0]~action(highest=, lowest=, leftest=, rightest=);
+      .chars[i][0]~action();
     else:
-      .chars[i][0]~targetAction(highest=, lowest=, leftest=, rightest=);
+      .chars[i][0]~targetAction();
     }
     i++;
   while i < #.chars:
@@ -6039,8 +6043,8 @@ public float action(
     if(.envcol_time > 0) .envcol_time--;
     .players.action(x, tension, cvx=, highest=, lowest=, leftest=, rightest=);
   else:
-    .update(tension, cvx=);
-    .rootAction(highest=, lowest=, leftest=, rightest=);
+    .update(tension, cvx=, highest=, lowest=, leftest=, rightest=);
+    .rootAction();
   }
   %bool hbuf;
   loop{index i = 0; while; do:
