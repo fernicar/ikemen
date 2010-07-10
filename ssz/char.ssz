@@ -5948,12 +5948,6 @@ void rootAction()
 {
   if(.com.tickNextFrame()) loop{
     .players.getHit();
-    branch{
-    cond .super <= 0 && .pause <= 0:
-      .specialFlag = 0d0;
-    else:
-      .specialFlag &= !.gsROUNDNOTOVER;
-    }
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
         .chars[i][j]~tickHitTimer();
@@ -6035,6 +6029,12 @@ public float action(
     if(.supertime < 0){
       .supertime = !.supertime;
       .super = .supertime;
+    }
+    branch{
+    cond .super <= 0 && .pause <= 0:
+      .specialFlag = 0d0;
+    else:
+      .specialFlag &= !.gsROUNDNOTOVER;
     }
     if(#.superanim > 0) .superanim~ani.action();
     .com.allPalFX~step();
