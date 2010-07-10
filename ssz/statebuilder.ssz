@@ -6336,6 +6336,7 @@ public &StateBuilder
         branch{
         cond `state.no == -1:
           buf .=
+            \t"if(`destmp != 0) ret;"\r\n
             \t"branch{"\r\n
             \t"cond `stVal.typ == .StTy::A:"\r\n
             \t\t"if(`trCommand("\""holdup"\"")$!.v.isTrue())"
@@ -6398,7 +6399,7 @@ public &StateBuilder
             \t\t\t".v.setI(0)$`trSelfState();"\r\n
             \t\t"}"\r\n
             \t"}"\r\n
-            \t"`destmp=0;"\r\n;
+            \t"`destmp = 0;"\r\n;
         cond `state.no >= 0:
           buf .=
             \t"if(nh) `stVal.time++;"\r\n;
