@@ -50,15 +50,35 @@ const float FERR = (float)consts.int_t::MIN;
 const int IERR = (int)FERR;
 
 
-public int tickCount = 0;
-public int oldTickCount = tickCount-1;
+/int tickCount = 0;
+int oldTickCount = tickCount-1;
+float tickCountF = 0.0;
+float nextAddTime = Speed;
 
 const bool tickFrame()
 {
   ret .oldTickCount < .tickCount;
 }
 
-public float tickCountF = 0.0;
+const bool tickNextFrame()
+{
+  ret (int)(.tickCountF + .nextAddTime) > .tickCount;
+}
+
+public bool addFrameTime(float t)
+{
+  branch{
+    .oldTickCount = .tickCount;
+  cond (int).tickCountF > .tickCount:
+    .tickCount++;
+    ret false;
+  cond (int)(.tickCountF += .nextAddTime) > .tickCount:
+    .tickCount++;
+  }
+  .nextAddTime = t;
+  ret true;
+}
+
 
 public int brightness = 256;
 

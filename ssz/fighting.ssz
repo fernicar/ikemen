@@ -414,14 +414,7 @@ void game()
     newx = x;
     newy = y;
     sclmul = .chr.action(stg<>=, newx=, newy=, l=, r=, scl);
-    branch{
-      .com.oldTickCount = .com.tickCount;
-    cond (int).com.tickCountF > .com.tickCount:
-      .com.tickCount++;
-      break, do;
-    cond (int)(.com.tickCountF += .com.turbo) > .com.tickCount:
-      .com.tickCount++;
-    }
+    if(!.com.addFrameTime(.com.turbo)) do;
     if(.se.fskip) while;
     .chr.draw(stg<>=, x, y, scl);
     drawDebug();
