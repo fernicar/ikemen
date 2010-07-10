@@ -1161,7 +1161,7 @@ const int lsVelSetY       = 0b00000001000000000000000000000000;
 
 const int lsNoMoveMask = lsNOSTANDGUARD|lsNOCROUCHGUARD|lsNOAIRGUARD|lsNOWALK;
 
-public uint specialFlag;
+public uint specialFlag, specialFlagR;
 const uint gsINTRO          = 0b00000000000000000000000000000001;
 const uint gsROUNDNOTOVER   = 0b00000000000000000000000000000010;
 const uint gsNOBARDISPLAY   = 0b00000000000000000000000000000100;
@@ -1175,7 +1175,7 @@ const uint gsNOKO           = 0b00000000000000000000001000000000;
 const uint gsNOKOSND        = 0b00000000000000000000010000000000;
 public bool gs(uint mask)
 {
-  ret (.specialFlag & mask) == mask;
+  ret ((.specialFlag | .specialFlagR) & mask) == mask;
 }
 
 const int sfAIRJUMP = 0b00000000000000000000000000000001;
@@ -5958,6 +5958,13 @@ void rootAction()
     while i < #.chars:
     }
     index i = 0;
+    .m.swap!uint?(.specialFlag=, .specialFlagR=);
+    branch{
+    cond .super <= 0 && .pause <= 0:
+      .specialFlag = 0d0;
+    else:
+      .specialFlag &= !.gsROUNDNOTOVER;
+    }
     while;
   do:
     if(#.chars[i] > 0) branch{
@@ -5971,6 +5978,8 @@ void rootAction()
     }
     i++;
   while i < #.chars:
+  break:
+    .m.swap!uint?(.specialFlag=, .specialFlagR=);
   }
 }
 
@@ -6440,6 +6449,7 @@ void resetGbl()
   .superanim.new(0);
   .envcol_time = 0;
   .specialFlag = 0d0;
+  .specialFlagR = 0x0;
   .zoomdelay = 0.0;
 }
 
