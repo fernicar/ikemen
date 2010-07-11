@@ -6022,6 +6022,12 @@ public float action(
       .fight~ro.over_hittime
       + .fight~ro.over_waittime + .fight~ro.over_wintime);
   if(.com.intro == rs4t-1 && #(x - .oldx) > 1.0).com.intro = rs4t;
+  if(.com.tickNextFrame()){
+    .com.allPalFX~step();
+    .stage.bgPalFX~step();
+    .stage.envShake.next();
+    if(.envcol_time > 0) .envcol_time--;
+  }
   branch{
   cond .com.tickFrame():
     branch{
@@ -6045,10 +6051,6 @@ public float action(
       .specialFlag &= !.gsROUNDNOTOVER;
     }
     if(#.superanim > 0) .superanim~ani.action();
-    .com.allPalFX~step();
-    .stage.bgPalFX~step();
-    .stage.envShake.next();
-    if(.envcol_time > 0) .envcol_time--;
     .players.action(x, tension, cvx=, highest=, lowest=, leftest=, rightest=);
   else:
     .update(tension, cvx=, highest=, lowest=, leftest=, rightest=);
