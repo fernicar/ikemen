@@ -6025,13 +6025,13 @@ public float action(
       .fight~ro.over_hittime
       + .fight~ro.over_waittime + .fight~ro.over_wintime);
   if(.com.intro == rs4t-1 && #(x - .oldx) > 1.0).com.intro = rs4t;
-  branch{
-  cond .com.tickNextFrame():
+  if(.com.tickNextFrame()){
     if(.tickallpal) .com.allPalFX~step();
     if(.tickbgpal) .stage.bgPalFX~step();
     if(.tickeshake) .stage.envShake.next();
     if(.tickenvcol && .envcol_time > 0) .envcol_time--;
-  cond .com.tickFrame():
+  }
+  if(.com.tickFrame()){
     if(!.tickallpal) .com.allPalFX~step();
     if(!.tickbgpal) .stage.bgPalFX~step();
     if(!.tickeshake) .stage.envShake.next();
