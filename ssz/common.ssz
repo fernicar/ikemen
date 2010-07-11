@@ -15,16 +15,18 @@ lib file = <file.ssz>;
   Single, Simul, Turns
 }
 
+public bool rootact = false;
+
 //Simulでのパワーの共有フラグ
 public bool powershare = true;
+
+//コリジョン表示フラグ
+public bool clsndraw = false;
 
 //デバッグ表示フラグ
 public bool debugdraw = false;
 
 public %%char clipboardText;
-
-//コリジョン表示フラグ
-public bool clsndraw = false;
 
 public ^bool com;
 com.new(4);

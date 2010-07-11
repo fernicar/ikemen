@@ -1884,6 +1884,7 @@ void c.Char::s##_@@P()
       if(`stVal.hb.fall.yvelocity == 0.0 && `sysfvar[.fVX] > 1.0){
         `setXV(1.0);
       }
+      .tickeshake = .com.rootact;
       .stage.envShake.time = `stVal.hb.fall.envshake_time;
       .stage.envShake.freq = (`stVal.hb.fall.envshake_freq / 180.0) * .m.PI;
       .stage.envShake.ampl = `stVal.hb.fall.envshake_ampl;
@@ -2018,6 +2019,7 @@ void c.Char::s##_@@P()
       `trChangeAnim(5110 + `animno%10);
     }
     if(`stVal.time == 0){
+      .tickeshake = .com.rootact;
       .stage.envShake.time = `stVal.hb.fall.envshake_time;
       .stage.envShake.freq = (`stVal.hb.fall.envshake_freq / 180.0) * .m.PI;
       .stage.envShake.ampl = `stVal.hb.fall.envshake_ampl;

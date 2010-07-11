@@ -3530,10 +3530,12 @@ public &StateBuilder
             "^&.com.PalFX fx=`getPalfx();fx~clear();";
         cond .s.equ(s, "allpalfx"):
           `state.ctrlList[-1].typ = .CtrlTy::AllPalFX;
-          `state.ctrlList[-1].task .= ".com.allPalFX~clear();";
+          `state.ctrlList[-1].task .=
+            ".tickallpal=.com.rootact;.com.allPalFX~clear();";
         cond .s.equ(s, "bgpalfx"):
           `state.ctrlList[-1].typ = .CtrlTy::BGPalFX;
-          `state.ctrlList[-1].task .= ".stage.bgPalFX~clear();";
+          `state.ctrlList[-1].task .=
+            ".tickbgpal=.com.rootact;.stage.bgPalFX~clear();";
         cond .s.equ(s, "trans"):
           `state.ctrlList[-1].typ = .CtrlTy::Trans;
           `state.ctrlList[-1].task .= "int t=0;";
@@ -3554,6 +3556,7 @@ public &StateBuilder
         cond .s.equ(s, "fallenvshake"):
           `state.ctrlList[-1].typ = .CtrlTy::FallEnvShake;
           `state.ctrlList[-1].task .=
+            ".tickeshake=.com.rootact;"
             ".stage.envShake.time=`stVal.hb.fall.envshake_time;"
             ".stage.envShake.freq=(`stVal.hb.fall.envshake_freq/180.0)*.m.PI;"
             ".stage.envShake.ampl=`stVal.hb.fall.envshake_ampl;"
@@ -3562,8 +3565,8 @@ public &StateBuilder
         cond .s.equ(s, "envcolor"):
           `state.ctrlList[-1].typ = .CtrlTy::EnvColor;
           `state.ctrlList[-1].task .=
-            ".envcol_time=1;.envcol_r=255;.envcol_g=255;.envcol_b=255;"
-            ".envcol_under=0;";
+            ".tickenvcol=.com.rootact;.envcol_time=1;"
+            ".envcol_r=255;.envcol_g=255;.envcol_b=255;.envcol_under=0;";
         cond .s.equ(s, "envshake"):
           `state.ctrlList[-1].typ = .CtrlTy::EnvShake;
           `state.ctrlList[-1].task .= ".stage.envShake.clear();";

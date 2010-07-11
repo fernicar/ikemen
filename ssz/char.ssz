@@ -1269,7 +1269,7 @@ int superunhittable = 1;
 int envcol_r = 255;
 int envcol_g = 255;
 int envcol_b = 255;
-
+bool tickenvcol = true, tickallpal = true, tickbgpal = true, tickeshake = true;
 
 &ModifyExplod
 {
@@ -5412,6 +5412,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         fx~invertall = hit.palfx_invertall;
       }
       if(hit.envshake_time > 0){
+        .tickeshake = .com.rootact;
         .stage.envShake.time = hit.envshake_time;
         .stage.envShake.freq = (hit.envshake_freq / 180.0) * .m.PI;
         .stage.envShake.ampl = hit.envshake_ampl;
@@ -5946,6 +5947,7 @@ void update(
 void rootAction()
 {
   if(.com.tickNextFrame()) loop{
+    .com.rootact = true;
     .m.swap!uint?(.specialFlag=, .specialFlagR=);
     branch{
     cond .super <= 0 && .pause <= 0:
@@ -5979,6 +5981,7 @@ void rootAction()
   while i < #.chars:
   break:
     .m.swap!uint?(.specialFlag=, .specialFlagR=);
+    .com.rootact = false;
   }
 }
 
@@ -6022,11 +6025,17 @@ public float action(
       .fight~ro.over_hittime
       + .fight~ro.over_waittime + .fight~ro.over_wintime);
   if(.com.intro == rs4t-1 && #(x - .oldx) > 1.0).com.intro = rs4t;
-  if(.com.tickNextFrame()){
-    .com.allPalFX~step();
-    .stage.bgPalFX~step();
-    .stage.envShake.next();
-    if(.envcol_time > 0) .envcol_time--;
+  branch{
+  cond .com.tickNextFrame():
+    if(.tickallpal) .com.allPalFX~step();
+    if(.tickbgpal) .stage.bgPalFX~step();
+    if(.tickeshake) .stage.envShake.next();
+    if(.tickenvcol && .envcol_time > 0) .envcol_time--;
+  cond .com.tickFrame():
+    if(!.tickallpal) .com.allPalFX~step();
+    if(!.tickbgpal) .stage.bgPalFX~step();
+    if(!.tickeshake) .stage.envShake.next();
+    if(!.tickenvcol && .envcol_time > 0) .envcol_time--;
   }
   branch{
   cond .com.tickFrame():
