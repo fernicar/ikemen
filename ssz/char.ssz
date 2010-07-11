@@ -1228,7 +1228,12 @@ void insIL(%index l=, index i, index x)
   public int n, pn, hi;
 }
 %&RdCacheInfo playerid;
-
+^int numenemy.new(4);
+void resetNumenemy()
+{
+  loop{index i = 0; do: .numenemy[i] = -1; while ++i < #.numenemy:}
+}
+resetNumenemy();
 
 public ^&.fgt.Fight fight;
 public int roundState()
@@ -5135,6 +5140,7 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
 }
 public int PlayerList!&Char?::numEnemy(int pno)
 {
+  if(.numenemy[pno] >= 0) ret .numenemy[pno];
   int cnt = 0;
   loop{
     *`top.self p = `top;
@@ -5144,11 +5150,12 @@ public int PlayerList!&Char?::numEnemy(int pno)
     p = p~next;
   while #p > 0:
   }
-  ret cnt;
+  ret .numenemy[pno] = cnt;
 }
 public void PlayerList!&Char?::add(^&.Char c)
 {
   .playerid.new(0);
+  .resetNumenemy();
   if(#`top == 0){
     `top.new(1);
     `top~c = c;
@@ -5182,6 +5189,7 @@ public void PlayerList!&Char?::destroy(int id)
 {
   if(id < 0 || #`top == 0) ret;
   .playerid.new(0);
+  .resetNumenemy();
   if(`top~c~id == id){
     `top = `top~next;
     ret;
@@ -5947,6 +5955,13 @@ void update(
 void rootAction()
 {
   if(.com.tickNextFrame()) loop{
+    .m.swap!uint?(.specialFlag=, .specialFlagR=);
+    branch{
+    cond .super <= 0 && .pause <= 0:
+      .specialFlag = 0d0;
+    else:
+      .specialFlag &= !.gsROUNDNOTOVER;
+    }
     .players.getHit();
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
@@ -5958,13 +5973,6 @@ void rootAction()
     while i < #.chars:
     }
     index i = 0;
-    .m.swap!uint?(.specialFlag=, .specialFlagR=);
-    branch{
-    cond .super <= 0 && .pause <= 0:
-      .specialFlag = 0d0;
-    else:
-      .specialFlag &= !.gsROUNDNOTOVER;
-    }
     while;
   do:
     if(#.chars[i] > 0) branch{
@@ -6451,6 +6459,8 @@ void resetGbl()
   .specialFlag = 0d0;
   .specialFlagR = 0x0;
   .zoomdelay = 0.0;
+  .playerid.new(0);
+  .resetNumenemy();
 }
 
 void charClear(int pn)

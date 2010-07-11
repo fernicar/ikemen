@@ -3678,8 +3678,7 @@ public &StateBuilder
               %char buf;
               if(
                 !`fullExpression(
-                  buf=, text=, "`setCtrl(",
-                  "$.v.isTrue());")) ret false;
+                  buf=, text=, "`setCtrl(", "$.v.isTrue());")) ret false;
               buf .= `state.ctrlList[-1].task;
               `state.ctrlList[-1].task = buf;
             }
@@ -6391,11 +6390,12 @@ public &StateBuilder
             \t\t\t".v.setI(120)$`trSelfState();"\r\n
             \t\t"}"\r\n
             \t"cond `sysivar[.iCTRL] != 0 || .roundState() == 4:"\r\n
-            \t\t"`setCtrl(true);"\r\n
             \t\t"switch(`stVal.no){"\r\n
             \t\t"case 11:"\r\n
+            \t\t\t"`setCtrl(true);"\r\n
             \t\t\t".v.setI(12)$`trSelfState();"\r\n
             \t\t"case 20:"\r\n
+            \t\t\t"`setCtrl(true);"\r\n
             \t\t\t".v.setI(0)$`trSelfState();"\r\n
             \t\t"}"\r\n
             \t"}"\r\n
