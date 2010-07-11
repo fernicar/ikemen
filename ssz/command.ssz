@@ -633,6 +633,36 @@ public &Command
     public %|.Key key;
     public int tametime = 1;
     public bool slash = false, greater = false, flag1 = false, flag2 = false;
+    public bool eq(`self c=)
+    {
+      if(#`key != #c.key) ret false;
+      loop{index i = 0; while; do:
+        if(`key[i] != c.key[i]) ret false;
+        i++;
+      while i < #`key:
+      }
+      ret `slash == c.slash && `greater == c.greater;
+    }
+    public void not()
+    {
+      loop{index i = 0; while; do:
+        branch{
+        cond `key[i] == .Key::B: `key[i] = .Key::nB;
+        cond `key[i] == .Key::D: `key[i] = .Key::nD;
+        cond `key[i] == .Key::F: `key[i] = .Key::nF;
+        cond `key[i] == .Key::U: `key[i] = .Key::nU;
+        cond `key[i] == .a: `key[i] = .na;
+        cond `key[i] == .b: `key[i] = .nb;
+        cond `key[i] == .c: `key[i] = .nc;
+        cond `key[i] == .x: `key[i] = .nx;
+        cond `key[i] == .y: `key[i] = .ny;
+        cond `key[i] == .z: `key[i] = .nz;
+        cond `key[i] == .s: `key[i] = .ns;
+        }
+        i++;
+      while i < #`key:
+      }
+    }
   }
   public ^/char name;
   public %|.Key held;
@@ -780,6 +810,7 @@ public &Command
       j++;
     while j < #cmds:
     }
+    if(#`cmd >= 2 && `cmd[0].eq(`cmd[1]=)) `cmd[0].not();
   }
   bool cmdeq(&`CmdButton cmd1, &`CmdButton cmd2)
   {

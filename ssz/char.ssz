@@ -998,7 +998,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.animtype = (int)hit.animtype;
     }
     if(guard && ((int)`typ&hit.guardflag) != 0){
-      `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
+      `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime);
       `hb.hittime = hit.guard_hittime;
       `hb.slidetime = hit.guard_slidetime;
       `hb.guarded = 1;
@@ -1016,7 +1016,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.hitcount = hc;
       ret 2;
     }
-    `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
+    `hb.hitshaketime = .m.max!int?(1, hit.shaketime);
     `hb.slidetime = hit.ground_slidetime;
     branch{
     cond `typ == .StTy::A:
@@ -2727,7 +2727,7 @@ public &Char
       `aimg.recAfterImg(`ani<>=, x, y, xs, ys, an);
     }
     if(
-      .com.tickFrame() && .supertime < 0
+      .com.tickNextFrame() && .supertime < 0
       && (`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H)
     {
       `defencemul *= .superp2defmul;
@@ -2883,16 +2883,7 @@ public &Char
         if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
         if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
       }
-      if(`ls(.lsSCREENBOUNDX)){
-        float l, r;
-        branch{
-        cond `facing > 0:
-          l = `bedge; r = `fedge;
-        else:
-          l = `fedge; r = `bedge;
-        }
-        .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+l, .com.xmax-r);
-      }
+      `xScreenBound();
       `targetAction();
     }
   }
@@ -2966,9 +2957,7 @@ public &Char
     }
     if(`ls(.lsSCREENBOUNDY)){
       highest = .m.min!float?(`sysfvar[.fY], highest);
-      lowest =
-        .m.min!float?(0.0)<,
-        .m.max!float?(`sysfvar[.fY], lowest);
+      lowest = .m.min!float?(0.0)<, .m.max!float?(`sysfvar[.fY], lowest);
     }
     ret cvx;
   }
@@ -3002,6 +2991,19 @@ public &Char
       }
     }
   }
+  public void xScreenBound()
+  {
+    if(`ls(.lsSCREENBOUNDX)){
+      float l, r;
+      branch{
+      cond `facing > 0:
+        l = `bedge; r = `fedge;
+      else:
+        l = `fedge; r = `bedge;
+      }
+      .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+l, .com.xmax-r);
+    }
+  }
   public void update()
   {
     if(.com.tickFrame()){
@@ -3033,59 +3035,48 @@ public &Char
         `outTarget();
         `getcombo = 0;
       }
-      ^`self c;
-      if(`stVal.hb.hittime > 0 && #(c = .players.get(`stVal.hb.byid)) > 0){
-        if(`stVal.hb.p1getp2facing != 0){
-          c~setFacing(`facing*`stVal.hb.p1getp2facing);
+    }
+    ^`self c;
+    if(`stVal.hb.hittime > 0 && #(c = .players.get(`stVal.hb.byid)) > 0){
+      if(`stVal.hb.p1getp2facing != 0){
+        c~setFacing(`facing*`stVal.hb.p1getp2facing);
+      }
+      if(`stVal.hb.mindistx != .com.FERR) branch{
+      cond c~facing < 0:
+        `sysfvar[.fX] =
+          .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] - `stVal.hb.mindistx);
+      else:
+        `sysfvar[.fX] =
+          .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.mindistx);
+      }
+      if(`stVal.hb.maxdistx != .com.FERR) branch{
+      cond c~facing < 0:
+        `sysfvar[.fX] =
+          .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] - `stVal.hb.maxdistx);
+      else:
+        `sysfvar[.fX] =
+          .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.maxdistx);
+      }
+      if(
+        `stVal.playerno != `playerno
+        || `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A)
+      {
+        if(`stVal.hb.mindisty != .com.FERR){
+          `sysfvar[.fY] =
+            .m.max!float?(`sysfvar[.fY])<,
+            (c~sysfvar[.fY] + `stVal.hb.mindisty);
         }
-        if(`stVal.hb.mindistx != .com.FERR) branch{
-        cond c~facing < 0:
-          `sysfvar[.fX] =
-            .m.min!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] - `stVal.hb.mindistx);
-        else:
-          `sysfvar[.fX] =
-            .m.max!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] + `stVal.hb.mindistx);
-        }
-        if(`stVal.hb.maxdistx != .com.FERR) branch{
-        cond c~facing < 0:
-          `sysfvar[.fX] =
-            .m.max!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] - `stVal.hb.maxdistx);
-        else:
-          `sysfvar[.fX] =
-            .m.min!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] + `stVal.hb.maxdistx);
-        }
-        if(
-          `stVal.playerno != `playerno
-          || `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A)
-        {
-          if(`stVal.hb.mindisty != .com.FERR){
-            `sysfvar[.fY] =
-              .m.max!float?(`sysfvar[.fY])<,
-              (c~sysfvar[.fY] + `stVal.hb.mindisty);
-          }
-          if(`stVal.hb.maxdisty != .com.FERR){
-            `sysfvar[.fY] =
-              .m.min!float?(`sysfvar[.fY])<,
-              (c~sysfvar[.fY] + `stVal.hb.maxdisty);
-          }
+        if(`stVal.hb.maxdisty != .com.FERR){
+          `sysfvar[.fY] =
+            .m.min!float?(`sysfvar[.fY])<,
+            (c~sysfvar[.fY] + `stVal.hb.maxdisty);
         }
       }
+    }
+    `xScreenBound();
+    if(.com.tickNextFrame()){
       `stVal.hb.mindistx = `stVal.hb.maxdistx = .com.FERR;
       `stVal.hb.mindisty = `stVal.hb.maxdisty = .com.FERR;
-      if(`ls(.lsSCREENBOUNDX)){
-        float l, r;
-        branch{
-        cond `facing > 0:
-          l = `bedge; r = `fedge;
-        else:
-          l = `fedge; r = `bedge;
-        }
-        .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+l, .com.xmax-r);
-      }
     }
     `bind(true);
   }
