@@ -650,7 +650,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public ^/char text_text;
   public &.com.Layout text_lay;
   public int displaytime = 90;
-  public ^int cur;
+  public ^int cur, old;
   public ^int resttime;
   public ^int slidetime;
   public ^int shaketime;
@@ -659,6 +659,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     `counter_lay.layerno = 2;
     `text_lay.layerno = 2;
     `cur.new(2);
+    `old.new(2);
     `resttime.new(2);
     `slidetime.new(2);
     `shaketime.new(2);
@@ -694,11 +695,12 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       }
       if(`shaketime[i] > 0) `shaketime[i]--;
       if(`slidetime[i] == 30) `resttime[i]--;
-      if(combo[i] >= 2 && `cur[i] != combo[i]){
+      if(combo[i] >= 2 && `old[i] != combo[i]){
         `cur[i] = combo[i];
         `resttime[i] = `displaytime;
         if(`counter_shake != 0) `shaketime[i] = 15;
       }
+      `old[i] = combo[i];
       i++;
     while i < #`cur:
     }
@@ -776,6 +778,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public void reset()
   {
     `cur[0] = `cur[1] = 0;
+    `old[0] = `old[1] = 0;
     `resttime[0] = `resttime[1] = 0;
     `slidetime[0] = `slidetime[1] = 0;
     `shaketime[0] = `shaketime[1] = 0;
