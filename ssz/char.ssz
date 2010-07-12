@@ -3777,7 +3777,7 @@ public &Char
   {
     float x = .v.toFloat();
     if(x == .com.FERR) ret;
-    `setX(`sysfvar[.fX] + x);
+    `setX(`sysfvar[.fX] + (float)`facing*x);
   }
   public void trAddY()
   {
