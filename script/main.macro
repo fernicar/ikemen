@@ -642,7 +642,7 @@ inputdia#newInputDialog
   #{
     #`#[
       #game#=_
-      #_#, < 0 || #gameMode#, != 0 #if #{#^#~#}
+      true || #_#, < 0 || #gameMode#, != 0 #if #{#^#~#}
       #`| 1 | #_ #randSel#!
       #`| 2 | #_ #randSel#!
       #`#__#~
@@ -695,7 +695,7 @@ inputdia#newInputDialog
   #]
   #for #!
 
-  #`#gameMode#, == 0 #if #{true#setAutoLevel#}
+  #`#gameMode#, == 0 #if #{false#setAutoLevel#}
   #`#gameMode#, == 1 #if #{false#set1PCom#}
   #`#gameMode#, == 2 #if #{2#=~p2In #`false#set1PCom #`false#set2PCom#}
   #`#gameMode#, == 3 #if #{
