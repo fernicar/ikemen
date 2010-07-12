@@ -18,6 +18,7 @@ lib fnt = "font.ssz";
 lib com = "common.ssz";
 lib cfg = "config.ssz";
 lib snd = "sound.ssz";
+lib chr = "char.ssz";
 
 
 ^/char listenPort = "7500";
@@ -843,6 +844,7 @@ public &Script
         .mac.errormes .= "すでに通信中です"\r\n;
         ret .mac.RetState::ERROR;
       }
+      .chr.chars.new(4);
       .cmd.net.new(1);
       .cmd.net~openReplayFile("replay/netplay.replay");
       branch{
@@ -869,6 +871,7 @@ public &Script
     }
     *sig_t _enterReplay(arg, re=)
     {
+      .chr.chars.new(4);
       .cmd.replay.new(1);
       .cmd.replay~open(arg);
       re.new(0);
