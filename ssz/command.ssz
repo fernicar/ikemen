@@ -633,47 +633,9 @@ public &Command
     public %|.Key key;
     public int tametime = 1;
     public bool slash = false, greater = false, flag1 = false, flag2 = false;
-    public bool eq(`self c=)
+    public bool isDirection()
     {
-      if(#`key != #c.key) ret false;
-      loop{index i = 0; while; do:
-        if(`key[i] != c.key[i]) ret false;
-        i++;
-      while i < #`key:
-      }
-      ret `slash == c.slash && `greater == c.greater;
-    }
-    public void not()
-    {
-      loop{index i = 0; while; do:
-        branch{
-        cond `key[i] == .Key::B: `key[i] = .Key::nB;
-        cond `key[i] == .Key::D: `key[i] = .Key::nD;
-        cond `key[i] == .Key::F: `key[i] = .Key::nF;
-        cond `key[i] == .Key::U: `key[i] = .Key::nU;
-        cond `key[i] == .Key::DB: `key[i] = .Key::nDB;
-        cond `key[i] == .Key::UB: `key[i] = .Key::nUB;
-        cond `key[i] == .Key::DF: `key[i] = .Key::nDF;
-        cond `key[i] == .Key::UF: `key[i] = .Key::nUF;
-        cond `key[i] == .Key::Bs: `key[i] = .Key::nBs;
-        cond `key[i] == .Key::Ds: `key[i] = .Key::nDs;
-        cond `key[i] == .Key::Fs: `key[i] = .Key::nFs;
-        cond `key[i] == .Key::Us: `key[i] = .Key::nUs;
-        cond `key[i] == .Key::DBs: `key[i] = .Key::nDBs;
-        cond `key[i] == .Key::UBs: `key[i] = .Key::nUBs;
-        cond `key[i] == .Key::DFs: `key[i] = .Key::nDFs;
-        cond `key[i] == .Key::UFs: `key[i] = .Key::nUFs;
-        cond `key[i] == .a: `key[i] = .na;
-        cond `key[i] == .b: `key[i] = .nb;
-        cond `key[i] == .c: `key[i] = .nc;
-        cond `key[i] == .x: `key[i] = .nx;
-        cond `key[i] == .y: `key[i] = .ny;
-        cond `key[i] == .z: `key[i] = .nz;
-        cond `key[i] == .s: `key[i] = .ns;
-        }
-        i++;
-      while i < #`key:
-      }
+      ret #`key == 1 && `key[0] <= .Key::UF;
     }
   }
   public ^/char name;
@@ -819,15 +781,14 @@ public &Command
         i++;
         while i < #cmds[j]:
       }
+      if(
+        j >= 1 && `cmd[j].isDirection()
+        && `cmd[j-1].isDirection() && !`cmd[j-1].slash)
+      {
+        `cmd[j].greater = true;
+      }
       j++;
     while j < #cmds:
-    }
-    if(
-      #`cmd >= 2
-      && #`cmd[0].key == 1 && !`cmd[0].slash && `cmd[0].eq(`cmd[1]=))
-    {
-      `cmd[0].not();
-      `cmd[1].greater = true;
     }
   }
   bool cmdeq(&`CmdButton cmd1, &`CmdButton cmd2)
@@ -913,7 +874,7 @@ public &Command
     `current++;
     branch{
     cond<a> `cmdidx == #`cmd:
-    cond<b> !ai && `current >= `time:
+    cond<b> !ai && `current >= `time + #`cmd:
     else:
       break;
     comm:

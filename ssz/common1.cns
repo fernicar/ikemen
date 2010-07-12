@@ -345,7 +345,7 @@ void c.Char::s##_@@P()
     switch(`stVal.time){
     case 0:
       `setYV(0.0);
-      `setY(0.0);
+      .v.setF(0.0)$`trSetY();
     case 3:
       `setCtrl(true);
     }
@@ -459,7 +459,7 @@ void c.Char::s##_@@P()
     switch(`stVal.time){
     case 0:
       `setYV(0.0);
-      `setY(0.0);
+      .v.setF(0.0)$`trSetY();
     case 2:
       //MakeDust
     case 7:
@@ -709,7 +709,7 @@ void c.Char::s##_@@P()
     `sysivar[0] = (int)(`sysfvar[.fY] >= 0.0 && `sysfvar[.fVY] > 0.0);
     if(`sysivar[0] != 0){
       `setYV(0.0);
-      `setY(0.0);
+      .v.setF(0.0)$`trSetY();
       if(`trCommand("holdback")$.v.isTrue() && `inguarddist){
         .v.setI(130)$`trChangeState();
         ret;
@@ -1041,7 +1041,7 @@ void c.Char::s##_@@P()
     `sysivar[0] = (int)(`sysfvar[.fY] >= 0.0 && `sysfvar[.fVY] > 0.0);
     if(`sysivar[0] != 0){
       `setYV(0.0);
-      `setY(0.0);
+      .v.setF(0.0)$`trSetY();
       if(`trCommand("holdback")$.v.isTrue() && `inguarddist){
         .v.setI(130)$`trChangeState();
         ret;
@@ -1901,7 +1901,7 @@ void c.Char::s##_@@P()
       else:
         `trChangeAnim(5100 + `animno%10);
       }
-      `setY(0.0);
+      .v.setF(0.0)$`trSetY();
       `setYV(0.0);
       `sysfvar[.fVX] *= 0.75;
       if(`stVal.hb.fall.yvelocity == 0.0){
@@ -1977,7 +1977,7 @@ void c.Char::s##_@@P()
         `trChangeAnim(5160 + `animno%10);
       }
       `trHitFallVel();
-      `setY(20.0);
+      .v.setF(20.0)$`trSetY();
       `sysfvar[.fVX] *= 0.75;
     }
     .v.setF(0.4)$`trVelAddY();
@@ -2034,7 +2034,7 @@ void c.Char::s##_@@P()
         `trChangeAnim(5170 + `animno%10);
       }
       `trHitFallDamage();
-      `setY(0.0);
+      .v.setF(0.0)$`trSetY();
       if(`stVal.hb.fall.yvelocity != 0.0){
         `sysivar[1] = (int).m.floor(`sysfvar[.fVY]);
       }
@@ -2274,7 +2274,7 @@ void c.Char::s##_@@P()
       if(`trP2DistX()$.v.toFloat() < -5.0) `setFacing(-`facing);
       `setXV(-0.15);
       `setYV(-3.5);
-      `setY(0.0);
+      .v.setF(0.0)$`trSetY();
       {
         ^&.com.PalFX fx = `getPalfx();
         fx~clear();

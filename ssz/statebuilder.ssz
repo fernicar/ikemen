@@ -3338,7 +3338,6 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::ChangeAnim2;
         cond .s.equ(s, "posset"):
           `state.ctrlList[-1].typ = .CtrlTy::PosSet;
-          `state.ctrlList[-1].task .= "`sysivar[.iBINDTIME]=0;";
         cond .s.equ(s, "posadd"):
           `state.ctrlList[-1].typ = .CtrlTy::PosAdd;
         cond .s.equ(s, "velset"):
@@ -3763,15 +3762,12 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trAdd(.v.setI(.fX)$`trSysFVar()$.v,"
-                "`trMul(.v.setI(`facing)$.v,",
-                "$.v)$.v)$`trSetX();")) ret false;
+                "", "$`trAddX();")) ret false;
           cond .s.equ(name, "y"):
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trAdd(.v.setI(.fY)$`trSysFVar()$.v,",
-                "$.v)$`trSetY();")) ret false;
+                "", "$`trAddY();")) ret false;
           else:
             break, default;
           }

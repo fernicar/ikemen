@@ -3764,12 +3764,26 @@ public &Char
     float x = .v.toFloat();
     if(x == .com.FERR) ret;
     `setX(x);
+    `sysivar[.iBINDTIME] = 0;
   }
   public void trSetY()
   {
     float y = .v.toFloat();
     if(y == .com.FERR) ret;
     `setY(y);
+    `sysivar[.iBINDTIME] = 0;
+  }
+  public void trAddX()
+  {
+    float x = .v.toFloat();
+    if(x == .com.FERR) ret;
+    `setX(`sysfvar[.fX] + x);
+  }
+  public void trAddY()
+  {
+    float y = .v.toFloat();
+    if(y == .com.FERR) ret;
+    `setY(`sysfvar[.fY] + y);
   }
   public void trVelX()
   {
