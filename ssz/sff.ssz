@@ -585,31 +585,39 @@ public &Anim<frame_t>
       0x0, `alphaFoo(), `spr~rle, `spr~pluginbuf=);
   }
   public void angleDraw(
-    float x, float y, float xscale, float yscale, float angle,
-    ^&.com.PalFX fx)
+    float x, float y, float xscale, float yscale,
+    float angle, bool angleset, float axscl, float ayscl, ^&.com.PalFX fx)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
     float rx = x + 160.0;
     int h = `h*`frames[`drawidx].h;
     int v = `v*`frames[`drawidx].v;
+    float xs = xscale * axscl, ys = yscale * ayscl;
     float agl =
-      angle*(float)(
-        `h * `v * (xscale < 0.0 ? -1: 1) * (yscale < 0.0 ? -1: 1));
+      angle*(float)(`h * `v * (xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
     uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
-    if(uagl == 0x0){
+    if(uagl == 0x0) branch{
+    cond angleset:
       `draw(
-        .com.scrrect=, x+160.0 - xscale*(float)(h*`frames[`drawidx].x),
-        y - yscale*(float)(v*`frames[`drawidx].y),
-        1.0, 1.0, xscale, xscale, yscale, 0.0, 0.0, fx);
+        .com.scrrect=, x+160.0 - xs*(float)(h*`frames[`drawidx].x),
+        y - ys*(float)(v*`frames[`drawidx].y),
+        1.0, 1.0, xs, xs, ys, 0.0, 0.0, fx);
+    else:
+      `draw(
+        .com.scrrect=,
+        x - (float)h*xscale*(axscl - 1.0)*(float)`frames[`drawidx].x,
+        y - (float)v*yscale*(ayscl - 1.0)*(float)`frames[`drawidx].y,
+        1.0, 1.0, xs, xs, ys, 0.0, 160.0, fx);
+    comm:
       ret;
     }
     .sdl.screen.renderMugenZoom(
       .com.scrrect=, rx*.com.WidthScale, y*.com.HeightScale,
       `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
-      #xscale*(float)`spr~rct.x*.com.WidthScale,
-      #yscale*(float)`spr~rct.y*.com.HeightScale,
-      `tile=, xscale*(float)h*.com.WidthScale,
-      xscale*(float)h*.com.WidthScale, yscale*(float)v*.com.HeightScale,
+      #xs*(float)`spr~rct.x*.com.WidthScale,
+      #ys*(float)`spr~rct.y*.com.HeightScale,
+      `tile=, xs*(float)h*.com.WidthScale,
+      xs*(float)h*.com.WidthScale, ys*(float)v*.com.HeightScale,
       0.0, uagl, `alphaFoo(), `spr~rle, `spr~pluginbuf=);
   }
   public void setup(^&.Sff sff)

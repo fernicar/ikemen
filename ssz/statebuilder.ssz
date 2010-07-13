@@ -5333,7 +5333,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fANGLE)$.v,", "$.v);")) ret false;
+                "", "$`trAngleSet();")) ret false;
           cond .s.equ(name, "scale"):
             `state.ctrlList[-1].task .=
               "`trSetSysFVar(.v.setI(.fANGLESCALEX)$.v,";
@@ -5378,8 +5378,8 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fANGLE)$.v,`trAdd(",
-                "$.v,.v.setI(.fANGLE)$`trSysFVar()$.v)$.v);")) ret false;
+                "`trAdd(.v.setI(.fANGLE)$`trSysFVar()$.v,",
+                "$.v)$`trAngleSet();")) ret false;
           else:
             break, default;
           }
@@ -5389,8 +5389,8 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fANGLE)$.v,`trMul(",
-                "$.v,.v.setI(.fANGLE)$`trSysFVar()$.v)$.v);")) ret false;
+                "`trMul(.v.setI(.fANGLE)$`trSysFVar()$.v,",
+                "$.v)$`trAngleSet();")) ret false;
           else:
             break, default;
           }
@@ -5400,7 +5400,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysFVar(.v.setI(.fANGLE)$.v,", "$.v);")) ret false;
+                "", "$`trAngleSet();")) ret false;
           else:
             break, default;
           }
@@ -6334,7 +6334,7 @@ public &StateBuilder
         branch{
         cond `state.no == -1:
           buf .=
-            \t"if(`destmp != 0) ret;"\r\n
+            \t"if(`destmp) ret;"\r\n
             \t"branch{"\r\n
             \t"cond `stVal.typ == .StTy::A:"\r\n
             \t\t"if(`trCommand("\""holdup"\"")$!.v.isTrue())"
@@ -6398,7 +6398,7 @@ public &StateBuilder
             \t\t\t".v.setI(0)$`trSelfState();"\r\n
             \t\t"}"\r\n
             \t"}"\r\n
-            \t"`destmp = 0;"\r\n;
+            \t"`destmp = false;"\r\n;
         cond `state.no >= 0:
           buf .=
             \t"if(nh) `stVal.time++;"\r\n;

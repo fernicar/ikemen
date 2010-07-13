@@ -74,7 +74,8 @@ void drawClsn()
   public ^&.act.Action anim;
   public int priority = 0;
   public float x = 0.0, y = 0.0, cscl = 1.0;
-  public float xscl = 1.0, yscl = 1.0, angle = 0.0;
+  public float xscl = 1.0, yscl = 1.0, angle = 0.0, axscl = 1.0, ayscl = 1.0;
+  public bool aset = false;
   public int salpha = -1, dalpha = 0, bright = 256;
   public ^&.com.PalFX fx;
   public ^self next;
@@ -94,7 +95,8 @@ void drawClsn()
 
 public void addAnimList(
   ^&.AnimList al=, ^&.act.Action a, int p,
-  float x, float y, float cs, float xs, float ys, float an,
+  float x, float y, float cs, float xs, float ys,
+  float an, bool as, float ax, float ay,
   int sa, int da, int b, ^&.com.PalFX fx, int sc, float so)
 {
   void newdainyuu(^&.AnimList anl=)
@@ -108,6 +110,9 @@ public void addAnimList(
     anl~xscl = `xs;
     anl~yscl = `ys;
     anl~angle = `an;
+    anl~aset = `as;
+    anl~axscl = `ax;
+    anl~ayscl = `ay;
     anl~salpha = `sa;
     anl~dalpha = `da;
     anl~bright = `b;
@@ -156,6 +161,7 @@ public void drawAnimList(^&.AnimList al=, &.stage.Stage stg=, float x, float y)
         al~anim~ani.angleDraw(
           .com.xoffset-(x-al~x)*cs, .com.zoffset+.com.yoffset-(y-al~y)*cs,
           cs*al~xscl, cs*al~yscl, al~angle*(.m.PI/180.0),
+          al~aset, al~axscl, al~ayscl,
           #al~fx != 0 && al~fx~time != 0 ? al~fx : .com.allPalFX);
       else:
         al~anim~ani.draw(
@@ -253,7 +259,8 @@ public void drawShadowList(&.stage.Stage stg=, float x, float y)
             .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety)*cs,
             cs*sl~al~xscl * ss * (ss*syscl)**#.m.sin(agl),
             cs*-sl~al~yscl * ss * (ss*syscl)**#.m.cos(agl),
-            agl, .com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX);
+            agl, sl~al~aset, sl~al~axscl, sl~al~ayscl,
+           .com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX);
         }
       else:
         sl~al~anim~ani.draw(
@@ -301,6 +308,7 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
           .com.xoffset-(x-sl~al~x)*cs,
           .com.zoffset+.com.yoffset-(y+sl~al~y-sl~offsety)*cs,
           cs*sl~al~xscl, cs*-sl~al~yscl, sl~al~angle*(.m.PI/180.0),
+          sl~al~aset, sl~al~axscl, sl~al~ayscl,
           #sl~al~fx > 0 && sl~al~fx~time != 0 ? sl~al~fx
           : (.com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX));
       else:
@@ -323,7 +331,9 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
   &ImgInfo
   {
     public ^&.act.Action anim;
-    public float x = 0.0, y = 0.0, xscl = 1.0, yscl = 1.0, angle = 0.0;
+    public float x = 0.0, y = 0.0, xscl = 1.0, yscl = 1.0;
+    public float angle = 0.0, axscl = 1.0, ayscl = 1.0;
+    public bool aset = false;
     new()
     {
       `anim.new(1);
@@ -407,7 +417,8 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
     }
   }
   public void recAfterImg(
-    &.act.Action a=, float x, float y, float xs, float ys, float an)
+    &.act.Action a=, float x, float y, float xs, float ys,
+    float an, bool as, float ax, float ay)
   {
     if(`time == 0){
       `reccount = `timegap = 0;
@@ -421,6 +432,9 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
       `imgs[`imgidx].xscl = xs;
       `imgs[`imgidx].yscl = ys;
       `imgs[`imgidx].angle = an;
+      `imgs[`imgidx].aset = as;
+      `imgs[`imgidx].axscl = ax;
+      `imgs[`imgidx].ayscl = ay;
       `imgidx = `imgidx+1 & 63;
       if(`reccount < #`imgs) `reccount++;
       `restgap = `timegap;
@@ -429,7 +443,8 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
   }
   public void recAndAddAL(
     &.act.Action a=, int p,
-    float x, float y, float xs, float ys, float an, bool rec, int br)
+    float x, float y, float xs, float ys,
+    float an, bool as, float ax, float ay, bool rec, int br)
   {
     if(
       `time == 0 || !.m.inRange!int?(1, 32767, `timegap)
@@ -451,12 +466,13 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
         .anims=, `imgs[`imgidx-i&63].anim, p-2,
         `imgs[`imgidx-i&63].x, `imgs[`imgidx-i&63].y, .com.scale,
         `imgs[`imgidx-i&63].xscl, `imgs[`imgidx-i&63].yscl,
-        `imgs[`imgidx-i&63].angle, `alphas, `alphad, br,
-        `palfx[i/`framegap - 1 .. i/`framegap], 0, 0.0);
+        `imgs[`imgidx-i&63].angle, `imgs[`imgidx-i&63].aset,
+        `imgs[`imgidx-i&63].axscl, `imgs[`imgidx-i&63].ayscl,
+        `alphas, `alphad, br, `palfx[i/`framegap - 1 .. i/`framegap], 0, 0.0);
       i += `framegap;
     while i <= end:
     }
-    if(rec) `recAfterImg(a=, x, y, xs, ys, an);
+    if(rec) `recAfterImg(a=, x, y, xs, ys, an, as, ax, ay);
   }
 }
 
@@ -1757,7 +1773,7 @@ public &Projectile
     }
     .addAnimList(
       .anims=, `ani, `sprpriority, `x, `y, .com.scale,
-      (float)`facing*`scalex, `scaley, 0.0, -1, 0,
+      (float)`facing*`scalex, `scaley, 0.0, false, 1.0, 1.0, -1, 0,
       256 >> (int)(
         .super > 0 && .superdarken != 0 && `playerno != .superplayer),
       .consts.null!&.com.PalFX?(),
@@ -1802,7 +1818,8 @@ public &Char
   public float attackmul, defencemul, attackdist;
   public float offsetx, offsety;
   public float veloff;
-  public int tmphit, atktmp, hittmp, acttmp, destmp, minus, cs1tmp;
+  public bool destmp, cs1tmp, tmphit, angleset;
+  public int atktmp, hittmp, acttmp, minus;
   public %&.RdCacheInfo enemyn;
   public ^&.act.Frame curFrame;
   void dummy(){}
@@ -1885,13 +1902,14 @@ public &Char
     `drawpalno = 0;
     `animno = 0;
     `animpno = -1;
-    `tmphit = -1;
+    `tmphit = false;
     `atktmp = -1;
     `hittmp = 0;
     `acttmp = 0;
-    `destmp = 0;
+    `destmp = false;
     `minus = 2;
-    `cs1tmp = 0;
+    `cs1tmp = false;
+    `angleset = false;
     `state = `dummy;
   }
   void clearHitDef()
@@ -2663,12 +2681,12 @@ public &Char
         }
       }
     }
-    if(`tmphit >= 0){
+    if(`tmphit){
       `sysivar[.iHITCOUNT]++;
       `stVal.hit.clear();
+      `tmphit = false;
     }
-    `tmphit = -1;
-    if(`cs1tmp != 0) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
+    if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     `enemyn.new(0);
     if(`player){
       `minus = -4;
@@ -2708,23 +2726,24 @@ public &Char
       int sp = `sprpriority;
       int br = 256 >> (int)(
         .super > 0 && .superdarken != 0 && `playerno != .superplayer);
-      if(`ls(.lsANGLEDRAW)){
-        xs *= `sysfvar[.fANGLESCALEX];
-        ys *= `sysfvar[.fANGLESCALEY];
-      }
       float an =
         `ls(.lsANGLEDRAW)
         ? (`sysfvar[.fANGLE] == 0.0 ? 360.0 : `sysfvar[.fANGLE]) : 0.0;
     cond !`ls(.lsINVISIBLE):
       .addAnimList(
-        .anims=, `ani, sp, x, y, .com.scale, xs, ys, an,
+        .anims=, `ani, sp, x, y, .com.scale, xs, ys, an, `angleset,
+        `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
         `ls(.lsTRANS) ? `sysivar[.iALPHAS] : -1,
         `sysivar[.iALPHAD], br, `getPalfx(),
         `ls(.lsNOSHADOW) ? 0 : -1, (float)`sysivar[.iSHADOWOFFSET]);
       `aimg.recAndAddAL(
-        `ani<>=, sp, x, y, xs, ys, an, .com.tickFrame() && `acttmp > 0, br);
-    cond .com.tickFrame() && `acttmp > 0:
-      `aimg.recAfterImg(`ani<>=, x, y, xs, ys, an);
+        `ani<>=, sp, x, y, xs, ys,
+        an, `angleset, `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
+        .com.tickNextFrame() && `acttmp > 0, br);
+    cond .com.tickNextFrame() && `acttmp > 0:
+      `aimg.recAfterImg(
+        `ani<>=, x, y, xs, ys,
+        an, `angleset, `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY]);
     }
     if(
       .com.tickNextFrame() && .supertime < 0
@@ -2813,7 +2832,7 @@ public &Char
       c = .players.get(`targets[i]);
       if(#c > 0 && c~stVal.playerno != c~playerno){
         c~action();
-        if(`destmp != 0 && c~stVal.playerno != c~playerno){
+        if(`destmp && c~stVal.playerno != c~playerno){
           .v.setI(5050)$c~trSelfState();
         }
       }
@@ -2891,7 +2910,7 @@ public &Char
     float tension,
     float highest=, float lowest=, float leftest=, float rightest=)
   {
-    if(`destmp != 0){
+    if(`destmp){
       `destroySelf();
       ret 0.0;
     }
@@ -2965,7 +2984,7 @@ public &Char
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
-    if(#c == 0 || `destmp != 0){
+    if(#c == 0 || `destmp){
       `sysivar[.iBINDTIME] = 0;
       ret;
     }
@@ -2979,7 +2998,9 @@ public &Char
     cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
     cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
     }
-    if(tick && .com.tickFrame() && `isActive() && `sysivar[.iBINDTIME] > 0){
+    if(
+      tick && .com.tickNextFrame() && `isActive() && `sysivar[.iBINDTIME] > 0)
+    {
       `sysivar[.iBINDTIME]--;
       if(`sysivar[.iBINDTIME] == 0) branch{
       cond `stVal.hb.byid == c~id:
@@ -3387,6 +3408,11 @@ public &Char
     `sysivar[.iSPECIALFLAG] |= .lsVelSetY;
     if(yv != 0.0) `sysivar[.iBINDTIME] = 0;
   }
+  public void setAngle(float a)
+  {
+    `sysfvar[.fANGLE] = a;
+    `angleset = true;
+  }
   public void setPos<_t>(_t o=, int pt, float x, float y, int facing)
   {
     branch{
@@ -3494,8 +3520,7 @@ public &Char
     int id = .v.toInt();
     if(id != .com.IERR) loop{index i = 1; while; do:
       if(
-        .chars[`playerno][i]~helperindex > 0
-        && .chars[`playerno][i]~destmp == 0
+        .chars[`playerno][i]~helperindex > 0 && !.chars[`playerno][i]~destmp
         && (id <= 0 || id == .chars[`playerno][i]~helperid))
       {
         .c = .chars[`playerno][i];
@@ -3831,6 +3856,12 @@ public &Char
     if(f == .com.FERR) ret;
     `sysfvar[.fVY] *= f;
   }
+  public void trAngleSet()
+  {
+    float f = .v.toFloat();
+    if(f == .com.FERR) ret;
+    `setAngle(f);
+  }
   public void trAnim()
   {
     .v.setI(`animno);
@@ -4031,7 +4062,7 @@ public &Char
     if(n < 0) ret false;
     %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PInit";
     if(!consteval(`state=, buf)) ret false;
-    if(`cs1tmp == 0) `stVal.prevno = `stVal.no;
+    if(!`cs1tmp) `stVal.prevno = `stVal.no;
     if(`stVal.playerno != `playerno && p != `stVal.playerno) loop{
       index i = #.expdrawlist[`stVal.playerno]-1;
       while;
@@ -4052,7 +4083,7 @@ public &Char
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
-    `cs1tmp = 1;
+    `cs1tmp = true;
     if(p == `playerno) switch(n){
     case 0:
       if(`minus == -1) `setCtrl(true);
@@ -4064,12 +4095,12 @@ public &Char
   }
   public void changeState2()
   {
-    if(`cs1tmp != 0){
-      int tmp = `destmp;
+    if(`cs1tmp){
+      bool tmp = `destmp;
       `state(::);
       `destmp = tmp;
       if(`stVal.mov != .MovTy::H) `sysivar[.iBINDTIME] = 0;
-      `cs1tmp = 0;
+      `cs1tmp = false;
     }
   }
   public void trChangeState2(int p)
@@ -4333,7 +4364,7 @@ public &Char
   public void trDestroySelf()
   {
     if(`helperindex <= 0) ret;
-    `destmp = 1;
+    `destmp = true;
   }
   public void trTargetBind(int time, int id, float x, float y)
   {
@@ -4645,8 +4676,7 @@ public &Char
     .v.i = 0;
     loop{index i = 1; while; do:
       if(
-        .chars[`playerno][i]~helperindex > 0
-        && .chars[`playerno][i]~destmp == 0
+        .chars[`playerno][i]~helperindex > 0 && !.chars[`playerno][i]~destmp
         && (id <= 0 || id == .chars[`playerno][i]~helperid)) .v.i++;
       i++;
     while i < #.chars[`playerno]:
@@ -4880,7 +4910,7 @@ public &Char
 public void Explod::update()
 {
   ^&.Char c;
-  if(.com.tickFrame()){
+  if(.com.tickNextFrame()){
     if(`removeongethit != 0){
       if(#c == 0) c = .players.get(`player);
       if(#c == 0 || c~stVal.mov == .MovTy::H){
@@ -4906,7 +4936,7 @@ public void Explod::update()
       p = `pausemovetime == 0;
     }
     bool act = !p && `ignorehitpause != 0;
-    if(.com.tickFrame()){
+    if(.com.tickNextFrame()){
       if(!p && !act && (#c > 0 || #(c = .players.get(`player)) > 0)){
         act = c~acttmp%2 != -1;
       }
@@ -4927,7 +4957,7 @@ public void Explod::update()
       float sp = .m.min!float?(1.0, .com.turbo);
       `x += `velocityx*(float)(`facing*`relativef) * sp;
       `y += `velocityy * sp;
-      if(.com.tickFrame()){
+      if(.com.tickNextFrame()){
         `velocityx += `accelx;
         `velocityy += `accely;
       }
@@ -4959,8 +4989,9 @@ public void Explod::update()
         }
         .addAnimList(
           a=, `ani, `sprpriority, `x+xofs, `y+yofs, cscl,
-          (float)`facing*`scalex*scl, (float)`vfacing*`scaley*scl, 0.0,
-          `alphas < 0 ? -1 : `alphas, `alphad, 256 >> (int)(
+          (float)`facing*`scalex*scl, (float)`vfacing*`scaley*scl,
+          0.0, false, 1.0, 1.0, `alphas < 0 ? -1 : `alphas,
+          `alphad, 256 >> (int)(
             .super > 0 && .superdarken != 0
             && (#c > 0 || #(c = .players.get(`player)) > 0)
             && c~playerno != .superplayer),
@@ -5001,9 +5032,16 @@ public void Explod::setPos(&.Char c=)
       `postype = 5;
       if(`offsetx != .com.FERR) `offsetx *= -1.0;
     else:
+      if(`postype == 2){
+        `postype = 4;
+        `relativef *= c.facing;
+        c.setPos!`self?(`=, `postype, `offsetx, `offsety, c.facing);
+        break, break;
+      }
       `postype = 4;
+    comm:
+      c.setPos!`self?(`=, `postype, `offsetx, `offsety, `relativef*c.facing);
     }
-    c.setPos!`self?(`=, `postype, `offsetx, `offsety, `relativef*c.facing);
   default:
     c.setPos!`self?(`=, `postype, `offsetx, `offsety, `relativef);
   }
@@ -5332,7 +5370,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     bool rtn = false, damageable = false;
     int p2s = 0;
     if(
-      `pyr.cs1tmp == 0 || `pyr.stVal.playerno == by.playerno
+      !`pyr.cs1tmp || `pyr.stVal.playerno == by.playerno
       || !`pyr.ls(.lsGETHIT))
     {
       rtn = damageable = true;
@@ -5435,7 +5473,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       `pyr.getcombo += hit.numhits*hits;
       if(
-        pro == 0 && rtn && by.cs1tmp == 0 && `pyr.ls(.lsSCREENBOUNDX) && (
+        pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUNDX) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
           || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
         ) switch(`pyr.stVal.typ)
@@ -5481,7 +5519,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         sou~setDefaultParameter();
       }
       if(
-        pro == 0 && rtn && by.cs1tmp == 0 && `pyr.ls(.lsSCREENBOUNDX) && (
+        pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUNDX) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
           || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
         ) switch(`pyr.stVal.typ)
@@ -5516,7 +5554,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(#hitting == 1 && hit.p1stateno >= 0) branch{
       cond
-        (by.cs1tmp == 0 || by.stVal.playerno == by.playerno)
+        (!by.cs1tmp || by.stVal.playerno == by.playerno)
         && (hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s > 0)
         :
         by.changeState1(by.playerno, hit.p1stateno);
@@ -5686,7 +5724,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
           p~c~stVal.mctime = -1;
         break:
-          p~c~tmphit = p~c~atktmp;
+          p~c~tmphit = true;
         }
       }
     }
@@ -6110,7 +6148,7 @@ public float action(
   if(#.superanim > 0){
     .addAnimList(
       .topanims=, .superanim, 5, .superposx, .superposy, .com.scale,
-      (float).superfacing, 1.0, 0.0, 255, 0, 256,
+      (float).superfacing, 1.0, 0.0, false, 1.0, 1.0, 255, 0, 256,
       .consts.null!&.com.PalFX?(), 0, 0.0);
     if(.superanim~ani.loopend) .superanim.new(0);
   }
@@ -6328,10 +6366,10 @@ public float action(
       .com.intro == 0 && .com.time > 0 && !.gs(.gsTIMERFREEZE)
       && (.super <= 0 || .superpausebg == 0) 
       && (.pause <= 0 || .pausebg == 0)) .com.time--;
-  cond .fight~ro.cur == 1 && .com.tickFrame():
+  cond .fight~ro.cur == 1 && .com.tickNextFrame():
     posreset();
   }
-  if(.com.tickFrame()){
+  if(.com.tickNextFrame()){
     branch{
       int st = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
       int fade = .fight~ro.slow_time * 2 / 5;
