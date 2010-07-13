@@ -1827,9 +1827,9 @@ public &Char
     state_2 = dummy, state_3 = dummy, state_4 = dummy;
   new()
   {
-    `ivar.new(60);
+    `ivar.new(61);
     `sysivar.new(60);
-    `fvar.new(40);
+    `fvar.new(41);
     `sysfvar.new(60);
     `clearVal();
   }
@@ -1887,10 +1887,10 @@ public &Char
     `ani.new(0);
     `curFrame.new(0);
     `stVal.clear();
-    `rangeSetSysIVar(0, 4, 0);
-    `rangeSetSysFVar(0, 4, 0.0);
-    `rangeSetIVar(0, 59, 0);
-    `rangeSetFVar(0, 39, 0.0);
+    `rangeSetSysIVar(0, #`sysivar-1, 0);
+    `rangeSetSysFVar(0, #`sysfvar-1, 0.0);
+    `rangeSetIVar(0, #`ivar-1, 0);
+    `rangeSetFVar(0, #`fvar-1, 0.0);
     `key = -1; `id = .com.IERR; `playerno = -1; `helperindex = -1;
     `helperid = 0; `parentindex = .com.IERR;
     `facing = 1;
@@ -2832,7 +2832,10 @@ public &Char
       c = .players.get(`targets[i]);
       if(#c > 0 && c~stVal.playerno != c~playerno){
         c~action();
-        if(`destmp && c~stVal.playerno != c~playerno){
+        if(
+          `destmp && c~stVal.playerno != c~playerno
+          && c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id)
+        {
           .v.setI(5050)$c~trSelfState();
         }
       }

@@ -80,7 +80,7 @@ trigger1 = StateNo = 5110
 trigger2 = !Alive
 trigger2 = HitOver
 trigger2 = !gethitvar(isbound)
-trigger2 = abs(sysfvar(12))+abs(vel y) < 0.01;VX
+trigger2 = abs(vel x)+abs(vel y) < 0.01
 sysvar(55) = -1;RECOVERTIME
 
 [State -4, Turn Cond]
@@ -126,7 +126,7 @@ triggerall = sysvar(58) & 2;SYSFLAG,WIN
 trigger1 = sysvar(42);CTRL
 trigger1 = statetype != a
 trigger1 = physics != a
-trigger1 = abs(sysfvar(12)) < 0.01;VX
+trigger1 = abs(vel x) < 0.01
 trigger1 = sysvar(58) := (sysvar(58) & ~2) || 1;SYSFLAG,WIN
 value = ifelse(Win, 180, ifelse(Lose, 170, 175))
 
