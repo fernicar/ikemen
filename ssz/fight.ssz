@@ -976,13 +976,13 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     branch{
     cond .com.intro > `ctrl_time:
-      if(!.com.tickFrame()) ret false;
+      if(!.com.tickNextFrame()) ret false;
       `cur = 0;
       `wt = `round_time;
       `swt = `round_sndtime;
       `dt = 0;
     cond .com.intro >= 0 || `cur < 2:
-      if(!.com.tickFrame()) ret false;
+      if(!.com.tickNextFrame()) ret false;
       switch(`cur){
       case 0:
         if(`swt-- == 0) branch{
@@ -1098,7 +1098,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         }
       }
     }
-    ret .com.tickFrame();
+    ret .com.tickNextFrame();
   }
   public void draw(int layerno, |.KOTy ko, ^/^/char name)
   {

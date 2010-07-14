@@ -18,6 +18,7 @@ lib mes = <alpha/mesdialog.ssz>;
 
 int changeStateNest = 0;
 float oldx = 0.0;
+int slowt = 0;
 
 public float zoomdelay = 0.0;
 
@@ -3006,6 +3007,7 @@ public &Char
     {
       `sysivar[.iBINDTIME]--;
       if(`sysivar[.iBINDTIME] == 0) branch{
+        `xScreenBound();
       cond `stVal.hb.byid == c~id:
         `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
         `setYV(c~sysfvar[.fVY]);
@@ -3031,7 +3033,9 @@ public &Char
   public void update()
   {
     if(.com.tickFrame()){
-      `atktmp = `stVal.mov != .MovTy::I && !`isHitPaused() ? `stVal.no : -1;
+      `atktmp =
+        (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr != 0)
+        && !`isHitPaused() ? `stVal.no : -1;
       branch{
       cond `stVal.mov == .MovTy::H:
         `hittmp =
@@ -3099,6 +3103,7 @@ public &Char
     }
     `xScreenBound();
     if(.com.tickNextFrame()){
+      if(`stVal.phy == .StTy::S && #`sysfvar[.fVX] < 1.0) `sysfvar[.fVX] = 0.0;
       `stVal.hb.mindistx = `stVal.hb.maxdistx = .com.FERR;
       `stVal.hb.mindisty = `stVal.hb.maxdisty = .com.FERR;
     }
@@ -3812,12 +3817,6 @@ public &Char
     float y = .v.toFloat();
     if(y == .com.FERR) ret;
     `setY(`sysfvar[.fY] + y);
-  }
-  public void trVelX()
-  {
-    .v.setF(
-      (`stVal.typ == .StTy::S || `stVal.typ == .StTy::L)
-      && #`sysfvar[.fVX] < 1.0 ? 0.0 : `sysfvar[.fVX]);
   }
   public void trVelSetX()
   {
@@ -5709,7 +5708,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
         cond #h == 1:
           p~c~stVal.mctyp =
-            p~c~stVal.hit.reversal_attr !=  0
+            p~c~stVal.hit.reversal_attr != 0
             ? .MoveContact::Reversed : .MoveContact::Hit;
           if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
@@ -6338,6 +6337,7 @@ public float action(
           160.0/.com.scale - .com.screenright) + (`x - .oldx);
     }
   }
+  int slowfade = .fight~ro.slow_time * 2 / 5;
   branch{
   cond .fight~ro.act(.syssnd=, .ko):
     branch{
@@ -6356,10 +6356,16 @@ public float action(
     }
     branch{
     cond .roundEnd() || finish():
-      if(
-        .roundState() != 3
-        || (.super <= 0 && .pause <= 0) || .cmd.anybutton())
-      {
+      branch{
+      cond
+        .roundState() != 3 || (.super <= 0 && .pause <= 0) || .cmd.anybutton()
+        :
+      cond .com.intro >= .slowt-slowfade:
+        .slowt++;
+        break;
+      else:
+        break;
+      comm:
         .com.intro--;
       }
     else:
@@ -6372,24 +6378,20 @@ public float action(
   cond .fight~ro.cur == 1 && .com.tickNextFrame():
     posreset();
   }
-  if(.com.tickNextFrame()){
-    branch{
-      int st = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
-      int fade = .fight~ro.slow_time * 2 / 5;
-    cond
-      !.gs(.gsNOKOSLOW) && .com.time != 0
-      && .m.inRange!int?(st, -.fight~ro.over_hittime-1, .com.intro)
-      :
-      .com.turbo = .com.Speed * 0.25;
-    cond
-      !.gs(.gsNOKOSLOW) && .com.time != 0
-      && .m.inRange!int?(st-fade, st-1, .com.intro)
-      :
-      .com.turbo =
-        .com.Speed*(0.25 + 0.75 * (float)(-.com.intro + st)/(float)fade);
-    else:
-      .com.turbo = .com.Speed;
-    }
+  if(.com.tickNextFrame()) branch{
+  cond
+    !.gs(.gsNOKOSLOW) && .com.time != 0
+    && .m.inRange!int?(.slowt, -.fight~ro.over_hittime-1, .com.intro)
+    :
+    .com.turbo = .com.Speed * 0.25;
+  cond
+    !.gs(.gsNOKOSLOW) && .com.time != 0
+    && .m.inRange!int?(.slowt-slowfade, .slowt-1, .com.intro)
+    :
+    .com.turbo =
+      .com.Speed*(0.25 + 0.75 * (float)(-.com.intro + .slowt)/(float)slowfade);
+  else:
+    .com.turbo = .com.Speed;
   }
   .sdl.pauseBGM(.gs(.gsNOMUSIC));
   .playSound();
@@ -6518,6 +6520,7 @@ void resetGbl()
   .zoomdelay = 0.0;
   .playerid.new(0);
   .resetNumenemy();
+  .slowt = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
 }
 
 void charClear(int pn)

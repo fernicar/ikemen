@@ -989,7 +989,7 @@ public &StateBuilder
       token = `tokenizer(in=);
       branch{
       cond .s.equ("x", token):
-        out .= obj .= "trVelX()";
+        out .= ".v.setI(.fVX)$" .= obj .= "trSysFVar()";
       cond .s.equ("y", token):
         out .= ".v.setI(.fVY)$" .= obj .= "trSysFVar()";
       else:
