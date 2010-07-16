@@ -1571,7 +1571,7 @@ public &Projectile
     float sp = .m.min!float?(1.0, .com.turbo);
     `x += `velocityx*(float)`facing * sp;
     `y += `velocityy * sp;
-    if(.com.tickFrame()){
+    if(.com.tickNextFrame()){
       `velocityx += `accelx;
       `velocityy += `accely;
       `velocityx *= `velmulx;
@@ -1685,7 +1685,7 @@ public &Projectile
       ret false;
     }
     bool p = pause();
-    if(.com.tickFrame()){
+    if(.com.tickNextFrame()){
       if(`timemiss < 0){
         `timemiss = !`timemiss;
         branch{
@@ -1696,8 +1696,8 @@ public &Projectile
         }
       }
       if(p) break;
-      if(`supermovetime > 0) `supermovetime--;
-      if(`pausemovetime > 0) `pausemovetime--;
+      if(.super > 0 && `supermovetime > 0) `supermovetime--;
+      if(.pause > 0 && `pausemovetime > 0) `pausemovetime--;
       branch{
       cond `anim >= 0:
         branch{
@@ -1762,7 +1762,7 @@ public &Projectile
         .drawc2.new[-1].set(clsn, `x, `y, (float)`facing*`scalex, `scaley);
       }
     }
-    if(.com.tickFrame()){
+    if(.com.tickNextFrame()){
       animAct(p);
       if(!p || `playerno == (.super > 0 ? .superplayer : .pauseplayer)) branch{
       cond `pctime > 0:
@@ -2873,10 +2873,14 @@ public &Char
       `changeState2();
       if(!p){
         `lSetNormal();
-        if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
-        if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
-        if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
-        if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
+        if(.super > 0){
+          if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
+          if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
+        }
+        if(.pause > 0){
+          if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
+          if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
+        }
       }
       bool lc = `landCondition();
       `minus = -3;
@@ -4949,8 +4953,8 @@ public void Explod::update()
         `ani~ani.updateSprite();
       }
       if(p) break;
-      if(`supermovetime > 0) `supermovetime--;
-      if(`pausemovetime > 0) `pausemovetime--;
+      if(.super > 0 && `supermovetime > 0) `supermovetime--;
+      if(.pause > 0 && `pausemovetime > 0) `pausemovetime--;
       if(!act) break;
       if(`removetime > 0) `removetime--;
       if(`bindtime > 0) `bindtime--;
@@ -5269,15 +5273,6 @@ public void PlayerList!&Char?::action(
   while #p > 0 && p~c~helperindex != 0:
   }
   .update(tension, cvx=, highest=, lowest=, leftest=, rightest=);
-  loop{index i = 0; while; do:
-    loop{index j = 0; while; do:
-      if(.projs[i][j].id >= 0) .projs[i][j].projClsn();
-      j++;
-    while j < #.projs[i]:
-    }
-    i++;
-  while i < #.projs:
-  }
   .com.gametime++;
   .rootAction();
 }
@@ -6003,6 +5998,15 @@ void rootAction()
   if(.com.tickNextFrame()) loop{
     .com.rootact = true;
     .m.swap!uint?(.specialFlag=, .specialFlagR=);
+    loop{index i = 0; while; do:
+      loop{index j = 0; while; do:
+        if(.projs[i][j].id >= 0) .projs[i][j].projClsn();
+        j++;
+      while j < #.projs[i]:
+      }
+      i++;
+    while i < #.projs:
+    }
     branch{
     cond .super <= 0 && .pause <= 0:
       .specialFlag = 0d0;
