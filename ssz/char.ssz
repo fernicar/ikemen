@@ -2662,6 +2662,7 @@ public &Char
     cond `stVal.mctime < 0:
       `stVal.mctime *= -1;
       `stVal.juggle = 0;
+      `sysivar[.iHITCOUNT]++;
     }
     if(!`isPaused()){
       branch{
@@ -2689,7 +2690,6 @@ public &Char
       }
     }
     if(`tmphit){
-      `sysivar[.iHITCOUNT]++;
       `stVal.hit.clear();
       `tmphit = false;
     }
