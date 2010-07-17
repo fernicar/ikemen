@@ -4392,7 +4392,6 @@ public &Char
         c~sysivar[.iBINDFACING] = 0;
         c~sysfvar[.fBINDPOSX] = x;
         c~sysfvar[.fBINDPOSY] = y;
-        c~bind(false);
       }
       i++;
     while i < #`targets:
