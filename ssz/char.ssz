@@ -2875,6 +2875,7 @@ public &Char
       if(#`palfx > 0 && !`isPaused()) `palfx~step();
       bool p = !`ls(.lsGETHIT) && (isSuperPaused() || isNormalPaused());
       `acttmp = -(int)p * 2;
+      `bind(false);
       `changeState2();
       if(!p){
         `lSetNormal();
