@@ -3493,8 +3493,8 @@ public &StateBuilder
             "if(#e==0)ret;int t=0;float rx=0.0,ry=0.0;e~id=0;";
         cond .s.equ(s, "modifyexplod"):
           `state.ctrlList[-1].typ = .CtrlTy::ModifyExplod;
-          `state.ctrlList[-1].task .= "&.ModifyExplod m;"
-            "int t=0;float rx=0.0,ry=0.0;";
+          `state.ctrlList[-1].task .=
+            "&.ModifyExplod m;int t=0;float rx=0.0,ry=0.0;";
         cond .s.equ(s, "explodbindtime"):
           `state.ctrlList[-1].typ = .CtrlTy::ExplodBindTime;
           `state.ctrlList[-1].task .= "int i=-1,t=0;";
@@ -6268,9 +6268,7 @@ public &StateBuilder
             dbuf .=
               "if(e~offsetx!=.com.FERR)e~offsetx+=.m.randF(-rx,rx);"
               "if(e~offsety!=.com.FERR)e~offsety+=.m.randF(-ry,ry);"
-              "e~setPos(`=);"
-              "`setAlpha(t,e~alphas=,e~alphad=);"
-              "e~player=`id;";
+              "e~setPos(`=);`setAlpha(t,e~alphas=,e~alphad=);";
             if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
               dbuf .= "e~ignorehitpause=ih;if(e~ontop != 0)e~sprpriority=0;";
             }
@@ -6280,8 +6278,8 @@ public &StateBuilder
               "if(m.offsety!=.com.FERR)m.offsety+=.m.randF(-ry,ry);"
               "`setAlpha(t,m.alphas=,m.alphad=);"
               "loop{index i=0;while;do:"
-              ".explods[`playerno][i].modify(`=,m=,i);"
-              "while ++i<#.explods[`playerno]:}";
+              ".explods[`playerno][i].modify(`=,m=,i++);"
+              "while i<#.explods[`playerno]:}";
           case .CtrlTy::LifeAdd:
             dbuf .= "`addLife(va,k!=0,a!=0);";
           case .CtrlTy::Trans:

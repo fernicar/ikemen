@@ -1984,6 +1984,7 @@ public &Char
     {
       .explods[`playerno][i].clear();
       .explods[`playerno][i].id = -1;
+      .explods[`playerno][i].player = `id;
       .explods[`playerno][i].stconno = scn;
       loop{
         index ii = 0;
@@ -1993,8 +1994,8 @@ public &Char
         p = .explods[`playerno][.expdrawlist[`playerno][ii]].player;
         if(
           p >= `id && (
-          p > `id
-          || .explods[`playerno][.expdrawlist[`playerno][ii]].stconno > scn))
+            p > `id
+            || .explods[`playerno][.expdrawlist[`playerno][ii]].stconno > scn))
         {
           .insIL(.expdrawlist[`playerno]=, ii, i);
           break, break;
