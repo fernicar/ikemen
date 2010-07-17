@@ -3842,7 +3842,9 @@ public &StateBuilder
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
               ^/char tmp = `tokenizer(text=);
-              if(!.s.equ("=", tmp) && !.s.equ(":=", tmp)){
+              if(
+                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
+              {
                 `lasterror = "'='がありません";
                 ret false;
               }
@@ -3862,7 +3864,9 @@ public &StateBuilder
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
               ^/char tmp = `tokenizer(text=);
-              if(!.s.equ("=", tmp) && !.s.equ(":=", tmp)){
+              if(
+                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
+              {
                 `lasterror = "'='がありません";
                 ret false;
               }
@@ -3882,7 +3886,9 @@ public &StateBuilder
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
               ^/char tmp = `tokenizer(text=);
-              if(!.s.equ("=", tmp) && !.s.equ(":=", tmp)){
+              if(
+                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
+              {
                 `lasterror = "'='がありません";
                 ret false;
               }
@@ -3902,7 +3908,9 @@ public &StateBuilder
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
               ^/char tmp = `tokenizer(text=);
-              if(!.s.equ("=", tmp) && !.s.equ(":=", tmp)){
+              if(
+                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
+              {
                 `lasterror = "'='がありません";
                 ret false;
               }
@@ -3935,9 +3943,14 @@ public &StateBuilder
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetIVar(" : "`trSetIVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
-            if(!.s.equ("=")<, `tokenizer(text=)){
-              `lasterror = "'='がありません";
-              ret false;
+            {
+              ^/char tmp = `tokenizer(text=);
+              if(
+                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
+              {
+                `lasterror = "'='がありません";
+                ret false;
+              }
             }
             `state.ctrlList[-1].task .=
               "$.v,`trAdd(" .= (`state.flag != 0 ? "p~trIVar()" : "`trIVar()");
@@ -3955,9 +3968,14 @@ public &StateBuilder
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetFVar(" : "`trSetFVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
-            if(!.s.equ("=")<, `tokenizer(text=)){
-              `lasterror = "'='がありません";
-              ret false;
+            {
+              ^/char tmp = `tokenizer(text=);
+              if(
+                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
+              {
+                `lasterror = "'='がありません";
+                ret false;
+              }
             }
             `state.ctrlList[-1].task .=
               "$.v,`trAdd(" .= (`state.flag != 0 ? "p~trFVar()" : "`trFVar()");
@@ -3975,9 +3993,14 @@ public &StateBuilder
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetSysIVar(" : "`trSetSysIVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
-            if(!.s.equ("=")<, `tokenizer(text=)){
-              `lasterror = "'='がありません";
-              ret false;
+            {
+              ^/char tmp = `tokenizer(text=);
+              if(
+                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
+              {
+                `lasterror = "'='がありません";
+                ret false;
+              }
             }
             `state.ctrlList[-1].task .=
               "$.v,`trAdd(" .= (
@@ -3995,9 +4018,14 @@ public &StateBuilder
             `state.ctrlList[-1].task .=
               `state.flag != 0 ? "p~trSetSysFVar(" : "`trSetSysFVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
-            if(!.s.equ("=")<, `tokenizer(text=)){
-              `lasterror = "'='がありません";
-              ret false;
+            {
+              ^/char tmp = `tokenizer(text=);
+              if(
+                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
+              {
+                `lasterror = "'='がありません";
+                ret false;
+              }
             }
             `state.ctrlList[-1].task .=
               "$.v,`trAdd(" .= (
