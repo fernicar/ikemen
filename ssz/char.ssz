@@ -1694,10 +1694,15 @@ public &Projectile
         else:
           `hits--;
         }
+        `hit.air_juggle = 0;
       }
       if(p) break;
-      if(.super > 0 && `supermovetime > 0) `supermovetime--;
-      if(.pause > 0 && `pausemovetime > 0) `pausemovetime--;
+      branch{
+      cond .super > 0:
+        if(`supermovetime > 0) `supermovetime--;
+      cond .pause > 0:
+        if(`pausemovetime > 0) `pausemovetime--;
+      }
       branch{
       cond `anim >= 0:
         branch{
@@ -2694,7 +2699,6 @@ public &Char
       `state_4(::);
     }
     `minus = 2;
-    `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
   }
   public void tickAndAnim()
   {
@@ -2868,16 +2872,16 @@ public &Char
     if(`helperindex == 0) `cmd.step(`key, `facing, `key < 0);
     {
       if(#`palfx > 0 && !`isPaused()) `palfx~step();
-      bool p = isSuperPaused() || isNormalPaused();
+      bool p = !`ls(.lsGETHIT) && (isSuperPaused() || isNormalPaused());
       `acttmp = -(int)p * 2;
       `changeState2();
       if(!p){
         `lSetNormal();
-        if(.super > 0){
+        branch{
+        cond .super > 0:
           if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
           if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
-        }
-        if(.pause > 0){
+        cond .pause > 0:
           if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
           if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
         }
@@ -2922,55 +2926,58 @@ public &Char
       `destroySelf();
       ret 0.0;
     }
-    if(`acttmp <= 0) ret 0.0;
-    if(
-      .m.inRange!int?(120, 159, `stVal.no)
-      || (
-        `keyctrl && `ctrl()
-        && (
-          (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-          || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-          || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-        && `trCommand("holdback")$.v.isTrue()))
-    {
-      `sysivar[.iSPECIALFLAG] |= .lsGUARD;
-    }
-    if(.com.tickFrame()) switch(`stVal.phy){
-    case .StTy::S:
-      if(!`ls(.lsPOSFREEZEX) && !`ls(.lsVelSetX)){
-        `sysfvar[.fVX] *= `sysfvar[.fSTAND_FRICTION];
-      }
-    case .StTy::C:
-      if(!`ls(.lsPOSFREEZEX) && !`ls(.lsVelSetX)){
-        `sysfvar[.fVX] *= `sysfvar[.fCROUCH_FRICTION];
-      }
-    default:<-
-      if(!`ls(.lsPOSFREEZEY) && !`ls(.lsVelSetY)){
-        `sysfvar[.fVY] +=
-          (
-            `stVal.mov == .MovTy::H
-            ? `stVal.hb.getYaccel() : `sysfvar[.fYACCEL])
-          * (float)((int)(`stVal.phy == .StTy::A) + (int)`ls(.lsGRAVITY));
-      }
-    }
-    float sp = .m.min!float?(1.0, .com.turbo);
-    if(!`ls(.lsPOSFREEZEX)){
-      `sysfvar[.fX] += (`sysfvar[.fVX]*(float)`facing + `veloff) * sp;
-      if(.com.tickFrame()){
-        `veloff *= `sysfvar[.fSTAND_FRICTION] * `sysfvar[.fSTAND_FRICTION];
-        if(#`veloff < 1.0) `veloff = 0.0;
-      }
-    }
-    if(!`ls(.lsPOSFREEZEY)) `sysfvar[.fY] += `sysfvar[.fVY] * sp;
     float cvx = 0.0;
-    if(`ls(.lsSCREENBOUNDX)){
-      if(tension > 0.0 && !`isFreezeX()) branch{
-      cond
-        `sysfvar[.fX] < .com.xmin - .com.screenleft + tension
-        || `sysfvar[.fX] > .com.xmax + .com.screenright - tension
-        :
-        cvx += `sysfvar[.fVX] * (float)`facing * sp;
+    if(`acttmp > 0){
+      if(
+        .m.inRange!int?(120, 159, `stVal.no)
+        || (
+          `keyctrl && `ctrl()
+          && (
+            (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+            || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+            || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
+          && `trCommand("holdback")$.v.isTrue()))
+      {
+        `sysivar[.iSPECIALFLAG] |= .lsGUARD;
       }
+      if(.com.tickFrame()) switch(`stVal.phy){
+      case .StTy::S:
+        if(!`ls(.lsPOSFREEZEX) && !`ls(.lsVelSetX)){
+          `sysfvar[.fVX] *= `sysfvar[.fSTAND_FRICTION];
+        }
+      case .StTy::C:
+        if(!`ls(.lsPOSFREEZEX) && !`ls(.lsVelSetX)){
+          `sysfvar[.fVX] *= `sysfvar[.fCROUCH_FRICTION];
+        }
+      default:<-
+        if(!`ls(.lsPOSFREEZEY) && !`ls(.lsVelSetY)){
+          `sysfvar[.fVY] +=
+            (
+              `stVal.mov == .MovTy::H
+              ? `stVal.hb.getYaccel() : `sysfvar[.fYACCEL])
+            * (float)((int)(`stVal.phy == .StTy::A) + (int)`ls(.lsGRAVITY));
+        }
+      }
+      float sp = .m.min!float?(1.0, .com.turbo);
+      if(!`ls(.lsPOSFREEZEX)){
+        `sysfvar[.fX] += (`sysfvar[.fVX]*(float)`facing + `veloff) * sp;
+        if(.com.tickNextFrame()){
+          `veloff *= `sysfvar[.fSTAND_FRICTION] * `sysfvar[.fSTAND_FRICTION];
+          if(#`veloff < 1.0) `veloff = 0.0;
+        }
+      }
+      if(!`ls(.lsPOSFREEZEY)) `sysfvar[.fY] += `sysfvar[.fVY] * sp;
+      if(`ls(.lsSCREENBOUNDX)){
+        if(tension > 0.0 && !`isFreezeX()) branch{
+        cond
+          `sysfvar[.fX] < .com.xmin - .com.screenleft + tension
+          || `sysfvar[.fX] > .com.xmax + .com.screenright - tension
+          :
+          cvx += `sysfvar[.fVX] * (float)`facing * sp;
+        }
+      }
+    }
+    if(`ls(.lsSCREENBOUNDX)){
       float l, r;
       branch{
       cond `facing > 0:
@@ -3044,8 +3051,8 @@ public &Char
       cond `stVal.mov == .MovTy::H:
         `hittmp =
           (int)(
-            `stVal.playerno == `playerno
-            && `stVal.typ == .StTy::A && `stVal.hb.fallf != 0)
+            `stVal.playerno == `playerno && `stVal.hb.fallf != 0
+            && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
           * ((int)`isFall() + 1) + 1;
       else:
         `hittmp = 0;
@@ -4953,8 +4960,12 @@ public void Explod::update()
         `ani~ani.updateSprite();
       }
       if(p) break;
-      if(.super > 0 && `supermovetime > 0) `supermovetime--;
-      if(.pause > 0 && `pausemovetime > 0) `pausemovetime--;
+      branch{
+      cond .super > 0:
+        if(`supermovetime > 0) `supermovetime--;
+      cond .pause > 0:
+        if(`pausemovetime > 0) `pausemovetime--;
+      }
       if(!act) break;
       if(`removetime > 0) `removetime--;
       if(`bindtime > 0) `bindtime--;
@@ -5680,7 +5691,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     }
     if(
       p~c~stVal.hit.hitonce >= 0 && (
-        pyr.hittmp < 3 || p~c~ls(.lsNOJUGGLECHECK)
+        pyr.hittmp < 2 || p~c~ls(.lsNOJUGGLECHECK)
         || juggcheck(
           pyr.stVal.hb.juggle, p~c~stVal.juggle + p~c~stVal.hit.air_juggle))
       && pyr.hittable(
@@ -5751,7 +5762,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       hoge = true;
       if(
         .projs[i][j].hit.hitonce >= 0 && (
-          pyr.hittmp < 3 || .chars[i][0]~ls(.lsNOJUGGLECHECK)
+          pyr.hittmp < 2 || .chars[i][0]~ls(.lsNOJUGGLECHECK)
           || juggcheck(pyr.stVal.hb.juggle, .projs[i][j].hit.air_juggle))
         && .projs[i][j].timemiss <= 0
         && .projs[i][j].hitpause <= 0 && pyr.hittable(
