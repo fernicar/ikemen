@@ -2370,10 +2370,6 @@ public &Char
             if(#spr > 0 && #spr~colorPallet > 0){
               .s.copy!uint?(spr~colorPallet, pal);
             }
-            spr = `sf~getSprite(40, 0);
-            if(#spr > 0 && #spr~colorPallet > 0){
-              .s.copy!uint?(spr~colorPallet, pal);
-            }
           }
           loaded = true;
         }
@@ -2397,6 +2393,14 @@ public &Char
       continue:
         i++;
       while i < #.chars:
+      }
+    }
+    if(!(loaded || changed)){
+      ^&.sff.Sprite spr = `sf~getSprite(0, 0);
+      if(#spr == 0 || #spr~colorPallet == 0) break;
+      ^&.sff.Sprite spr2 = `sf~getSprite(9000, 0);
+      if(#spr2 > 0 && #spr2~colorPallet > 0){
+        .s.copy!uint?(spr2~colorPallet, spr~colorPallet);
       }
     }
     ret loaded || changed;

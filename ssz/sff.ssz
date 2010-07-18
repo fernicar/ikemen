@@ -283,6 +283,7 @@ public &Sff
       ^&.Sprite spriteList;
       spriteList.new((index)`head.numberOfImage);
       ushort indexOfPrevious;
+      index prev = -1;
       while;
     do:
       f.seek((long)shofs, .file.Seek::SET);
@@ -299,7 +300,8 @@ public &Sff
         if(
           !spriteList[i].read(
             f=, `head=, (long)(shofs + `head.sizeOfSubheader),
-            lenghtOfSubheader, spriteList[i-1..i], ps=)) ret false;
+            lenghtOfSubheader, spriteList[prev..prev+1], ps=)) ret false;
+        prev = i;
       else:
         spriteList[i].shareCopy(spriteList[(index)indexOfPrevious]=);
         spriteList[i].link = (index)indexOfPrevious;
