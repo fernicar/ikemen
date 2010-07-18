@@ -2370,6 +2370,10 @@ public &Char
             if(#spr > 0 && #spr~colorPallet > 0){
               .s.copy!uint?(spr~colorPallet, pal);
             }
+            spr = `sf~getSprite(40, 0);
+            if(#spr > 0 && #spr~colorPallet > 0){
+              .s.copy!uint?(spr~colorPallet, pal);
+            }
           }
           loaded = true;
         }

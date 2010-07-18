@@ -3516,7 +3516,9 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::MakeDust;
         cond .s.equ(s, "angledraw"):
           `state.ctrlList[-1].typ = .CtrlTy::AngleDraw;
-          `state.ctrlList[-1].task .= "`sysivar[.iSPECIALFLAG]|=.lsANGLEDRAW;";
+          `state.ctrlList[-1].task .=
+          "`sysivar[.iSPECIALFLAG]|=.lsANGLEDRAW;"
+          "`sysfvar[.fANGLESCALEX]=`sysfvar[.fANGLESCALEY]=1.0;";
         cond .s.equ(s, "angleadd"):
           `state.ctrlList[-1].typ = .CtrlTy::AngleAdd;
         cond .s.equ(s, "anglemul"):
