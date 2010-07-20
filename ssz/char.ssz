@@ -2958,9 +2958,7 @@ public &Char
       default:<-
         if(!`ls(.lsPOSFREEZEY) && !`ls(.lsVelSetY)){
           `sysfvar[.fVY] +=
-            (
-              `stVal.mov == .MovTy::H
-              ? `stVal.hb.getYaccel() : `sysfvar[.fYACCEL])
+            `sysfvar[.fYACCEL]
             * (float)((int)(`stVal.phy == .StTy::A) + (int)`ls(.lsGRAVITY));
         }
       }
