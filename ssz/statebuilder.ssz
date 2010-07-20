@@ -5991,10 +5991,7 @@ public &StateBuilder
               buf .= "))!=0";
             }
             buf .= ")&&";
-          cond `state.no == -1:
-            if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
-              buf .= "(ih=1)$true&&";
-            }
+          cond `state.ctrlList[-1].typ == .CtrlTy::ChangeState:
           else:
             if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
               buf .= "(ih=-1)$";
