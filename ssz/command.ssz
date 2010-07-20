@@ -537,7 +537,7 @@ public &FileInput
     if(sub(`st=)) `muki = .m.rand(0, 7);
     osu = hanasu = 30;
     sub(`ab=);sub(`bb=);sub(`cb=);sub(`xb=);sub(`yb=);sub(`zb=);
-    osu = 300;
+    osu = 3600;
     sub(`sb=);
     if(.com.intro < 0) `st = 0;
     if(.com.intro != 0) `ab = `bb = `cb = `xb = `yb = `zb = `sb = 0;
