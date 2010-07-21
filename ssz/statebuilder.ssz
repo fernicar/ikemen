@@ -5991,7 +5991,11 @@ public &StateBuilder
               buf .= "))!=0";
             }
             buf .= ")&&";
-          cond `state.ctrlList[-1].typ == .CtrlTy::ChangeState:
+          cond
+            `state.ctrlList[-1].typ == .CtrlTy::ChangeState
+            || `state.ctrlList[-1].typ == .CtrlTy::SelfState
+            || `state.ctrlList[-1].typ == .CtrlTy::TargetState
+            :
           else:
             if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
               buf .= "(ih=-1)$";
@@ -6356,8 +6360,7 @@ public &StateBuilder
         && .s.find("]", lines[i+1]) >= 0
         :
       break:
-        branch{
-        cond `state.no == -1:
+        if(`state.no == -1){
           buf .=
             \t"if(`destmp) ret;"\r\n
             \t"branch{"\r\n
@@ -6424,9 +6427,6 @@ public &StateBuilder
             \t\t"}"\r\n
             \t"}"\r\n
             \t"`destmp = false;"\r\n;
-        cond `state.no >= 0:
-          buf .=
-            \t"if(nh) `stVal.time++;"\r\n;
         }
         buf .= "}"\r\n .= cbuf;
         if(`state.no >= 0){

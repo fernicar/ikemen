@@ -643,8 +643,7 @@ public &Command
   public %&CmdButton cmd;
   public index cmdidx = 0, tameidx = -1;
   public int time = 1, current = 0;
-  public int buffertime = 1;
-  public bool state = false, release = false, flag1 = false, flag2 = false;
+  public int buffertime = 1, curbuftime = 0;
   public void readCmd(^/char cmdstr)
   {
     char nextChar(^/char s, index i=)
@@ -800,9 +799,6 @@ public &Command
   }
   bool cmdChek(&.Buffer kbuf, bool ai)
   {
-    if(`cmdidx > 0 && #`cmd[`cmdidx-1].key == 1){
-      `release |= kbuf.keyState(`cmd[`cmdidx-1].key[0]) < 0;
-    }
     branch{
     cond<sla> `cmd[`cmdidx].slash:
       `held = `cmd[`cmdidx].key;
@@ -816,7 +812,6 @@ public &Command
       }
     diff<sla>:
       `cmdidx++;
-      `release = false;
       ret true;
     }
     if(`cmd[`cmdidx].tametime > 1 && `tameidx != `cmdidx){
@@ -833,11 +828,13 @@ public &Command
     }
     loop{
       index i = 0;
+      bool foo = false;
       int n;
       while;
     do:
       n = kbuf.keyState(`cmd[`cmdidx].key[i]);
-      if(n <= 0 || `buffertime < n){
+      foo |= n == 1;
+      if(n <= 0 || n > 7){
         branch{
         cond `cmdidx == 0:
           `current = 0;
@@ -857,15 +854,8 @@ public &Command
       }
       i++;
     while i < #`cmd[`cmdidx].key:
-      if(
-        !`release && `cmdidx > 0
-        && `cmd[`cmdidx-1].isDirection() && `cmd[`cmdidx].isDirection())
-      {
-        ret true;
-      }
-       
+      if(!foo) ret true;
       `cmdidx++;
-      `release = false;
       if(`cmdidx < #`cmd && !`cmdeq(`cmd[`cmdidx-1], `cmd[`cmdidx])){
         ret `cmdChek(kbuf, ai);
       }
@@ -874,7 +864,7 @@ public &Command
   }
   public void step(^&.Buffer kbuf, bool ai)
   {
-    `state = false;
+    if(`curbuftime > 0) `curbuftime--;
     if(#`cmd == 0) ret;
     if(#kbuf == 0 || !`cmdChek(kbuf<>, ai)){
       `clear();
@@ -889,16 +879,15 @@ public &Command
     comm:
       `clear();
     diff<a>:
-      `state = true;
+      `curbuftime = `buffertime;
     }
   }
   public void clear()
   {
     `cmdidx = 0;
-    `release = false;
     `tameidx = -1;
     `current = 0;
-    `state = false;
+    `curbuftime = 0;
     `held.new(0);
   }
   public void copy(`self c=)
@@ -907,14 +896,11 @@ public &Command
     `held = c.held;
     `cmd = c.cmd;
     `cmdidx = c.cmdidx;
-    `release = c.release;
     `tameidx = c.tameidx;
     `time = c.time;
     `current = c.current;
     `buffertime = c.buffertime;
-    `state = c.state;
-    `flag1 = c.flag1;
-    `flag2 = c.flag2;
+    `curbuftime = c.curbuftime;
   }
 }
 

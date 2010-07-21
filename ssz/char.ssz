@@ -2691,6 +2691,7 @@ public &Char
           i++;
         while i < #`stVal.ho:
         }
+        `stVal.time++;
       }
     }
     if(`tmphit){
@@ -2755,11 +2756,16 @@ public &Char
         `ani<>=, x, y, xs, ys,
         an, `angleset, `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY]);
     }
-    if(
-      .com.tickNextFrame() && .supertime < 0
-      && (`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H)
-    {
-      `defencemul *= .superp2defmul;
+    if(.com.tickNextFrame()){
+      if(
+        .supertime < 0
+        && (`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H)
+      {
+        `defencemul *= .superp2defmul;
+      }
+      if(.gs(.gsNOKO) && `helperindex == 0 && `sysivar[.iLIFE] <= 0){
+        `sysivar[.iLIFE] = 1;
+      }
     }
   }
   public bool isPaused()
@@ -3460,9 +3466,9 @@ public &Char
     case 2, 3://front, back
       if(x != .com.FERR) branch{
       cond (`facing > 0 && pt == 2) || (`facing < 0 && pt == 3):
-        o.setX(.com.screenx + (320.0 - x)/.com.scale);
+        o.setX(.com.screenx + (320.0 - x*(pt == 2 ? -1.0 : 1.0))/.com.scale);
       else:
-        o.setX(.com.screenx + x/.com.scale);
+        o.setX(.com.screenx + x*(pt == 2 ? -1.0 : 1.0)/.com.scale);
       }
       if(y != .com.FERR) o.setY(.com.screeny + y/.com.scale);
       o.facing *= `facing;
@@ -4164,7 +4170,7 @@ public &Char
     .v.i = 1;
     ^&.cmd.Command cl = `cmd.get(name);
     loop{index i = 0; while; do:
-      if(cl[i].state) break;
+      if(cl[i].curbuftime > 0) break;
       i++;
     while i < #cl:
       .v.i = 0;
@@ -4336,9 +4342,9 @@ public &Char
       if(facing < 0) obj.facing *= -1;
       branch{
       cond (`facing > 0 && pt == 2) || (`facing < 0 && pt == 3):
-        obj.setX(.com.screenx + 320.0/.com.scale - x);
+        obj.setX(.com.screenx + 320.0/.com.scale - x*(pt == 2 ? -1.0 : 1.0));
       else:
-        obj.setX(.com.screenx + x);
+        obj.setX(.com.screenx + x*(pt == 2 ? -1.0 : 1.0));
       }
       obj.setY(y);
       obj.facing *= `facing;
@@ -4782,7 +4788,7 @@ public &Char
     .v.typ = .VarTy::Int;
     .v.i = 0;
     loop{index i = 0; while; do:
-      if(.projs[`playerno][i].id == d) .v.i++;
+      if(.projs[`playerno][i].id == d && .projs[`playerno][i].hits > 0) .v.i++;
       i++;
     while i < #.projs[`playerno]:
     }
@@ -4792,7 +4798,7 @@ public &Char
     .v.typ = .VarTy::Int;
     .v.i = 0;
     loop{index i = 0; while; do:
-      if(.projs[`playerno][i].id >= 0) .v.i++;
+      if(.projs[`playerno][i].id >= 0 && .projs[`playerno][i].hits > 0) .v.i++;
       i++;
     while i < #.projs[`playerno]:
     }
