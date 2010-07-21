@@ -2691,7 +2691,7 @@ public &Char
           i++;
         while i < #`stVal.ho:
         }
-        `stVal.time++;
+        if(!`cs1tmp) `stVal.time++;
       }
     }
     if(`tmphit){
