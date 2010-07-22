@@ -812,7 +812,8 @@ public &Command
           if(#kbuf.keyState(`cmd[`cmdidx-1].key[j]) == t) break;
           j++;
         while j < #`cmd[`cmdidx-1].key:
-          ret false;
+          `clear();
+          ret `cmdChek(kbuf, ai);
         }
       }
       ret true;
