@@ -896,19 +896,19 @@ public &StateBuilder
     cond .s.equ("alive", token):
       out .= ".v.setB(" .= obj .= "sysivar[.iLIFE]>0)";
     cond .s.equ("win", token):
-      out .= "`trWin()";
+      out .=  obj .= "trWin()";
     cond .s.equ("winko", token):
-      out .= "`trWinKO()";
+      out .=  obj .= "trWinKO()";
     cond .s.equ("wintime", token):
-      out .= "`trWinTime()";
+      out .=  obj .= "trWinTime()";
     cond .s.equ("winperfect", token):
-      out .= "`trWinPerfect()";
+      out .=  obj .= "trWinPerfect()";
     cond .s.equ("lose", token):
-      out .= "`trLose()";
+      out .=  obj .= "trLose()";
     cond .s.equ("loseko", token):
-      out .= "`trLoseKO()";
+      out .= obj .= "trLoseKO()";
     cond .s.equ("losetime", token):
-      out .= "`trLoseTime()";
+      out .= obj .= "trLoseTime()";
     cond .s.equ("drawgame", token):
       out .= "`trDrawGame()";
     cond .s.equ("life", token):

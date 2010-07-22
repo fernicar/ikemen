@@ -30,7 +30,6 @@ triggerall = GetHit
 trigger1 = statetype = S
 value = ifelse(GetHitVar(guarded) && Alive, 150, 5000 + (gethitvar(type) = 3)*70)
 ctrl = 0
-ignorehitpause = 1
 
 [State -4, Hit2]
 type = SelfState
@@ -38,7 +37,6 @@ triggerall = GetHit
 trigger1 = statetype = C
 value = ifelse(GetHitVar(guarded) && Alive, 152, 5010 + (gethitvar(type) = 3)*60)
 ctrl = 0
-ignorehitpause = 1
 
 [State -4, Hit3]
 type = SelfState
@@ -46,7 +44,6 @@ triggerall = GetHit
 trigger1 = statetype = A
 value = ifelse(GetHitVar(guarded) && Alive, 154, 5020 + (gethitvar(type) = 3)*50)
 ctrl = 0
-ignorehitpause = 1
 
 [State -4, Hit4]
 type = SelfState
@@ -54,7 +51,6 @@ triggerall = GetHit
 trigger1 = statetype = L
 value = 5080 - (gethitvar(type) = 3)*10
 ctrl = 0
-ignorehitpause = 1
 
 [State -4, Getup1]
 type = SelfState
@@ -82,6 +78,13 @@ trigger2 = HitOver
 trigger2 = !gethitvar(isbound)
 trigger2 = abs(vel x)+abs(vel y) < 0.01
 sysvar(55) = -1;RECOVERTIME
+
+[State -4, NoKO]
+type = SelfState
+triggerall = active
+triggerall = alive
+trigger1 = stateno = 5150
+value = 5110
 
 [State -4, Turn Cond]
 type = VarSet

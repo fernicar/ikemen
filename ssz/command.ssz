@@ -799,6 +799,24 @@ public &Command
   }
   bool cmdChek(&.Buffer kbuf, bool ai)
   {
+    ~$bool() fail = [bool(){
+      branch{
+      cond `cmdidx == 0:
+        ret false;
+      else:
+        if(!ai && `cmd[`cmdidx].greater) loop{
+          index j = 0;
+          int t = kbuf.lastChangeTime();
+          while;
+        do:
+          if(#kbuf.keyState(`cmd[`cmdidx-1].key[j]) == t) break;
+          j++;
+        while j < #`cmd[`cmdidx-1].key:
+          ret false;
+        }
+      }
+      ret true;
+    }];
     branch{
     cond<sla> `cmd[`cmdidx].slash:
       `held = `cmd[`cmdidx].key;
@@ -834,27 +852,10 @@ public &Command
     do:
       n = kbuf.keyState(`cmd[`cmdidx].key[i]);
       foo |= n == 1;
-      if(n <= 0 || n > 7){
-        branch{
-        cond `cmdidx == 0:
-          `current = 0;
-        else:
-          if(!ai && `cmd[`cmdidx].greater) loop{
-            index j = 0;
-            int t = kbuf.lastChangeTime();
-            while;
-          do:
-            if(#kbuf.keyState(`cmd[`cmdidx-1].key[j]) == t) break;
-            j++;
-          while j < #`cmd[`cmdidx-1].key:
-            ret false;
-          }
-        }
-        break, break;
-      }
+      if(n <= 0 || n > 7) ret fail(::);
       i++;
     while i < #`cmd[`cmdidx].key:
-      if(!foo) ret true;
+      if(!foo) ret fail(::);
       `cmdidx++;
       if(`cmdidx < #`cmd && !`cmdeq(`cmd[`cmdidx-1], `cmd[`cmdidx])){
         ret `cmdChek(kbuf, ai);
@@ -866,20 +867,25 @@ public &Command
   {
     if(`curbuftime > 0) `curbuftime--;
     if(#`cmd == 0) ret;
-    if(#kbuf == 0 || !`cmdChek(kbuf<>, ai)){
-      `clear();
-      ret;
-    }
-    `current++;
-    branch{
-    cond<a> `cmdidx == #`cmd:
-    cond<b> !ai && `current >= `time + #`cmd:
-    else:
-      break;
-    comm:
-      `clear();
-    diff<a>:
-      `curbuftime = `buffertime;
+    {
+      int ocbt = `curbuftime;
+      if(#kbuf == 0 || !`cmdChek(kbuf<>, ai)){
+        `clear();
+        ret;
+      }
+      `current++;
+      branch{
+      cond<a> `cmdidx == #`cmd:
+      cond<b> !ai && `current >= `time + #`cmd:
+      else:
+        break;
+      comm:
+        `clear();
+      diff<a>:
+        `curbuftime = `buffertime;
+      }
+    break:
+      if(`curbuftime < ocbt) `curbuftime = ocbt;
     }
   }
   public void clear()
