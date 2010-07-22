@@ -3853,28 +3853,24 @@ public &Char
   }
   public void trVelAddX()
   {
-    if(`stVal.phy != .StTy::N && `ls(.lsVelSetX)) ret;
     float f = .v.toFloat();
     if(f == .com.FERR) ret;
     `sysfvar[.fVX] += f;
   }
   public void trVelAddY()
   {
-    if(`stVal.phy != .StTy::N && `ls(.lsVelSetY)) ret;
     float f = .v.toFloat();
     if(f == .com.FERR) ret;
     `sysfvar[.fVY] += f;
   }
   public void trVelMulX()
   {
-    if(`stVal.phy != .StTy::N && `ls(.lsVelSetX)) ret;
     float f = .v.toFloat();
     if(f == .com.FERR) ret;
     `sysfvar[.fVX] *= f;
   }
   public void trVelMulY()
   {
-    if(`stVal.phy != .StTy::N && `ls(.lsVelSetY)) ret;
     float f = .v.toFloat();
     if(f == .com.FERR) ret;
     `sysfvar[.fVY] *= f;
