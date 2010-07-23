@@ -4448,7 +4448,7 @@ public &Char
         cond i == r:
           `targets .= tmp[i];
         else:
-          c = .players.get(`targets[i]);
+          c = .players.get(tmp[i]);
           c~byidClear();
         }
         i++;
