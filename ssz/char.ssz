@@ -2057,13 +2057,17 @@ public &Char
     while i < #`targets:
     }
   }
+  public void byidClear()
+  {
+    if(`sysivar[.iBINDTOID] == `stVal.hb.byid) `sysivar[.iBINDTIME] = 0;
+    `stVal.hb.byid = -1;
+  }
   public void outTarget()
   {
     if(`stVal.hb.byid < 0) ret;
     ^`self c = .players.get(`stVal.hb.byid);
     if(#c > 0) c~removeTarget(`id);
-    if(`sysivar[.iBINDTOID] == `stVal.hb.byid) `sysivar[.iBINDTIME] = 0;
-    `stVal.hb.byid = -1;
+    `byidClear();
   }
   public bool isTarget(int id)
   {
@@ -4424,14 +4428,32 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)) tmp .= `targets[i];
+      if(#c > 0) branch{
+      cond id < 0 || c~stVal.hb.hitid == id:
+        tmp .= `targets[i];
+      else:
+        c~byidClear();
+      }
       i++;
     while i < #`targets:
     }
     branch{
     cond keepone != 0 && #tmp > 0:
       `targets.new(0);
-      `targets .= tmp[.m.rand(0, #tmp-1)];
+      loop{
+        index i = 0, r = .m.rand(0, #tmp-1);
+        while;
+      do:
+        branch{
+        cond i == r:
+          `targets .= tmp[i];
+        else:
+          c = .players.get(`targets[i]);
+          c~byidClear();
+        }
+        i++;
+      while i < #tmp:
+      }
     else:
       `targets = tmp;
     }
