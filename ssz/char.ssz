@@ -3386,7 +3386,7 @@ public &Char
       while;
     do:
       c = .players.get(`targets[i]);
-      if(#c > 0) c~outTarget();
+      if(#c > 0) c~byidClear();
       i++;
     while i < #`targets:
     }
