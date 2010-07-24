@@ -115,9 +115,12 @@ public &Sprite
   }
   public bool read(
     &.file.File f=, &.SffHeader sh=, long offset,
-    uint lenghtOfSubheader, ^`self prev, bool palletSame=)
+    uint loh, uint nsh, ^`self prev, bool palletSame=)
   {
+    uint lenghtOfSubheader = loh;
+    if(nsh > (uint)offset) lenghtOfSubheader = nsh - (uint)offset;//lohを無視
     if(!f.read!bool?(palletSame=)) ret false;
+    if(#prev == 0) palletSame = false;
     if(!`readHeader(f=, offset)) ret false;
     if(`pcxHeader.bpp != 0d8){
       .error("256色じゃない");
@@ -211,6 +214,7 @@ public &Sprite
         if(!f.read!ushort?(indexOfPrevious=)) ret false;
         ret true;
       }];
+      ^`self dummy;
       while;
     do:
       f.seek((long)shofs, .file.Seek::SET);
@@ -232,10 +236,11 @@ public &Sprite
       }
       if(
         !`read(
-          f=, h=, (long)(shofs + h.sizeOfSubheader),
-          lenghtOfSubheader, .consts.null!`self?(), palletSame=)) ret false;
+          f=, h=, (long)(shofs + h.sizeOfSubheader), lenghtOfSubheader,
+          newSubHeaderOffset[-1], dummy, palletSame=)) ret false;
       if(`imageGroup == ig && `imageNumber == in) break;
-      if(palletSame) `colorPallet.new(0);
+      dummy.new(1);
+      dummy~colorPallet = `colorPallet;
     continue:
       shofs = newSubHeaderOffset[-1];
       i++;
@@ -300,7 +305,8 @@ public &Sff
         if(
           !spriteList[i].read(
             f=, `head=, (long)(shofs + `head.sizeOfSubheader),
-            lenghtOfSubheader, spriteList[prev..prev+1], ps=)) ret false;
+            lenghtOfSubheader, newSubHeaderOffset,
+            spriteList[prev..prev+1], ps=)) ret false;
         prev = i;
       else:
         spriteList[i].shareCopy(spriteList[(index)indexOfPrevious]=);
