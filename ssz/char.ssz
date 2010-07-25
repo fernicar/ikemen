@@ -3065,7 +3065,7 @@ public &Char
       cond `stVal.mov == .MovTy::H:
         `hittmp =
           (int)(
-            `stVal.playerno == `playerno && `stVal.hb.fallf != 0
+            `stVal.hb.fallf != 0
             && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
           * ((int)`isFall() + 1) + 1;
       else:
@@ -5508,15 +5508,19 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         ) switch(`pyr.stVal.typ)
       {
       case .StTy::S, .StTy::C:
-        by.veloff += by.stVal.hit.ground_cornerpush_veloff * (float)by.facing;
+        by.veloff = by.stVal.hit.ground_cornerpush_veloff * (float)by.facing;
       case .StTy::A:
-        by.veloff += by.stVal.hit.air_cornerpush_veloff * (float)by.facing;
+        by.veloff = by.stVal.hit.air_cornerpush_veloff * (float)by.facing;
       case .StTy::L:
-        by.veloff += by.stVal.hit.down_cornerpush_veloff * (float)by.facing;
+        by.veloff = by.stVal.hit.down_cornerpush_veloff * (float)by.facing;
       }
-      if(`pyr.hittmp < 2) `pyr.stVal.hb.juggle = by.sysivar[.iAIRJUGGLE];
-      `pyr.stVal.hb.juggle -=
-        (pro != 0 ? 0 : by.stVal.juggle) + by.stVal.hit.air_juggle;
+      if(`pyr.hittmp < 2 || `pyr.stVal.hb.byid != by.id){
+        `pyr.stVal.hb.juggle = by.sysivar[.iAIRJUGGLE];
+      }
+      if(!by.ls(.lsNOJUGGLECHECK)){
+        `pyr.stVal.hb.juggle -=
+          (pro != 0 ? 0 : by.stVal.juggle) + by.stVal.hit.air_juggle;
+      }
     else:
       by.addPower(hit.guardgetpower);
       if(
@@ -5554,10 +5558,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         ) switch(`pyr.stVal.typ)
       {
       case .StTy::S, .StTy::C:
-        by.veloff += by.stVal.hit.guard_cornerpush_veloff * (float)by.facing;
+        by.veloff = by.stVal.hit.guard_cornerpush_veloff * (float)by.facing;
       case .StTy::A:
-        by.veloff +=
-          by.stVal.hit.airguard_cornerpush_veloff * (float)by.facing;
+        by.veloff = by.stVal.hit.airguard_cornerpush_veloff * (float)by.facing;
       }
     comm:
       branch{
