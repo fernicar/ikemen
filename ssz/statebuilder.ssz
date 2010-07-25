@@ -778,7 +778,7 @@ public &StateBuilder
         oldin0 = in;
         branch{
           token = `tokenizer(in=);
-        cond .s.equ("=", token) || .s.equ(">=", token):
+        cond #token > 0 && token[-1] == '=':
           if(!`expAdsb(buf=, in=)) ret false;
           eq = true;
         cond .s.equ("(", token):
@@ -821,19 +821,8 @@ public &StateBuilder
           if(!`expEquSub(buf=, in=, false)) ret false;
           out .= buf;
         else:
-          branch{
-            if(eq) else;
-            in = oldin0;
-            token = `tokenizer(in=);
-          cond .s.equ("!=", token):
-          cond .s.equ("<=", token):
-          else:
-            in = oldin;
-            out .= "`trEqu(" .= buf .= "$.v,.v.setI(0)$.v)";
-            break, break;
-          }
-          if(!`expAdsb(out=, in=)) ret false;
-          out .= '$' .= obj .= "trAnimElemSpecial("\" .= token .= \"")";
+          in = oldin;
+          out .= "`trEqu(" .= buf .= "$.v,.v.setI(0)$.v)";
         }
       }
     cond .s.equ("animelemtime", token):
@@ -3843,13 +3832,12 @@ public &StateBuilder
               `state.flag != 0 ? "p~trSetIVar(" : "`trSetIVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
-              ^/char tmp = `tokenizer(text=);
-              if(
-                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
-              {
+              index f = .s.find("=", text);
+              if(f < 0){
                 `lasterror = "'='がありません";
                 ret false;
               }
+              text = text[f+1..-1];
             }
             if(
               !`fullExpression(
@@ -3865,13 +3853,12 @@ public &StateBuilder
               `state.flag != 0 ? "p~trSetFVar(" : "`trSetFVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
-              ^/char tmp = `tokenizer(text=);
-              if(
-                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
-              {
+              index f = .s.find("=", text);
+              if(f < 0){
                 `lasterror = "'='がありません";
                 ret false;
               }
+              text = text[f+1..-1];
             }
             if(
               !`fullExpression(
@@ -3887,13 +3874,12 @@ public &StateBuilder
               `state.flag != 0 ? "p~trSetSysIVar(" : "`trSetSysIVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
-              ^/char tmp = `tokenizer(text=);
-              if(
-                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
-              {
+              index f = .s.find("=", text);
+              if(f < 0){
                 `lasterror = "'='がありません";
                 ret false;
               }
+              text = text[f+1..-1];
             }
             if(
               !`fullExpression(
@@ -3909,13 +3895,12 @@ public &StateBuilder
               `state.flag != 0 ? "p~trSetSysFVar(" : "`trSetSysFVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
-              ^/char tmp = `tokenizer(text=);
-              if(
-                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
-              {
+              index f = .s.find("=", text);
+              if(f < 0){
                 `lasterror = "'='がありません";
                 ret false;
               }
+              text = text[f+1..-1];
             }
             if(
               !`fullExpression(
@@ -3946,13 +3931,12 @@ public &StateBuilder
               `state.flag != 0 ? "p~trSetIVar(" : "`trSetIVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
-              ^/char tmp = `tokenizer(text=);
-              if(
-                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
-              {
+              index f = .s.find("=", text);
+              if(f < 0){
                 `lasterror = "'='がありません";
                 ret false;
               }
+              text = text[f+1..-1];
             }
             `state.ctrlList[-1].task .=
               "$.v,`trAdd(" .= (`state.flag != 0 ? "p~trIVar()" : "`trIVar()");
@@ -3971,13 +3955,12 @@ public &StateBuilder
               `state.flag != 0 ? "p~trSetFVar(" : "`trSetFVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
-              ^/char tmp = `tokenizer(text=);
-              if(
-                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
-              {
+              index f = .s.find("=", text);
+              if(f < 0){
                 `lasterror = "'='がありません";
                 ret false;
               }
+              text = text[f+1..-1];
             }
             `state.ctrlList[-1].task .=
               "$.v,`trAdd(" .= (`state.flag != 0 ? "p~trFVar()" : "`trFVar()");
@@ -3996,13 +3979,12 @@ public &StateBuilder
               `state.flag != 0 ? "p~trSetSysIVar(" : "`trSetSysIVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
-              ^/char tmp = `tokenizer(text=);
-              if(
-                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
-              {
+              index f = .s.find("=", text);
+              if(f < 0){
                 `lasterror = "'='がありません";
                 ret false;
               }
+              text = text[f+1..-1];
             }
             `state.ctrlList[-1].task .=
               "$.v,`trAdd(" .= (
@@ -4021,13 +4003,12 @@ public &StateBuilder
               `state.flag != 0 ? "p~trSetSysFVar(" : "`trSetSysFVar(";
             if(!`expValue(`state.ctrlList[-1].task=, text=)) ret false;
             {
-              ^/char tmp = `tokenizer(text=);
-              if(
-                !.s.equ("=", tmp) && !.s.equ(":=", tmp) && !.s.equ(">=", tmp))
-              {
+              index f = .s.find("=", text);
+              if(f < 0){
                 `lasterror = "'='がありません";
                 ret false;
               }
+              text = text[f+1..-1];
             }
             `state.ctrlList[-1].task .=
               "$.v,`trAdd(" .= (

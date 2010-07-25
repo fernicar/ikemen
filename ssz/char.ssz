@@ -3925,26 +3925,6 @@ public &Char
     }
     .v.setI(`ani~ani.animElemNo(tim));
   }
-  public void trAnimElemSpecial(^/char f)
-  {
-    int n1 = .v.toInt();
-    if(n1 == .com.IERR){
-      .v.setSF();
-      ret;
-    }
-    .v.setI(0);
-    `trAnimElemNo();
-    int n2 = .v.toInt();
-    `trAnimElemTime();
-    if(.v.typ == .VarTy::SFalse || .v.toInt() != 0){
-      .v.setB(false);
-      ret;
-    }
-    branch{
-    cond .s.equ("<=", f): .v.setB(n2 < n1);
-    cond .s.equ("!=", f): .v.setB(n2 != n1);
-    }
-  }
   public void trChangeAnim(int no)
   {
     `animno = no;
