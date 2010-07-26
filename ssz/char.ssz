@@ -2952,7 +2952,7 @@ public &Char
             (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
             || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
             || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-          && `trCommand("holdback")$.v.isTrue()))
+          && `cmd.buffer~B > 0))
       {
         `sysivar[.iSPECIALFLAG] |= .lsGUARD;
       }

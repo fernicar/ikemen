@@ -6346,7 +6346,7 @@ public &StateBuilder
             \t"if(`destmp) ret;"\r\n
             \t"branch{"\r\n
             \t"cond `stVal.typ == .StTy::A:"\r\n
-            \t\t"if(`trCommand("\""holdup"\"")$!.v.isTrue())"
+            \t\t"if(`cmd.buffer~U < 0)"
             " `sysivar[.iSYSFLAG] |= .sfAIRJUMP;"\r\n
             \t"else:"\r\n
             \t\t"`sysivar[.iAIRJUMP_CNT] = 0;"\r\n
@@ -6361,32 +6361,29 @@ public &StateBuilder
             \t"cond `ctrl():"\r\n
             \t\t"branch{"\r\n
             \t\t"cond `stVal.typ == .StTy::S"
-            " && `trCommand("\""holddown"\"")$.v.isTrue():"\r\n
+            " && `cmd.buffer~D > 0:"\r\n
             \t\t\t".v.setI(10)$`trSelfState();"\r\n
             \t\t"cond `stVal.typ == .StTy::C"
-            " && `trCommand("\""holddown"\"")$!.v.isTrue():"\r\n
+            " && `cmd.buffer~D < 0:"\r\n
             \t\t\t".v.setI(12)$`trSelfState();"\r\n
             \t\t"cond `stVal.typ != .StTy::A"
-            " && `trCommand("\""holdup"\"")$.v.isTrue()"
-            " && (`trCommand("\""holdfwd"\"")$!.v.isTrue()"
-            " || `trCommand("\""holdback"\"")$!.v.isTrue()):"\r\n
+            " && `cmd.buffer~U > 0:"\r\n
             \t\t\t".v.setI(40)$`trSelfState();"\r\n
             \t\t"cond `stVal.typ == .StTy::A"
             " && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0"
             " && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]"
             " && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]"
-            " && `trCommand("\""holdup"\"")$.v.isTrue():"\r\n
+            " && `cmd.buffer~U > 0:"\r\n
             \t\t\t"`sysivar[.iAIRJUMP_CNT]++;"\r\n
             \t\t\t"`sysivar[.iSYSFLAG] &= !.sfAIRJUMP;"\r\n
             \t\t\t".v.setI(45)$`trSelfState();"\r\n
             \t\t"cond !`ls(.lsNOWALK) && `stVal.typ == .StTy::S"
-            " && (`trCommand("\""holdfwd"\"")$.v.isTrue()"
-            " || (!`inguarddist"
-            " && `trCommand("\""holdback"\"")$.v.isTrue())):"\r\n
+            " && (`cmd.buffer~F > 0"
+            " || ((!`inguarddist || `ls(.lsNOSTANDGUARD))"
+            " && `cmd.buffer~B > 0)):"\r\n
             \t\t\t".v.setI(20)$`trSelfState();"\r\n
             \t\t"cond `stVal.typ == .StTy::S"
-            " && (`trCommand("\""holdfwd"\"")$!.v.isTrue()"
-            " && `trCommand("\""holdback"\"")$!.v.isTrue()):"\r\n
+            " && (`cmd.buffer~F < 0 && `cmd.buffer~B < 0):"\r\n
             \t\t\t".v.setI(0)$`trSelfState();"\r\n
             \t\t"}"\r\n
             \t\t"if(`ctrl() && `inguarddist"
@@ -6394,7 +6391,7 @@ public &StateBuilder
             " && ((`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))"
             " || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))"
             " || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))"
-            " && `trCommand("\""holdback"\"")$.v.isTrue()){"\r\n
+            " && `cmd.buffer~B > 0){"\r\n
             \t\t\t".v.setI(120)$`trSelfState();"\r\n
             \t\t"}"\r\n
             \t"cond `sysivar[.iCTRL] != 0 || .roundState() == 4:"\r\n
