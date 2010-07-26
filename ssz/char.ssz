@@ -5695,7 +5695,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     }
     if(
       p~c~stVal.hit.hitonce >= 0 && (
-        pyr.hittmp < 2 || p~c~ls(.lsNOJUGGLECHECK)
+        pyr.hittmp < 2 || pyr.stVal.hb.byid != p~c~id
+        || p~c~ls(.lsNOJUGGLECHECK)
         || juggcheck(
           pyr.stVal.hb.juggle, p~c~stVal.juggle + p~c~stVal.hit.air_juggle))
       && pyr.hittable(
@@ -5766,7 +5767,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       hoge = true;
       if(
         .projs[i][j].hit.hitonce >= 0 && (
-          pyr.hittmp < 2 || .chars[i][0]~ls(.lsNOJUGGLECHECK)
+          pyr.hittmp < 2 || pyr.stVal.hb.byid != .chars[i][0]~id
+          || .chars[i][0]~ls(.lsNOJUGGLECHECK)
           || juggcheck(pyr.stVal.hb.juggle, .projs[i][j].hit.air_juggle))
         && .projs[i][j].timemiss <= 0
         && .projs[i][j].hitpause <= 0 && pyr.hittable(
