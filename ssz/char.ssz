@@ -1921,7 +1921,22 @@ public &Char
   void clearHitDef()
   {
     `stVal.hit.clear();
-    `sysivar[.iHITPAUSETIME] = 0;
+    if(`sysivar[.iHITPAUSETIME] > 0){
+      loop{
+        index i = 0;
+        ^`self c;
+        while;
+      do:
+        c = .players.get(`targets[i]);
+        if(#c > 0){
+          c~stVal.hb.hitshaketime -= `sysivar[.iHITPAUSETIME];
+          .m.limMin!int?(c~stVal.hb.hitshaketime=, 0);
+        }
+        i++;
+      while i < #`targets:
+      }
+      `sysivar[.iHITPAUSETIME] = 0;
+    }
   }
   void clearHitCount()
   {
