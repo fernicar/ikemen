@@ -2,7 +2,7 @@
 lib file = <file.ssz>;
 lib s = <string.ssz>;
 lib consts = <consts.ssz>;
-lib mat = <math.ssz>;
+lib m = <math.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
 lib sff = "sff.ssz";
 lib snd = "sound.ssz";
@@ -689,7 +689,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     loop{index i = 0; while; do:
       branch{
       cond `resttime[i] > 0:
-        if(`slidetime[i] < 30) `slidetime[i]++;
+        `slidetime[i] = .m.min!int?(30, `slidetime[i] + 2);
       else:
         if(`slidetime[i] > 0) `slidetime[i]--;
       }
@@ -755,7 +755,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       }
       if(`counter_fontn >= 0 && #f > `counter_fontn){
         float z = 1.0 + (float)`shaketime[i]*(1.0/20.0)
-          * .mat.sin((double)`shaketime[i] * (.mat.PI / 2.5));
+          * .m.sin((double)`shaketime[i] * (.m.PI / 2.5));
         .laytext(
           x/z, (float)`posy/z, z, layerno, .s.iToS(`cur[i]),
           f[`counter_fontn]=, `counter_fontb, -1, `counter_lay=);
@@ -923,10 +923,10 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       `match_maxdrawgames = .s.sToN!int?(data);
     }
     if(#(data = sc.get("start.waittime")) > 0){
-      `start_waittime = .mat.max!int?(1, .s.sToN!int?(data));
+      `start_waittime = .m.max!int?(1, .s.sToN!int?(data));
     }
     if(#(data = sc.get("start.waittime")) > 0){
-      `start_waittime = .mat.max!int?(1, .s.sToN!int?(data));
+      `start_waittime = .m.max!int?(1, .s.sToN!int?(data));
     }
     if(#(data = sc.get("round.time")) > 0) `round_time = .s.sToN!int?(data);
     if(#(data = sc.get("round.sndtime")) > 0){
@@ -948,7 +948,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     }
     `fight.read("fight.", sc=, `al=);
     if(#(data = sc.get("ctrl.time")) > 0){
-      `ctrl_time = .mat.max!int?(1, .s.sToN!int?(data));
+      `ctrl_time = .m.max!int?(1, .s.sToN!int?(data));
     }
     if(#(data = sc.get("ko.time")) > 0) `ko_time = .s.sToN!int?(data);
     if(#(data = sc.get("ko.sndtime")) > 0) `ko_sndtime = .s.sToN!int?(data);

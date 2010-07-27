@@ -6358,7 +6358,7 @@ public &StateBuilder
             " + (int)(`stVal.typ == .StTy::A)*51)$`trSelfState();"\r\n
             \t"}"\r\n
             \t"branch{"\r\n
-            \t"cond `ctrl():"\r\n
+            \t"cond `ctrl() && `stVal.no < 150:"\r\n
             \t\t"branch{"\r\n
             \t\t"cond `stVal.typ == .StTy::S"
             " && `cmd.buffer~D > 0:"\r\n

@@ -1887,6 +1887,7 @@ public &Char
     `backw = `defBW();
     `fedge = `bedge = 0.0;
     `enemyn.new(0);
+    `targets.new(0);
   }
   public void clearVal()
   {
@@ -2084,15 +2085,6 @@ public &Char
     if(#c > 0) c~removeTarget(`id);
     `byidClear();
   }
-  public bool isTarget(int id)
-  {
-    loop{index i = 0; while; do:
-      if(`targets[i] == id) ret true;
-      i++;
-    while i < #`targets:
-    }
-    ret false;
-  }
   void addChild(int hidx)
   {
     loop{index i = 0; while; do:
@@ -2272,6 +2264,9 @@ public &Char
       if(#(data = sc.get("buffer.time")) > 0){
         `cmd.ctmp~buffertime =
           .m.max!int?(1)<, .s.sToN!`cmd.ctmp<>.buffertime.self?(data);
+      }
+      if(#`cmd.ctmp~cmd == 1 && `cmd.ctmp~cmd~slash){
+        `cmd.ctmp~buffertime = 1;
       }
       `cmd.add(`cmd.ctmp<>=);
     }
@@ -2824,14 +2819,9 @@ public &Char
       `player && (`sysivar[.iLIFE] > 0 || `sysivar[.iRECOVERTIME] > 0)
       ? .lsSCREENBOUNDX | .lsSCREENBOUNDY | (
         .com.intro <= .fight~ro.ctrl_time && (
-          `stVal.phy != .StTy::N
-          || (
-            `stVal.mov != .MovTy::H && #`curFrame > 0 && (
-              #`curFrame~clsn1 > 0 || #`curFrame~clsn2 > 0))
-          || `stVal.hb.hittime > 0
-          || (
-            `stVal.playerno == `playerno
-            && (`stVal.typ == .StTy::L || `stVal.hb.fallf != 0)))
+          `stVal.phy != .StTy::N || (
+            #`curFrame > 0 && (#`curFrame~clsn1 > 0 || #`curFrame~clsn2 > 0))
+          || `stVal.hb.hittime > 0)
         ? .lsPLAYERPUSH : 0) : 0;
     `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
     `attackdist = (float)`sysivar[.iATTACK_DIST];
@@ -3094,11 +3084,10 @@ public &Char
         `stVal.hb.juggle = 0;
       }
       if(
-        `stVal.playerno == `playerno && .roundState() == 2 && (
-          `stVal.mov != .MovTy::H
-          || (
-            `sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0
-            && .roundState() == 2)))
+        `stVal.playerno == `playerno && (
+          `stVal.mov != .MovTy::H || (
+            .roundState() == 2
+            && `sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0)))
       {
         `outTarget();
         `getcombo = 0;
@@ -3226,6 +3215,7 @@ public &Char
   }
   public void setPower(int p)
   {
+    if(.com.intro < -.fight~ro.over_hittime) ret;
     `sysivar[.iPOWER] = .m.max!int?(0)<, .m.min!int?(`sysivar[.iPOWERMAX])<, p;
   }
   public int getSharePower()
@@ -3312,8 +3302,7 @@ public &Char
     }
     if(h.ground_cornerpush_veloff == .com.FERR){
       h.ground_cornerpush_veloff =
-        (h.attr&((int).AtTy::NA|(int).AtTy::SA|(int).AtTy::HA)) != 0
-        || !`player ? 0.0 : h.guard_velocity*1.3;
+        (h.attr & (int).StTy::A) != 0 || !`player ? 0.0 : h.guard_velocity*1.3;
     }
     if(h.air_cornerpush_veloff == .com.FERR){
       h.air_cornerpush_veloff = h.ground_cornerpush_veloff;
@@ -4600,7 +4589,7 @@ public &Char
   {
     if(`stVal.mov != .MovTy::H) ret;
     if(`stVal.hb.fall.xvelocity != .com.FERR){
-      `sysfvar[.fVX] = `stVal.hb.fall.xvelocity;
+      `setXV(`stVal.hb.fall.xvelocity);
     }
     `setYV(`stVal.hb.fall.yvelocity);
   }
