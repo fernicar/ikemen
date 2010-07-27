@@ -1015,7 +1015,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.animtype = (int)hit.animtype;
     }
     if(guard && ((int)`typ&hit.guardflag) != 0){
-      `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime);
+      `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
       `hb.hittime = hit.guard_hittime;
       `hb.slidetime = hit.guard_slidetime;
       `hb.guarded = 1;
@@ -1033,7 +1033,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.hitcount = hc;
       ret 2;
     }
-    `hb.hitshaketime = .m.max!int?(1, hit.shaketime);
+    `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
     `hb.slidetime = hit.ground_slidetime;
     branch{
     cond `typ == .StTy::A:
@@ -2695,7 +2695,6 @@ public &Char
           i++;
         while i < #`stVal.ho:
         }
-        if(!`cs1tmp) `stVal.time++;
       }
     }
     if(`tmphit){
@@ -2914,6 +2913,7 @@ public &Char
       `minus = 0;
       `state(::);
       if(lc) .v.setI(52)$`trSelfState();
+      if(!`isHitPaused()) `stVal.time++;
     break:
       `minus = 1;
       `acttmp += (int)`isActive() - (int)`isHitPaused();
@@ -5723,14 +5723,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             ? .MoveContact::Reversed : .MoveContact::Hit;
           if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
-              .m.max!int?(1, p~c~stVal.hit.pausetime+1);
+              .m.max!int?(1, p~c~stVal.hit.pausetime);
           }
           p~c~sysivar[.iUNIQHITCOUNT]++;
         else:
           p~c~stVal.mctyp = .MoveContact::Guarded;
           if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
-              .m.max!int?(1, p~c~stVal.hit.guard_pausetime+1);
+              .m.max!int?(1, p~c~stVal.hit.guard_pausetime);
           }
         comm:
           if(h > 0) pyr.sysivar[.iHITPAUSETIME] = 0;
