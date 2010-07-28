@@ -30,6 +30,7 @@ triggerall = GetHit
 trigger1 = statetype = S
 value = ifelse(GetHitVar(guarded) && Alive, 150, 5000 + (gethitvar(type) = 3)*70)
 ctrl = 0
+ignorehitpause = 1
 
 [State -4, Hit2]
 type = SelfState
@@ -37,6 +38,7 @@ triggerall = GetHit
 trigger1 = statetype = C
 value = ifelse(GetHitVar(guarded) && Alive, 152, 5010 + (gethitvar(type) = 3)*60)
 ctrl = 0
+ignorehitpause = 1
 
 [State -4, Hit3]
 type = SelfState
@@ -44,6 +46,7 @@ triggerall = GetHit
 trigger1 = statetype = A
 value = ifelse(GetHitVar(guarded) && Alive, 154, 5020 + (gethitvar(type) = 3)*50)
 ctrl = 0
+ignorehitpause = 1
 
 [State -4, Hit4]
 type = SelfState
@@ -51,6 +54,7 @@ triggerall = GetHit
 trigger1 = statetype = L
 value = 5080 - (gethitvar(type) = 3)*10
 ctrl = 0
+ignorehitpause = 1
 
 [State -4, Getup1]
 type = SelfState
@@ -59,6 +63,7 @@ triggerall = StateNo = 5110
 trigger1 = Alive
 trigger1 = sysvar(55) <= 0;RECOVERTIME
 value = 5120
+ignorehitpause = 1
 
 [State -4, Getup2]
 type = VarSet
@@ -89,7 +94,7 @@ value = 5110
 [State -4, Turn Cond]
 type = VarSet
 trigger1 = 1
-sysvar(59) = ctrl && (statetype=S||statetype=C) && !NoAutoTurn && p2dist X < -5;SYSTEMP
+sysvar(59) = ctrl && stateno < 150 && (statetype=s||statetype=c) && !noautoturn && p2dist x < -5;SYSTEMP
 
 [State -4, Turn1]
 type = ChangeAnim

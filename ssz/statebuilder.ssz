@@ -5973,9 +5973,9 @@ public &StateBuilder
             }
             buf .= ")&&";
           cond
-            `state.ctrlList[-1].typ == .CtrlTy::ChangeState
-            || `state.ctrlList[-1].typ == .CtrlTy::SelfState
-            || `state.ctrlList[-1].typ == .CtrlTy::TargetState
+            `state.no == -1 && (
+              `state.ctrlList[-1].typ == .CtrlTy::ChangeState
+              || `state.ctrlList[-1].typ == .CtrlTy::SelfState)
             :
           else:
             if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
