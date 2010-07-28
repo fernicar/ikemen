@@ -2854,7 +2854,7 @@ public &Char
       while;
     do:
       c = .players.get(`targets[i]);
-      if(#c > 0 && c~stVal.playerno != c~playerno){
+      if(#c > 0){
         c~action();
         if(
           `destmp && c~stVal.playerno != c~playerno
@@ -2943,9 +2943,12 @@ public &Char
     float tension,
     float highest=, float lowest=, float leftest=, float rightest=)
   {
-    if(`destmp){
-      `destroySelf();
-      ret 0.0;
+    if(.com.tickFrame()){
+      `action();//TargetDropされたとき
+      if(`destmp){
+        `destroySelf();
+        ret 0.0;
+      }
     }
     float cvx = 0.0;
     if(`acttmp > 0){
@@ -5130,7 +5133,7 @@ public ^&Char PlayerList!&Char?::enemy(int pno, int n)
 {
   int cnt = 0;
   loop{index i = 0; while; do:
-    if(#.chars[i] > 0 && (.chars[i][0]~playerno&1) != (pno&1) && n == cnt++){
+    if(#.chars[i] > 0 && (i&1) != (pno&1) && n == cnt++){
       ret .chars[i][0];
     }
     i++;
@@ -5279,7 +5282,7 @@ public void PlayerList!&Char?::action(
   do:
     if(p~c~id < 0) p~c~id ^= -1;
     branch{
-    cond p~c~stVal.hb.byid < 0 || p~c~stVal.playerno == p~c~playerno:
+    cond p~c~stVal.hb.byid < 0:
       p~c~action();
     else:
       p~c~targetAction();
@@ -6048,10 +6051,7 @@ void rootAction()
     while;
   do:
     if(#.chars[i] > 0) branch{
-    cond
-      .chars[i][0]~stVal.hb.byid < 0
-      || .chars[i][0]~stVal.playerno == .chars[i][0]~playerno
-      :
+    cond .chars[i][0]~stVal.hb.byid < 0:
       .chars[i][0]~action();
     else:
       .chars[i][0]~targetAction();
