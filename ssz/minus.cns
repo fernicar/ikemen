@@ -63,7 +63,6 @@ triggerall = StateNo = 5110
 trigger1 = Alive
 trigger1 = sysvar(55) <= 0;RECOVERTIME
 value = 5120
-ignorehitpause = 1
 
 [State -4, Getup2]
 type = VarSet

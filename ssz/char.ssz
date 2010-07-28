@@ -2911,7 +2911,7 @@ public &Char
       if(`stVal.playerno == `playerno && `player) `state_3(::);
       if(p) ret;
       `minus = -2;
-      if(`player && .super <= 0) `state_2(::);
+      if(`player) `state_2(::);
       `minus = -1;
       if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
@@ -5255,7 +5255,7 @@ public void PlayerList!&Char?::add(^&.Char c)
 }
 public void PlayerList!&Char?::destroy(int id)
 {
-  if(id < 0 || #`top == 0) ret;
+  if(#`top == 0) ret;
   .playerid.new(0);
   .resetNumenemy();
   if(`top~c~id == id){
