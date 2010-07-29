@@ -2917,7 +2917,7 @@ public &Char
       `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
       `state(::);
-      if(lc) .v.setI(52)$`trSelfState();
+      if(lc && `stVal.no != 105 && `stVal.no != 52) .v.setI(52)$`trSelfState();
       if(!`isHitPaused()) `stVal.time++;
     break:
       `minus = 1;
