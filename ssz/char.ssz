@@ -6175,7 +6175,7 @@ public float action(
   if(#.superanim > 0){
     .addAnimList(
       .topanims=, .superanim, 5, .superposx, .superposy, .com.scale,
-      (float).superfacing, 1.0, 0.0, false, 1.0, 1.0, 255, 0, 256,
+      (float).superfacing, 1.0, 0.0, false, 1.0, 1.0, -1, 0, 256,
       .consts.null!&.com.PalFX?(), 0, 0.0);
     if(.superanim~ani.loopend) .superanim.new(0);
   }
