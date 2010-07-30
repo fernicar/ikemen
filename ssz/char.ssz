@@ -2776,7 +2776,10 @@ public &Char
       {
         `defencemul *= .superp2defmul;
       }
-      if(.gs(.gsNOKO) && `helperindex == 0 && `sysivar[.iLIFE] <= 0){
+      if(
+        !.roundEnd() && .gs(.gsNOKO)
+        && `helperindex == 0 && `sysivar[.iLIFE] <= 0)
+      {
         `sysivar[.iLIFE] = 1;
       }
     }
@@ -2918,6 +2921,12 @@ public &Char
       `minus = 0;
       `state(::);
       if(lc && `stVal.no != 105 && `stVal.no != 52) .v.setI(52)$`trSelfState();
+      if(
+        `isActive() && `stVal.no == 5110
+        && `sysivar[.iLIFE] > 0 && `sysivar[.iRECOVERTIME] <= 0)
+      {
+        .v.setI(5120)$`trSelfState();
+      }
       if(!`isHitPaused()) `stVal.time++;
     break:
       `minus = 1;
@@ -3194,7 +3203,7 @@ public &Char
   }
   public bool addLife(int l, bool kill, bool absolute)
   {
-    if(!.m.inRange!int?(-.fight~ro.over_hittime, 0, .com.intro)) ret false;
+    if(.com.intro > 0 || .roundEnd()) ret false;
     bool foo = `sysivar[.iLIFE] != 0;
     `sysivar[.iLIFE] +=
       (int).m.floor((float)l / (absolute ? 1.0 : `defencemul));
@@ -3218,7 +3227,7 @@ public &Char
   }
   public void setPower(int p)
   {
-    if(.com.intro < -.fight~ro.over_hittime) ret;
+    if(.roundEnd()) ret;
     `sysivar[.iPOWER] = .m.max!int?(0)<, .m.min!int?(`sysivar[.iPOWERMAX])<, p;
   }
   public int getSharePower()

@@ -57,14 +57,6 @@ ctrl = 0
 ignorehitpause = 1
 
 [State -4, Getup1]
-type = SelfState
-triggerall = Active
-triggerall = StateNo = 5110
-trigger1 = Alive
-trigger1 = sysvar(55) <= 0;RECOVERTIME
-value = 5120
-
-[State -4, Getup2]
 type = VarSet
 triggerall = StateNo != 5110
 trigger1 = Alive
@@ -73,7 +65,7 @@ trigger2 = !Alive
 trigger2 = !HitOver || gethitvar(isbound) || abs(vel x)+abs(vel y) >= 0.01
 sysvar(55) = const(data.liedown.time);RECOVERTIME
 
-[State -4, Getup3]
+[State -4, Getup2]
 type = VarAdd
 triggerall = Active
 trigger1 = StateNo = 5110
