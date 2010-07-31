@@ -613,8 +613,7 @@ public &Anim<frame_t>
     else:
       `draw(
         .com.scrrect=,
-        x - (float)h*xscale*(axscl - 1.0)*(float)`frames[`drawidx].x,
-        y - (float)v*yscale*(ayscl - 1.0)*(float)`frames[`drawidx].y,
+        x - (float)h*xscale*(axscl - 1.0)*(float)`frames[`drawidx].x, y,
         1.0, 1.0, xs, xs, ys, 0.0, 160.0, fx);
     comm:
       ret;
