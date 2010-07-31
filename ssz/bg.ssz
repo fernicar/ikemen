@@ -89,7 +89,7 @@ public &Action
         break, break;
       }
       line = lines[i][0...s.find(";", lines[i])];
-      ary = .s.svToAry!ary<>.self?(",", line);
+      ary = .com.csvToAry(line);
       branch{
       cond #ary >= 5:
         if(#`frames > 0 && `frames[-1].time < 0) `frames[-1].time = 0;

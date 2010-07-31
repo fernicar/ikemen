@@ -169,6 +169,18 @@ public int atoi(^/char str)
   ret n;
 }
 
+public ^int csvToAry(^/char csv)
+{
+  ^^/char spl = .s.split(",", csv);
+  ^int ary.new(#spl);
+  loop{index i = 0; while; do:
+    ary[i] = .atoi(spl[i]);
+    i++;
+  while i < #ary:
+  }
+  ret ary;
+}
+
 public &IXY
 {
   public int x = .IERR, y = .IERR;

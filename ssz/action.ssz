@@ -109,7 +109,7 @@ public &Action
           }
         }
       else:
-        ary = .s.svToAry!ary<>.self?(",", line);
+        ary = .com.csvToAry(line);
         if(#ary < 5) break;
         if(#`ani.frames > 0 && `ani.frames[-1].time < 0){
           `ani.frames[-1].time = 0;
