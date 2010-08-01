@@ -2919,13 +2919,16 @@ public &Char
       if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
-      `state(::);
-      if(lc && `stVal.no != 105 && `stVal.no != 52) .v.setI(52)$`trSelfState();
-      if(
-        `isActive() && `stVal.no == 5110
-        && `sysivar[.iLIFE] > 0 && `sysivar[.iRECOVERTIME] <= 0)
-      {
+      branch{
+      cond lc && `stVal.no != 105 && `stVal.no != 52:
+        .v.setI(52)$`trSelfState();
+      cond
+        !`isHitPaused() && `stVal.no == 5110
+        && `sysivar[.iLIFE] > 0 && `sysivar[.iRECOVERTIME] <= 0
+        :
         .v.setI(5120)$`trSelfState();
+      else:
+        `state(::);
       }
       if(!`isHitPaused()) `stVal.time++;
     break:
