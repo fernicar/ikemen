@@ -1081,7 +1081,7 @@ public &StateBuilder
         out .= ".v.setI(.fAIRJUMP_BACK)$" .= obj .= "trSysFVar()";
       cond .s.equ("velocity.runjump.fwd.x", token):
         out .= ".v.setI(.fRUNJUMP_FWDX)$" .= obj .= "trSysFVar()";
-      cond .s.equ("velocity.runjump.fwd.y", token):
+      cond .s.equ("velocity.runjump.y", token):
         out .= ".v.setI(.fRUNJUMP_FWDY)$" .= obj .= "trSysFVar()";
       cond .s.equ("velocity.runjump.back.x", token):
         out .= ".v.setI(.fRUNJUMP_BACKX)$" .= obj .= "trSysFVar()";
