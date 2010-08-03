@@ -1854,7 +1854,9 @@ public &Char
     `sf = c.sf;
     `sn = c.sn;
     `actionList = c.actionList;
+    `key = c.key;
     `cmd.copy(c.cmd=);
+    if(`key < 0) `cmd.buffer.new(1);
     `palno = c.palno;
     `drawpalno = c.drawpalno;
     `state_1 = c.state_1;
@@ -2674,17 +2676,14 @@ public &Char
   {
     if(`helperindex < 0 || `id < 0) ret;
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
-    if(
-      !`isPaused() || (
-        .super > 0 ? `playerno == .superplayer
-        : .pause > 0 && `playerno == .pauseplayer)) branch
-    {
-    cond `stVal.mctime > 0:
-      if(!`isHitPaused() || `isPaused()) `stVal.mctime++;
-    cond `stVal.mctime < 0:
+    if(`stVal.mctime < 0){
       `stVal.mctime *= -1;
       `stVal.juggle = 0;
       `sysivar[.iHITCOUNT]++;
+    }
+    if(`tmphit){
+      `stVal.hit.clear();
+      `tmphit = false;
     }
     if(!`isPaused()){
       branch{
@@ -2701,6 +2700,7 @@ public &Char
       }
       if(`sysivar[.iHITPAUSETIME] > 0) `sysivar[.iHITPAUSETIME]--;
       if(!`isHitPaused()){
+        if(`stVal.mctime > 0) `stVal.mctime++;
         if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
         if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
         if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
@@ -2710,10 +2710,6 @@ public &Char
         while i < #`stVal.ho:
         }
       }
-    }
-    if(`tmphit){
-      `stVal.hit.clear();
-      `tmphit = false;
     }
     if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     `enemyn.new(0);
@@ -2867,7 +2863,7 @@ public &Char
           `destmp && c~stVal.playerno != c~playerno
           && c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id)
         {
-          .v.setI(5050)$c~trSelfState();
+          .v.setI(5050)$c~trSelfState(-1, -1);
         }
       }
       i++;
@@ -2914,9 +2910,9 @@ public &Char
         }
       }
       bool lc = `landCondition();
+      if(p) ret;
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
-      if(p) ret;
       `minus = -2;
       if(`player) `state_2(::);
       `minus = -1;
@@ -2925,12 +2921,12 @@ public &Char
       `minus = 0;
       branch{
       cond lc && `stVal.no != 105 && `stVal.no != 52:
-        .v.setI(52)$`trSelfState();
+        .v.setI(52)$`trSelfState(-1, -1);
       cond
         !`isHitPaused() && `stVal.no == 5110
         && `sysivar[.iLIFE] > 0 && `sysivar[.iRECOVERTIME] <= 0
         :
-        .v.setI(5120)$`trSelfState();
+        .v.setI(5120)$`trSelfState(-1, -1);
       else:
         `state(::);
       }
@@ -3682,10 +3678,6 @@ public &Char
   }
   public void trIfelse(&.Var b, &.Var v1, &.Var v2)
   {
-    if(b.typ == .VarTy::SFalse){
-      .v.setSF();
-      ret;
-    }
     .v = b.isTrue() ? v1 : v2;
   }
   public void trBoolNot()
@@ -3929,6 +3921,7 @@ public &Char
       ret;
     }
     `trAnimElemTime();
+    if(.v.toInt() < 0) .v.setSF();
   }
   public void trAnimElemTime()
   {
@@ -3950,6 +3943,7 @@ public &Char
   }
   public void trChangeAnim(int no)
   {
+    if(no == .com.IERR) ret;
     `animno = no;
     `animpno = `playerno;
     `ani = `getAction(no);
@@ -3964,6 +3958,7 @@ public &Char
   }
   public void trChangeAnim2(int pno, int no)
   {
+    if(no == .com.IERR) ret;
     `animno = no;
     `animpno = pno;
     `ani = .chars[pno][0]~getAction(no);
@@ -4129,11 +4124,12 @@ public &Char
       `cs1tmp = false;
     }
   }
-  public void trChangeState2(int p)
+  public void trChangeState2(int p, int anim, int ctrl)
   {
-    if(.v.typ == .VarTy::SFalse) ret;
     int n = .v.toInt();
-    if(`minus == -3 && `stVal.no == n && `stVal.playerno == p) ret;
+    if(n == .com.IERR) ret;
+    if(anim >= 0) `trChangeAnim(anim);
+    if(ctrl >= 0) `setCtrl(ctrl != 0);
     branch{
     cond `changeState1(p, n):
       if(`minus <= 0) `changeState2();
@@ -4148,17 +4144,17 @@ public &Char
       `trDestroySelf();
       if(`helperindex == 0 && n != 0){
         .v.setI(0);
-        `trSelfState();
+        `trSelfState(-1, -1);
       }
     }
   }
-  public void trChangeState()
+  public void trChangeState(int anim, int ctrl)
   {
-    `trChangeState2(`stVal.playerno);
+    `trChangeState2(`stVal.playerno, anim, ctrl);
   }
-  public void trSelfState()
+  public void trSelfState(int anim, int ctrl)
   {
-    `trChangeState2(`playerno);
+    `trChangeState2(`playerno, anim, ctrl);
   }
   public void trSetPersistent(int p=)
   {
@@ -4373,7 +4369,7 @@ public &Char
     h.sysfvar[.fVY] = 0.0;
     if(ownpal != 0) h.palfx.new(1);
     .v.setI(st);
-    h.trChangeState2(`stVal.playerno);
+    h.trChangeState2(`stVal.playerno, -1, -1);
   }
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
   {
@@ -6364,7 +6360,7 @@ public float action(
         .chars[i][0]~posReset((float)`stg.p1.startx, (float)`stg.p2.startx);
         .chars[i][0]~setCtrl(true);
         .v.setI(0);
-        .chars[i][0]~trSelfState();
+        .chars[i][0]~trSelfState(-1, -1);
       }
       i++;
     while i < #.chars:
@@ -6611,7 +6607,7 @@ public void nextRound(&.stage.Stage stg=)
     if(#.chars[i] > 0){
       .chars[i][0]~trChangeAnim(0);
       .v.setI(5900);
-      .chars[i][0]~trSelfState();
+      .chars[i][0]~trSelfState(-1, -1);
     }
     i++;
   while i < #.chars:

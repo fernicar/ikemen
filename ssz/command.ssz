@@ -875,6 +875,7 @@ public &Command
         ret;
       }
       `current++;
+      if(`cmdidx == 1 && `cmd[0].slash) `current = 0;
       branch{
       cond<a> `cmdidx == #`cmd:
       cond<b> !ai && `current >= `time + #`cmd:

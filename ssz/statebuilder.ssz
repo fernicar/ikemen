@@ -3658,20 +3658,19 @@ public &StateBuilder
           cond .s.equ(name, "value"):
             if(
               !`fullExpression(
-                `state.ctrlList[-1].task=, text=,
-                "", "$")) ret false;
+                `state.ctrlList[-1].task=, text=, "", "$")) ret false;
             branch{
             cond `state.ctrlList[-1].typ == .CtrlTy::SelfState:
-              `state.ctrlList[-1].task .= "`trSelfState();";
+              `state.ctrlList[-1].task .= "`trSelfState(a,c);";
             else:
-              `state.ctrlList[-1].task .= "`trChangeState();";
+              `state.ctrlList[-1].task .= "`trChangeState(a,c);";
             }
           cond .s.equ(name, "ctrl"):
             {
               %char buf;
               if(
                 !`fullExpression(
-                  buf=, text=, "`setCtrl(", "$.v.isTrue());")) ret false;
+                  buf=, text=, "c=", "$(int).v.isTrue();")) ret false;
               buf .= `state.ctrlList[-1].task;
               `state.ctrlList[-1].task = buf;
             }
@@ -3680,9 +3679,7 @@ public &StateBuilder
             {
               %char buf;
               if(
-                !`fullExpression(
-                  buf=, text=,
-                  "`trChangeAnim(", "$.v.toInt());")) ret false;
+                !`fullExpression(buf=, text=, "a=", "$.v.toInt();")) ret false;
               buf .= `state.ctrlList[-1].task;
               `state.ctrlList[-1].task = buf;
             }
@@ -6057,6 +6054,10 @@ public &StateBuilder
           case .CtrlTy::ChangeAnim, .CtrlTy::ChangeAnim2:
             if(#`state.value > 0) dbuf .= "int e;";
           }
+          switch(`state.ctrlList[-1].typ){
+          case .CtrlTy::ChangeState, .CtrlTy::SelfState:
+            dbuf .= "int a=-1,c=-1;";
+          }
           dbuf .= `state.ctrlList[-1].task;
           switch(`state.ctrlList[-1].typ){
           case .CtrlTy::ChangeAnim, .CtrlTy::ChangeAnim2:
@@ -6355,20 +6356,20 @@ public &StateBuilder
             \t"if(`stVal.no == 140"
             " && `trAnimTime()$.v.toInt() == 0){"\r\n
             \t\t".v.setI((int)(`stVal.typ == .StTy::C)*11"
-            " + (int)(`stVal.typ == .StTy::A)*51)$`trSelfState();"\r\n
+            " + (int)(`stVal.typ == .StTy::A)*51)$`trSelfState(-1, -1);"\r\n
             \t"}"\r\n
             \t"branch{"\r\n
             \t"cond `ctrl():"\r\n
             \t\t"branch{"\r\n
             \t\t"cond `stVal.typ == .StTy::S"
             " && `cmd.buffer~D > 0:"\r\n
-            \t\t\t"if(`stVal.no != 10) .v.setI(10)$`trSelfState();"\r\n
+            \t\t\t"if(`stVal.no != 10) .v.setI(10)$`trSelfState(-1, -1);"\r\n
             \t\t"cond `stVal.typ == .StTy::C"
             " && `cmd.buffer~D < 0:"\r\n
-            \t\t\t"if(`stVal.no != 12) .v.setI(12)$`trSelfState();"\r\n
+            \t\t\t"if(`stVal.no != 12) .v.setI(12)$`trSelfState(-1, -1);"\r\n
             \t\t"cond `stVal.typ != .StTy::A"
             " && `cmd.buffer~U > 0:"\r\n
-            \t\t\t"if(`stVal.no != 40) .v.setI(40)$`trSelfState();"\r\n
+            \t\t\t"if(`stVal.no != 40) .v.setI(40)$`trSelfState(-1, -1);"\r\n
             \t\t"cond `stVal.typ == .StTy::A"
             " && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0"
             " && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]"
@@ -6377,16 +6378,16 @@ public &StateBuilder
             \t\t\t"if(`stVal.no != 45){"\r\n
             \t\t\t\t"`sysivar[.iAIRJUMP_CNT]++;"\r\n
             \t\t\t\t"`sysivar[.iSYSFLAG] &= !.sfAIRJUMP;"\r\n
-            \t\t\t\t".v.setI(45)$`trSelfState();"\r\n
+            \t\t\t\t".v.setI(45)$`trSelfState(-1, -1);"\r\n
             \t\t\t"}"\r\n
             \t\t"cond !`ls(.lsNOWALK) && `stVal.typ == .StTy::S"
             " && (`cmd.buffer~F > 0"
             " || ((!`inguarddist || `ls(.lsNOSTANDGUARD))"
             " && `cmd.buffer~B > 0)):"\r\n
-            \t\t\t"if(`stVal.no != 20) .v.setI(20)$`trSelfState();"\r\n
+            \t\t\t"if(`stVal.no != 20) .v.setI(20)$`trSelfState(-1, -1);"\r\n
             \t\t"cond `stVal.no == 20"
             " && (`cmd.buffer~F < 0 && `cmd.buffer~B < 0):"\r\n
-            \t\t\t".v.setI(0)$`trSelfState();"\r\n
+            \t\t\t".v.setI(0)$`trSelfState(-1, -1);"\r\n
             \t\t"}"\r\n
             \t\t"if(`ctrl() && `inguarddist"
             " && (`stVal.no < 120 || `stVal.no >= 160)"
@@ -6394,16 +6395,16 @@ public &StateBuilder
             " || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))"
             " || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))"
             " && `cmd.buffer~B > 0){"\r\n
-            \t\t\t".v.setI(120)$`trSelfState();"\r\n
+            \t\t\t".v.setI(120)$`trSelfState(-1, -1);"\r\n
             \t\t"}"\r\n
             \t"cond `sysivar[.iCTRL] != 0 || .roundState() == 4:"\r\n
             \t\t"switch(`stVal.no){"\r\n
             \t\t"case 11:"\r\n
             \t\t\t"`setCtrl(true);"\r\n
-            \t\t\t".v.setI(12)$`trSelfState();"\r\n
+            \t\t\t".v.setI(12)$`trSelfState(-1, -1);"\r\n
             \t\t"case 20:"\r\n
             \t\t\t"`setCtrl(true);"\r\n
-            \t\t\t".v.setI(0)$`trSelfState();"\r\n
+            \t\t\t".v.setI(0)$`trSelfState(-1, -1);"\r\n
             \t\t"}"\r\n
             \t"}"\r\n
             \t"`destmp = false;"\r\n;
