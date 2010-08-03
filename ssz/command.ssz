@@ -635,7 +635,7 @@ public &Command
     public bool slash = false, greater = false, flag1 = false, flag2 = false;
     public bool isDirection()
     {
-      ret !`slash && #`key == 1 && `key[0] <= .Key::UF;
+      ret #`key == 1 && `key[0] <= .Key::UF;
     }
   }
   public ^/char name;
@@ -818,6 +818,13 @@ public &Command
       }
       ret true;
     }];
+    if(
+      `cmdidx > 0
+      && `cmd[`cmdidx].isDirection() && `cmd[`cmdidx-1].isDirection()
+      && kbuf.keyState(`cmd[`cmdidx-1].key[0]) > 1)
+    {
+      ret fail(::);
+    }
     branch{
     cond<sla> `cmd[`cmdidx].slash:
       `held = `cmd[`cmdidx].key;
