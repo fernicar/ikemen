@@ -3921,7 +3921,6 @@ public &Char
       ret;
     }
     `trAnimElemTime();
-    if(.v.toInt() < 0) .v.setSF();
   }
   public void trAnimElemTime()
   {
