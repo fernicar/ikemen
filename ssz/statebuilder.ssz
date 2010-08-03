@@ -6374,9 +6374,11 @@ public &StateBuilder
             " && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]"
             " && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]"
             " && `cmd.buffer~U > 0:"\r\n
-            \t\t\t"`sysivar[.iAIRJUMP_CNT]++;"\r\n
-            \t\t\t"`sysivar[.iSYSFLAG] &= !.sfAIRJUMP;"\r\n
-            \t\t\t"if(`stVal.no != 45) .v.setI(45)$`trSelfState();"\r\n
+            \t\t\t"if(`stVal.no != 45){"\r\n
+            \t\t\t\t"`sysivar[.iAIRJUMP_CNT]++;"\r\n
+            \t\t\t\t"`sysivar[.iSYSFLAG] &= !.sfAIRJUMP;"\r\n
+            \t\t\t\t".v.setI(45)$`trSelfState();"\r\n
+            \t\t\t"}"\r\n
             \t\t"cond !`ls(.lsNOWALK) && `stVal.typ == .StTy::S"
             " && (`cmd.buffer~F > 0"
             " || ((!`inguarddist || `ls(.lsNOSTANDGUARD))"

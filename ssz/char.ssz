@@ -872,6 +872,8 @@ void appendToClipboard(^/char text, ^&.Var vars)
   public float yaccel;
   public int hitid;
   public int chainid;
+  public int nochainid1;
+  public int nochainid2;
   public int guarded;
   public int fallf;
   public int juggle;
@@ -905,6 +907,8 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `yaccel = .com.FERR;
     `hitid = -1;
     `chainid = -1;
+    `nochainid1 = -1;
+    `nochainid2 = -1;
     `guarded = 0;
     `fallf = 0;
     `juggle = 0;
@@ -999,6 +1003,8 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
     `hb.chainid = hit.chainid;
+    `hb.nochainid1 = hit.nochainid1;
+    `hb.nochainid2 = hit.nochainid2;
     `hb.fall = hit.fall;
     `hb.yaccel = hit.yaccel;
     `hb.p1getp2facing = hit.p1getp2facing;
@@ -2462,13 +2468,11 @@ public &Char
       .super > 0 && .superunhittable != 0
       && `playerno == .superplayer) ret false;
     if(`hittmp != 0){
-      if(hit.chainid >= 0 && `stVal.hb.hitid != hit.chainid) ret false;
+      if(`stVal.hb.chainid >= 0 && hit.id != `stVal.hb.chainid) ret false;
       if(
-        hit.nochainid1 >= 0
-        && `stVal.hb.hitid == hit.nochainid1) ret false;
+        `stVal.hb.nochainid1 >= 0 && hit.id == `stVal.hb.nochainid1) ret false;
       if(
-        hit.nochainid2 >= 0
-        && `stVal.hb.hitid == hit.nochainid2) ret false;
+        `stVal.hb.nochainid2 >= 0 && hit.id == `stVal.hb.nochainid2) ret false;
     }
     if(hit.reversal_attr != 0){
       ret
@@ -5395,7 +5399,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
       `pyr.stVal.typ == .StTy::S;
     }
-    bool rtn = false, damageable = false;
+    bool rtn = false, damageable = false, ho = false;
     int p2s = 0;
     if(
       !`pyr.cs1tmp || `pyr.stVal.playerno == by.playerno
@@ -5423,6 +5427,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             }
           }
           if(!`pyr.isHitState()) damageable = false;
+          ho = true;
           break, break, break;
         }
         i++;
@@ -5592,7 +5597,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       else:
         break, break;
       }
-      if(rtn){
+      if(rtn && (!ho || `pyr.stVal.hb.byid < 0)){
         `pyr.outTarget();
         by.addTarget(`pyr.id);
         `pyr.stVal.hb.byid = by.id;
