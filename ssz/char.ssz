@@ -2677,15 +2677,6 @@ public &Char
   {
     if(`helperindex < 0 || `id < 0) ret;
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
-    if(`stVal.mctime < 0){
-      `stVal.mctime *= -1;
-      `stVal.juggle = 0;
-      `sysivar[.iHITCOUNT]++;
-    }
-    if(`tmphit){
-      `stVal.hit.clear();
-      `tmphit = false;
-    }
     if(!`isPaused()){
       branch{
       cond `stVal.hb.hitshaketime > 0:
@@ -2699,9 +2690,13 @@ public &Char
       cond `stVal.hb.fall.recovertime > 0:
         `stVal.hb.fall.recovertime--;
       }
-      if(`sysivar[.iHITPAUSETIME] > 0) `sysivar[.iHITPAUSETIME]--;
-      if(!`isHitPaused()){
+      branch{
+      cond `sysivar[.iHITPAUSETIME] > 0:
+        `sysivar[.iHITPAUSETIME]--;
+      else:
         if(`stVal.mctime > 0) `stVal.mctime++;
+      }
+      if(!`isHitPaused()){
         if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
         if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
         if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
@@ -2723,6 +2718,15 @@ public &Char
           }
         }
       }
+    }
+    if(`stVal.mctime < 0){
+      if(!`cs1tmp) `stVal.mctime = 1;
+      `stVal.juggle = 0;
+      `sysivar[.iHITCOUNT]++;
+    }
+    if(`tmphit){
+      `stVal.hit.clear();
+      `tmphit = false;
     }
     if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     `enemyn.new(0);
@@ -2910,7 +2914,13 @@ public &Char
       bool p = !`ls(.lsGETHIT) && (isSuperPaused() || isNormalPaused());
       `acttmp = -(int)p * 2;
       `bind();
-      `changeState2();
+      branch{
+      cond<mc> `stVal.mctime < 0:
+      comm:
+        `changeState2();
+      diff<mc>:
+        `stVal.mctime = 1;
+      }
       if(!p){
         `lSetNormal();
         branch{
@@ -3661,18 +3671,10 @@ public &Char
   }
   public void trBoolAnd(&.Var v1, &.Var v2)
   {
-    if(v1.typ == .VarTy::SFalse || (v1.isTrue() && v2.typ == .VarTy::SFalse)){
-      .v.setSF();
-      ret;
-    }
     .v.setB(v1.isTrue() && v2.isTrue());
   }
   public void trBoolOr(&.Var v1, &.Var v2)
   {
-    if(v1.typ == .VarTy::SFalse || (!v1.isTrue() && v2.typ == .VarTy::SFalse)){
-      .v.setSF();
-      ret;
-    }
     .v.setB(v1.isTrue() || v2.isTrue());
   }
   public void trIfelse(&.Var b, &.Var v1, &.Var v2)
@@ -5736,9 +5738,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT));
           if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
         cond #h == 1:
-          p~c~stVal.mctyp =
-            p~c~stVal.hit.reversal_attr != 0
-            ? .MoveContact::Reversed : .MoveContact::Hit;
+          p~c~stVal.mctyp = .MoveContact::Hit;
+          if(p~c~stVal.hit.reversal_attr != 0){
+            pyr.stVal.mctyp = .MoveContact::Reversed;
+            pyr.stVal.mctime = -1;
+          }
           if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
               .m.max!int?(1, p~c~stVal.hit.pausetime);
