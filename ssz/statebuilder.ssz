@@ -71,7 +71,6 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   public |.chr.StTy typ;
   public |.chr.StTy phy;
   public |.chr.MovTy mov;
-  public int sprpriority;
   public int hitcountpersist;
   public int hitdefpersist;
   public int movehitpersist;
@@ -90,7 +89,6 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
     `typ = .chr.StTy::S;
     `phy = .chr.StTy::N;
     `mov = .chr.MovTy::I;
-    `sprpriority = 0;
     `hitcountpersist = 0;
     `hitdefpersist = 0;
     `movehitpersist = 0;
@@ -3224,7 +3222,6 @@ public &StateBuilder
           !`fullExpression(
             `state.deftask=, text=,
             "`sprpriority=", "$.v.toInt();")) ret false;
-        `state.sprpriority = 1;
       cond .s.equ(name, "anim"):
         if(#text > 0 && .s.toLowerChar(text[0]) == 's'){
           text = text[1..-1];
@@ -6245,7 +6242,7 @@ public &StateBuilder
               "{`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
               "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;}";
           case .CtrlTy::BindToRoot:
-            dbuf .= "`bind(false);";
+            dbuf .= "`bind();";
           case .CtrlTy::BindToTarget:
             dbuf .= `state.value .= "`trBindToTarget(hmf);";
           case .CtrlTy::HitFallSet:
@@ -6461,7 +6458,6 @@ public &StateBuilder
           if(#`state.deftask > 0){
              buf .= '\t' .= `okikae(`state.deftask) .= \r\n;
           }
-          if(`state.sprpriority == 0) buf .= \t"`sprpriority = 0;"\r\n;
           if(`state.hitcountpersist == 0){
             buf .= \t"`clearHitCount();"\r\n;
           }

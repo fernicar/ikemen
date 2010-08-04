@@ -1888,6 +1888,7 @@ public &Char
     `sysivar[.iALPHAS] = 255;
     `sysivar[.iALPHAD] = 0;
     `sysivar[.iRECOVERTIME] = 0;
+    `sprpriority = 0;
     `getcombo = 0;
     `veloff = 0.0;
     `palfx.new(0);
@@ -1913,7 +1914,6 @@ public &Char
     `keyctrl = false;
     `player = false;
     `inguarddist = false;
-    `sprpriority = 0;
     `palno = 0;
     `drawpalno = 0;
     `animno = 0;
@@ -2710,6 +2710,18 @@ public &Char
           i++;
         while i < #`stVal.ho:
         }
+        if(`sysivar[.iBINDTIME] > 0){
+          if(--`sysivar[.iBINDTIME] == 0) branch{
+            ^`self c = .players.get(`sysivar[.iBINDTOID]);
+            if(#c == 0) break;
+          cond `stVal.hb.byid == c~id:
+            `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
+            `setYV(c~sysfvar[.fVY]);
+          cond c~stVal.hb.byid == `id:
+            c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
+            c~setYV(`sysfvar[.fVY]);
+          }
+        }
       }
     }
     if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
@@ -2897,7 +2909,7 @@ public &Char
       if(#`palfx > 0 && !`isPaused()) `palfx~step();
       bool p = !`ls(.lsGETHIT) && (isSuperPaused() || isNormalPaused());
       `acttmp = -(int)p * 2;
-      `bind(false);
+      `bind();
       `changeState2();
       if(!p){
         `lSetNormal();
@@ -3030,7 +3042,7 @@ public &Char
     }
     ret cvx;
   }
-  public void bind(bool tick)
+  public void bind()
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
@@ -3047,20 +3059,6 @@ public &Char
     branch{
     cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
     cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
-    }
-    if(
-      tick && .com.tickNextFrame() && `isActive() && `sysivar[.iBINDTIME] > 0)
-    {
-      `sysivar[.iBINDTIME]--;
-      if(`sysivar[.iBINDTIME] == 0) branch{
-        `xScreenBound();
-      cond `stVal.hb.byid == c~id:
-        `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
-        `setYV(c~sysfvar[.fVY]);
-      cond c~stVal.hb.byid == `id:
-        c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
-        c~setYV(`sysfvar[.fVY]);
-      }
     }
   }
   public void xScreenBound()
@@ -3152,7 +3150,7 @@ public &Char
       `stVal.hb.mindistx = `stVal.hb.maxdistx = .com.FERR;
       `stVal.hb.mindisty = `stVal.hb.maxdisty = .com.FERR;
     }
-    `bind(true);
+    `bind();
   }
   public void posReset(float p1x, float p2x)
   {
@@ -4418,7 +4416,7 @@ public &Char
       `sysfvar[.fBINDPOSX] += (float)c~sysivar[.iHEAD_POSX];
       `sysfvar[.fBINDPOSY] += (float)c~sysivar[.iHEAD_POSY];
     }
-    `bind(false);
+    `bind();
   }
   public void trTargetDrop(int id, int keepone)
   {
