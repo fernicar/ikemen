@@ -2827,9 +2827,7 @@ public &Char
   }
   public float getHeight()
   {
-    ret
-      (float)`sysivar[.iHEIGHT]
-      * (`stVal.typ == .StTy::C || `stVal.typ == .StTy::L ? 0.5 : 1.0);
+    ret (float)`sysivar[.iHEIGHT];
   }
   void lSetNormal()
   {
