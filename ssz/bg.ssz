@@ -99,6 +99,7 @@ public &Action
         `frames[-1].x = ary[2];
         `frames[-1].y = ary[3];
         `frames[-1].time = ary[4];
+        if(`frames[-1].time < -1) `frames[-1].time = 0;
         {
           ^^/char spl = .s.split(",", line);
           if(#spl < 6) break;

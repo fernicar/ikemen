@@ -390,24 +390,24 @@ public &Anim<frame_t>
     if(#`frames == 0) ret 0;
     if(`loopend && `time == 0 && `current == `loopstart) ret 0;
     int at = `time;
-    loop{
-      index i = `current;
-      if(i < #`frames) branch{
-      cond `frames[i].time == 0:
-        at--;
-      cond `frames[i].time < 0:
-        at++;
-        loop{index j = 0; while; do:
-          at += `frames[j].time;
-          j++;
-        while j < i:
-        }
+    branch{
+    cond `frames[-1].time < 0:
+      at++;
+      loop{index j = 0; while; do:
+        at += `frames[j].time;
+        j++;
+      while j < `current:
       }
-      while;
-    do:
-      at -= `frames[i].time;
-      i++;
-    while i < #`frames && `frames[i].time >= 0:
+    else:
+      loop{
+        index i = `current;
+        if(`frames[i].time == 0) at--;
+        while;
+      do:
+        at -= `frames[i].time;
+        i++;
+      while i < #`frames:
+      }
     }
     ret at;
   }
