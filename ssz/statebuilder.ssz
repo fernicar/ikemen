@@ -6391,11 +6391,9 @@ public &StateBuilder
             \t"cond `sysivar[.iCTRL] != 0 || .roundState() == 4:"\r\n
             \t\t"switch(`stVal.no){"\r\n
             \t\t"case 11:"\r\n
-            \t\t\t"`setCtrl(true);"\r\n
-            \t\t\t".v.setI(12)$`trSelfState(-1, -1);"\r\n
+            \t\t\t".v.setI(12)$`trSelfState(-1, 1);"\r\n
             \t\t"case 20:"\r\n
-            \t\t\t"`setCtrl(true);"\r\n
-            \t\t\t".v.setI(0)$`trSelfState(-1, -1);"\r\n
+            \t\t\t".v.setI(0)$`trSelfState(-1, 1);"\r\n
             \t\t"}"\r\n
             \t"}"\r\n
             \t"`destmp = false;"\r\n;

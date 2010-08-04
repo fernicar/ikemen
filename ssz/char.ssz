@@ -6358,9 +6358,8 @@ public float action(
       if(#.chars[i] > 0){
         if(.gs(.gsINTRO)) .charClear(i);
         .chars[i][0]~posReset((float)`stg.p1.startx, (float)`stg.p2.startx);
-        .chars[i][0]~setCtrl(true);
         .v.setI(0);
-        .chars[i][0]~trSelfState(-1, -1);
+        .chars[i][0]~trSelfState(-1, 1);
       }
       i++;
     while i < #.chars:
