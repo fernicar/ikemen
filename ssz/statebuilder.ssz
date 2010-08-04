@@ -1594,38 +1594,15 @@ public &StateBuilder
       out .= "`trRoundState()";
     cond .s.equ("ishometeam", token):
       out .= ".v.setB((" .= .s.iToS(`playerno&1) .= ")==.com.home)";
-    else:
-      branch{
-      cond .cfg.IgnoreMostErrors:
-        branch{
-        cond .s.equ("", token):
-          out .= ".v.setI(0)";
-        else:
-          out .= ".v.setSF()";
-        }
-      else:
-        {
-          %char buf;
-          `lasterror = (buf .= token .= "が不正です");
-          ret false;
-        }
-      }
-    }
-    ret true;
-  }
-  bool expValue(%char out=, ^/char in=)
-  {
-    ^/char token = `tokenizer(in=);
-    branch{
     cond .s.equ("playerid", token):
       if(!`expValue(out=, in=)) ret false;
-      out .= "$`trPlayerID()$(#.c>0?";
+      out .= "$`trPlayerID()$(#.c>0?[._t(_=){";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
       }
-      if(!`expRedirectable(".c~", `tokenizer(in=), out=, in=)) ret false;
-      out .= ":.v.setSF())";
+      if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
+      out .= ";}](:.c<>=:):.v.setSF())";
     cond
       .s.equ("enemy", token) || .s.equ("enemynear", token)
       || .s.equ("helper", token) || .s.equ("target", token)
@@ -1667,34 +1644,48 @@ public &StateBuilder
         `lasterror = ",がありません";
         ret false;
       }
-      out .= "$(#.c>0?";
-      if(!`expRedirectable(".c~", `tokenizer(in=), out=, in=)) ret false;
-      out .= ":.v.setSF())";
+      out .= "$(#.c>0?[._t(_=){";
+      if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
+      out .= ";}](:.c<>=:):.v.setSF())";
     cond .s.equ("root", token) || .s.equ("parent", token):
       out .= token[0] == 'r' ? "`trRoot()$" : "`trParent()$";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
       }
-      if(!`expRedirectable(".c~", `tokenizer(in=), out=, in=)) ret false;
+      out .= "[._t(_=){";
+      if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
+      out .= ";}](:.c<>=:)";
     cond .s.equ("partner", token):
-      out .= "`trPartner()$(#.c>0?";
+      out .= "`trPartner()$(#.c>0?[._t(_=){";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
       }
-      if(!`expRedirectable(".c~", `tokenizer(in=), out=, in=)) ret false;
-      out .= ":.v.setSF())";
-    cond true:
-      if(!`expRedirectable("`", token, out=, in=)) ret false;
+      if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
+      out .= ";}](:.c<>=:):.v.setSF())";
     else:
-      {
-        %char buf;
-        `lasterror = (buf .= token .= "が不正です");
-        ret false;
+      branch{
+      cond .cfg.IgnoreMostErrors:
+        branch{
+        cond .s.equ("", token):
+          out .= ".v.setI(0)";
+        else:
+          out .= ".v.setSF()";
+        }
+      else:
+        {
+          %char buf;
+          `lasterror = (buf .= token .= "が不正です");
+          ret false;
+        }
       }
     }
     ret true;
+  }
+  bool expValue(%char out=, ^/char in=)
+  {
+    ret `expRedirectable("`", `tokenizer(in=), out=, in=);
   }
   bool expPostNot(%char out=, ^/char in=)
   {

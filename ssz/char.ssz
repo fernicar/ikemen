@@ -547,6 +547,7 @@ public &Var
 }
 public &Var v;//work
 public ^&Char c;//work
+type _t = $void(&Char=);
 
 void appendToClipboard(^/char text, ^&.Var vars)
 {
