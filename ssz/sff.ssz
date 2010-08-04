@@ -562,8 +562,7 @@ public &Anim<frame_t>
     float rx, ^&.com.PalFX fx)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
-    int h = `h*`frames[`drawidx].h;
-    int v = `v*`frames[`drawidx].v;
+    int h = `h*`frames[`drawidx].h, v = `v*`frames[`drawidx].v;
     float xs = (float)h*cscalex*xtscale, ys = (float)v*cscaley*yscale;
     float bs = xbscale;
     .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
@@ -572,8 +571,7 @@ public &Anim<frame_t>
     .m.limRange!float?(bs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
     float x2 =
       cscalex*x - xs*(float)(`spr~rct.x - `frames[`drawidx].x) + rx;
-    float y2 =
-      cscaley*y - ys*(float)(`spr~rct.y - `frames[`drawidx].y);
+    float y2 = cscaley*y - ys*(float)(`spr~rct.y - `frames[`drawidx].y);
     if(xs < 0.0){
       x2 *= -1.0;
       x2 += rx*2.0;
