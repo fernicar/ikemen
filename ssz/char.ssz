@@ -532,6 +532,10 @@ public &Var
     if(`typ == .VarTy::Int) ret `i != 0;
     ret `f != 0.0;
   }
+  const bool isSF()
+  {
+    ret `typ == .VarTy::SFalse;
+  }
   const int toInt()
   {
     if(`typ == .VarTy::SFalse) ret .com.IERR;
@@ -2720,7 +2724,7 @@ public &Char
       }
     }
     if(`stVal.mctime < 0){
-      if(!`cs1tmp) `stVal.mctime = 1;
+      `stVal.mctime = 1;
       `stVal.juggle = 0;
       `sysivar[.iHITCOUNT]++;
     }
@@ -2757,7 +2761,7 @@ public &Char
       if(`ls(.lsPLAYERPUSH)){
         clsn.new(1);
         clsn~l = (short)-`backw + 1;
-        clsn~t = (short)-`getHeight() + 1;
+        clsn~t = (short)-.com.BodyHeight + 1;
         clsn~r = (short)`frontw;
         clsn~b = 0;
         .drawwh.new[-1].set(clsn, x-`offsetx, y-`offsety, (float)`facing, 1.0);
@@ -2912,13 +2916,7 @@ public &Char
       bool p = !`ls(.lsGETHIT) && (isSuperPaused() || isNormalPaused());
       `acttmp = -(int)p * 2;
       `bind();
-      branch{
-      cond<mc> `stVal.mctime < 0:
-      comm:
-        `changeState2();
-      diff<mc>:
-        `stVal.mctime = 1;
-      }
+      `changeState2();
       if(!p){
         `lSetNormal();
         branch{
@@ -3170,12 +3168,11 @@ public &Char
     `setXV(0.0);
     `setYV(0.0);
   }
-  void nikou<if_t, ff_t>(&.Var rtn=, &.Var v1, &.Var v2)
+  void nikou<if_t, ff_t>(&.Var rtn=, &.Var var1, &.Var var2)
   {
-    if(v1.typ == .VarTy::SFalse || v2.typ == .VarTy::SFalse){
-      rtn.setSF();
-      ret;
-    }
+    &.Var v1 = var1, v2 = var2;
+    if(v1.typ == .VarTy::SFalse) v1.setB(false);
+    if(v2.typ == .VarTy::SFalse) v2.setB(false);
     branch{
     cond v1.typ == v2.typ:
       branch{
@@ -3681,7 +3678,6 @@ public &Char
   }
   public void trBoolNot()
   {
-    if(.v.typ == .VarTy::SFalse) ret;
     .v.setB(!.v.isTrue());
   }
   public void trMinus()
@@ -3912,19 +3908,10 @@ public &Char
       .v.setI(`ani~ani.animTime());
     }
   }
-  public void trAnimElem()
-  {
-    int n = .v.toInt();
-    if(#`ani == 0 || n > #`ani~ani.frames){
-      .v.setSF();
-      ret;
-    }
-    `trAnimElemTime();
-  }
   public void trAnimElemTime()
   {
     int e = .v.toInt();
-    if(e < 1 || #`ani == 0){
+    if(e < 1 || #`ani == 0 || e > #`ani~ani.frames){
       .v.setSF();
       ret;
     }
@@ -3942,35 +3929,29 @@ public &Char
   public void trChangeAnim(int no)
   {
     if(no == .com.IERR) ret;
-    `animno = no;
+    int num = .m.max!int?(0, no);
+    *`ani.self tmp = `getAction(num);
+    if(#tmp == 0) ret;
+    `ani = tmp;
+    `animno = num;
     `animpno = `playerno;
-    `ani = `getAction(no);
-    if(#`ani == 0){
-      `animno = 0;
-      `ani = `getAction(0);
-      `trDestroySelf();
-    }
     `sysfvar[.fCLSNXSCALE] = `sysfvar[.fXSCALE];
     `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
-    if(#`ani > 0) `ani~ani.updateSprite();
+    `ani~ani.updateSprite();
   }
   public void trChangeAnim2(int pno, int no)
   {
     if(no == .com.IERR) ret;
-    `animno = no;
+    int num = .m.max!int?(0, no);
+    *`ani.self tmp = .chars[pno][0]~getAction(num);
+    if(#tmp == 0) ret;
+    `ani = tmp;
+    `animno = num;
     `animpno = pno;
-    `ani = .chars[pno][0]~getAction(no);
-    branch{
-    cond #`ani > 0:
-      `sysfvar[.fCLSNXSCALE] = .chars[pno][0]~sysfvar[.fXSCALE];
-      `sysfvar[.fCLSNYSCALE] = .chars[pno][0]~sysfvar[.fYSCALE];
-      `ani~ani.sff = `sf;
-    else:
-      `ani = `getAction(0);
-      `sysfvar[.fCLSNXSCALE] = `sysfvar[.fXSCALE];
-      `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
-    }
-    if(#`ani > 0) `ani~ani.updateSprite();
+    `sysfvar[.fCLSNXSCALE] = .chars[pno][0]~sysfvar[.fXSCALE];
+    `sysfvar[.fCLSNYSCALE] = .chars[pno][0]~sysfvar[.fYSCALE];
+    `ani~ani.sff = `sf;
+    `ani~ani.updateSprite();
   }
   public void trAnimExist(int pno)
   {
@@ -4140,9 +4121,14 @@ public &Char
       }
     cond .changeStateNest < 2500:
       `trDestroySelf();
-      if(`helperindex == 0 && n != 0){
-        .v.setI(0);
-        `trSelfState(-1, -1);
+      branch{
+      cond n < 0:
+        .v.setI(0)$`trChangeState2(p, anim, ctrl);
+      else:
+        `state = `dummy;
+        `stVal.prevno = `stVal.no;
+        `stVal.no = n;
+        `stVal.playerno = p;
       }
     }
   }
@@ -5631,8 +5617,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         && (
           pyr.stVal.typ != .StTy::L
           || p~c~stVal.typ != .StTy::A || p~c~stVal.mov != .MovTy::A))
-      && pyr.sysfvar[.fY] - p~c~sysfvar[.fY] < pyr.getHeight()
-      && p~c~sysfvar[.fY] - pyr.sysfvar[.fY] < p~c~getHeight())
+      && pyr.sysfvar[.fY] - p~c~sysfvar[.fY] < .com.BodyHeight
+      && p~c~sysfvar[.fY] - pyr.sysfvar[.fY] < .com.BodyHeight)
     {
       if(pl >= pr) break;
       float el, er;

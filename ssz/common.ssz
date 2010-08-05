@@ -47,6 +47,7 @@ scrrect.set(0, 0, (ushort)cfg.Width, (ushort)cfg.Height);
 const float Speed = (float)cfg.GameSpeed / 60.0;
 
 const float P1P3Dist = 32.0;
+const float BodyHeight = 60.0;
 
 const float FERR = (float)consts.int_t::MIN;
 const int IERR = (int)FERR;
