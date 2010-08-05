@@ -294,7 +294,7 @@ void game()
     float yminscl = 240.0 / (240.0-bt);
     float minscl =
       .m.max!float?(.cfg.MinScale)<, .m.max!float?(xminscl, yminscl);
-    float scl = 1.0, sclmul = 1.0, l = x, r = x;
+    float scl = 1.0, sclmul = 1.0, l = 0.0, r = 0.0;
     float newx = x, newy = y, tmp;
   do:
     if(.se.eventKeys[0].down) .com.clsndraw!!;
