@@ -5740,6 +5740,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if(p~c~stVal.hit.reversal_attr != 0){
             pyr.stVal.mctyp = .MoveContact::Reversed;
             pyr.stVal.mctime = -1;
+            pyr.tmphit = true;
           }
           if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
