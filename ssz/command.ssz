@@ -922,7 +922,7 @@ public &Command
 public &CommandList
 {
   public ^&.Buffer buffer;
-  ^&.tbl.NameTable!%&.Command? cTable;
+  public ^&.tbl.NameTable!%&.Command? cTable;
   public int defaultTime;
   public int defaultBufferTime;
   public ^&.Command ctmp;

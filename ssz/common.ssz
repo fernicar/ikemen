@@ -265,6 +265,7 @@ public ^char readFileName(^/char f)
 workpal.new(256);
 public &PalFX
 {
+  public int player;
   public int time;
   public float mulr;
   public float mulg;
@@ -285,6 +286,7 @@ public &PalFX
   }
   public void clear()
   {
+    `player = -1;
     `time = 0;
     `mulr = 1.0;
     `mulg = 1.0;

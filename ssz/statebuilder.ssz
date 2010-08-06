@@ -1603,7 +1603,7 @@ public &StateBuilder
       out .= ".v.setB((" .= .s.iToS(`playerno&1) .= ")==.com.home)";
     cond .s.equ("playerid", token):
       if(!`expValue(out=, in=)) ret false;
-      out .= "$`trPlayerID()$(#.c>0?[._t(_=){";
+      out .= '$' .= obj .= "trPlayerID()$(#.c>0?[._t(_=){";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
@@ -1623,13 +1623,13 @@ public &StateBuilder
         if(!`expBoolOr(out=, in=)) ret false;
         branch{
         cond h:
-          out .= "$`trHelper()";
+          out .= '$' .= obj .= "trHelper()";
         cond t:
-          out .= "$`trTarget()";
+          out .= '$' .= obj .= "trTarget()";
         cond n:
-          out .= "$`trEnemyNear()";
+          out .= '$' .= obj .= "trEnemyNear()";
         else:
-          out .= "$`trEnemy()";
+          out .= '$' .= obj .= "trEnemy()";
         }
         if(!.s.equ(")", `tokenizer(in=))){
           `lasterror = ")がありません";
@@ -1639,13 +1639,13 @@ public &StateBuilder
       cond .s.equ(",", token):
         branch{
         cond h:
-          out .= ".v.setI(-1)$`trHelper()";
+          out .= ".v.setI(-1)$" .= obj .= "trHelper()";
         cond t:
-          out .= ".v.setI(-1)$`trTarget()";
+          out .= ".v.setI(-1)$" .= obj .= "trTarget()";
         cond n:
-          out .= ".v.setI(0)$`trEnemyNear()";
+          out .= ".v.setI(0)$" .= obj .= "trEnemyNear()";
         else:
-          out .= ".v.setI(0)$`trEnemy()";
+          out .= ".v.setI(0)$" .= obj .= "trEnemy()";
         }
       else:
         `lasterror = ",がありません";
@@ -1655,7 +1655,7 @@ public &StateBuilder
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
       out .= ";}](:.c<>=:):.v.setSF())";
     cond .s.equ("root", token) || .s.equ("parent", token):
-      out .= token[0] == 'r' ? "`trRoot()$" : "`trParent()$";
+      out .= obj .= token[0] == 'r' ? "trRoot()$" : "trParent()$";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
@@ -1664,7 +1664,7 @@ public &StateBuilder
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
       out .= ";}](:.c<>=:)";
     cond .s.equ("partner", token):
-      out .= "`trPartner()$(#.c>0?[._t(_=){";
+      out .= obj .= "trPartner()$(#.c>0?[._t(_=){";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
@@ -3510,7 +3510,7 @@ public &StateBuilder
         cond .s.equ(s, "palfx"):
           `state.ctrlList[-1].typ = .CtrlTy::PalFX;
           `state.ctrlList[-1].task .=
-            "^&.com.PalFX fx=`getPalfx();fx~clear();";
+            "^&.com.PalFX fx=`getPalfx();fx~clear();fx~player=`id;";
         cond .s.equ(s, "allpalfx"):
           `state.ctrlList[-1].typ = .CtrlTy::AllPalFX;
           `state.ctrlList[-1].task .=
@@ -3685,7 +3685,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trChangeAnim(", "$.v.toInt());")) ret false;
+                "`trChangeAnim(.m.max!int?(0,", "$.v.toInt()));")) ret false;
           cond .s.equ(name, "elem"):
             {
               %char buf;
@@ -3707,7 +3707,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=,
-                text=, ",", "$.v.toInt());")) ret false;
+                text=, ",.m.max!int?(0,", "$.v.toInt()));")) ret false;
           cond .s.equ(name, "elem"):
             {
               %char buf;
@@ -5924,7 +5924,11 @@ public &StateBuilder
         fname .= '_' .= .s.iToS(`playerno) .= 'P';
         buf .=
           "void c.Char::" .= fname .= "()"\r\n
-          "{"\r\n
+          "{"\r\n;
+        if(`state.no == -1){
+          buf .= \t"if(!`ctrlOver()){"\r\n;
+        }
+        buf .=
           \t"bool nh = !`isHitPaused();"\r\n
           \t"byte ih;"\r\n;
         while;
@@ -5952,14 +5956,15 @@ public &StateBuilder
           buf .= \t"if(";
           branch{
           cond #`state.ignorehitpause > 0:
-            buf .= "(nh||";
             branch{
             cond<ex> `state.ctrlList[-1].typ == .CtrlTy::Explod:
-              buf .= "(ih=(int)(";
+              buf .= "((ih=(int)(";
+            else:
+              buf .= "(nh||";
             comm:
               buf .= `state.ignorehitpause .= ".isTrue()";
             diff<ex>:
-              buf .= "))!=0";
+              buf .= "))!=0||nh";
             }
             buf .= ")&&";
           cond
@@ -6337,6 +6342,7 @@ public &StateBuilder
       break:
         if(`state.no == -1){
           buf .=
+            \t"}"\r\n
             \t"if(`destmp) ret;"\r\n
             \t"branch{"\r\n
             \t"cond `stVal.typ == .StTy::A:"\r\n
