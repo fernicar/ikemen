@@ -2921,8 +2921,6 @@ public &Char
       if(#`palfx > 0 && !`isPaused()) `palfx~step();
       bool p = !`ls(.lsGETHIT) && (isSuperPaused() || isNormalPaused());
       `acttmp = -(int)p * 2;
-      `bind();
-      `changeState2();
       if(!p){
         `lSetNormal();
         branch{
@@ -2935,13 +2933,18 @@ public &Char
         }
       }
       bool lc = `landCondition();
-      if(p) ret;
-      `minus = -3;
-      if(`stVal.playerno == `playerno && `player) `state_3(::);
-      `minus = -2;
-      if(`player) `state_2(::);
-      `minus = -1;
-      if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
+      `bind();
+      {
+        if(p) ret;
+        `minus = -3;
+        if(`stVal.playerno == `playerno && `player) `state_3(::);
+        `minus = -2;
+        if(`player) `state_2(::);
+        `minus = -1;
+        if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
+      break:
+        `changeState2();
+      }
       `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
       branch{
