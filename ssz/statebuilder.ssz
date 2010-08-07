@@ -1320,7 +1320,10 @@ public &StateBuilder
       cond .s.equ("type", token):
         out .= ".v.setI(" .= obj .= "stVal.hb.typ)";
       cond .s.equ("animtype", token):
-        out .= ".v.setI(" .= obj .= "stVal.hb.animtype)";
+        out .=
+          ".v.setI(`stVal.hb.fallf!=0?(int)"
+          .= obj .= "stVal.hb.fall.animtype:"
+          .= obj .= "stVal.hb.animtype)";
       cond .s.equ("airtype", token):
         out .= ".v.setI(" .= obj .= "stVal.hb.airtype)";
       cond .s.equ("groundtype", token):
@@ -5656,6 +5659,7 @@ public &StateBuilder
         case .CtrlTy::AfterImageTime:
           branch{
           cond .s.equ(name, "time") || .s.equ(name, "value"):
+            `state.flag = 1;
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
@@ -6301,6 +6305,8 @@ public &StateBuilder
             dbuf .= ".stage.envShake.setDefPhase();";
           case .CtrlTy::DisplayToClipboard, .CtrlTy::AppendToClipboard:
             dbuf .= ".appendToClipboard(text, vars);";
+          case .CtrlTy::AfterImageTime:
+            if(`state.flag == 0) "`aimg.time=0;";
           }
           branch{
           cond #dbuf > 64:

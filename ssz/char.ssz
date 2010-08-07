@@ -3331,6 +3331,7 @@ public &Char
     if(h.air_fall == .com.IERR) h.air_fall = h.ground_fall;
     if(h.air_animtype == .AnimTy::Unknown) h.air_animtype = h.animtype;
     if(h.air_type == .ReactTy::Unknown) h.air_type = h.ground_type;
+    if(h.fall.animtype == .AnimTy::Unknown) h.fall.animtype = h.animtype;
     if(h.forcestand == .com.IERR){
       h.forcestand = (int)(h.ground_velocityy != 0.0);
     }
