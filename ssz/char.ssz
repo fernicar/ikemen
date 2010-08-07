@@ -2832,6 +2832,12 @@ public &Char
   {
     ret `ls(.lsPOSFREEZEX) || `isBound();
   }
+  public bool pushable()
+  {
+    ret
+      `ls(.lsPLAYERPUSH) && !`isFreezeX()
+      && #`curFrame > 0 && (#`curFrame~clsn1 > 0 || #`curFrame~clsn2 > 0);
+  }
   public bool isFall()
   {
     ret `stVal.hb.fallf != 0 && `stVal.hb.hittime <= 0;
@@ -2847,11 +2853,7 @@ public &Char
     `sysivar[.iSPECIALFLAG] |=
       `player && (`sysivar[.iLIFE] > 0 || `sysivar[.iRECOVERTIME] > 0)
       ? .lsSCREENBOUNDX | .lsSCREENBOUNDY | (
-        .com.intro <= .fight~ro.ctrl_time && (
-          `stVal.phy != .StTy::N || (
-            #`curFrame > 0 && (#`curFrame~clsn1 > 0 || #`curFrame~clsn2 > 0))
-          || `stVal.hb.hittime > 0)
-        ? .lsPLAYERPUSH : 0) : 0;
+        .com.intro <= .fight~ro.ctrl_time ? .lsPLAYERPUSH : 0) : 0;
     `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
     `attackdist = (float)`sysivar[.iATTACK_DIST];
     `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
@@ -5621,9 +5623,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
   do:
     if(p~c~id < 0) continue;
     if(
-      (pyr.playerno&1) != (p~c~playerno&1)
-      && !pyr.isFreezeX() && !p~c~isFreezeX()
-      && pyr.ls(.lsPLAYERPUSH) && p~c~ls(.lsPLAYERPUSH)
+      (pyr.playerno&1) != (p~c~playerno&1) && pyr.pushable() && p~c~pushable()
       && (
         (
           pyr.stVal.typ != .StTy::A || pyr.stVal.mov != .MovTy::A
