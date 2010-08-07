@@ -2479,8 +2479,10 @@ public &Char
     if(
       .super > 0 && .superunhittable != 0
       && `playerno == .superplayer) ret false;
+    if(hit.chainid >= 0 && (`hittmp == 0 || `stVal.hb.hitid != hit.chainid)){
+      ret false;
+    }
     if(`hittmp != 0){
-      if(`stVal.hb.chainid >= 0 && hit.id != `stVal.hb.chainid) ret false;
       if(
         `stVal.hb.nochainid1 >= 0 && hit.id == `stVal.hb.nochainid1) ret false;
       if(
@@ -2497,14 +2499,16 @@ public &Char
     if((hit.hitflag & (int).StTy::N) == 0 && `hittmp > 2) ret false;
     if((hit.hitflag & (int).MovTy::I) != 0 && `hittmp != 0) ret false;
     if((hit.hitflag & (int).MovTy::H) != 0 && `hittmp == 0) ret false;
-    if(
-      `stVal.hb.hitt1 != 0 && (
-        (`stVal.hb.hitf1 & hit.attr & 63) == 0
-        || (`stVal.hb.hitf1 & hit.attr & !63) == 0)) ret false;
-    if(
-      `stVal.hb.hitt2 != 0 && (
-        (`stVal.hb.hitf2 & hit.attr & 63) == 0
-        || (`stVal.hb.hitf2 & hit.attr & !63) == 0)) ret false;
+    if(hit.chainid < 0){
+      if(
+        `stVal.hb.hitt1 != 0 && (
+          (`stVal.hb.hitf1 & hit.attr & 63) == 0
+          || (`stVal.hb.hitf1 & hit.attr & !63) == 0)) ret false;
+      if(
+        `stVal.hb.hitt2 != 0 && (
+          (`stVal.hb.hitf2 & hit.attr & 63) == 0
+          || (`stVal.hb.hitf2 & hit.attr & !63) == 0)) ret false;
+    }
     ret true;
   }
   public bool hittable(&.Hitdef hit=, ~$bool(&.Hitdef=) countercheck)
