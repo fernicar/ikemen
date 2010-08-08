@@ -388,7 +388,14 @@ public &Anim<frame_t>
   public int animTime()
   {
     if(#`frames == 0) ret 0;
-    if(`loopend && `time == 0 && `current == `loopstart) ret 0;
+    if(`loopend && `time == 0) loop{
+      index i = `loopstart;
+    do:
+      if(i == `current) ret 0;
+      if(`frames[i].time != 0) break;
+      i++;
+    while i < #`frames:
+    }
     int at = `time;
     branch{
     cond `frames[-1].time < 0:
@@ -505,7 +512,7 @@ public &Anim<frame_t>
     `time = 0;
     `newframe = true;
     `updateSprite();
-    `loopend = `current < e-1;
+    `loopend = false;
   }
   public void updateSprite()
   {

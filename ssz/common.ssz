@@ -514,8 +514,20 @@ public &FrameActionMethod<_t>
         ani.current = 0;
         ani.repeatcnt = 0;
       else:
-        ani.current =
-          @m.max!index?(0)<, @m.min!index?(#ani.frames-1)<, ani.loopstart;
+        loop{
+          bool foo = true;
+          continue;
+        do:
+          loop{while; do:
+            ani.current++;
+          while ani.frames[ani.current].time == 0 && ani.current < #ani.frames:
+          }
+          if(ani.current < #ani.frames) break;
+        continue:
+          ani.current =
+            @m.max!index?(0)<, @m.min!index?(#ani.frames-1)<, ani.loopstart;
+        while foo!!:
+        }
       comm:
         ani.loopend = true;
       }
