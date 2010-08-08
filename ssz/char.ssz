@@ -903,7 +903,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `damage = 0;
     `hitcount = 0;
     `fallcount = 0;
-    `hitshaketime = 0;
+    `hitshaketime = -1;
     `hittime = 0;
     `slidetime = 0;
     `ctrltime = 0;
@@ -1023,7 +1023,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.animtype = (int)hit.animtype;
     }
     if(guard && ((int)`typ&hit.guardflag) != 0){
-      `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
+      `hb.hitshaketime = .m.max!int?(0, hit.guard_shaketime+1);
       `hb.hittime = hit.guard_hittime;
       `hb.slidetime = hit.guard_slidetime;
       `hb.guarded = 1;
@@ -1041,7 +1041,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.hitcount = hc;
       ret 2 * (`hb.typ == 0 || hit.reversal_attr != 0 ? -1 : 1);
     }
-    `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
+    `hb.hitshaketime = .m.max!int?(0, hit.shaketime+1);
     `hb.slidetime = hit.ground_slidetime;
     branch{
     cond `typ == .StTy::A:
@@ -1944,7 +1944,7 @@ public &Char
         c = .players.get(`targets[i]);
         if(#c > 0){
           c~stVal.hb.hitshaketime -= `sysivar[.iHITPAUSETIME];
-          .m.limMin!int?(c~stVal.hb.hitshaketime=, 0);
+          .m.limMin!int?(c~stVal.hb.hitshaketime=, -1);
         }
         i++;
       while i < #`targets:
@@ -2685,7 +2685,7 @@ public &Char
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
     if(!`isPaused()){
       branch{
-      cond `stVal.hb.hitshaketime > 0:
+      cond `stVal.hb.hitshaketime >= 0:
         `stVal.hb.hitshaketime--;
       cond `stVal.hb.hittime > 0:
         `stVal.hb.hittime--;
@@ -3106,7 +3106,7 @@ public &Char
         `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
         `getcombo = 0;
         `stVal.hb.hittime = 0;
-        `stVal.hb.hitshaketime = 0;
+        `stVal.hb.hitshaketime = -1;
         `stVal.hb.fallf = 0;
         `stVal.hb.fallcount = 0;
         `stVal.hb.juggle = 0;
@@ -4825,7 +4825,7 @@ public &Char
   }
   public void trHitShakeOver()
   {
-    .v.setI((int)(`stVal.hb.hitshaketime <= 0));
+    .v.setI((int)(`stVal.hb.hitshaketime < 0));
   }
   public void trCanRecover()
   {
