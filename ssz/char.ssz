@@ -5524,7 +5524,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(!by.ls(.lsNOJUGGLECHECK)){
         `pyr.stVal.hb.juggle -=
-          (pro != 0 ? 0 : by.stVal.juggle) + by.stVal.hit.air_juggle;
+          pro != 0 ? by.stVal.hit.air_juggle : by.stVal.juggle;
       }
     else:
       by.addPower(hit.guardgetpower);
@@ -5720,8 +5720,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       p~c~stVal.hit.hitonce >= 0 && (
         pyr.hittmp < 2 || pyr.stVal.hb.byid != p~c~id
         || p~c~ls(.lsNOJUGGLECHECK)
-        || juggcheck(
-          pyr.stVal.hb.juggle, p~c~stVal.juggle + p~c~stVal.hit.air_juggle))
+        || juggcheck(pyr.stVal.hb.juggle, p~c~stVal.juggle))
       && pyr.hittable(
         p~c~stVal.hit=, [bool(&.Hitdef h=){
           ret p~c~attrCheck(h=)&&p~c~hitCheck(pyr=);}]))
