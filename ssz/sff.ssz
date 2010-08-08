@@ -133,12 +133,8 @@ public &Sprite
       index i = 0;
       ubyte r, g, b;
       if(palletSame){
-        branch{
-        cond #prev == 0:
-          if(#`colorPallet == 0) `colorPallet.new(256);
-        else:
-          `colorPallet = prev~colorPallet;
-        }
+        if(#prev > 0) `colorPallet = prev~colorPallet;
+        if(#`colorPallet == 0) `colorPallet.new(256);
         break, break;
       }
       `colorPallet.new(256);
@@ -288,7 +284,7 @@ public &Sff
       ^&.Sprite spriteList;
       spriteList.new((index)`head.numberOfImage);
       ushort indexOfPrevious;
-      index prev = -1;
+      index prev = 0;
       while;
     do:
       f.seek((long)shofs, .file.Seek::SET);
