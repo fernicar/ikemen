@@ -997,15 +997,10 @@ void appendToClipboard(^/char text, ^&.Var vars)
   }
   public int setHb(&.Hitdef hit=, bool guard, bool combo)
   {
-    int ty = `typ == .StTy::A ? (int)hit.air_type : (int)hit.ground_type;
-    if(ty == 0 || hit.reversal_attr != 0){
-      ret -1 - (int)(guard && ((int)`typ&hit.guardflag) != 0);
-    }
     bool cmb = combo && `hb.guarded == 0;
     int fall = `hb.fallf, hc = `hb.hitcount, fc = `hb.fallcount;
     int bi = `hb.byid;
     `hb.clear();
-    `hb.typ = ty;
     `hb.byid = bi;
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
@@ -1021,10 +1016,10 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `hb.maxdisty = hit.maxdisty;
     branch{
     cond `typ == .StTy::A:
-      `hb.airtype = `hb.typ;
+      `hb.airtype = `hb.typ = (int)hit.air_type;
       `hb.animtype = (int)hit.air_animtype;
     else:
-      `hb.groundtype = `hb.typ;
+      `hb.groundtype = `hb.typ = (int)hit.ground_type;
       `hb.animtype = (int)hit.animtype;
     }
     if(guard && ((int)`typ&hit.guardflag) != 0){
@@ -1044,7 +1039,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       }
       `hb.damage = hit.guarddamage;
       `hb.hitcount = hc;
-      ret 2;
+      ret 2 * (`hb.typ == 0 || hit.reversal_attr != 0 ? -1 : 1);
     }
     `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
     `hb.slidetime = hit.ground_slidetime;
@@ -1072,7 +1067,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `hb.hitcount = cmb ? hc+1 : 1;
     `hb.fallcount = fc;
     `hb.fallf |= fall;
-    ret 1;
+    ret 1 * (`hb.typ == 0 || hit.reversal_attr != 0 ? -1 : 1);
   }
 }
 const index iLIFE              = 10;
