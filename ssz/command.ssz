@@ -782,7 +782,6 @@ public &Command
       }
       if(j >= 1 && `cmd[j].isDirection() && `cmd[j-1].isDirection()){
         `cmd[j].greater = true;
-        `time++;
       }
       j++;
     while j < #cmds:
@@ -866,6 +865,9 @@ public &Command
     while i < #`cmd[`cmdidx].key:
       if(!foo) ret fail(::);
       `cmdidx++;
+      if(`cmdidx < #`cmd && !`cmdeq(`cmd[`cmdidx-1], `cmd[`cmdidx])){
+        ret `cmdChek(kbuf, ai);
+      }
     }
     ret true;
   }
@@ -883,7 +885,7 @@ public &Command
       if(`cmdidx == 1 && `cmd[0].slash) `current = 0;
       branch{
       cond<a> `cmdidx == #`cmd:
-      cond<b> !ai && `current > `time:
+      cond<b> !ai && (`time <= 0 || `current >= `time + #`cmd):
       else:
         break;
       comm:

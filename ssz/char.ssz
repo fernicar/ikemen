@@ -2277,10 +2277,10 @@ public &Char
         `cmd.ctmp~buffertime =
           .m.max!int?(1)<, .s.sToN!`cmd.ctmp<>.buffertime.self?(data);
       }
+      if(#(data = sc.get("command")) > 0) `cmd.ctmp~readCmd(data);
       if(#`cmd.ctmp~cmd == 1 && `cmd.ctmp~cmd~slash){
         `cmd.ctmp~buffertime = 1;
       }
-      if(#(data = sc.get("command")) > 0) `cmd.ctmp~readCmd(data);
       `cmd.add(`cmd.ctmp<>=);
     }
     void commandlist(^^/char lines, index i=)
