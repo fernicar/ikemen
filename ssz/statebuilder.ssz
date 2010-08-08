@@ -6306,7 +6306,7 @@ public &StateBuilder
           case .CtrlTy::DisplayToClipboard, .CtrlTy::AppendToClipboard:
             dbuf .= ".appendToClipboard(text, vars);";
           case .CtrlTy::AfterImageTime:
-            if(`state.flag == 0) "`aimg.time=0;";
+            if(`state.flag == 0) dbuf .= "`aimg.time=0;";
           }
           branch{
           cond #dbuf > 64:

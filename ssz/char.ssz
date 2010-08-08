@@ -2270,7 +2270,6 @@ public &Char
       `cmd.ctmp~buffertime = `cmd.defaultBufferTime;
       ^/char data;
       if(#(data = sc.get("name")) > 0) `cmd.ctmp~name = data;
-      if(#(data = sc.get("command")) > 0) `cmd.ctmp~readCmd(data);
       if(#(data = sc.get("time")) > 0){
         `cmd.ctmp~time = .s.sToN!`cmd.ctmp<>.time.self?(data);
       }
@@ -2281,6 +2280,7 @@ public &Char
       if(#`cmd.ctmp~cmd == 1 && `cmd.ctmp~cmd~slash){
         `cmd.ctmp~buffertime = 1;
       }
+      if(#(data = sc.get("command")) > 0) `cmd.ctmp~readCmd(data);
       `cmd.add(`cmd.ctmp<>=);
     }
     void commandlist(^^/char lines, index i=)
@@ -2474,9 +2474,7 @@ public &Char
     if(
       .super > 0 && .superunhittable != 0
       && `playerno == .superplayer) ret false;
-    if(hit.chainid >= 0 && (`hittmp == 0 || `stVal.hb.hitid != hit.chainid)){
-      ret false;
-    }
+    if(hit.chainid >= 0 && `stVal.hb.hitid != hit.chainid) ret false;
     if(`hittmp != 0){
       if(
         `stVal.hb.nochainid1 >= 0 && hit.id == `stVal.hb.nochainid1) ret false;
