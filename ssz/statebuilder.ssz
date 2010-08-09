@@ -5965,11 +5965,6 @@ public &StateBuilder
               buf .= "))!=0||nh";
             }
             buf .= ")&&";
-          cond
-            `state.no == -1 && (
-              `state.ctrlList[-1].typ == .CtrlTy::ChangeState
-              || `state.ctrlList[-1].typ == .CtrlTy::SelfState)
-            :
           else:
             if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
               buf .= "(ih=-1)$";

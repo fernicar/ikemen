@@ -782,6 +782,7 @@ public &Command
       }
       if(j >= 1 && `cmd[j].isDirection() && `cmd[j-1].isDirection()){
         `cmd[j].greater = true;
+        `time++;
       }
       j++;
     while j < #cmds:
@@ -814,6 +815,16 @@ public &Command
     }
     ret true;
   }
+  bool cmdeq(&`CmdButton cmd1, &`CmdButton cmd2)
+  {
+    if(#cmd1.key != #cmd2.key) ret false;
+    loop{index i = 0; while; do:
+      if(cmd1.key[i] != cmd2.key[i]) ret false;
+      i++;
+    while i < #cmd1.key:
+    }
+    ret true;
+  }
   bool isDToB(&`CmdButton cmd1, &`CmdButton cmd2)
   {
     if(cmd2.slash) ret false;
@@ -823,13 +834,7 @@ public &Command
     while i < #cmd1.key:
       ret false;
     }
-    if(#cmd1.key != #cmd2.key) ret true;
-    loop{index i = 0; while; do:
-      if(cmd1.key[i] != cmd2.key[i]) ret true;
-      i++;
-    while i < #cmd1.key:
-    }
-    ret false;
+    ret !`cmdeq(cmd1, cmd2);
   }
   bool cmdChek(&.Buffer kbuf, bool ai)
   {
@@ -887,12 +892,15 @@ public &Command
     loop{
       index i = 0;
       bool foo = false;
+      bool bar = `cmdidx > 0 && `cmdeq(`cmd[`cmdidx-1], `cmd[`cmdidx]);
+      bool baz;
       int n;
       while;
     do:
+      baz = !bar && `cmdidx > 0 && `cmd[`cmdidx].key[i] < .Key::a;
       n = kbuf.keyState(`cmd[`cmdidx].key[i]);
-      foo |= n == 1;
-      if(n <= 0 || n > 7) ret fail(::);
+      foo |= n == 1 || baz;
+      if(n <= 0 || (!baz && n > 7)) ret fail(::);
       i++;
     while i < #`cmd[`cmdidx].key:
       if(!foo) ret fail(::);
@@ -917,7 +925,7 @@ public &Command
       if(`cmdidx == 1 && `cmd[0].slash) `current = 0;
       branch{
       cond<a> `cmdidx == #`cmd:
-      cond<b> !ai && `current >= `time + 2:
+      cond<b> !ai && `current > `time:
       else:
         break;
       comm:
