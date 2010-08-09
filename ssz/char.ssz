@@ -2849,8 +2849,7 @@ public &Char
       .lsNoMoveMask | (`isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0);
     `sysivar[.iSPECIALFLAG] |=
       `player && (`sysivar[.iLIFE] > 0 || `sysivar[.iRECOVERTIME] > 0)
-      ? .lsSCREENBOUNDX | .lsSCREENBOUNDY | (
-        .com.intro <= .fight~ro.ctrl_time ? .lsPLAYERPUSH : 0) : 0;
+      ? .lsSCREENBOUNDX | .lsSCREENBOUNDY | .lsPLAYERPUSH : 0;
     `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
     `attackdist = (float)`sysivar[.iATTACK_DIST];
     `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
@@ -2943,6 +2942,37 @@ public &Char
         if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       break:
         `changeState2();
+        if(`stVal.hb.damage > 0 && `stVal.mov == .MovTy::H) branch{
+          ^`self by = .players.get(`stVal.hb.byid);
+        cond `stVal.hb.guarded != 0:
+          if(
+            `addLife(-`stVal.hb.damage, true, true)
+            && `helperindex == 0) branch
+          {
+            ^`self by = .players.get(`stVal.hb.byid);
+            if(#by == 0) else;
+          cond by~playerno == `playerno:
+            .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
+          cond (by~playerno&1) == (`playerno&1):
+            .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
+          else:
+            .winty[(`playerno+1)&1] = .fgt.WinTy::C;
+          }
+        else:
+          if(`addLife(-`stVal.hb.damage, true, true)) branch{
+            ^`self by = .players.get(`stVal.hb.byid);
+            if(#by == 0) else;
+          cond (by~playerno&1) == (`playerno&1):
+            if(`helperindex == 0) branch{
+            cond by~playerno == `playerno:
+              .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
+            else:
+              .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
+            }
+          else:
+            `setEnemyWinty();
+          }
+        }
       }
       `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
@@ -4053,15 +4083,6 @@ public &Char
     }
     .v.setF(`fvar[i] = v.toFloat());
   }
-  public bool isHitState()
-  {:<-
-    %char buf;
-    buf .=
-      "`s" .= .s.iToS(`stVal.no) .= '_' .= .s.iToS(`stVal.playerno) .= "PIsH";
-    bool dummy(){ret false;}
-    method$bool() ish = dummy;
-    ret consteval(ish=, buf) && ish(::);
-  }
   public bool changeState1(int p, int n)
   {
     if(.changeStateNest >= 2500){
@@ -4073,7 +4094,7 @@ public &Char
       ret false;
     }
     if(n < 0) ret false;
-    %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PInit";
+    %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PSet";
     if(!consteval(`state=, buf)) ret false;
     if(!`cs1tmp) `stVal.prevno = `stVal.no;
     if(`stVal.playerno != `playerno && p != `stVal.playerno) loop{
@@ -4096,7 +4117,6 @@ public &Char
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
-    `cs1tmp = true;
     if(p == `playerno) switch(n){
     case 0:
       if(`minus == -1) `setCtrl(true);
@@ -4104,15 +4124,14 @@ public &Char
       `sysivar[.iSYSFLAG] &= !.sfWIN;
       `sysivar[.iWAITWIN] = 180;
     }
+    `state(::);
+    `cs1tmp = true;
     ret true;
   }
   public void changeState2()
   {
     if(`cs1tmp){
-      bool tmp = `destmp;
       `state(::);
-      `destmp = tmp;
-      if(`stVal.mov != .MovTy::H) `sysivar[.iBINDTIME] = 0;
       `cs1tmp = false;
     }
   }
@@ -5419,7 +5438,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               rtn = true;
             }
           }
-          if(!`pyr.isHitState()) damageable = false;
+          if(`pyr.stVal.mov != .MovTy::H) damageable = false;
           ho = true;
           break, break, break;
         }
@@ -5434,25 +5453,16 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
       }
     }
-    `pyr.stVal.hb.damage =
-      `pyr.getDamage(
-        `pyr.stVal.hb.damage * hits,
-        hit.kill != 0 && (#hitting == 1 || hit.guard_kill != 0),
-        false, by.attackmul);
+    bool live = `pyr.sysivar[.iLIFE] > 0;
+    bool kill = #hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
+    `pyr.stVal.hb.damage +=
+      `pyr.getDamage(`pyr.stVal.hb.damage * hits, kill, false, by.attackmul);
+    if(live && !kill && `pyr.stVal.hb.damage > `pyr.sysivar[.iLIFE]){
+      `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
+    }
     if(damageable) branch{
     cond #hitting == 1:
       by.addPower(hit.hitgetpower);
-      if(`pyr.addLife(-`pyr.stVal.hb.damage, true, true)) branch{
-      cond (by.playerno&1) == (`pyr.playerno&1):
-        if(`pyr.helperindex == 0) branch{
-        cond by.playerno == `pyr.playerno:
-          .winty[(`pyr.playerno+1)&1] = .fgt.WinTy::Suicide;
-        else:
-          .winty[(`pyr.playerno+1)&1] = .fgt.WinTy::Teammate;
-        }
-      else:
-        `pyr.setEnemyWinty();
-      }
       `pyr.addPower(hit.hitgivepower);
       branch{
         if(hit.hitsoundg == .com.IERR) break;
@@ -5521,17 +5531,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
     else:
       by.addPower(hit.guardgetpower);
-      if(
-        `pyr.addLife(-`pyr.stVal.hb.damage, true, true)
-        && `pyr.helperindex == 0) branch
-      {
-      cond by.playerno == `pyr.playerno:
-        .winty[(`pyr.playerno+1)&1] = .fgt.WinTy::Suicide;
-      cond (by.playerno&1) == (`pyr.playerno&1):
-        .winty[(`pyr.playerno+1)&1] = .fgt.WinTy::Teammate;
-      else:
-        .winty[(`pyr.playerno+1)&1] = .fgt.WinTy::C;
-      }
       `pyr.addPower(hit.guardgivepower);
       branch{
         if(hit.guardsoundg == .com.IERR) break;

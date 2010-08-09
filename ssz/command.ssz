@@ -27,9 +27,9 @@ const int min(int x, int y)
 {
   B, D, F, U, DB, UB, DF, UF,
   Bs, Ds, Fs, Us, DBs, UBs, DFs, UFs,
-  a, b, c, x, y, z, s,
   nB, nD, nF, nU, nDB, nUB, nDF, nUF,
   nBs, nDs, nFs, nUs, nDBs, nUBs, nDFs, nUFs,
+  a, b, c, x, y, z, s,
   na, nb, nc, nx, ny, nz, ns,
 }
 
@@ -635,7 +635,7 @@ public &Command
     public bool slash = false, greater = false, flag1 = false, flag2 = false;
     public bool isDirection()
     {
-      ret #`key == 1 && `key[0] <= .Key::UF;
+      ret !`slash && #`key == 1 && `key[0] <= .Key::UF;
     }
   }
   public ^/char name;
@@ -782,19 +782,51 @@ public &Command
       }
       if(j >= 1 && `cmd[j].isDirection() && `cmd[j-1].isDirection()){
         `cmd[j].greater = true;
-        `time++;
       }
       j++;
     while j < #cmds:
     }
   }
-  bool cmdeq(&`CmdButton cmd1, &`CmdButton cmd2)
+  bool slacheck(&.Buffer kbuf, &`CmdButton cmd1, &`CmdButton cmd2)
   {
-    if(#cmd1.key != #cmd2.key) ret false;
+    if(!cmd2.slash) ret true;
     loop{index i = 0; while; do:
-      if(cmd1.key[i] != cmd2.key[i]) ret false;
+      if(kbuf.keyState(cmd1.key[i]) > 1) loop{index j = 0; while; do:
+        if(cmd1.key[i] == cmd2.key[j]) ret false;
+        j++;
+      while j < #cmd2.key:
+      }
       i++;
     while i < #cmd1.key:
+    }
+    if(cmd1.slash){
+      loop{index i = 0; while; do:
+        if(kbuf.keyState(cmd1.key[i]) == 2) break, break;
+        i++;
+      while i < #cmd1.key:
+      }
+      loop{index i = 0; while; do:
+        if(kbuf.keyState(cmd2.key[i]) <= 1) break, break;
+        i++;
+      while i < #cmd2.key:
+      }
+      ret false;
+    }
+    ret true;
+  }
+  bool isDToB(&`CmdButton cmd1, &`CmdButton cmd2)
+  {
+    if(cmd2.slash) ret false;
+    loop{index i = 0; while; do:
+      if(cmd1.key[i] < .Key::a) break;
+      i++;
+    while i < #cmd1.key:
+      ret false;
+    }
+    loop{index i = 0; while; do:
+      if(cmd2.key[i] < .Key::a) ret false;
+      i++;
+    while i < #cmd2.key:
     }
     ret true;
   }
@@ -819,22 +851,21 @@ public &Command
       }
       ret true;
     }];
-    if(
-      `cmdidx > 0 && `cmdeq(`cmd[`cmdidx-1], `cmd[`cmdidx])
-      && kbuf.keyState(`cmd[`cmdidx].key[0]) > 1)
-    {
+    if(`cmdidx > 0 && !`slacheck(kbuf, `cmd[`cmdidx-1], `cmd[`cmdidx])){
       ret fail(::);
     }
     branch{
     cond<sla> `cmd[`cmdidx].slash:
       `held = `cmd[`cmdidx].key;
     comm:
-      loop{index i = 0; while; do:
-        if((!ai || `cmd[`cmdidx].slash) && kbuf.keyState(`held[i]) <= 0){
-          ret `cmdidx != 0 && `cmd[`cmdidx].slash;
-        }
+      if(#`held > 0 && (!ai || `cmd[`cmdidx].slash)) loop{
+        index i = 0;
+        while;
+      do:
+        if(kbuf.keyState(`held[i]) > 0) break;
         i++;
       while i < #`held:
+        ret `cmdidx != 0 && `cmd[`cmdidx].slash;
       }
     diff<sla>:
       `cmdidx++;
@@ -865,10 +896,7 @@ public &Command
     while i < #`cmd[`cmdidx].key:
       if(!foo) ret fail(::);
       `cmdidx++;
-      if(
-        `cmdidx < #`cmd && `cmd[`cmdidx-1].isDirection()
-        && !`cmdeq(`cmd[`cmdidx-1], `cmd[`cmdidx]))
-      {
+      if(`cmdidx < #`cmd && `isDToB(`cmd[`cmdidx-1], `cmd[`cmdidx])){
         ret `cmdChek(kbuf, ai);
       }
     }
@@ -888,7 +916,7 @@ public &Command
       if(`cmdidx == 1 && `cmd[0].slash) `current = 0;
       branch{
       cond<a> `cmdidx == #`cmd:
-      cond<b> !ai && `current > `time:
+      cond<b> !ai && `current >= `time + #`cmd:
       else:
         break;
       comm:

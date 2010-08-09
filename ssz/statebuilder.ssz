@@ -6415,17 +6415,36 @@ public &StateBuilder
         buf .= "}"\r\n .= cbuf;
         if(`state.no >= 0){
           buf .=
-            "bool c.Char::" .= fname .= "IsH()"\r\n
-            "{"\r\n
-            \t"ret " .= (
-              `state.mov == .chr.MovTy::H ? "true" : (
-              `state.mov == .chr.MovTy::U
-              ? "`stVal.mov == .MovTy::H" : "false"))
-            .= ";"\r\n
-            "}"\r\n
             "void c.Char::" .= fname .= "Init()"\r\n
             "{"\r\n
             \t"`state = `" .= fname .= ";"\r\n;
+          if(#`state.ctrlList > 0){
+            buf .=
+              \t"`stVal.ps.new("
+              .= .s.iToS(#`state.ctrlList) .= ");"\r\n
+              \t"loop{index i = 0; do:"\r\n
+              \t\t"`stVal.ps[i].p = 0;"\r\n
+              \t"while ++i < " .= .s.iToS(#`state.ctrlList) .= ":"\r\n
+              \t"}"\r\n;
+          }
+          if(#`state.deftask > 0){
+             buf .= '\t' .= `okikae(`state.deftask) .= \r\n;
+          }
+          if(`state.hitcountpersist == 0){
+            buf .= \t"`clearHitCount();"\r\n;
+          }
+          if(`state.hitdefpersist == 0){
+            buf .= \t"`clearHitDef();"\r\n;
+          }
+          if(`state.movehitpersist == 0){
+            buf .= \t"`stVal.mctime = 0;"\r\n;
+          }
+          if(`state.juggle == 0) buf .= \t"`stVal.juggle = 0;"\r\n;
+          buf .=
+            "}"\r\n
+            "void c.Char::" .= fname .= "Set()"\r\n
+            "{"\r\n
+            \t"`state = `" .= fname .= "Init;"\r\n;
           if(
             `state.typ != .chr.StTy::U
             && `state.typ != .chr.StTy::A
@@ -6463,28 +6482,6 @@ public &StateBuilder
           case .chr.MovTy::H:
             buf .= \t"`stVal.mov = .MovTy::H;"\r\n;
           }
-          if(#`state.ctrlList > 0){
-            buf .=
-              \t"`stVal.ps.new("
-              .= .s.iToS(#`state.ctrlList) .= ");"\r\n
-              \t"loop{index i = 0; do:"\r\n
-              \t\t"`stVal.ps[i].p = 0;"\r\n
-              \t"while ++i < " .= .s.iToS(#`state.ctrlList) .= ":"\r\n
-              \t"}"\r\n;
-          }
-          if(#`state.deftask > 0){
-             buf .= '\t' .= `okikae(`state.deftask) .= \r\n;
-          }
-          if(`state.hitcountpersist == 0){
-            buf .= \t"`clearHitCount();"\r\n;
-          }
-          if(`state.hitdefpersist == 0){
-            buf .= \t"`clearHitDef();"\r\n;
-          }
-          if(`state.movehitpersist == 0){
-            buf .= \t"`stVal.mctime = 0;"\r\n;
-          }
-          if(`state.juggle == 0) buf .= \t"`stVal.juggle = 0;"\r\n;
           buf .= "}"\r\n;
         }
       }
