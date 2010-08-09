@@ -823,12 +823,13 @@ public &Command
     while i < #cmd1.key:
       ret false;
     }
+    if(#cmd1.key != #cmd2.key) ret true;
     loop{index i = 0; while; do:
-      if(cmd2.key[i] < .Key::a) ret false;
+      if(cmd1.key[i] != cmd2.key[i]) ret true;
       i++;
-    while i < #cmd2.key:
+    while i < #cmd1.key:
     }
-    ret true;
+    ret false;
   }
   bool cmdChek(&.Buffer kbuf, bool ai)
   {
@@ -916,7 +917,7 @@ public &Command
       if(`cmdidx == 1 && `cmd[0].slash) `current = 0;
       branch{
       cond<a> `cmdidx == #`cmd:
-      cond<b> !ai && `current >= `time + #`cmd:
+      cond<b> !ai && `current >= `time + 2:
       else:
         break;
       comm:
