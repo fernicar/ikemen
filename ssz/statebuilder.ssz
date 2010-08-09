@@ -3080,9 +3080,7 @@ public &StateBuilder
               "pr~stagebound=", "$.v.toInt();")) ret false;
         cond .s.equ(name, "projheightbound"):
           `state.ctrlList[-1].task .= "pr~heightboundt=";
-          if(
-            !`expression(
-              `state.ctrlList[-1].task=, text=)) ret false;
+          if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
           `state.ctrlList[-1].task .= "$.v.toInt();";
           if(.s.equ(",")<, `tokenizer(text=)){
             if(
@@ -3092,15 +3090,11 @@ public &StateBuilder
           }
         cond .s.equ(name, "projshadow"):
           `state.ctrlList[-1].task .= "pr~shadowr=";
-          if(
-            !`expression(
-              `state.ctrlList[-1].task=, text=)) ret false;
+          if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
           `state.ctrlList[-1].task .= "$.v.toInt();";
           if(.s.equ(",")<, `tokenizer(text=)){
             `state.ctrlList[-1].task .= "pr~shadowg=";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v.toInt();";
             if(.s.equ(",")<, `tokenizer(text=)){
               if(
@@ -3445,22 +3439,22 @@ public &StateBuilder
         cond .s.equ(s, "bindtoparent"):
           `state.ctrlList[-1].typ = .CtrlTy::BindToParent;
           `state.ctrlList[-1].task .=
-            "`sysivar[.iBINDTIME]=1;`sysivar[.iBINDFACING]=0;"
+            "`sysivar[.iBINDTIME]=1;"
             "`sysfvar[.fBINDPOSX]=0.0;`sysfvar[.fBINDPOSY]=0.0;"
             "`trParent()$`setBindToId(.c<>=);";
         cond .s.equ(s, "bindtoroot"):
           `state.ctrlList[-1].typ = .CtrlTy::BindToRoot;
           `state.ctrlList[-1].task .=
-            "`sysivar[.iBINDTIME]=1;`sysivar[.iBINDFACING]=0;"
+            "`sysivar[.iBINDTIME]=1;"
             "`sysfvar[.fBINDPOSX]=0.0;`sysfvar[.fBINDPOSY]=0.0;"
             "`trRoot()$`setBindToId(.c<>=);";
         cond .s.equ(s, "bindtotarget"):
           `state.ctrlList[-1].typ = .CtrlTy::BindToTarget;
           `state.ctrlList[-1].task .=
-            "int hmf=0;`sysivar[.iBINDTIME]=1;`sysivar[.iBINDFACING]=0;"
+            "int hmf=0;`sysivar[.iBINDTIME]=1;"
             "`sysfvar[.fBINDPOSX]=0.0;`sysfvar[.fBINDPOSY]=0.0;";
           `state.value =
-            "branch{cond #(.v.setI(-1)$`trTarget()$.c)>0:"
+            "branch{cond .v.setI(-1)$`trTarget()$#.c>0:"
             "`setBindToId(.c<>=);"
             "else:`sysivar[.iBINDTOID]=.com.IERR;}";
         cond .s.equ(s, "helper"):
@@ -4814,20 +4808,20 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysIVar(.v.setI(.iBINDFACING)$.v,", "$.v);")) ret false;
+                "`trSetSysIVar(.v.setI(.iBINDFACING)$.v,",
+                "$.v);.m.limRange!int?(`sysivar[.iBINDFACING]=,-1,1);"))
+            {
+              ret false;
+            }
           cond .s.equ(name, "pos"):
             `state.ctrlList[-1].task .=
               "`trSetSysFVar(.v.setI(.fBINDPOSX)$.v,";
-            if(
-              !`expression(
-                `state.ctrlList[-1].task=, text=)) ret false;
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
             `state.ctrlList[-1].task .= "$.v);";
             if(.s.equ(",")<, `tokenizer(text=)){
               `state.ctrlList[-1].task .=
                 "`trSetSysFVar(.v.setI(.fBINDPOSY)$.v,";
-              if(
-                !`expression(
-                  `state.ctrlList[-1].task=, text=)) ret false;
+              if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
               `state.ctrlList[-1].task .= "$.v);";
               if(
                 .s.equ(",")<, `tokenizer(text=)
@@ -4851,8 +4845,8 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "branch{cond #(",
-                "$`trTarget()$.c)>0:`setBindToId(.c<>=);"
+                "branch{cond ",
+                "$`trTarget()$#.c>0:`setBindToId(.c<>=);"
                 "else:`sysivar[.iBINDTOID]=.com.IERR;}")) ret false;
           else:
             break, default;

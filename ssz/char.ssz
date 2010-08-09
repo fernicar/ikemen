@@ -3095,12 +3095,16 @@ public &Char
       ret;
     }
     if(`sysfvar[.fBINDPOSX] != .com.FERR){
-      `setX(c~sysfvar[.fX] + (float)c~facing*`sysfvar[.fBINDPOSX]);
+      float f =
+        (float)(
+          #`sysivar[.iBINDFACING] == 2
+          ? `sysivar[.iBINDFACING]/2 : c~facing);
+      `setX(c~sysfvar[.fX] + f*`sysfvar[.fBINDPOSX]);
     }
     if(`sysfvar[.fBINDPOSY] != .com.FERR){
       `sysfvar[.fY] = c~sysfvar[.fY] + `sysfvar[.fBINDPOSY];
     }
-    branch{
+    if(#`sysivar[.iBINDFACING] == 1) branch{
     cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
     cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
     }
@@ -3115,7 +3119,14 @@ public &Char
       else:
         l = `fedge; r = `bedge;
       }
+      float oldx = `sysfvar[.fX];
       .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+l, .com.xmax-r);
+      if(oldx != `sysfvar[.fX] && `sysivar[.iBINDTIME] != 0){
+        ^`self c = .players.get(`sysivar[.iBINDTOID]);
+        if(#c == 0) break;
+        c~sysfvar[.fX] += `sysfvar[.fX] - oldx;
+        c~xScreenBound();
+      }
     }
   }
   public void update()
@@ -3584,6 +3595,7 @@ public &Char
   {
     `sysivar[.iBINDTOID] = to.id;
     if(to.sysivar[.iBINDTOID] == `id) to.sysivar[.iBINDTIME] = 0;
+    `sysivar[.iBINDFACING] = to.facing*2;
   }
   public void trPlayerID()
   {
@@ -5457,7 +5469,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     bool kill = #hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
     `pyr.stVal.hb.damage +=
       `pyr.getDamage(`pyr.stVal.hb.damage * hits, kill, false, by.attackmul);
-    if(live && !kill && `pyr.stVal.hb.damage > `pyr.sysivar[.iLIFE]){
+    if(live && !kill && `pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]){
       `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
     }
     if(damageable) branch{
