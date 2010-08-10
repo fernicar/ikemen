@@ -4808,8 +4808,7 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`trSetSysIVar(.v.setI(.iBINDFACING)$.v,",
-                "$.v);.m.limRange!int?(`sysivar[.iBINDFACING]=,-1,1);"))
+                "`setBindFacing(", "$.v.toInt());"))
             {
               ret false;
             }
@@ -6044,10 +6043,10 @@ public &StateBuilder
           switch(`state.ctrlList[-1].typ){
           case .CtrlTy::ChangeAnim, .CtrlTy::ChangeAnim2:
             if(#`state.value > 0) dbuf .= "int e;";
-          }
-          switch(`state.ctrlList[-1].typ){
           case .CtrlTy::ChangeState, .CtrlTy::SelfState:
             dbuf .= "int a=-1,c=-1;";
+          case .CtrlTy::BindToTarget:
+            if(#`state.value > 0) dbuf .= `state.value;
           }
           dbuf .= `state.ctrlList[-1].task;
           switch(`state.ctrlList[-1].typ){
@@ -6247,7 +6246,7 @@ public &StateBuilder
           case .CtrlTy::BindToRoot:
             dbuf .= "`bind();";
           case .CtrlTy::BindToTarget:
-            dbuf .= `state.value .= "`trBindToTarget(hmf);";
+            dbuf .= "`trBindToTarget(hmf);";
           case .CtrlTy::HitFallSet:
             dbuf .= "`trHitFallSet(f,vx,vy);";
           case .CtrlTy::ExplodBindTime:

@@ -892,12 +892,12 @@ public &Command
     loop{
       index i = 0;
       bool foo = false;
-      bool bar = `cmdidx > 0 && `cmdeq(`cmd[`cmdidx-1], `cmd[`cmdidx]);
+      bool bar = `cmdidx > 0 && `isDToB(`cmd[`cmdidx-1], `cmd[`cmdidx]);
       bool baz;
       int n;
       while;
     do:
-      baz = !bar && `cmdidx > 0 && `cmd[`cmdidx].key[i] < .Key::a;
+      baz = bar && `cmd[`cmdidx].key[i] < .Key::a;
       n = kbuf.keyState(`cmd[`cmdidx].key[i]);
       foo |= n == 1 || baz;
       if(n <= 0 || (!baz && n > 7)) ret fail(::);

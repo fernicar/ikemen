@@ -866,6 +866,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
   public int airtype;
   public int groundtype;
   public int damage;
+  public int absdamage;
   public int hitcount;
   public int fallcount;
   public int hitshaketime;
@@ -901,6 +902,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `airtype = 0;
     `groundtype = 0;
     `damage = 0;
+    `absdamage = 0;
     `hitcount = 0;
     `fallcount = 0;
     `hitshaketime = -1;
@@ -1037,7 +1039,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
         `hb.xvel = hit.guard_velocity;
         `hb.yvel = hit.ground_velocityy;
       }
-      `hb.damage = hit.guarddamage;
+      `hb.absdamage = hit.guarddamage;
       `hb.hitcount = hc;
       ret 2 * (`hb.typ == 0 || hit.reversal_attr != 0 ? -1 : 1);
     }
@@ -1063,7 +1065,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.yvel = hit.ground_velocityy;
       `hb.fallf = hit.ground_fall;
     }
-    `hb.damage = hit.hitdamage;
+    `hb.absdamage = hit.hitdamage;
     `hb.hitcount = cmb ? hc+1 : 1;
     `hb.fallcount = fc;
     `hb.fallf |= fall;
@@ -2823,7 +2825,13 @@ public &Char
   }
   public bool isBound()
   {
-    ret `sysivar[.iBINDTIME] != 0;
+    if(`stVal.hb.byid < 0) ret false;
+    if(`sysivar[.iBINDTOID] == `stVal.hb.byid && `sysivar[.iBINDTIME] != 0){
+      ret true;
+    }
+    ^`self by = .players.get(`stVal.hb.byid);
+    if(#by == 0) ret false;
+    ret by~sysivar[.iBINDTOID] == `id && by~sysivar[.iBINDTIME] != 0;
   }
   public bool isFreezeX()
   {
@@ -2942,7 +2950,7 @@ public &Char
         if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       break:
         `changeState2();
-        if(`stVal.hb.damage > 0 && `stVal.mov == .MovTy::H) branch{
+        if(`stVal.hb.damage != 0 && `stVal.mov == .MovTy::H) branch{
           ^`self by = .players.get(`stVal.hb.byid);
         cond `stVal.hb.guarded != 0:
           if(
@@ -3124,6 +3132,10 @@ public &Char
       if(oldx != `sysfvar[.fX] && `sysivar[.iBINDTIME] != 0){
         ^`self c = .players.get(`sysivar[.iBINDTOID]);
         if(#c == 0) break;
+        if(c~stVal.hb.byid != `id){
+          `sysfvar[.fX] = oldx;
+          break, break;
+        }
         c~sysfvar[.fX] += `sysfvar[.fX] - oldx;
         c~xScreenBound();
       }
@@ -3199,13 +3211,13 @@ public &Char
         }
       }
     }
-    `xScreenBound();
     if(.com.tickNextFrame()){
       if(`stVal.phy == .StTy::S && #`sysfvar[.fVX] < 1.0) `sysfvar[.fVX] = 0.0;
       `stVal.hb.mindistx = `stVal.hb.maxdistx = .com.FERR;
       `stVal.hb.mindisty = `stVal.hb.maxdisty = .com.FERR;
     }
     `bind();
+    `xScreenBound();
   }
   public void posReset(float p1x, float p2x)
   {
@@ -3263,10 +3275,8 @@ public &Char
     bool foo = `sysivar[.iLIFE] != 0;
     `sysivar[.iLIFE] +=
       (int).m.floor((float)l / (absolute ? 1.0 : `defencemul));
-    if(`player){
-      .m.limRange!int?(
-        `sysivar[.iLIFE]=, kill || !foo ? 0 : 1, `sysivar[.iLIFEMAX]);
-    }
+    .m.limRange!int?(
+      `sysivar[.iLIFE]=, kill || !foo ? 0 : 1, `sysivar[.iLIFEMAX]);
     if(`helperindex == 0 && `sysivar[.iLIFE] == 0){
       `stVal.hb.fallf = 1;
       `stVal.hb.fall.recover = 0;
@@ -4448,6 +4458,11 @@ public &Char
     }
     `bind();
   }
+  public void setBindFacing(int f)
+  {
+    if(f == .com.IERR || f== 0) ret;
+    `sysivar[.iBINDFACING] = f < 0 ? -1 : 1;
+  }
   public void trTargetDrop(int id, int keepone)
   {
     if(id == .com.IERR) ret;
@@ -5468,7 +5483,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     bool live = `pyr.sysivar[.iLIFE] > 0;
     bool kill = #hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
     `pyr.stVal.hb.damage +=
-      `pyr.getDamage(`pyr.stVal.hb.damage * hits, kill, false, by.attackmul);
+      `pyr.getDamage(`pyr.stVal.hb.absdamage*hits, kill, false, by.attackmul);
     if(live && !kill && `pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]){
       `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
     }
