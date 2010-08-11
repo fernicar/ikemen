@@ -2726,6 +2726,43 @@ public &Char
       `stVal.hit.clear();
       `tmphit = false;
     }
+    ^`self c;
+    if(`ls(.lsGETHIT) && #(c = .players.get(`stVal.hb.byid)) > 0){
+      if(`stVal.hb.p1getp2facing != 0){
+        c~setFacing(`facing*`stVal.hb.p1getp2facing);
+      }
+      if(`stVal.hb.mindistx != .com.FERR) branch{
+      cond c~facing < 0:
+        `sysfvar[.fX] =
+          .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] - `stVal.hb.mindistx);
+      else:
+        `sysfvar[.fX] =
+          .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.mindistx);
+      }
+      if(`stVal.hb.maxdistx != .com.FERR) branch{
+      cond c~facing < 0:
+        `sysfvar[.fX] =
+          .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] - `stVal.hb.maxdistx);
+      else:
+        `sysfvar[.fX] =
+          .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.maxdistx);
+      }
+      if(
+        `stVal.playerno != `playerno
+        || `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A)
+      {
+        if(`stVal.hb.mindisty != .com.FERR){
+          `sysfvar[.fY] =
+            .m.max!float?(`sysfvar[.fY])<,
+            (c~sysfvar[.fY] + `stVal.hb.mindisty);
+        }
+        if(`stVal.hb.maxdisty != .com.FERR){
+          `sysfvar[.fY] =
+            .m.min!float?(`sysfvar[.fY])<,
+            (c~sysfvar[.fY] + `stVal.hb.maxdisty);
+        }
+      }
+    }
     if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     `enemyn.new(0);
     if(`player){
@@ -3162,47 +3199,8 @@ public &Char
         `getcombo = 0;
       }
     }
-    ^`self c;
-    if(`stVal.hb.hittime > 0 && #(c = .players.get(`stVal.hb.byid)) > 0){
-      if(`stVal.hb.p1getp2facing != 0){
-        c~setFacing(`facing*`stVal.hb.p1getp2facing);
-      }
-      if(`stVal.hb.mindistx != .com.FERR) branch{
-      cond c~facing < 0:
-        `sysfvar[.fX] =
-          .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] - `stVal.hb.mindistx);
-      else:
-        `sysfvar[.fX] =
-          .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.mindistx);
-      }
-      if(`stVal.hb.maxdistx != .com.FERR) branch{
-      cond c~facing < 0:
-        `sysfvar[.fX] =
-          .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] - `stVal.hb.maxdistx);
-      else:
-        `sysfvar[.fX] =
-          .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.maxdistx);
-      }
-      if(
-        `stVal.playerno != `playerno
-        || `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A)
-      {
-        if(`stVal.hb.mindisty != .com.FERR){
-          `sysfvar[.fY] =
-            .m.max!float?(`sysfvar[.fY])<,
-            (c~sysfvar[.fY] + `stVal.hb.mindisty);
-        }
-        if(`stVal.hb.maxdisty != .com.FERR){
-          `sysfvar[.fY] =
-            .m.min!float?(`sysfvar[.fY])<,
-            (c~sysfvar[.fY] + `stVal.hb.maxdisty);
-        }
-      }
-    }
     if(.com.tickNextFrame()){
       if(`stVal.phy == .StTy::S && #`sysfvar[.fVX] < 1.0) `sysfvar[.fVX] = 0.0;
-      `stVal.hb.mindistx = `stVal.hb.maxdistx = .com.FERR;
-      `stVal.hb.mindisty = `stVal.hb.maxdisty = .com.FERR;
     }
     `bind();
     `xScreenBound();
