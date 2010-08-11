@@ -1673,98 +1673,81 @@ public &Projectile
       }
     }
   }
+  bool paused()
+  {
+    branch{
+    cond .super > 0:
+      if(`supermovetime == 0) ret true;
+    cond .pause > 0:
+      if(`pausemovetime == 0) ret true;
+    }
+    ret false;
+  }
+  public void tick()
+  {
+    if(`timemiss < 0){
+      `timemiss = !`timemiss;
+      branch{
+      cond `misstime <= 0 && `hitpause == 0:
+        `hits = 0;
+      else:
+        `hits--;
+      }
+      `hit.air_juggle = 0;
+    }
+    if(`hits <= 0) `hit.attr = -1;
+    if(`paused()) ret;
+    branch{
+    cond `anim >= 0:
+      branch{
+      cond `prioritypoint <= 0 && `remove != 0:
+        `ani = .chars[`playerno][0]~getAction(`cancelanim);
+      cond `hits <= 0 && `remove != 0:
+        `ani = .chars[`playerno][0]~getAction(`hitanim);
+      cond
+        (
+          `x < .com.xmin-(float)`edgebound || .com.xmax+(float)`edgebound < `x)
+        || (
+          `x < .com.scrxmin-(float)`stagebound
+          || .com.scrxmax+(float)`stagebound < `x)
+        || (
+          `velocityy != 0.0 && (
+            (float)`heightboundb < `y || `y < (float)`heightboundt))
+        || `removetime == 0
+        :
+        `ani = .chars[`playerno][0]~getAction(`remanim);
+      else:
+        break;
+      comm:
+        `remvel();
+      }
+    else:
+      branch{
+      cond #`ani == 0:
+      cond !`ani~ani.loopend:
+        {
+          ^&.act.Frame frm = `ani~ani.currentFrame();
+          if(#frm > 0 && frm~time >= 0) break, break;
+        }
+      else:
+        `ani.new(0);
+      comm:
+        if(`hitpause == 0 && `removetime <= 0) `id = -1;
+      }
+    }
+    branch{
+    cond `pctime > 0:
+      `pctime++;
+    cond `pctime < 0:
+      `pctime *= -1;
+    }
+    if(`hitpause <= 0){
+      if(`removetime > 0) `removetime--;
+      if(`timemiss > 0) `timemiss--;
+    }
+  }
   public void anime()
-  {:<-
-    void animAct(bool pau)
-    {
-      if(#`ani > 0) branch{
-      cond !pau && (`hitpause == 0 || `anim < 0):
-        `ani~ani.action();
-      else:
-        `ani~ani.updateSprite();
-      }
-    }
-    bool pause()
-    {
-      branch{
-      cond .super > 0:
-        if(`supermovetime == 0) ret true;
-      cond .pause > 0:
-        if(`pausemovetime == 0) ret true;
-      }
-      ret false;
-    }
-    bool p = pause();
-    if(.com.tickNextFrame()){
-      if(`timemiss < 0){
-        `timemiss = !`timemiss;
-        branch{
-        cond `misstime <= 0 && `hitpause == 0:
-          `hits = 0;
-        else:
-          `hits--;
-        }
-        `hit.air_juggle = 0;
-      }
-      if(p) break;
-      branch{
-      cond .super > 0:
-        if(`supermovetime > 0) `supermovetime--;
-      cond .pause > 0:
-        if(`pausemovetime > 0) `pausemovetime--;
-      }
-      branch{
-      cond `anim >= 0:
-        branch{
-        cond `prioritypoint <= 0 && `remove != 0:
-          `ani = .chars[`playerno][0]~getAction(`cancelanim);
-          if(`pctime >= 0){
-            `pctyp = .ProjContact::Cancel;
-            `pctime = -1;
-          }
-        cond `hits <= 0 && `remove != 0:
-          `ani = .chars[`playerno][0]~getAction(`hitanim);
-        cond
-          (
-            `x < .com.xmin-(float)`edgebound
-            || .com.xmax+(float)`edgebound < `x)
-          || (
-            `x < .com.scrxmin-(float)`stagebound
-            || .com.scrxmax+(float)`stagebound < `x)
-          || (
-            `velocityy != 0.0 && (
-              (float)`heightboundb < `y
-              || `y < (float)`heightboundt))
-          || `removetime == 0
-          :
-          `ani = .chars[`playerno][0]~getAction(`remanim);
-        else:
-          break;
-        comm:
-          `remvel();
-        }
-      else:
-        branch{
-        cond #`ani == 0:
-        cond !`ani~ani.loopend:
-          {
-            ^&.act.Frame frm = `ani~ani.currentFrame();
-            if(#frm > 0 && frm~time >= 0) break, break;
-          }
-        else:
-          `ani.new(0);
-        comm:
-          if(`hitpause == 0 && `removetime <= 0) `id = -1;
-        }
-      }
-      branch{
-      cond `hitpause == 0:
-        if(`removetime > 0) `removetime--;
-        if(`timemiss > 0) `timemiss--;
-      cond `hitpause > 0:
-        `hitpause--;
-      }
-    }
+  {
     if(.com.clsndraw && #`ani > 0){
       ^&.act.Frame frm = `ani~ani.currentFrame();
       if(#frm == 0) break;
@@ -1778,14 +1761,20 @@ public &Projectile
       }
     }
     if(.com.tickNextFrame()){
-      animAct(p);
-      if(!p || `playerno == (.super > 0 ? .superplayer : .pauseplayer)) branch{
-      cond `pctime > 0:
-        `pctime++;
-      cond `pctime < 0:
-        `pctime *= -1;
+      if(#`ani > 0) branch{
+      cond !`paused() && (`hitpause == 0 || `anim < 0):
+        `ani~ani.action();
+      else:
+        `ani~ani.updateSprite();
       }
-      if(`hits <= 0) `hit.attr = -1;
+      if(`paused()) break;
+      branch{
+      cond .super > 0:
+        if(`supermovetime > 0) `supermovetime--;
+      cond .pause > 0:
+        if(`pausemovetime > 0) `pausemovetime--;
+      }
+      if(`hitpause > 0) `hitpause--;
     }
     .addAnimList(
       .anims=, `ani, `sprpriority, `x, `y, .com.scale,
@@ -2681,9 +2670,8 @@ public &Char
     }
     ret false;
   }
-  public void tickHitTimer()
+  public void tick()
   {
-    if(`helperindex < 0 || `id < 0) ret;
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
     if(!`isPaused()){
       branch{
@@ -2746,7 +2734,7 @@ public &Char
     }
     `minus = 2;
   }
-  public void tickAndAnim()
+  public void drawAnim()
   {
     if(`helperindex < 0 || `id < 0) ret;
     float x = `sysfvar[.fX]+`offsetx;
@@ -5878,6 +5866,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       {
         .projs[i][j].hits = 0;
         .projs[i][j].prioritypoint = 0;
+        .projs[i][j].pctyp == .ProjContact::Cancel;
+        .projs[i][j].pctime = -1;
       }
     continue:
       j++;
@@ -5895,6 +5885,19 @@ public void PlayerList!&Char?::getHit()
   do:
     if(p~c~id < 0) continue;
     .players.clsn(p~c<>=);
+  continue:
+    p = p~next;
+  while #p > 0:
+  }
+}
+public void PlayerList!&Char?::tick()
+{
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if(p~c~id < 0) continue;
+    p~c~tick();
   continue:
     p = p~next;
   while #p > 0:
@@ -6068,22 +6071,23 @@ void rootAction()
       i++;
     while i < #.projs:
     }
+    .players.getHit();
     branch{
     cond .super <= 0 && .pause <= 0:
       .specialFlag = 0d0;
     else:
       .specialFlag &= !.gsROUNDNOTOVER;
     }
-    .players.getHit();
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
-        .chars[i][j]~tickHitTimer();
+        if(.projs[i][j].id >= 0) .projs[i][j].tick();
         j++;
-      while j < #.chars[i]:
+      while j < #.projs[i]:
       }
       i++;
-    while i < #.chars:
+    while i < #.projs:
     }
+    .players.tick();
     index i = 0;
     while;
   do:
@@ -6114,7 +6118,7 @@ void anim()
   }
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
-      .chars[i][j]~tickAndAnim();
+      .chars[i][j]~drawAnim();
       j++;
     while j < #.chars[i]:
     }
