@@ -24,38 +24,6 @@ type = VarSet
 trigger1 = 1
 sysvar(58) = (sysvar(58)&~4) | 4*Alive;SYSFLAG
 
-[State -4, Hit1]
-type = SelfState
-triggerall = GetHit
-trigger1 = statetype = S
-value = ifelse(GetHitVar(guarded) && Alive, 150, 5000 + (gethitvar(type) = 3)*70)
-ctrl = 0
-ignorehitpause = 1
-
-[State -4, Hit2]
-type = SelfState
-triggerall = GetHit
-trigger1 = statetype = C
-value = ifelse(GetHitVar(guarded) && Alive, 152, 5010 + (gethitvar(type) = 3)*60)
-ctrl = 0
-ignorehitpause = 1
-
-[State -4, Hit3]
-type = SelfState
-triggerall = GetHit
-trigger1 = statetype = A
-value = ifelse(GetHitVar(guarded) && Alive, 154, 5020 + (gethitvar(type) = 3)*50)
-ctrl = 0
-ignorehitpause = 1
-
-[State -4, Hit4]
-type = SelfState
-triggerall = GetHit
-trigger1 = statetype = L
-value = 5080 - (gethitvar(type) = 3)*10
-ctrl = 0
-ignorehitpause = 1
-
 [State -4, Getup1]
 type = VarSet
 triggerall = StateNo != 5110

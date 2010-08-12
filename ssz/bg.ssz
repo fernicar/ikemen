@@ -168,7 +168,8 @@ public &BackGround
   public int startsinxt = 0, startsinyt = 0;
   public int startsinxlt = 0, startsinylt = 0;
   public ushort twidth = 0, bwidth = 0;
-  public bool visible = true, active = true, toplayer = false, flag = false;
+  public bool visible = true, active = true;
+  public bool positionlink = false, toplayer = false;
   public &.sdl.Rect startrect;
   public float windowdeltax = 0.0, windowdeltay = 0.0;
   new()
@@ -192,7 +193,7 @@ public &BackGround
   {
     ^/char data;
     if(#(data = sc.get("spriteno")) > 0){
-      `anim.frames.new[0];
+      `anim.frames.new(1);
       .com.readPair!short?(`anim.frames~group=, `anim.frames~number=, data);
       `anim.frames[0].time = -1;
     }
@@ -201,7 +202,10 @@ public &BackGround
       `actionno = no[0];
       `anim.mask = 0;
     }
-    if(#(data = sc.get("layerno")) > 0) `toplayer = .s.sToN!int?(data) > 0;
+    if(#(data = sc.get("positionlink")) > 0){
+      `positionlink = .s.sToN!int?(data) != 0;
+    }
+    if(#(data = sc.get("layerno")) > 0) `toplayer = .s.sToN!int?(data) != 0;
     if(#(data = sc.get("start")) > 0){
       ^float xy = .s.svToAry!xy<>.self?(",", data);
       float mul = hires ? 0.5 : 1.0;
@@ -376,8 +380,10 @@ public &BackGround
     }
     `anim.setup(sf);
   }
-  public void draw(float x, float y, float scl, ^&.com.PalFX fx)
+  public void draw(float posx, float posy, float scl, ^&.com.PalFX fx)
   {
+    float x = .cfg.Zoom ? posx : .m.ceil(posx);
+    float y = .cfg.Zoom ? posy : .m.ceil(posy);
     &.sdl.Rect rect;
     rect = `startrect;
     rect.x += -(short).m.floor((x+`camstartx) * `windowdeltax + 0.5);
@@ -419,7 +425,7 @@ public &BGCtrl
   public float x = 0.0, y = 0.0;
   public int n = 0;
   public bool setx = false, sety = false;
-  public bool positionlink = false, positionlinkkamo = false;
+  public bool positionlink = false, flag = false;
   public void read(&.com.Section sc=)
   {
     ^/char data;

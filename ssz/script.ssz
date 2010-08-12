@@ -489,7 +489,7 @@ public &Command
   }
   public void input(int pn)
   {
-    `cmd~step(pn-1, 1, false);
+    `cmd~step(pn-1, 1, false, false);
   }
   public bool getState(^/char name)
   {

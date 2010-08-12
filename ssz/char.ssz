@@ -905,7 +905,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `absdamage = 0;
     `hitcount = 0;
     `fallcount = 0;
-    `hitshaketime = -1;
+    `hitshaketime = 0;
     `hittime = 0;
     `slidetime = 0;
     `ctrltime = 0;
@@ -1025,7 +1025,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.animtype = (int)hit.animtype;
     }
     if(guard && ((int)`typ&hit.guardflag) != 0){
-      `hb.hitshaketime = .m.max!int?(0, hit.guard_shaketime+1);
+      `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
       `hb.hittime = hit.guard_hittime;
       `hb.slidetime = hit.guard_slidetime;
       `hb.guarded = 1;
@@ -1043,7 +1043,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.hitcount = hc;
       ret 2 * (`hb.typ == 0 || hit.reversal_attr != 0 ? -1 : 1);
     }
-    `hb.hitshaketime = .m.max!int?(0, hit.shaketime+1);
+    `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
     `hb.slidetime = hit.ground_slidetime;
     branch{
     cond `typ == .StTy::A:
@@ -1935,7 +1935,7 @@ public &Char
         c = .players.get(`targets[i]);
         if(#c > 0){
           c~stVal.hb.hitshaketime -= `sysivar[.iHITPAUSETIME];
-          .m.limMin!int?(c~stVal.hb.hitshaketime=, -1);
+          .m.limMin!int?(c~stVal.hb.hitshaketime=, 0);
         }
         i++;
       while i < #`targets:
@@ -2675,7 +2675,7 @@ public &Char
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
     if(!`isPaused()){
       branch{
-      cond `stVal.hb.hitshaketime >= 0:
+      cond `stVal.hb.hitshaketime > 0:
         `stVal.hb.hitshaketime--;
       cond `stVal.hb.hittime > 0:
         `stVal.hb.hittime--;
@@ -2765,7 +2765,8 @@ public &Char
     }
     if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     `enemyn.new(0);
-    if(`player){
+    if(`ls(.lsGETHIT)) `stVal.time = -1;
+    if(`stVal.time >= 0 && `player){
       `minus = -4;
       `state_4(::);
     }
@@ -2930,8 +2931,8 @@ public &Char
   public bool landCondition()
   {
     ret
-      `stVal.phy == .StTy::A && `isActive()
-      && `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0;
+      `stVal.phy == .StTy::A && `isActive() && `sysfvar[.fVY] > 0.0
+      && `sysfvar[.fY] >= 0.0 && `stVal.no != 105 && `stVal.no != 52;
   }
   public void action()
   {:<-
@@ -2950,7 +2951,8 @@ public &Char
     if(`minus != 2) ret;
     {
       if(#`palfx > 0 && !`isPaused()) `palfx~step();
-      bool p = !`ls(.lsGETHIT) && (isSuperPaused() || isNormalPaused());
+      bool gh = `ls(.lsGETHIT);
+      bool p = !gh && (isSuperPaused() || isNormalPaused());
       `acttmp = -(int)p * 2;
       if(!p){
         `lSetNormal();
@@ -2966,8 +2968,8 @@ public &Char
       bool lc = `landCondition();
       `bind();
       {
-        if(p) ret;
         `minus = -3;
+        if(p) ret;
         if(`stVal.playerno == `playerno && `player) `state_3(::);
         `minus = -2;
         if(`player) `state_2(::);
@@ -2975,6 +2977,43 @@ public &Char
         if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       break:
         `changeState2();
+        branch{
+        cond gh:
+          branch{
+          cond `stVal.hb.typ == 3:
+            .v.setI(5070)$`trSelfState(-1, 0);
+          cond `stVal.typ == .StTy::L:
+            .v.setI(5080)$`trSelfState(-1, 0);
+          else:
+            branch{
+            cond `stVal.hb.guarded != 0:
+              switch(`stVal.typ){
+              case .StTy::S:
+                .v.setI(150)$`trSelfState(-1, 0);
+              case .StTy::C:
+                .v.setI(152)$`trSelfState(-1, 0);
+              case .StTy::A:
+                .v.setI(154)$`trSelfState(-1, 0);
+             }
+            else:
+              switch(`stVal.typ){
+              case .StTy::S:
+                .v.setI(5000)$`trSelfState(-1, 0);
+              case .StTy::C:
+                .v.setI(5010)$`trSelfState(-1, 0);
+              case .StTy::A:
+                .v.setI(5020)$`trSelfState(-1, 0);
+              }
+            }
+          }
+        cond lc:
+          .v.setI(52)$`trSelfState(-1, -1);
+        cond
+          !`isHitPaused() && `stVal.no == 5110
+          && `sysivar[.iLIFE] > 0 && `sysivar[.iRECOVERTIME] <= 0
+          :
+          .v.setI(5120)$`trSelfState(-1, -1);
+        }
         if(`stVal.hb.damage != 0 && `stVal.mov == .MovTy::H) branch{
           ^`self by = .players.get(`stVal.hb.byid);
         cond `stVal.hb.guarded != 0:
@@ -3009,17 +3048,7 @@ public &Char
       }
       `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
-      branch{
-      cond lc && `stVal.no != 105 && `stVal.no != 52:
-        .v.setI(52)$`trSelfState(-1, -1);
-      cond
-        !`isHitPaused() && `stVal.no == 5110
-        && `sysivar[.iLIFE] > 0 && `sysivar[.iRECOVERTIME] <= 0
-        :
-        .v.setI(5120)$`trSelfState(-1, -1);
-      else:
-        `state(::);
-      }
+      `state(::);
       if(!`isHitPaused()) `stVal.time++;
     break:
       `minus = 1;
@@ -3184,7 +3213,7 @@ public &Char
         `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
         `getcombo = 0;
         `stVal.hb.hittime = 0;
-        `stVal.hb.hitshaketime = -1;
+        `stVal.hb.hitshaketime = 0;
         `stVal.hb.fallf = 0;
         `stVal.hb.fallcount = 0;
         `stVal.hb.juggle = 0;
@@ -4507,7 +4536,10 @@ public &Char
       c = .players.get(`targets[i]);
       if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
         c~setCtrl(false);
-        if(c~changeState1(pno, state)) c~minus = 2;
+        if(c~changeState1(pno, state)){
+          `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
+          c~minus = 2;
+        }
       }
       i++;
     while i < #`targets:
@@ -4857,7 +4889,7 @@ public &Char
   }
   public void trHitShakeOver()
   {
-    .v.setI((int)(`stVal.hb.hitshaketime < 0));
+    .v.setI((int)(`stVal.hb.hitshaketime <= 0));
   }
   public void trCanRecover()
   {
@@ -6163,7 +6195,8 @@ public float action(
     do:
       if(#.chars[i] > 0){
         .chars[i][0]~cmd.step(
-          .chars[i][0]~key, .chars[i][0]~facing, .chars[i][0]~key < 0);
+          .chars[i][0]~key, .chars[i][0]~facing,
+          .chars[i][0]~key < 0, .chars[i][0]~isHitPaused());
       }
       i++;
     while i < #.chars:

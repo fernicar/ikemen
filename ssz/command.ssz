@@ -635,7 +635,7 @@ public &Command
     public bool slash = false, greater = false, flag1 = false, flag2 = false;
     public bool isDirection()
     {
-      ret !`slash && #`key == 1 && `key[0] <= .Key::UF;
+      ret !`slash && #`key == 1 && `key[0] < .Key::a;
     }
   }
   public ^/char name;
@@ -911,9 +911,9 @@ public &Command
     }
     ret true;
   }
-  public void step(^&.Buffer kbuf, bool ai)
+  public void step(^&.Buffer kbuf, bool ai, bool hitpause)
   {
-    if(`curbuftime > 0) `curbuftime--;
+    if(!hitpause && `curbuftime > 0) `curbuftime--;
     if(#`cmd == 0) ret;
     {
       int ocbt = `curbuftime;
@@ -1037,12 +1037,12 @@ public &CommandList
       }
     }
   }
-  public void step(int input, int facing, bool ai)
+  public void step(int input, int facing, bool ai, bool hitpause)
   {
     `input(input, facing);
     `cTable~each()<, [void(^%&.Command cl){
       loop{index i = 0; while; do:
-        cl<>[i].step(`buffer, ai);
+        cl<>[i].step(`buffer, ai, hitpause);
         i++;
       while i < #cl<>:
       }
@@ -1059,8 +1059,8 @@ public &CommandList
       while i < #cl<>:
       }
     }];
-    `step(in, 1, false);
-    `step(in, 1, false);
+    `step(in, 1, false, false);
+    `step(in, 1, false, false);
   }
   public void add(&.Command c=)
   {

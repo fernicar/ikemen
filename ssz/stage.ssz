@@ -115,7 +115,7 @@ public &Stage
     loop{index i = 0; while; do:
       if(`bg[i].id == id) bgl.new[-1] = `bg[i..i+1];
       i++;
-    while i< #`bg:
+    while i < #`bg:
     }
   }
   public bool load(^/char def)
@@ -188,9 +188,7 @@ public &Stage
       }
       if(#(data = sc.get("color")) > 0){
         ^ubyte c = .s.svToAry!c<>.self?(",", data);
-        if(#c >= 3){
-          `sdw.color = c[0]<<0d16 | c[1]<<0d8 | c[2];
-        }
+        if(#c >= 3) `sdw.color = c[0]<<0d16 | c[1]<<0d8 | c[2];
         loop{index i = 0; do:
           `sdw.pal[i] = `sdw.color;
         while ++i < 256:
@@ -254,11 +252,7 @@ public &Stage
       `bgcdef.ctrlbg.new(0);
       `bgcdef.looptime = -1;
       `bgcdef.positionlink = false;
-      `bgcdef.positionlinkkamo = false;
       loop{index i = 0; while; do:
-        if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
-          `bgcdef.positionlinkkamo = true;
-        }
         `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
         i++;
       while i < #`bg:
@@ -267,13 +261,9 @@ public &Stage
       if(#(data = sc.get("ctrlid")) > 0){
         ^int ids = .s.svToAry!ids<>.self?(",", data);
         `bgcdef.ctrlbg.new(0);
-        `bgcdef.positionlinkkamo = false;
         branch{
         cond #ids == 1 && ids[0] == -1:
           loop{index i = 0; while; do:
-            if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
-              `bgcdef.positionlink = true;
-            }
             `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
             i++;
           while i < #`bg:
@@ -288,9 +278,6 @@ public &Stage
               j++;
             while j < i:
             }
-            if(`zoffsetlink >= 0 && ids[i] == `zoffsetlink){
-              `bgcdef.positionlink = true;
-            }
             `getBG(`bgcdef.ctrlbg=, ids[i]);
           continue:
             i++;
@@ -301,7 +288,6 @@ public &Stage
       if(#(data = sc.get("looptime")) > 0){
         `bgcdef.looptime = .s.sToN!`bgcdef.looptime.self?(data);
       }
-      `bgcdef.positionlink |= `bgcdef.positionlinkkamo;
     }
     public void bgctrl(&.com.Section sc=)
     {
@@ -309,9 +295,6 @@ public &Stage
         index i = 0;
         while;
       do:
-        if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
-          `bgcdef.positionlink = true;
-        }
         `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
         i++;
       while i < #`bg:
@@ -325,9 +308,6 @@ public &Stage
         branch{
         cond #ids == 1 && ids[0] == -1:
           loop{index i = 0; while; do:
-            if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
-              `bgctrlList[-1].positionlink = true;
-            }
             `bgctrlList[-1].ctrlbg.new[-1] = `bg[i..i+1];
             i++;
           while i < #`bg:
@@ -341,9 +321,6 @@ public &Stage
               if(ids[j] == ids[i]) break, continue;
               j++;
             while j < i:
-            }
-            if(`zoffsetlink >= 0 && ids[i] == `zoffsetlink){
-              `bgctrlList[-1].positionlink = true;
             }
             `getBG(`bgctrlList[-1].ctrlbg=, ids[i]);
           continue:
@@ -411,17 +388,19 @@ public &Stage
     if(
       !.com.loadFile(def, `spr=)<,
       [bool(^/char f){ret `sf~loadFile(f);}]) ret false;
-    loop{index i = 0; while; do:
+    loop{
+      index i = 0;
+      int zofs = 0;
+    while; do:
       `bg[i].setup(`sf, `hires, (float)`cam.startx)<,
         [void(^&.bg.Action act=, int n){act = `getAction(n);}];
-      if(
-        `zoffset == 0
-        && `zoffsetlink >= 0 && `bg[i].id == `zoffsetlink)
-      {
-        `zoffset = (int)`bg[i].starty + 240;
+      if(`bg[i].positionlink && i > 0) `bg[i].starty += `bg[i-1].starty;
+      if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+        zofs = (int)`bg[i].starty;
       }
       i++;
     while i < #`bg:
+      `zoffset += zofs;
     }
     ret true;
   }
@@ -506,8 +485,7 @@ public &Stage
         `bga.yradius = bgc.x;
         `bga.sinylooptime = (int)bgc.y;
         if(`bga.sinylooptime > 0){
-          `bga.sinytime =
-            (int)((float)bgc.n*bgc.y/360.0) % `bga.sinylooptime;
+          `bga.sinytime = (int)((float)bgc.n*bgc.y/360.0) % `bga.sinylooptime;
           if(`bga.sinytime < 0) `bga.sinytime += `bga.sinylooptime;
         }
       }
@@ -537,6 +515,12 @@ public &Stage
     `bga.action();
     loop{index i = 0; while; do:
       `bg[i].bga.action();
+      if(i > 0 && `bg[i].positionlink){
+        `bg[i].bga.yoffset = `bg[i-1].bga.yoffset;
+      }
+      if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+        `bga.yoffset = `bg[i].bga.yoffset;
+      }
       if(`bg[i].active) `bg[i].anim.action();
       i++;
     while i < #`bg:
