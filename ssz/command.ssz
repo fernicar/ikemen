@@ -140,19 +140,23 @@ public &Buffer
   const int keyState2(|.Key k)
   {
     switch(k){
-    case .Key::Bs: ret `Bb <= 0 ? `Bb : .min(`Bb, .min(#`Db, #`Ub));
-    case .Key::Ds: ret `Db <= 0 ? `Db : .min(`Db, .min(#`Bb, #`Fb));
-    case .Key::Fs: ret `Fb <= 0 ? `Fb : .min(`Fb, .min(#`Db, #`Ub));
-    case .Key::Us: ret `Ub <= 0 ? `Ub : .min(`Ub, .min(#`Bb, #`Fb));
+    case .Key::Bs:
+      ret `Bb < 0 ? -.min(#`Bb, .min(#`Db,#`Ub)) : .min(#`Bb, .min(#`Db,#`Ub));
+    case .Key::Ds:
+      ret `Db < 0 ? -.min(#`Db, .min(#`Bb,#`Fb)) : .min(#`Db, .min(#`Bb,#`Fb));
+    case .Key::Fs:
+      ret `Fb < 0 ? -.min(#`Fb, .min(#`Db,#`Ub)) : .min(#`Fb, .min(#`Db,#`Ub));
+    case .Key::Us:
+      ret `Ub < 0 ? -.min(#`Ub, .min(#`Bb,#`Fb)) : .min(#`Ub, .min(#`Bb,#`Fb));
       //
     case .Key::DBs:
-      ret `keyState(.Key::DBs) <= 0 ? `keyState(.Key::DBs) : .min(#`Db, #`Bb);
+      ret `keyState(.Key::DBs) < 0 ? -.min(#`Db, #`Bb) : .min(#`Db, #`Bb);
     case .Key::UBs:
-      ret `keyState(.Key::UBs) <= 0 ? `keyState(.Key::UBs) : .min(#`Ub, #`Bb);
+      ret `keyState(.Key::UBs) < 0 ? -.min(#`Ub, #`Bb) : .min(#`Ub, #`Bb);
     case .Key::DFs:
-      ret `keyState(.Key::DFs) <= 0 ? `keyState(.Key::DFs) : .min(#`Db, #`Fb);
+      ret `keyState(.Key::DFs) < 0 ? -.min(#`Db, #`Fb) : .min(#`Db, #`Fb);
     case .Key::UFs:
-      ret `keyState(.Key::UFs) <= 0 ? `keyState(.Key::UFs) : .min(#`Ub, #`Fb);
+      ret `keyState(.Key::UFs) < 0 ? -.min(#`Ub, #`Fb) : .min(#`Ub, #`Fb);
       //
     case .Key::nBs: ret -self(.Key::Bs);
     case .Key::nDs: ret -self(.Key::Ds);
@@ -921,15 +925,12 @@ public &Command
     loop{
       index i = 0;
       bool foo = false;
-      bool bar = `cmdidx > 0 && `isDToB(`cmd[`cmdidx-1], `cmd[`cmdidx]);
-      bool baz;
       int n;
       while;
     do:
-      baz = bar && `cmd[`cmdidx].key[i] < .Key::a;
-      n = kbuf.keyState(`cmd[`cmdidx].key[i]);
-      foo |= n == 1 || baz;
-      if(n <= 0 || (!baz && n > 7)) ret fail(::);
+      n = kbuf.keyState2(`cmd[`cmdidx].key[i]);
+      foo |= n == 1;
+      if(n <= 0 || n > 7) ret fail(::);
       i++;
     while i < #`cmd[`cmdidx].key:
       if(!foo) ret fail(::);
