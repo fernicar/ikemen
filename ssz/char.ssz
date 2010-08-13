@@ -4172,6 +4172,7 @@ public &Char
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
+    `sysivar[.iSPECIALFLAG] &= !.lsGRAVITY;
     if(p == `playerno) switch(n){
     case 0:
       if(`minus == -1) `setCtrl(true);
