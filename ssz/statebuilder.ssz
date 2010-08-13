@@ -6390,6 +6390,13 @@ public &StateBuilder
             " && `cmd.buffer~B > 0){"\r\n
             \t\t\t".v.setI(120)$`trSelfState(-1, -1);"\r\n
             \t\t"}"\r\n
+            \t\t"if(.m.inRange!int?(120, 159, `stVal.no)"
+            " || (((`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))"
+            " || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))"
+            " || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))"
+            " && `cmd.buffer~B > 0)){"\r\n
+            \t\t\t"`sysivar[.iSPECIALFLAG] |= .lsGUARD;"\r\n
+            \t\t"}"\r\n
             \t"cond `sysivar[.iCTRL] != 0 || .roundState() == 4:"\r\n
             \t\t"switch(`stVal.no){"\r\n
             \t\t"case 11:"\r\n
@@ -6438,6 +6445,7 @@ public &StateBuilder
             && `state.typ != .chr.StTy::A
             && `state.typ != .chr.StTy::L
             && `state.phy != .chr.StTy::U
+            && `state.phy != .chr.StTy::N
             && `state.phy != .chr.StTy::A)
           {
             buf .= \t"`ifAlaSetVyZero();"\r\n;

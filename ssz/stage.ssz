@@ -389,12 +389,18 @@ public &Stage
       !.com.loadFile(def, `spr=)<,
       [bool(^/char f){ret `sf~loadFile(f);}]) ret false;
     loop{
-      index i = 0;
+      index i = 0, link = 0;
       int zofs = 0;
     while; do:
       `bg[i].setup(`sf, `hires, (float)`cam.startx)<,
         [void(^&.bg.Action act=, int n){act = `getAction(n);}];
-      if(`bg[i].positionlink && i > 0) `bg[i].starty += `bg[i-1].starty;
+      branch{
+      cond `bg[i].positionlink && i > 0:
+        `bg[i].startx += `bg[link].startx;
+        `bg[i].starty += `bg[link].starty;
+      else:
+        link = i;
+      }
       if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
         zofs = (int)`bg[i].starty;
       }
@@ -466,8 +472,7 @@ public &Stage
         `bga.xradius = bgc.x;
         `bga.sinxlooptime = (int)bgc.y;
         if(`bga.sinxlooptime > 0){
-          `bga.sinxtime =
-            (int)((float)bgc.n*bgc.y/360.0) % `bga.sinxlooptime;
+          `bga.sinxtime = (int)((float)bgc.n*bgc.y/360.0) % `bga.sinxlooptime;
           if(`bga.sinxtime < 0) `bga.sinxtime += `bga.sinxlooptime;
         }
       }
@@ -513,25 +518,30 @@ public &Stage
   {
     `bgctl.step!`self?(`=);
     `bga.action();
-    loop{index i = 0; while; do:
+    loop{
+      index i = 0, link = 0;
+      float yofs = 0.0;
+      while; do:
       `bg[i].bga.action();
-      if(i > 0 && `bg[i].positionlink){
-        `bg[i].bga.yoffset = `bg[i-1].bga.yoffset;
+      branch{
+      cond i > 0 && `bg[i].positionlink:
+        `bg[i].bga.xoffset += `bg[link].bga.xoffset;
+        `bg[i].bga.yoffset += `bg[link].bga.yoffset;
+      else:
+        link = i;
       }
       if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
-        `bga.yoffset = `bg[i].bga.yoffset;
+        yofs = `bg[i].bga.yoffset;
       }
       if(`bg[i].active) `bg[i].anim.action();
       i++;
     while i < #`bg:
+      `bga.yoffset += yofs;
     }
   }
   public void bgDraw(bool t, float x, float y, float scl)
   {
-    loop{
-      index i = 0;
-      while;
-    do:
+    loop{index i = 0; while; do:
       if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){
         `bg[i].draw(
           x, y + .envShake.getOffset(),
