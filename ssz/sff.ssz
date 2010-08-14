@@ -115,7 +115,7 @@ public &Sprite
   }
   public bool read(
     &.file.File f=, &.SffHeader sh=, long offset,
-    uint loh, uint nsh, ^`self prev, bool palletSame=)
+    uint loh, uint nsh, ^`self prev, bool palletSame=, bool c00)
   {
     uint lenghtOfSubheader = loh;
     if(nsh > (uint)offset) lenghtOfSubheader = nsh - (uint)offset;//lohを無視
@@ -127,7 +127,7 @@ public &Sprite
       ret false;
     }
     f.seek(offset + 128, .file.Seek::SET);
-    `pxl.new((index)lenghtOfSubheader - (128+(palletSame?0:768)));
+    `pxl.new((index)lenghtOfSubheader - (128+(c00||palletSame?0:768)));
     f.readAry!ubyte?(`pxl);
     loop{
       index i = 0;
@@ -138,6 +138,7 @@ public &Sprite
         break, break;
       }
       `colorPallet.new(256);
+      if(c00) break;
     do:
       if(!f.read!ubyte?(r=)) ret false;
       if(!f.read!ubyte?(g=)) ret false;
@@ -233,7 +234,7 @@ public &Sprite
       if(
         !`read(
           f=, h=, (long)(shofs + h.sizeOfSubheader), lenghtOfSubheader,
-          newSubHeaderOffset[-1], dummy, palletSame=)) ret false;
+          newSubHeaderOffset[-1], dummy, palletSame=, false)) ret false;
       if(`imageGroup == ig && `imageNumber == in) break;
       dummy.new(1);
       dummy~colorPallet = `colorPallet;
@@ -271,7 +272,7 @@ public &Sff
   {
     `spriteTable.clear();
   }
-  public bool loadFile(^/char filename)
+  public bool loadFile(^/char filename, bool chr)
   {
     &.file.File f;
     if(!f.open(filename, "rb")) ret false;
@@ -284,7 +285,7 @@ public &Sff
       ^&.Sprite spriteList;
       spriteList.new((index)`head.numberOfImage);
       ushort indexOfPrevious;
-      index prev = 0;
+      index prev = -1;
       while;
     do:
       f.seek((long)shofs, .file.Seek::SET);
@@ -302,7 +303,9 @@ public &Sff
           !spriteList[i].read(
             f=, `head=, (long)(shofs + `head.sizeOfSubheader),
             lenghtOfSubheader, newSubHeaderOffset,
-            spriteList[prev..prev+1], ps=)) ret false;
+            spriteList[prev..prev+1], ps=,
+            chr && spriteList[i].imageGroup == 0
+            && spriteList[i].imageNumber == 0)) ret false;
         prev = i;
       else:
         spriteList[i].shareCopy(spriteList[(index)indexOfPrevious]=);

@@ -1710,9 +1710,8 @@ public &Projectile
         || (
           `x < .com.scrxmin-(float)`stagebound
           || .com.scrxmax+(float)`stagebound < `x)
-        || (
-          `velocityy != 0.0 && (
-            (float)`heightboundb < `y || `y < (float)`heightboundt))
+        || (`velocityy > 0.0 && `y > (float)`heightboundb)
+        || (`velocityy < 0.0 && `y < (float)`heightboundt)
         || `removetime == 0
         :
         `ani = .chars[`playerno][0]~getAction(`remanim);
@@ -2307,7 +2306,7 @@ public &Char
     `sf.new(1);
     if(
       !.com.loadFile(def, `sprite=)<,
-       [bool(^/char f){ret `sf~loadFile(f);}]) ret false;
+       [bool(^/char f){ret `sf~loadFile(f, true);}]) ret false;
     if(
       !.com.loadFile(def, `anim=)<, [bool(^/char f){
         ret #(mainbuf = .file.loadAsciiText(f)) > 0;

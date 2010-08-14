@@ -1785,11 +1785,11 @@ public &Fight
     `sf.new(1);
     if(
       !.com.loadFile(def, `sff=)<,
-      [bool(^/char f){ret `sf~loadFile(f);}]) ret false;
+      [bool(^/char f){ret `sf~loadFile(f, false);}]) ret false;
     `fsf.new(1);
     if(
       !.com.loadFile(def, `fightfx_sff=)<,
-      [bool(^/char f){ret `fsf~loadFile(f);}]) ret false;
+      [bool(^/char f){ret `fsf~loadFile(f, false);}]) ret false;
     if(
       !.com.loadFile(def, `fightfx_air=)<, [bool(^/char f){
         ret

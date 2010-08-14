@@ -387,7 +387,7 @@ public &Stage
     `sf.new(1);
     if(
       !.com.loadFile(def, `spr=)<,
-      [bool(^/char f){ret `sf~loadFile(f);}]) ret false;
+      [bool(^/char f){ret `sf~loadFile(f, false);}]) ret false;
     loop{
       index i = 0, link = 0;
       int zofs = 0;

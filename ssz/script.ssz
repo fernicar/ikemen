@@ -112,7 +112,7 @@ public &Sff
   public bool load(^/char file)
   {
     `sff.new(1);
-    ret `sff~loadFile(file);
+    ret `sff~loadFile(file, false);
   }
 }
 |mac.RetState recvSff(^char arg, ^char re=, &.Function fn=)
