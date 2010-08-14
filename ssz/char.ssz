@@ -1057,7 +1057,13 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.hittime = hit.down_hittime;
       `hb.ctrltime = hit.down_hittime;
       `hb.xvel = hit.down_velocityx;
-      `hb.yvel = hit.down_bounce != 0 ? hit.down_velocityy : 0.0;
+      branch{
+      cond hit.down_velocityy != 0.0 || hit.down_bounce == 0:
+        `hb.yvel = hit.down_velocityy;
+      else:
+        if(hit.fall.xvelocity != .com.FERR) `hb.xvel = hit.fall.xvelocity;
+        `hb.yvel = hit.fall.yvelocity;
+      }
       `hb.fallf = 1;
     else:
       `hb.hittime = hit.ground_hittime;
