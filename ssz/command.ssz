@@ -139,6 +139,10 @@ public &Buffer
   }
   const int keyState2(|.Key k)
   {
+    int foo(int a, int b, int c)
+    {
+      ret -.max(.min(0, a), .max(.min(0, b), .min(0, c)));
+    }
     switch(k){
     case .Key::Bs:
       ret `Bb < 0 ? -.min(#`Bb, .min(#`Db,#`Ub)) : .min(#`Bb, .min(#`Db,#`Ub));
@@ -158,15 +162,23 @@ public &Buffer
     case .Key::UFs:
       ret `keyState(.Key::UFs) < 0 ? -.min(#`Ub, #`Fb) : .min(#`Ub, #`Fb);
       //
-    case .Key::nBs: ret -self(.Key::Bs);
-    case .Key::nDs: ret -self(.Key::Ds);
-    case .Key::nFs: ret -self(.Key::Fs);
-    case .Key::nUs: ret -self(.Key::Us);
+    case .Key::nBs:
+      ret foo(`keyState(.Key::B), `keyState(.Key::DB), `keyState(.Key::UB));
+    case .Key::nDs:
+      ret foo(`keyState(.Key::D), `keyState(.Key::DB), `keyState(.Key::DF));
+    case .Key::nFs:
+      ret foo(`keyState(.Key::F), `keyState(.Key::DF), `keyState(.Key::UF));
+    case .Key::nUs:
+      ret foo(`keyState(.Key::U), `keyState(.Key::UB), `keyState(.Key::UF));
       //
-    case .Key::nDBs: ret -self(.Key::DBs);
-    case .Key::nUBs: ret -self(.Key::UBs);
-    case .Key::nDFs: ret -self(.Key::DFs);
-    case .Key::nUFs: ret -self(.Key::UFs);
+    case .Key::nDBs:
+      ret foo(`keyState(.Key::DB), `keyState(.Key::D), `keyState(.Key::B));
+    case .Key::nUBs:
+      ret foo(`keyState(.Key::UB), `keyState(.Key::U), `keyState(.Key::B));
+    case .Key::nDFs:
+      ret foo(`keyState(.Key::DF), `keyState(.Key::D), `keyState(.Key::F));
+    case .Key::nUFs:
+      ret foo(`keyState(.Key::UF), `keyState(.Key::U), `keyState(.Key::F));
     }
     ret `keyState(k);
   }
