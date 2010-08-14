@@ -6251,10 +6251,8 @@ public float action(
     branch{
     cond #.chars[i] > 0:
       hbuf .=
-        .chars[i][0]~getcombo != 0 || (
-          .chars[i][0]~stVal.mov == .MovTy::H
-          && .chars[i][0]~sysivar[.iRECOVERTIME] > 0
-          && .chars[i][0]~trCanRecover()$!.v.isTrue());
+        (.chars[i][0]~getcombo != 0 || .chars[i][0]~stVal.mov == .MovTy::H)
+        && .chars[i][0]~sysivar[.iRECOVERTIME] > 0;
     else:
       hbuf .= false;
     }
