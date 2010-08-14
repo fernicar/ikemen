@@ -141,7 +141,12 @@ public &Buffer
   {
     int foo(int a, int b, int c)
     {
-      ret -(a < 0 ? (b < 0 ? .max(a, b) : .max(a, c)) : .max(b, c));
+      branch{
+      cond a > 0: ret -.max(b, c);
+      cond b > 0: ret -.max(a, c);
+      cond c > 0: ret -.max(a, b);
+      }
+      ret -.max(a, .max(b, c));
     }
     switch(k){
     case .Key::Bs:
