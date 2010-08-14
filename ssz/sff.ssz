@@ -138,7 +138,7 @@ public &Sprite
         break, break;
       }
       `colorPallet.new(256);
-      if(c00) break;
+      if(c00) f.seek(offset + (long)lenghtOfSubheader - 768, .file.Seek::SET);
     do:
       if(!f.read!ubyte?(r=)) ret false;
       if(!f.read!ubyte?(g=)) ret false;
