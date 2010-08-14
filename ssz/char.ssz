@@ -2973,7 +2973,9 @@ public &Char
         }
       }
       bool lc = `landCondition();
-      if(`stVal.mov != .MovTy::H && !gh)`getcombo = 0;
+      if((`stVal.mov != .MovTy::H && !gh) || `stVal.hb.guarded != 0){
+        `getcombo = 0;
+      }
       `bind();
       {
         `minus = -3;
