@@ -26,8 +26,8 @@ const int min(int x, int y)
 |Key
 {
   B, D, F, U, DB, UB, DF, UF,
-  Bs, Ds, Fs, Us, DBs, UBs, DFs, UFs,
   nB, nD, nF, nU, nDB, nUB, nDF, nUF,
+  Bs, Ds, Fs, Us, DBs, UBs, DFs, UFs,
   nBs, nDs, nFs, nUs, nDBs, nUBs, nDFs, nUFs,
   a, b, c, x, y, z, s,
   na, nb, nc, nx, ny, nz, ns,
@@ -149,23 +149,19 @@ public &Buffer
       ret -.max(a, .max(b, c));
     }
     switch(k){
-    case .Key::Bs:
-      ret `Bb < 0 ? -.min(#`Bb, .min(#`Db,#`Ub)) : .min(#`Bb, .min(#`Db,#`Ub));
-    case .Key::Ds:
-      ret `Db < 0 ? -.min(#`Db, .min(#`Bb,#`Fb)) : .min(#`Db, .min(#`Bb,#`Fb));
-    case .Key::Fs:
-      ret `Fb < 0 ? -.min(#`Fb, .min(#`Db,#`Ub)) : .min(#`Fb, .min(#`Db,#`Ub));
-    case .Key::Us:
-      ret `Ub < 0 ? -.min(#`Ub, .min(#`Bb,#`Fb)) : .min(#`Ub, .min(#`Bb,#`Fb));
+    case .Key::Bs: ret `Bb < 0 ? `Bb : .min(#`Bb, .min(#`Db, #`Ub));
+    case .Key::Ds: ret `Db < 0 ? `Db : .min(#`Db, .min(#`Bb, #`Fb));
+    case .Key::Fs: ret `Fb < 0 ? `Fb : .min(#`Fb, .min(#`Db, #`Ub));
+    case .Key::Us: ret `Ub < 0 ? `Ub : .min(#`Ub, .min(#`Bb, #`Fb));
       //
     case .Key::DBs:
-      ret `keyState(.Key::DBs) < 0 ? -.min(#`Db, #`Bb) : .min(#`Db, #`Bb);
+      ret `keyState(.Key::DBs) < 0 ? `keyState(.Key::DBs) : .min(#`Db, #`Bb);
     case .Key::UBs:
-      ret `keyState(.Key::UBs) < 0 ? -.min(#`Ub, #`Bb) : .min(#`Ub, #`Bb);
+      ret `keyState(.Key::UBs) < 0 ? `keyState(.Key::UBs) : .min(#`Ub, #`Bb);
     case .Key::DFs:
-      ret `keyState(.Key::DFs) < 0 ? -.min(#`Db, #`Fb) : .min(#`Db, #`Fb);
+      ret `keyState(.Key::DFs) < 0 ? `keyState(.Key::DFs) : .min(#`Db, #`Fb);
     case .Key::UFs:
-      ret `keyState(.Key::UFs) < 0 ? -.min(#`Ub, #`Fb) : .min(#`Ub, #`Fb);
+      ret `keyState(.Key::UFs) < 0 ? `keyState(.Key::UFs) : .min(#`Ub, #`Fb);
       //
     case .Key::nBs:
       ret foo(`keyState(.Key::B), `keyState(.Key::DB), `keyState(.Key::UB));
@@ -927,7 +923,8 @@ public &Command
       `cmdidx++;
       ret true;
     }
-    if(`cmd[`cmdidx].tametime > 1 && `tameidx != `cmdidx){
+    if(`tameidx != `cmdidx) branch{
+    cond `cmd[`cmdidx].tametime > 1:
       loop{index i = 0; while; do:
         if(kbuf.keyState(`cmd[`cmdidx].key[i]) > 0) ret ai;
         if(
@@ -937,6 +934,17 @@ public &Command
         i++;
       while i < #`cmd[`cmdidx].key:
         `tameidx = `cmdidx;
+      }
+    cond
+      `cmdidx > 0 && #`cmd[`cmdidx-1].key == 1 && #`cmd[`cmdidx].key == 1
+      && `cmd[`cmdidx-1].key[0] < .Key::Bs && `cmd[`cmdidx].key[0] < .Key::nB
+      && ((int)`cmd[`cmdidx-1].key[0]-(int)`cmd[`cmdidx].key[0] & 7) == 0
+      :
+      branch{
+      cond kbuf.B < 0 && kbuf.D < 0 && kbuf.F < 0 && kbuf.U < 0:
+        `tameidx = `cmdidx;
+      else:
+        ret fail(::);
       }
     }
     loop{

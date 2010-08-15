@@ -353,9 +353,9 @@ public &BackGround
     ^&.sff.Sff sf, bool hires, float camstartx, ~$void(^&.Action=, int) getact)
   {
     `camstartx = camstartx;
+    ^&.sff.Sprite spr;
     if(#`anim.frames > 0 && (`twidth != 0d0 || `bwidth != 0d0)){
-      ^&.sff.Sprite spr =
-        sf~getSprite(`anim.frames[0].group, `anim.frames[0].number);
+      spr = sf~getSprite(`anim.frames[0].group, `anim.frames[0].number);
       if(#spr == 0) break;
       `xtscale = (float)`twidth / (float)spr~rct.w;
       `xbscale = (float)`bwidth / (float)spr~rct.w;
@@ -366,11 +366,24 @@ public &BackGround
         `bga.yloop = (float)((int)spr~rct.h + `anim.tile.y)*`yscalestart;
       }
     }
-    if(`actionno >= 0){
-      ^&.Action act;
-      getact(:act=, `actionno:);
-      if(#act == 0) break;
-      `anim.setFrames(act~frames, act~loopstart, act~nrepeat);
+    branch{
+    cond `actionno >= 0:
+      {
+        ^&.Action act;
+        getact(:act=, `actionno:);
+        if(#act == 0) break, else;
+        `anim.setFrames(act~frames, act~loopstart, act~nrepeat);
+      }
+    else:
+      if(
+        #spr > 0 || (
+          #`anim.frames > 0 && #(
+            spr = sf~getSprite(
+              `anim.frames[0].group, `anim.frames[0].number)) > 0))
+      {
+        `anim.tile.x += (int)spr~rct.w;
+        `anim.tile.y += (int)spr~rct.h;
+      }
     }
     {
       float mul = hires ? 0.5 : 1.0;
