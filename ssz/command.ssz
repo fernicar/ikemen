@@ -828,7 +828,6 @@ public &Command
       }
       if(j >= 1 && `cmd[j].isDirection() && `cmd[j-1].isDirection()){
         `cmd[j].greater = true;
-        `time++;
       }
       j++;
     while j < #cmds:

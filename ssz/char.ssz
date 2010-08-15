@@ -997,7 +997,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `mctyp = .MoveContact::Hit;
     `mctime = 0;
   }
-  public int setHb(&.Hitdef hit=, bool guard, bool combo)
+  public int setHb(&.Hitdef hit=, bool guard, bool combo, int f)
   {
     bool cmb = combo && `hb.guarded == 0;
     int fall = `hb.fallf, hc = `hb.hitcount, fc = `hb.fallcount;
@@ -1017,6 +1017,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
     `hb.maxdistx = hit.maxdistx;
     `hb.mindisty = hit.mindisty;
     `hb.maxdisty = hit.maxdisty;
+    if(`hb.fall.xvelocity != .com.FERR) `hb.fall.xvelocity *= (float)f;
     branch{
     cond `typ == .StTy::A:
       `hb.airtype = `hb.typ = (int)hit.air_type;
@@ -1040,6 +1041,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
         `hb.xvel = hit.guard_velocity;
         `hb.yvel = hit.ground_velocityy;
       }
+      `hb.xvel *= (float)f;
       `hb.absdamage = hit.guarddamage;
       `hb.hitcount = hc;
       ret 2 * (`hb.typ == 0 || hit.reversal_attr != 0 ? -1 : 1);
@@ -1072,6 +1074,7 @@ void appendToClipboard(^/char text, ^&.Var vars)
       `hb.yvel = hit.ground_velocityy;
       `hb.fallf = hit.ground_fall;
     }
+    `hb.xvel *= (float)f;
     `hb.absdamage = hit.hitdamage;
     `hb.hitcount = cmb ? hc+1 : 1;
     `hb.fallcount = fc;
@@ -3062,7 +3065,6 @@ public &Char
           }
         }
       }
-      `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       if(
         .m.inRange!int?(120, 159, `stVal.no) || (
           `keyctrl && `ctrl() && `cmd.buffer~B > 0 && (
@@ -3072,6 +3074,7 @@ public &Char
       {
         `sysivar[.iSPECIALFLAG] |= .lsGUARD;
       }
+      `sysivar[.iSPECIALFLAG] &= !.lsNoMoveMask;
       `minus = 0;
       `state(::);
       if(!`isHitPaused()) `stVal.time++;
@@ -3343,10 +3346,6 @@ public &Char
     if((`facing < 0) != (f < 0)){
       `facing *= -1;
       `sysfvar[.fVX] *= -1.0;
-      `stVal.hb.xvel *= -1.0;
-      if(`stVal.hb.fall.xvelocity != .com.FERR){
-        `stVal.hb.fall.xvelocity *= -1.0;
-      }
     }
   }
   void setFWidth(float f)
@@ -4680,18 +4679,30 @@ public &Char
   {
     .v.setI(#.chars[`playerno+2 & 3]);
   }
+  public void trHitXvel(int f)
+  {
+    .v.setF(`stVal.hb.xvel * (float)f);
+  }
+  public void trFallXvel(int f)
+  {
+    if(`stVal.hb.fall.xvelocity == .com.FERR){
+      .v.setSF();
+      ret;
+    }
+    .v.setF(`stVal.hb.fall.xvelocity * (float)f);
+  }
   public void trHitFallSet(int f, float vx, float vy)
   {
     if(`stVal.mov != .MovTy::H) ret;
     if(f >= 0) `stVal.hb.fallf = (int)(f != 0);
-    if(vx != .com.FERR) `sysfvar[.fVX] = vx;
+    if(vx != .com.FERR) `setXV(vx);
     if(vy != .com.FERR) `setYV(vy);
   }
   public void trHitFallVel()
   {
     if(`stVal.mov != .MovTy::H) ret;
     if(`stVal.hb.fall.xvelocity != .com.FERR){
-      `setXV(`stVal.hb.fall.xvelocity);
+      `setXV(`stVal.hb.fall.xvelocity * (float)`facing);
     }
     `setYV(`stVal.hb.fall.yvelocity);
   }
@@ -4710,7 +4721,7 @@ public &Char
   public void trHitVelSetX()
   {
     if(`stVal.mov != .MovTy::H) ret;
-    `setXV(`stVal.hb.xvel);
+    `setXV(`stVal.hb.xvel * (float)`facing);
   }
   public void trHitVelSetY()
   {
@@ -4719,7 +4730,7 @@ public &Char
   }
   public void trHitVelX()
   {
-    .v.setF(`stVal.mov != .MovTy::H ? -`stVal.hb.xvel : 0.0);
+    .v.setF(`stVal.mov != .MovTy::H ? -`stVal.hb.xvel * (float)`facing : 0.0);
   }
   public void trHitVelY()
   {
@@ -5715,7 +5726,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       if(el >= er) break;
       float ev = p~c~acttmp > 0 ? p~c~sysfvar[.fVX]*(float)p~c~facing : 0.0;
       if((pl < el || pl < er)  && (el < pr || er < pr)){
-        const float foo = (1.0 - (1.0 - 0.5)**0.5) * 0.5;
+        const float foo = 0.5;
         branch{
           float tmp = (pyr.sysfvar[.fX] - pv) - (p~c~sysfvar[.fX] -  ev);
         cond tmp < 0.0:
@@ -5745,10 +5756,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
         if(pyr.ls(.lsSCREENBOUNDX)) branch{
         cond pyr.sysfvar[.fX] < pxmi:
-          p~c~sysfvar[.fX] += pxmi - pyr.sysfvar[.fX];
           pyr.sysfvar[.fX] = pxmi;
         cond pyr.sysfvar[.fX] > pxma:
-          p~c~sysfvar[.fX] += pxma - pyr.sysfvar[.fX];
           pyr.sysfvar[.fX] = pxma;
         }
         if(p~c~ls(.lsSCREENBOUNDX)) branch{
@@ -5760,10 +5769,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             l = .com.xmin+p~c~fedge; r = .com.xmax-p~c~bedge;
           }
         cond x < l:
-          pyr.sysfvar[.fX] += l - x;
           p~c~sysfvar[.fX] = l;
         cond x > r:
-          pyr.sysfvar[.fX] += r - x;
           p~c~sysfvar[.fX] = r;
         }
       }
@@ -5800,7 +5807,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           int h =
             pyr.stVal.setHb(
               p~c~stVal.hit=, !p~c~ls(.lsUNGUARDABLE) && pyr.ls(.lsGUARD),
-              pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT));
+              pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT), pyr.facing);
           if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
         cond #h == 1:
           p~c~stVal.mctyp = .MoveContact::Hit;
@@ -5879,7 +5886,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           int hit =
             pyr.stVal.setHb(
               .projs[i][j].hit=, pyr.ls(.lsGUARD),
-               pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT));
+               pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT), pyr.facing);
           if(
             foo(
               hit, .chars[i][0]<>=, .projs[i][j].hit=,
