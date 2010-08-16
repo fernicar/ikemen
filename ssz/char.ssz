@@ -2999,30 +2999,27 @@ public &Char
         branch{
         cond gh:
           branch{
-          cond `stVal.hb.typ == 3:
-            .v.setI(5070)$`trSelfState(-1, 0);
           cond `stVal.typ == .StTy::L:
             .v.setI(5080)$`trSelfState(-1, 0);
+          cond `stVal.hb.guarded != 0:
+            switch(`stVal.typ){
+            case .StTy::S:
+              .v.setI(150)$`trSelfState(-1, 0);
+            case .StTy::C:
+              .v.setI(152)$`trSelfState(-1, 0);
+            case .StTy::A:
+              .v.setI(154)$`trSelfState(-1, 0);
+            }
+          cond `stVal.hb.typ == 3:
+            .v.setI(5070)$`trSelfState(-1, 0);
           else:
-            branch{
-            cond `stVal.hb.guarded != 0:
-              switch(`stVal.typ){
-              case .StTy::S:
-                .v.setI(150)$`trSelfState(-1, 0);
-              case .StTy::C:
-                .v.setI(152)$`trSelfState(-1, 0);
-              case .StTy::A:
-                .v.setI(154)$`trSelfState(-1, 0);
-             }
-            else:
-              switch(`stVal.typ){
-              case .StTy::S:
-                .v.setI(5000)$`trSelfState(-1, 0);
-              case .StTy::C:
-                .v.setI(5010)$`trSelfState(-1, 0);
-              case .StTy::A:
-                .v.setI(5020)$`trSelfState(-1, 0);
-              }
+            switch(`stVal.typ){
+            case .StTy::S:
+              .v.setI(5000)$`trSelfState(-1, 0);
+            case .StTy::C:
+              .v.setI(5010)$`trSelfState(-1, 0);
+            case .StTy::A:
+              .v.setI(5020)$`trSelfState(-1, 0);
             }
           }
         cond lc:
@@ -3111,18 +3108,6 @@ public &Char
     }
     float cvx = 0.0;
     if(`acttmp > 0){
-      if(
-        .m.inRange!int?(120, 159, `stVal.no)
-        || (
-          `keyctrl && `ctrl()
-          && (
-            (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-            || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-            || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-          && `cmd.buffer~B > 0))
-      {
-        `sysivar[.iSPECIALFLAG] |= .lsGUARD;
-      }
       float sp = .m.min!float?(1.0, .com.turbo);
       if(!`ls(.lsPOSFREEZEX)){
         `sysfvar[.fX] += (`sysfvar[.fVX]*(float)`facing + `veloff) * sp;
@@ -3249,7 +3234,6 @@ public &Char
             && `sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0)))
       {
         `outTarget();
-        `getcombo = 0;
       }
     }
     `bind();
