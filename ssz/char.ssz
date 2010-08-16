@@ -2477,7 +2477,7 @@ public &Char
       .super > 0 && .superunhittable != 0
       && `playerno == .superplayer) ret false;
     if(hit.chainid >= 0 && `stVal.hb.hitid != hit.chainid) ret false;
-    if(`hittmp != 0){
+    if(`hittmp > 0){
       if(
         `stVal.hb.nochainid1 >= 0 && hit.id == `stVal.hb.nochainid1) ret false;
       if(
@@ -2492,8 +2492,8 @@ public &Char
     if(hit.attr == 0) ret false;
     if((hit.hitflag & (int)`stVal.typ) == 0) ret false;
     if((hit.hitflag & (int).StTy::N) == 0 && `hittmp > 2) ret false;
-    if((hit.hitflag & (int).MovTy::I) != 0 && `hittmp != 0) ret false;
-    if((hit.hitflag & (int).MovTy::H) != 0 && `hittmp == 0) ret false;
+    if((hit.hitflag & (int).MovTy::I) != 0 && `hittmp > 0) ret false;
+    if((hit.hitflag & (int).MovTy::H) != 0 && `hittmp <= 0) ret false;
     if(hit.chainid < 0){
       if(
         `stVal.hb.hitt1 != 0 && (
@@ -2985,6 +2985,7 @@ public &Char
       if((`stVal.mov != .MovTy::H && !gh) || `stVal.hb.guarded != 0){
         `getcombo = 0;
       }
+      if(gh) `setCtrl(false);
       `bind();
       {
         `minus = -3;
@@ -3013,6 +3014,9 @@ public &Char
           cond `stVal.hb.typ == 3:
             .v.setI(5070)$`trSelfState(-1, 0);
           else:
+            if(`stVal.hb.yvel != 0.0 || `stVal.hb.fallf != 0){
+              `stVal.typ = .StTy::A;
+            }
             switch(`stVal.typ){
             case .StTy::S:
               .v.setI(5000)$`trSelfState(-1, 0);
@@ -3219,7 +3223,7 @@ public &Char
             && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
           * ((int)`isFall() + 1) + 1;
       else:
-        `hittmp = 0;
+        if(`hittmp > 0) `hittmp = 0;
         `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
         `stVal.hb.hittime = 0;
         `stVal.hb.hitshaketime = 0;
@@ -3229,7 +3233,7 @@ public &Char
       }
       if(
         `stVal.playerno == `playerno && (
-          `stVal.mov != .MovTy::H || (
+          `hittmp == 0 || (
             .roundState() == 2
             && `sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0)))
       {
@@ -5799,6 +5803,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             pyr.stVal.mctyp = .MoveContact::Reversed;
             pyr.stVal.mctime = -1;
             pyr.tmphit = true;
+            if(pyr.hittmp == 0) pyr.hittmp = -1;
           }
           if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
