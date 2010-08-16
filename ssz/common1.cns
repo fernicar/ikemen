@@ -273,7 +273,7 @@ void c.Char::s##_@@P()
     }
     if(
       --`stVal.ps[0].p <= 0
-      && `sysfvar[.fVX] > -2.0 && #`getAction(`animno + 3) > 0)
+      && `sysfvar[.fVY] > -2.0 && #`getAction(`animno + 3) > 0)
     {
       .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
       `trChangeAnim(`animno + 3);
