@@ -2036,10 +2036,8 @@ public &Char
       p = .explods[`playerno][.expdrawlist[`playerno][ii]].player;
       if(
         p >= `id && (
-          p > `id || (
-            .explods[`playerno][i].ontop != 0
-            && .explods[`playerno][.expdrawlist[`playerno][ii]].stconno
-            > scn)))
+          p > `id || .explods[`playerno][i].ontop == 0
+          || .explods[`playerno][.expdrawlist[`playerno][ii]].stconno > scn))
       {
         .insIL(.expdrawlist[`playerno]=, ii, i);
         break, break;
