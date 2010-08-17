@@ -3468,7 +3468,7 @@ public &StateBuilder
         cond .s.equ(s, "explod"):
           `state.ctrlList[-1].typ = .CtrlTy::Explod;
           `state.ctrlList[-1].task .=
-            "^&.Explod e=`newExplod(" .= .s.iToS(`stconcnt) .= ");"
+            "index i;^&.Explod e=`newExplod(i=);"
             "if(#e==0)ret;int t=0;float rx=0.0,ry=0.0;e~id=0;";
         cond .s.equ(s, "modifyexplod"):
           `state.ctrlList[-1].typ = .CtrlTy::ModifyExplod;
@@ -3488,7 +3488,7 @@ public &StateBuilder
         cond .s.equ(s, "gamemakeanim"):
           `state.ctrlList[-1].typ = .CtrlTy::GameMakeAnim;
           `state.ctrlList[-1].task .=
-            "^&.Explod e=`newExplod(0);if(#e==0)ret;"
+            "index i;^&.Explod e=`newExplod(i=);if(#e==0)ret;"
             "int t=0;float rx=0.0,ry=0.0;"
             "e~ontop=1;e~sprpriority=-5;e~ownpal=1;";
         cond .s.equ(s, "makedust"):
@@ -3569,13 +3569,13 @@ public &StateBuilder
         cond .s.equ(s, "displaytoclipboard"):
           `state.ctrlList[-1].typ = .CtrlTy::DisplayToClipboard;
           `state.ctrlList[-1].task .=
-            "^/char text;%&.Var vars;.com.clipboardText.new(0);";
+            "^/char text;%&.Var vars;.com.clipboardText[`playerno].new(0);";
         cond .s.equ(s, "appendtoclipboard"):
           `state.ctrlList[-1].typ = .CtrlTy::AppendToClipboard;
           `state.ctrlList[-1].task .= "^/char text;%&.Var vars;";
         cond .s.equ(s, "clearclipboard"):
           `state.ctrlList[-1].typ = .CtrlTy::ClearClipboard;
-          `state.ctrlList[-1].task .= ".com.clipboardText.new(0);";
+          `state.ctrlList[-1].task .= ".com.clipboardText[`playerno].new(0);";
         cond .s.equ(s, "forcefeedback"):
           `state.ctrlList[-1].typ = .CtrlTy::ForceFeedback;
         cond .s.equ(s, "null"):
@@ -6271,7 +6271,8 @@ public &StateBuilder
             dbuf .=
               "if(e~offsetx!=.com.FERR)e~offsetx+=.m.randF(-rx,rx);"
               "if(e~offsety!=.com.FERR)e~offsety+=.m.randF(-ry,ry);"
-              "e~setPos(`=);`setAlpha(t,e~alphas=,e~alphad=);";
+              "e~setPos(`=);`setAlpha(t,e~alphas=,e~alphad=);"
+              "`insertExplod(i," .= .s.iToS(`stconcnt) .= ");";
             if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
               dbuf .= "e~ignorehitpause=ih;if(e~ontop != 0)e~sprpriority=0;";
             }
@@ -6292,7 +6293,7 @@ public &StateBuilder
           case .CtrlTy::EnvShake:
             dbuf .= ".stage.envShake.setDefPhase();";
           case .CtrlTy::DisplayToClipboard, .CtrlTy::AppendToClipboard:
-            dbuf .= ".appendToClipboard(text, vars);";
+            dbuf .= ".appendToClipboard(`playerno,text,vars);";
           case .CtrlTy::AfterImageTime:
             if(`state.flag == 0) dbuf .= "`aimg.time=0;";
           }
@@ -6334,72 +6335,7 @@ public &StateBuilder
         && .s.find("]", lines[i+1]) >= 0
         :
       break:
-        if(`state.no == -1){
-          buf .=
-            \t"}"\r\n
-            \t"if(`destmp) ret;"\r\n
-            \t"branch{"\r\n
-            \t"cond `stVal.typ == .StTy::A:"\r\n
-            \t\t"if(`cmd.buffer~U < 0)"
-            " `sysivar[.iSYSFLAG] |= .sfAIRJUMP;"\r\n
-            \t"else:"\r\n
-            \t\t"`sysivar[.iAIRJUMP_CNT] = 0;"\r\n
-            \t\t"`sysivar[.iSYSFLAG] &= !.sfAIRJUMP;"\r\n
-            \t"}"\r\n
-            \t"if(`stVal.no == 140"
-            " && `trAnimTime()$.v.toInt() == 0){"\r\n
-            \t\t".v.setI((int)(`stVal.typ == .StTy::C)*11"
-            " + (int)(`stVal.typ == .StTy::A)*51)$`trSelfState(-1, -1);"\r\n
-            \t"}"\r\n
-            \t"branch{"\r\n
-            \t"cond `ctrl():"\r\n
-            \t\t"branch{"\r\n
-            \t\t"cond `stVal.typ == .StTy::S"
-            " && `cmd.buffer~D > 0:"\r\n
-            \t\t\t"if(`stVal.no != 10) .v.setI(10)$`trSelfState(-1, -1);"\r\n
-            \t\t"cond `stVal.typ == .StTy::C"
-            " && `cmd.buffer~D < 0:"\r\n
-            \t\t\t"if(`stVal.no != 12) .v.setI(12)$`trSelfState(-1, -1);"\r\n
-            \t\t"cond `stVal.typ != .StTy::A"
-            " && `cmd.buffer~U > 0:"\r\n
-            \t\t\t"if(`stVal.no != 40) .v.setI(40)$`trSelfState(-1, -1);"\r\n
-            \t\t"cond `stVal.typ == .StTy::A"
-            " && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0"
-            " && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]"
-            " && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]"
-            " && `cmd.buffer~U > 0:"\r\n
-            \t\t\t"if(`stVal.no != 45){"\r\n
-            \t\t\t\t"`sysivar[.iAIRJUMP_CNT]++;"\r\n
-            \t\t\t\t"`sysivar[.iSYSFLAG] &= !.sfAIRJUMP;"\r\n
-            \t\t\t\t".v.setI(45)$`trSelfState(-1, -1);"\r\n
-            \t\t\t"}"\r\n
-            \t\t"cond !`ls(.lsNOWALK) && `stVal.typ == .StTy::S"
-            " && (`cmd.buffer~F > 0"
-            " || ((!`inguarddist || `ls(.lsNOSTANDGUARD))"
-            " && `cmd.buffer~B > 0)):"\r\n
-            \t\t\t"if(`stVal.no != 20) .v.setI(20)$`trSelfState(-1, -1);"\r\n
-            \t\t"cond `stVal.no == 20"
-            " && (`cmd.buffer~F < 0 && `cmd.buffer~B < 0):"\r\n
-            \t\t\t".v.setI(0)$`trSelfState(-1, -1);"\r\n
-            \t\t"}"\r\n
-            \t\t"if(`ctrl() && `inguarddist"
-            " && (`stVal.no < 120 || `stVal.no >= 160)"
-            " && ((`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))"
-            " || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))"
-            " || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))"
-            " && `cmd.buffer~B > 0){"\r\n
-            \t\t\t".v.setI(120)$`trSelfState(-1, -1);"\r\n
-            \t\t"}"\r\n
-            \t"cond `sysivar[.iCTRL] != 0 || .roundState() == 4:"\r\n
-            \t\t"switch(`stVal.no){"\r\n
-            \t\t"case 11:"\r\n
-            \t\t\t".v.setI(12)$`trSelfState(-1, 1);"\r\n
-            \t\t"case 20:"\r\n
-            \t\t\t".v.setI(0)$`trSelfState(-1, 1);"\r\n
-            \t\t"}"\r\n
-            \t"}"\r\n
-            \t"`destmp = false;"\r\n;
-        }
+        if(`state.no == -1) buf .= \t"}"\r\n;
         buf .= "}"\r\n .= cbuf;
         if(`state.no >= 0){
           buf .=

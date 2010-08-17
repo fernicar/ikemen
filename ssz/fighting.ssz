@@ -130,19 +130,29 @@ void game()
       ret y;
     }
     float y = 48.0;
-    if(#.chr.chars[0] > 0) y=.m.max!float?(y,pdraw(.chr.chars[0][0]<>=,0.0));
-    if(#.chr.chars[2] > 0) y=.m.max!float?(y,pdraw(.chr.chars[2][0]<>=,80.0));
-    if(#.chr.chars[1] > 0) y=.m.max!float?(y,pdraw(.chr.chars[1][0]<>=,160.0));
-    if(#.chr.chars[3] > 0) y=.m.max!float?(y,pdraw(.chr.chars[3][0]<>=,240.0));
-    if(#.com.clipboardText > 40){
-      ^%char tmp = .com.clipboardText[#.com.clipboardText-40..-1];
-      .com.clipboardText.new(0);
-      .s.append!%char?(.com.clipboardText=, tmp);
+    loop{index i = 0; while; do:
+      if(#.chr.chars[i] > 0){
+        y = .m.max!float?(y, pdraw(.chr.chars[i][0]<>=, 80.0*(float)i));
+      }
+      i++;
+    while i < #.chr.chars:
     }
     loop{index i = 0; while; do:
-      `put(0.0, y=, .com.clipboardText[i]);
+      if(#.chr.chars[i] > 0){
+        if(#.com.clipboardText[i] > 40){
+          ^%char tmp = .com.clipboardText[i][#.com.clipboardText[i]-40..-1];
+          .com.clipboardText.new(0);
+          .s.append!%char?(.com.clipboardText[i]=, tmp);
+        }
+        loop{index j = 0; while; do:
+          `put(0.0, y=, .com.clipboardText[i][j]);
+          j++;
+        while j < #.com.clipboardText[i]:
+        }
+      }
+      y+=(float)`f.sizey/.com.HeightScale;
       i++;
-    while i < #.com.clipboardText:
+    while i < #.chr.chars:
     }
   }
   loop{

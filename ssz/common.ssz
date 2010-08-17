@@ -26,10 +26,9 @@ public bool clsndraw = false;
 //デバッグ表示フラグ
 public bool debugdraw = false;
 
-public %%char clipboardText;
+public ^%%char clipboardText.new(4);
 
-public ^bool com;
-com.new(4);
+public ^bool com.new(4);
 com[0] = true;
 com[1] = true;
 com[2] = true;
