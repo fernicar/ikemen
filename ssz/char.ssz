@@ -2902,7 +2902,6 @@ public &Char
     if((!`ls(.lsGETHIT) && `stVal.mov != .MovTy::H) || `stVal.hb.guarded != 0){
       `getcombo = 0;
     }
-    if(`ls(.lsGETHIT)) `setCtrl(false);
     `sysivar[.iSPECIALFLAG] &= `isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0;
     `sysivar[.iSPECIALFLAG] |=
       `player && (`sysivar[.iLIFE] > 0 || `sysivar[.iRECOVERTIME] > 0)
@@ -2978,6 +2977,7 @@ public &Char
       bool p = !gh && (isSuperPaused() || isNormalPaused());
       `acttmp = -(int)p * 2;
       bool lc = `landCondition();
+      if(gh) `setCtrl(false);
       `bind();
       branch{
       cond gh:
