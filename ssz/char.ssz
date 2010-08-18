@@ -1932,7 +1932,7 @@ public &Char
   void clearHitDef()
   {
     `stVal.hit.clear();
-    if(`sysivar[.iHITPAUSETIME] > 0){
+    if(!`tmphit && `sysivar[.iHITPAUSETIME] > 0){
       loop{
         index i = 0;
         ^`self c;
@@ -2728,6 +2728,10 @@ public &Char
         }
       }
     }
+    if(`tmphit){
+      `stVal.hit.clear();
+      if(`stVal.mctime >= 0) `tmphit = false;
+    }
     if(`stVal.mctime < 0){
       `stVal.mctime = 1;
       if(`stVal.mctyp == .MoveContact::Hit){
@@ -2735,11 +2739,7 @@ public &Char
         `sysivar[.iHITCOUNT] += `stVal.hit.numhits;
       }
     }
-    if(`tmphit){
-      `stVal.hit.clear();
-      `tmphit = false;
-    }
-    `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
+    `sysivar[.iSPECIALFLAG] &= !(.lsBindCancel | .lsGUARD);
     ^`self c;
     if(`ls(.lsGETHIT) && #(c = .players.get(`stVal.hb.byid)) > 0){
       if(`stVal.hb.p1getp2facing != 0){
@@ -2779,8 +2779,111 @@ public &Char
     }
     if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     `enemyn.new(0);
-    if(`ls(.lsGETHIT)) `stVal.time = -1;
-    if(`stVal.time >= 0 && `player){
+    branch{
+    cond `ls(.lsGETHIT):
+      branch{
+      cond `stVal.typ == .StTy::L:
+        .v.setI(5080)$`trSelfState(-1, 0);
+      cond `stVal.hb.guarded != 0:
+        switch(`stVal.typ){
+        case .StTy::S:
+          .v.setI(150)$`trSelfState(-1, 0);
+        case .StTy::C:
+          .v.setI(152)$`trSelfState(-1, 0);
+        case .StTy::A:
+          .v.setI(154)$`trSelfState(-1, 0);
+        }
+      cond `stVal.hb.typ == 3:
+        .v.setI(5070)$`trSelfState(-1, 0);
+      else:
+        if(`stVal.hb.yvel != 0.0 || `stVal.hb.fallf != 0){
+          `stVal.typ = .StTy::A;
+        }
+        switch(`stVal.typ){
+        case .StTy::S:
+          .v.setI(5000)$`trSelfState(-1, 0);
+        case .StTy::C:
+          .v.setI(5010)$`trSelfState(-1, 0);
+        case .StTy::A:
+          .v.setI(5020)$`trSelfState(-1, 0);
+        }
+      }
+    cond
+      !`isHitPaused() && `stVal.no == 5110
+      && `sysivar[.iLIFE] > 0 && `sysivar[.iRECOVERTIME] <= 0
+      :
+      .v.setI(5120)$`trSelfState(-1, -1);
+    }
+    branch{
+    cond `stVal.typ == .StTy::A:
+      if(`cmd.buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
+    else:
+      `sysivar[.iAIRJUMP_CNT] = 0;
+      `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
+    }
+    if(`stVal.no == 140 && `trAnimTime()$.v.toInt() == 0){
+      .v.setI(
+        (int)(`stVal.typ == .StTy::C)*11 + (int)(`stVal.typ == .StTy::A)*51);
+      `trSelfState(-1, -1);
+    }
+    if(!`isHitPaused()) branch{
+    cond `ctrl():
+      branch{
+      cond `stVal.typ == .StTy::S && `cmd.buffer~D > 0:
+        if(`stVal.no != 10) .v.setI(10)$`trSelfState(-1, -1);
+      cond `stVal.typ == .StTy::C && `cmd.buffer~D < 0:
+        if(`stVal.no != 12) .v.setI(12)$`trSelfState(-1, -1);
+      cond `stVal.typ != .StTy::A && `cmd.buffer~U > 0:
+        if(`stVal.no != 40) .v.setI(40)$`trSelfState(-1, -1);
+      cond
+        `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
+        && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
+        && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
+        && `cmd.buffer~U > 0
+        :
+        if(`stVal.no != 45){
+          `sysivar[.iAIRJUMP_CNT]++;
+          `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
+          .v.setI(45)$`trSelfState(-1, -1);
+        }
+      cond
+        !`ls(.lsNOWALK) && `stVal.typ == .StTy::S
+        && (
+          `cmd.buffer~F > 0 || (
+            (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd.buffer~B > 0))
+        :
+        if(`stVal.no != 20) .v.setI(20)$`trSelfState(-1, -1);
+      cond `stVal.no == 20 && (`cmd.buffer~F < 0 && `cmd.buffer~B < 0):
+        .v.setI(0)$`trSelfState(-1, -1);
+      }
+      if(
+        `ctrl() && `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
+          (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+          || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+          || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
+        && `cmd.buffer~B > 0)
+      {
+        .v.setI(120)$`trSelfState(-1, -1);
+      }
+    cond `sysivar[.iCTRL] != 0 || .roundState() == 4:
+      switch(`stVal.no){
+      case 11:
+        .v.setI(12)$`trSelfState(-1, 1);
+      case 20:
+        .v.setI(0)$`trSelfState(-1, 1);
+      }
+    }
+    `destmp = false;
+    if(
+      .m.inRange!int?(120, 159, `stVal.no) || (
+        `keyctrl && `ctrl() && `cmd.buffer~B > 0 && (
+          (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+          || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+          || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))))
+    {
+      `sysivar[.iSPECIALFLAG] |= .lsGUARD;
+    }
+    if(`player){
       `minus = -4;
       `state_4(::);
     }
@@ -2900,7 +3003,8 @@ public &Char
     if((!`ls(.lsGETHIT) && `stVal.mov != .MovTy::H) || `stVal.hb.guarded != 0){
       `getcombo = 0;
     }
-    `sysivar[.iSPECIALFLAG] &= `isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0;
+    `sysivar[.iSPECIALFLAG] &=
+      .lsGUARD | (`isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0);
     `sysivar[.iSPECIALFLAG] |=
       `player && (`sysivar[.iLIFE] > 0 || `sysivar[.iRECOVERTIME] > 0)
       ? .lsSCREENBOUNDX | .lsSCREENBOUNDY | .lsPLAYERPUSH : 0;
@@ -2971,47 +3075,10 @@ public &Char
     if(`minus != 2) ret;
     {
       if(#`palfx > 0 && !`isPaused()) `palfx~step();
-      bool gh = `ls(.lsGETHIT);
-      bool p = !gh && (isSuperPaused() || isNormalPaused());
+      bool p = !`ls(.lsGETHIT) && (isSuperPaused() || isNormalPaused());
       `acttmp = -(int)p * 2;
-      bool lc = `landCondition();
-      if(gh) `setCtrl(false);
+      bool lc = !`ls(.lsGETHIT) && `landCondition();
       `bind();
-      branch{
-      cond gh:
-        branch{
-        cond `stVal.typ == .StTy::L:
-          .v.setI(5080)$`trSelfState(-1, 0);
-        cond `stVal.hb.guarded != 0:
-          switch(`stVal.typ){
-          case .StTy::S:
-            .v.setI(150)$`trSelfState(-1, 0);
-          case .StTy::C:
-            .v.setI(152)$`trSelfState(-1, 0);
-          case .StTy::A:
-            .v.setI(154)$`trSelfState(-1, 0);
-          }
-        cond `stVal.hb.typ == 3:
-          .v.setI(5070)$`trSelfState(-1, 0);
-        else:
-          if(`stVal.hb.yvel != 0.0 || `stVal.hb.fallf != 0){
-            `stVal.typ = .StTy::A;
-          }
-          switch(`stVal.typ){
-          case .StTy::S:
-            .v.setI(5000)$`trSelfState(-1, 0);
-          case .StTy::C:
-            .v.setI(5010)$`trSelfState(-1, 0);
-          case .StTy::A:
-            .v.setI(5020)$`trSelfState(-1, 0);
-          }
-        }
-      cond
-        !`isHitPaused() && `stVal.no == 5110
-        && `sysivar[.iLIFE] > 0 && `sysivar[.iRECOVERTIME] <= 0
-        :
-        .v.setI(5120)$`trSelfState(-1, -1);
-      }
       {
         if(p) ret;
         branch{
@@ -3022,77 +3089,7 @@ public &Char
           if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
           if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
         }
-        branch{
-        cond `stVal.typ == .StTy::A:
-          if(`cmd.buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
-        else:
-          `sysivar[.iAIRJUMP_CNT] = 0;
-          `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-        }
-        if(`stVal.no == 140 && `trAnimTime()$.v.toInt() == 0){
-          .v.setI(
-            (int)(`stVal.typ == .StTy::C)*11
-            + (int)(`stVal.typ == .StTy::A)*51);
-          `trSelfState(-1, -1);
-        }
-        branch{
-        cond `ctrl():
-          branch{
-          cond `stVal.typ == .StTy::S && `cmd.buffer~D > 0:
-            if(`stVal.no != 10) .v.setI(10)$`trSelfState(-1, -1);
-          cond `stVal.typ == .StTy::C && `cmd.buffer~D < 0:
-            if(`stVal.no != 12) .v.setI(12)$`trSelfState(-1, -1);
-          cond `stVal.typ != .StTy::A && `cmd.buffer~U > 0:
-            if(`stVal.no != 40) .v.setI(40)$`trSelfState(-1, -1);
-          cond
-            `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
-            && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
-            && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
-            && `cmd.buffer~U > 0
-            :
-            if(`stVal.no != 45){
-              `sysivar[.iAIRJUMP_CNT]++;
-              `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-              .v.setI(45)$`trSelfState(-1, -1);
-            }
-          cond
-            !`ls(.lsNOWALK) && `stVal.typ == .StTy::S
-            && (
-              `cmd.buffer~F > 0 || (
-                (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd.buffer~B > 0))
-            :
-            if(`stVal.no != 20) .v.setI(20)$`trSelfState(-1, -1);
-          cond `stVal.no == 20 && (`cmd.buffer~F < 0 && `cmd.buffer~B < 0):
-            .v.setI(0)$`trSelfState(-1, -1);
-          }
-          if(
-            `ctrl() && `inguarddist && (`stVal.no < 120 || `stVal.no >= 160)
-            && (
-              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-            && `cmd.buffer~B > 0)
-          {
-            .v.setI(120)$`trSelfState(-1, -1);
-          }
-        cond `sysivar[.iCTRL] != 0 || .roundState() == 4:
-          switch(`stVal.no){
-          case 11:
-            .v.setI(12)$`trSelfState(-1, 1);
-          case 20:
-            .v.setI(0)$`trSelfState(-1, 1);
-          }
-        }
-        bool grd = false;
-        if(
-          .m.inRange!int?(120, 159, `stVal.no) || (
-            `keyctrl && `ctrl() && `cmd.buffer~B > 0 && (
-              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))) grd = true;
         `lSetNormal();
-        if(grd) `sysivar[.iSPECIALFLAG] |= .lsGUARD;
-        `destmp = false;
         `minus = -3;
         if(`stVal.playerno == `playerno && `player) `state_3(::);
         `minus = -2;
@@ -3101,6 +3098,7 @@ public &Char
         if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       break:
         `changeState2();
+        `tmphit = false;
         if(`stVal.hb.damage != 0 && `stVal.mov == .MovTy::H) branch{
         cond `stVal.hb.guarded != 0:
           if(
@@ -3131,8 +3129,8 @@ public &Char
             `setEnemyWinty();
           }
         }
-        if(lc) .v.setI(52)$`trSelfState(-1, -1);
       }
+      if(lc) .v.setI(52)$`trSelfState(-1, -1);
       `minus = 0;
       `state(::);
       if(!`isHitPaused()) `stVal.time++;
@@ -4250,7 +4248,10 @@ public &Char
     if(ctrl >= 0) `setCtrl(ctrl != 0);
     branch{
     cond `changeState1(p, n):
-      if(`minus <= 0) `changeState2();
+      if(`minus <= 0){
+        `tmphit = false;
+        `changeState2();
+      }
       if(`minus == 0){
         if(`id >= 0){
           .changeStateNest++;
@@ -4606,10 +4607,7 @@ public &Char
       c = .players.get(`targets[i]);
       if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
         c~setCtrl(false);
-        if(c~changeState1(pno, state)){
-          c~sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
-          c~minus = 2;
-        }
+        c~changeState1(pno, state);
       }
       i++;
     while i < #`targets:
@@ -5548,7 +5546,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       || !`pyr.ls(.lsGETHIT))
     {
       rtn = damageable = true;
-      if(hitting > 0) `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
+      if(hitting > 0){
+        if(!`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
+        `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
+      }
       loop{index i = 0; while; do:
         if(
           `pyr.stVal.ho[i].time != 0
@@ -5713,7 +5714,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(#hitting == 1 && hit.p1stateno >= 0) branch{
       cond
-        (!by.cs1tmp || by.stVal.playerno == by.playerno)
+        !by.ls(.lsGETHIT) && (!by.cs1tmp || by.stVal.playerno == by.playerno)
         && (hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s > 0)
         :
         by.changeState1(by.playerno, hit.p1stateno);
