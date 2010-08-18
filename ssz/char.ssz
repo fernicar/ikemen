@@ -2726,8 +2726,10 @@ public &Char
             c~setYV(`sysfvar[.fVY]);
           }
         }
+        `sysivar[.iSPECIALFLAG] &= !.lsGUARD;
       }
     }
+    `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
     if(`tmphit){
       `stVal.hit.clear();
       if(`stVal.mctime >= 0) `tmphit = false;
@@ -2739,7 +2741,6 @@ public &Char
         `sysivar[.iHITCOUNT] += `stVal.hit.numhits;
       }
     }
-    `sysivar[.iSPECIALFLAG] &= !(.lsBindCancel | .lsGUARD);
     ^`self c;
     if(`ls(.lsGETHIT) && #(c = .players.get(`stVal.hb.byid)) > 0){
       if(`stVal.hb.p1getp2facing != 0){
@@ -2826,7 +2827,7 @@ public &Char
         (int)(`stVal.typ == .StTy::C)*11 + (int)(`stVal.typ == .StTy::A)*51);
       `trSelfState(-1, -1);
     }
-    if(!`isHitPaused()) branch{
+    if(!`isPaused() && !`isHitPaused()) branch{
     cond `ctrl():
       branch{
       cond `stVal.typ == .StTy::S && `cmd.buffer~D > 0:
@@ -2872,17 +2873,18 @@ public &Char
       case 20:
         .v.setI(0)$`trSelfState(-1, 1);
       }
+    comm:
+      if(
+        .m.inRange!int?(120, 159, `stVal.no) || (
+          `keyctrl && `ctrl() && `cmd.buffer~B > 0 && (
+            (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+            || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+            || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))))
+      {
+        `sysivar[.iSPECIALFLAG] |= .lsGUARD;
+      }
     }
     `destmp = false;
-    if(
-      .m.inRange!int?(120, 159, `stVal.no) || (
-        `keyctrl && `ctrl() && `cmd.buffer~B > 0 && (
-          (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-          || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-          || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))))
-    {
-      `sysivar[.iSPECIALFLAG] |= .lsGUARD;
-    }
     if(`player){
       `minus = -4;
       `state_4(::);
