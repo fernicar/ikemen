@@ -852,6 +852,11 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `maxdisty = .com.FERR;
     `fall.clear();
   }
+  public void invalidate()
+  {
+    `attr |= (int)0x80000000;
+    `reversal_attr |= (int)0x80000000;
+  }
 }
 &HitBy
 {
@@ -1044,7 +1049,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
       `hb.xvel *= (float)f;
       `hb.absdamage = hit.guarddamage;
       `hb.hitcount = hc;
-      ret 2 * (`hb.typ == 0 || hit.reversal_attr != 0 ? -1 : 1);
+      ret 2 * (`hb.typ == 0 || hit.reversal_attr > 0 ? -1 : 1);
     }
     `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
     `hb.slidetime = hit.ground_slidetime;
@@ -1079,7 +1084,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.hitcount = cmb ? hc+1 : 1;
     `hb.fallcount = fc;
     `hb.fallf |= fall;
-    ret 1 * (`hb.typ == 0 || hit.reversal_attr != 0 ? -1 : 1);
+    ret 1 * (`hb.typ == 0 || hit.reversal_attr > 0 ? -1 : 1);
   }
 }
 const index iLIFE              = 10;
@@ -1932,7 +1937,7 @@ public &Char
   void clearHitDef()
   {
     `stVal.hit.clear();
-    if(!`tmphit && `sysivar[.iHITPAUSETIME] > 0){
+    if(`sysivar[.iHITPAUSETIME] > 0){
       loop{
         index i = 0;
         ^`self c;
@@ -2485,13 +2490,13 @@ public &Char
       if(
         `stVal.hb.nochainid2 >= 0 && hit.id == `stVal.hb.nochainid2) ret false;
     }
-    if(hit.reversal_attr != 0){
+    if(hit.reversal_attr > 0){
       ret
         `atktmp >= 0
         && (`stVal.hit.attr & hit.reversal_attr & 63) != 0
         && (`stVal.hit.attr & hit.reversal_attr & !63) != 0;
     }
-    if(hit.attr == 0) ret false;
+    if(hit.attr <= 0) ret false;
     if((hit.hitflag & (int)`stVal.typ) == 0) ret false;
     if((hit.hitflag & (int).StTy::N) == 0 && `hittmp > 2) ret false;
     if((hit.hitflag & (int).MovTy::I) != 0 && `hittmp > 0) ret false;
@@ -2511,11 +2516,11 @@ public &Char
   public bool hittable(&.Hitdef hit=, ~$bool(&.Hitdef=) countercheck)
   {
     if(
-      `atktmp >= 0 && (`stVal.hit.attr != 0 || `stVal.hit.reversal_attr != 0)
-      && (`stVal.hit.reversal_attr == 0 || hit.reversal_attr == 0))
+      `atktmp >= 0 && (`stVal.hit.attr != 0 || `stVal.hit.reversal_attr > 0)
+      && (`stVal.hit.reversal_attr <= 0 || hit.reversal_attr <= 0))
     {
       if(
-        `stVal.hit.reversal_attr != 0 || (
+        `stVal.hit.reversal_attr > 0 || (
           hit.priority <= `stVal.hit.priority && (
             hit.priority < `stVal.hit.priority
             || `stVal.hit.bothhittype == .PriTy::Dodge
@@ -2566,7 +2571,7 @@ public &Char
     if(#`ani == 0 || #`curFrame == 0) ret false;
     ^&.act.Rect clsn1 = atk.curFrame~clsn1;
     ^&.act.Rect clsn2 = `curFrame~clsn2;
-    if(atk.stVal.hit.reversal_attr != 0) clsn2 = `curFrame~clsn1;
+    if(atk.stVal.hit.reversal_attr > 0) clsn2 = `curFrame~clsn1;
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
         if(hentei(clsn1[i], clsn2[j])) ret true;
@@ -2670,7 +2675,7 @@ public &Char
     if(#`ani == 0 || #`curFrame == 0) ret false;
     ^&.act.Frame frm;
     ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn2;
-    if(`stVal.hit.reversal_attr != 0) clsn1 = frm~clsn1;
+    if(`stVal.hit.reversal_attr > 0) clsn1 = frm~clsn1;
     ^&.act.Rect clsn2 = `curFrame~clsn1;
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
@@ -2731,8 +2736,8 @@ public &Char
     }
     `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
     if(`tmphit){
-      `stVal.hit.clear();
-      if(`stVal.mctime >= 0) `tmphit = false;
+      `stVal.hit.invalidate();
+      `tmphit = false;
     }
     if(`stVal.mctime < 0){
       `stVal.mctime = 1;
@@ -3097,8 +3102,7 @@ public &Char
         `minus = -1;
         if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       break:
-        `changeState2();
-        `tmphit = false;
+        if(!`isHitPaused()) `changeState2();
         if(`stVal.hb.damage != 0 && `stVal.mov == .MovTy::H) branch{
         cond `stVal.hb.guarded != 0:
           if(
@@ -3130,10 +3134,12 @@ public &Char
           }
         }
       }
-      if(lc) .v.setI(52)$`trSelfState(-1, -1);
-      `minus = 0;
-      `state(::);
-      if(!`isHitPaused()) `stVal.time++;
+      if(!`cs1tmp){
+        if(lc) .v.setI(52)$`trSelfState(-1, -1);
+        `minus = 0;
+        `state(::);
+        if(!`isHitPaused()) `stVal.time++;
+      }
     break:
       `minus = 1;
       `acttmp += (int)`isActive() - (int)`isHitPaused();
@@ -3270,7 +3276,7 @@ public &Char
   {
     if(.com.tickFrame()){
       `atktmp =
-        (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr != 0)
+        (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
         && !`isHitPaused() ? `stVal.no : -1;
       branch{
       cond `stVal.mov == .MovTy::H:
@@ -4250,10 +4256,7 @@ public &Char
     if(ctrl >= 0) `setCtrl(ctrl != 0);
     branch{
     cond `changeState1(p, n):
-      if(`minus <= 0){
-        `tmphit = false;
-        `changeState2();
-      }
+      if(`minus <= 0) `changeState2();
       if(`minus == 0){
         if(`id >= 0){
           .changeStateNest++;
@@ -4836,10 +4839,12 @@ public &Char
   }
   public void trHitDefAttr(int flg)
   {
-    int mask = (int).AtTy::NA - 1;
+    const int mask = (int).AtTy::NA - 1;
     .v.setI(
       (int)(
-        (mask&`stVal.hit.attr&flg) != 0 && (!mask&`stVal.hit.attr&flg) != 0));
+        `stVal.mov == .MovTy::A
+        && (mask&`stVal.hit.attr&flg) != 0
+        && (!mask&`stVal.hit.attr&flg) != 0));
   }
   public void trNumHelper()
   {
@@ -5490,8 +5495,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
   bool foo(
     int hitting, `pyr.self by=, &.Hitdef hit=, float y, int pro, int hits)
   {
-    ^&.Explod expreset(float x, float y)
+    ^&.Explod expreset(&.Char p1=, &.Char p2=, float y)
     {
+      float x = (p2.sysfvar[.fX] - p1.sysfvar[.fX]) * (float)p1.facing;
       index tmp;
       ^&.Explod e = `by.newExplod(tmp=);
       if(#e == 0) ret e;
@@ -5505,7 +5511,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       e~sprpriority = 5;
       e~ownpal = 1;
       e~supermovetime = e~pausemovetime = -1;
-      `by.setPos!e<>.self?(e<>=, e~postype, e~offsetx, e~offsety, e~relativef);
+      p1.setPos!e<>.self?(e<>=, e~postype, e~offsetx, e~offsety, e~relativef);
       `by.insertExplod(tmp, 0);
       ret e;
     }
@@ -5515,7 +5521,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       branch{
         if(hit.sparkno == .com.IERR) break;
         ^&.Explod e = 
-          expreset((`pyr.sysfvar[.fX]-by.sysfvar[.fX])*(float)by.facing, y);
+          hit.reversal_attr > 0
+          ? expreset(`pyr=, by=, y) : expreset(by=, `pyr=, y);
         if(#e == 0) break;
       cond hit.sparkno < 0:
         e~ani = .fight~getAction(!hit.sparkno);
@@ -5523,12 +5530,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         e~ani = by.getAction(hit.sparkno);
       }
     else:
-      if(
-        (hit.attr&((int).AtTy::NT|(int).AtTy::ST|(int).AtTy::HT)) == 0) branch
-      {
+      branch{
         if(hit.guard_sparkno == .com.IERR) break;
         ^&.Explod e =
-          expreset((`pyr.sysfvar[.fX]-by.sysfvar[.fX])*(float)by.facing, y);
+          hit.reversal_attr > 0
+          ? expreset(`pyr=, by=, y) : expreset(by=, `pyr=, y);
         if(#e == 0) break;
       cond hit.guard_sparkno < 0:
         e~ani = .fight~getAction(!hit.guard_sparkno);
@@ -5862,7 +5868,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
         cond #h == 1:
           p~c~stVal.mctyp = .MoveContact::Hit;
-          if(p~c~stVal.hit.reversal_attr != 0){
+          if(p~c~stVal.hit.reversal_attr > 0){
             pyr.stVal.mctyp = .MoveContact::Reversed;
             pyr.stVal.mctime = -1;
             pyr.tmphit = true;
@@ -6263,7 +6269,9 @@ public float action(
     -(
       .fight~ro.over_hittime
       + .fight~ro.over_waittime + .fight~ro.over_wintime);
-  if(.com.intro == rs4t-1 && #(x - .oldx) > 1.0).com.intro = rs4t;
+  if(.com.intro == rs4t-1 && .com.turbo > 0.0 && #(x - .oldx) >= .com.turbo){
+    .com.intro = rs4t;
+  }
   if(.com.tickNextFrame()){
     if(.tickallpal) .com.allPalFX~step();
     if(.tickbgpal) .stage.bgPalFX~step();
@@ -6380,7 +6388,7 @@ public float action(
           0.0, rightest - (.com.xmax - x + .com.screenright) + 64.0);
       tmp = .m.sqrt(tmp * (1.0/16.0));
     }
-    cvx += tmp;
+    cvx += tmp * .m.min!float?(1.0, .com.turbo);
   }
   branch{
     float tmp = leftest + rightest;
@@ -6389,7 +6397,7 @@ public float action(
   else:
     if(cvx > tmp) cvx = .m.max!float?(0.0, tmp);
   }
-  .oldx = x;
+  if(.com.turbo > 0.0) .oldx = x;
   x += cvx;
   if(lowest >= highest) branch{
   cond highest < (float)-stg.cam.floortension / .com.scale:
@@ -6573,20 +6581,23 @@ public float action(
   cond .fight~ro.cur == 1 && .com.tickNextFrame():
     posreset();
   }
-  if(.com.tickNextFrame()) branch{
+  if(.com.turbo == 0.0 || .com.tickNextFrame()) branch{
+    float spd =
+      #.cmd.net == 0 && .com.pause && !.com.keyDown(.com.KeyEvent::Scroll)
+      ? 0.0 : .com.Speed;
   cond
     !.gs(.gsNOKOSLOW) && .com.time != 0
     && .m.inRange!int?(.slowt, -.fight~ro.over_hittime-1, .com.intro)
     :
-    .com.turbo = .com.Speed * 0.25;
+    .com.turbo = spd * 0.25;
   cond
     !.gs(.gsNOKOSLOW) && .com.time != 0
     && .m.inRange!int?(.slowt-slowfade, .slowt-1, .com.intro)
     :
     .com.turbo =
-      .com.Speed*(0.25 + 0.75 * (float)(-.com.intro + .slowt)/(float)slowfade);
+      spd*(0.25 + 0.75 * (float)(-.com.intro + .slowt)/(float)slowfade);
   else:
-    .com.turbo = .com.Speed;
+    .com.turbo = spd;
   }
   .sdl.pauseBGM(.gs(.gsNOMUSIC));
   .playSound();

@@ -190,11 +190,6 @@ void game()
     .com.clsndraw = share~clsndw;
     .com.powershare = share~powsh;
     .com.autolevel = share~alvl;
-    .se.eventKeys.new(2);
-    .se.eventKeys[0].key = .sdl.SDLKey::c;
-    .se.eventKeys[0].ctrl = true;
-    .se.eventKeys[1].key = .sdl.SDLKey::d;
-    .se.eventKeys[1].ctrl = true;
     .cmd.synchronize();
     .wm.init();
     ^int level;
@@ -307,8 +302,9 @@ void game()
     float scl = 1.0, sclmul = 1.0, l = 0.0, r = 0.0;
     float newx = x, newy = y, tmp;
   do:
-    if(.se.eventKeys[0].down) .com.clsndraw!!;
-    if(.se.eventKeys[1].down) .com.debugdraw!!;
+    if(.com.keyDown(.com.KeyEvent::CtrlC)) .com.clsndraw!!;
+    if(.com.keyDown(.com.KeyEvent::CtrlD)) .com.debugdraw!!;
+    if(.com.keyDown(.com.KeyEvent::Pause)) .com.pause!!;
     if(.chr.roundOver()) branch{
       .com.round++;
       loop{index i = 0; while; do:

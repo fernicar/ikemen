@@ -7,6 +7,7 @@ lib cfg = "config.ssz";
 lib mes = <alpha/mesdialog.ssz>;
 lib tbl = <table.ssz>;
 lib file = <file.ssz>;
+lib se = <alpha/sdlevent.ssz>;
 
 
 //チームモードの種類
@@ -33,6 +34,8 @@ com[0] = true;
 com[1] = true;
 com[2] = true;
 com[3] = true;
+
+public bool pause = false;
 
 public bool autolevel = false;
 
@@ -122,6 +125,27 @@ rexisted[0] = rexisted[1] = 0;
 public int p1wins = 0, p2wins = 0, draws = 0;
 
 public int win = -1;
+
+|KeyEvent
+{
+  CtrlC, CtrlD, Pause, Scroll,
+
+  NumEvents
+}
+
+se.eventKeys.new((int)KeyEvent::NumEvents);
+se.eventKeys[(int)KeyEvent::CtrlC].key = .sdl.SDLKey::c;
+se.eventKeys[(int)KeyEvent::CtrlC].ctrl = true;
+se.eventKeys[(int)KeyEvent::CtrlD].key = .sdl.SDLKey::d;
+se.eventKeys[(int)KeyEvent::CtrlD].ctrl = true;
+se.eventKeys[(int)KeyEvent::Pause].key = .sdl.SDLKey::PAUSE;
+se.eventKeys[(int)KeyEvent::Scroll].key = .sdl.SDLKey::SCROLLOCK;
+
+public bool keyDown(|.KeyEvent k)
+{
+  ret .se.eventKeys[(int)k].down;
+}
+
 
 public int nextLine(index i=, ^/char str)
 {
