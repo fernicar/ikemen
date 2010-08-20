@@ -4840,11 +4840,11 @@ public &Char
   public void trHitDefAttr(int flg)
   {
     const int mask = (int).AtTy::NA - 1;
+    int attr = `stVal.hit.attr & (int)0x7fffffff;
     .v.setI(
       (int)(
         `stVal.mov == .MovTy::A
-        && (mask&`stVal.hit.attr&flg) != 0
-        && (!mask&`stVal.hit.attr&flg) != 0));
+        && (mask & attr & flg) != 0  && (!mask & attr & flg) != 0));
   }
   public void trNumHelper()
   {
