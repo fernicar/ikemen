@@ -4592,10 +4592,10 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "branch{int i=",
-                "$.v.toInt();cond i<0:.stopAllSound();"
+                "branch{int i=.m.min!int?(255,",
+                "$.v.toInt());cond i<0:.stopAllSound();"
                 "else:"
-                ".sounds[`playerno][i].sound.new(0);}")) ret false;
+                "`sounds.new[i].sound.new(0);}")) ret false;
           else:
             break, default;
           }
@@ -6207,8 +6207,8 @@ public &StateBuilder
           case .CtrlTy::SndPan:
             dbuf .=
               "if((uint)ch<0x100){"
-              ".sounds[`playerno][ch].chrx=x;"
-              ".sounds[`playerno][ch].setPan(p*(float)`facing);"
+              "`sounds.new[ch].chrx=x;"
+              "`sounds.new[ch].setPan(p*(float)`facing);"
               "}";
           case .CtrlTy::Helper:
             dbuf .= "`trHelperInit(h<>=,st,pt,x,y,f,o);";
@@ -6342,33 +6342,6 @@ public &StateBuilder
             "void c.Char::" .= fname .= "Init()"\r\n
             "{"\r\n
             \t"`state = `" .= fname .= ";"\r\n;
-          if(#`state.ctrlList > 0){
-            buf .=
-              \t"`stVal.ps.new("
-              .= .s.iToS(#`state.ctrlList) .= ");"\r\n
-              \t"loop{index i = 0; do:"\r\n
-              \t\t"`stVal.ps[i].p = 0;"\r\n
-              \t"while ++i < " .= .s.iToS(#`state.ctrlList) .= ":"\r\n
-              \t"}"\r\n;
-          }
-          if(#`state.deftask > 0){
-             buf .= '\t' .= `okikae(`state.deftask) .= \r\n;
-          }
-          if(`state.hitcountpersist == 0){
-            buf .= \t"`clearHitCount();"\r\n;
-          }
-          if(`state.hitdefpersist == 0){
-            buf .= \t"`clearHitDef();"\r\n;
-          }
-          if(`state.movehitpersist == 0){
-            buf .= \t"`stVal.mctime = 0;"\r\n;
-          }
-          if(`state.juggle == 0) buf .= \t"`stVal.juggle = 0;"\r\n;
-          buf .=
-            "}"\r\n
-            "void c.Char::" .= fname .= "Set()"\r\n
-            "{"\r\n
-            \t"`state = `" .= fname .= "Init;"\r\n;
           if(
             `state.typ != .chr.StTy::U
             && `state.typ != .chr.StTy::A
@@ -6399,6 +6372,33 @@ public &StateBuilder
           case .chr.StTy::N:
             buf .= \t"`stVal.phy = .StTy::N;"\r\n;
           }
+          if(#`state.ctrlList > 0){
+            buf .=
+              \t"`stVal.ps.new("
+              .= .s.iToS(#`state.ctrlList) .= ");"\r\n
+              \t"loop{index i = 0; do:"\r\n
+              \t\t"`stVal.ps[i].p = 0;"\r\n
+              \t"while ++i < " .= .s.iToS(#`state.ctrlList) .= ":"\r\n
+              \t"}"\r\n;
+          }
+          if(#`state.deftask > 0){
+             buf .= '\t' .= `okikae(`state.deftask) .= \r\n;
+          }
+          if(`state.hitcountpersist == 0){
+            buf .= \t"`clearHitCount();"\r\n;
+          }
+          if(`state.hitdefpersist == 0){
+            buf .= \t"`clearHitDef();"\r\n;
+          }
+          if(`state.movehitpersist == 0){
+            buf .= \t"`stVal.mctime = 0;"\r\n;
+          }
+          if(`state.juggle == 0) buf .= \t"`stVal.juggle = 0;"\r\n;
+          buf .=
+            "}"\r\n
+            "void c.Char::" .= fname .= "Set()"\r\n
+            "{"\r\n
+            \t"`state = `" .= fname .= "Init;"\r\n;
           switch(`state.mov){
           case .chr.MovTy::I:
             buf .= \t"`stVal.mov = .MovTy::I;"\r\n;

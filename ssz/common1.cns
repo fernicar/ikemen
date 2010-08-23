@@ -21,6 +21,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
   `sprpriority = 0;
   `clearHitCount();
   `clearHitDef();
@@ -30,9 +33,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::S;
   `stVal.mov = .MovTy::I;
 }
 
@@ -52,6 +52,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::C;
   `trChangeAnim(10);
   `clearHitCount();
   `clearHitDef();
@@ -61,9 +64,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::C;
-  `stVal.phy = .StTy::C;
   `stVal.mov = .MovTy::I;
 }
 
@@ -79,6 +79,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::C;
   `trChangeAnim(11);
   `sprpriority = 0;
   `clearHitCount();
@@ -89,9 +92,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::C;
-  `stVal.phy = .StTy::C;
   `stVal.mov = .MovTy::I;
 }
 
@@ -110,6 +110,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
   `trChangeAnim(12);
   `clearHitCount();
   `clearHitDef();
@@ -119,9 +122,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::S;
   `stVal.mov = .MovTy::I;
 }
 
@@ -156,6 +156,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
   `sprpriority = 0;
   `clearHitCount();
   `clearHitDef();
@@ -165,9 +168,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::S;
   `stVal.mov = .MovTy::I;
 }
 
@@ -198,6 +198,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
   `trChangeAnim(40);
   `setCtrl(false);
   `sprpriority = 1;
@@ -209,9 +212,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::S;
   `stVal.mov = .MovTy::I;
 }
 
@@ -244,6 +244,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `setCtrl(false);
   `setXV(0.0);
   `setYV(0.0);
@@ -255,8 +257,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -283,6 +283,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::A;
   `stVal.ps.new(1);
   `stVal.ps[0].p = 0;
   `clearHitCount();
@@ -293,8 +295,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::A;
   `stVal.mov = .MovTy::I;
 }
 
@@ -307,6 +307,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::A;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -315,8 +317,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::A;
   `stVal.mov = .MovTy::I;
 }
 
@@ -342,6 +342,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
   `setCtrl(false);
   `trChangeAnim(47);
   `clearHitCount();
@@ -352,9 +355,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::S;
   `stVal.mov = .MovTy::I;
 }
 
@@ -375,6 +375,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
   `trChangeAnim(100);
   `sprpriority = 1;
   `clearHitCount();
@@ -385,9 +388,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::S;
   `stVal.mov = .MovTy::I;
 }
 
@@ -413,6 +413,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::A;
   `setCtrl(false);
   `trChangeAnim(105);
   `sprpriority = 1;
@@ -424,8 +426,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::A;
   `stVal.mov = .MovTy::I;
 }
 
@@ -450,6 +450,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
   `setCtrl(false);
   `trChangeAnim(47);
   `clearHitCount();
@@ -460,9 +463,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::S;
   `stVal.mov = .MovTy::I;
 }
 
@@ -488,6 +488,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -496,8 +498,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -523,6 +523,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -531,8 +533,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -612,6 +612,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -620,9 +623,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::S;
   `stVal.mov = .MovTy::I;
 }
 
@@ -646,6 +646,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::C;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -654,9 +657,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::C;
-  `stVal.phy = .StTy::C;
   `stVal.mov = .MovTy::I;
 }
 
@@ -688,6 +688,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -696,8 +698,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -779,6 +779,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
   `setXV(0.0);
   `setYV(0.0);
   `clearHitCount();
@@ -789,8 +791,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -826,6 +826,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
   `trChangeAnim(150);
   `clearHitCount();
   `clearHitDef();
@@ -835,9 +838,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::S;
   `stVal.mov = .MovTy::H;
 }
 
@@ -873,6 +873,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::N;
   `setXV(0.0);
   `setYV(0.0);
   `clearHitCount();
@@ -883,8 +885,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::C;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -920,6 +920,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::C;
   `trChangeAnim(151);
   `clearHitCount();
   `clearHitDef();
@@ -929,9 +932,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::C;
-  `stVal.phy = .StTy::C;
   `stVal.mov = .MovTy::H;
 }
 
@@ -953,6 +953,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `setXV(0.0);
   `setYV(0.0);
   `clearHitCount();
@@ -963,8 +965,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -996,6 +996,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `trChangeAnim(152);
   `clearHitCount();
   `clearHitDef();
@@ -1005,8 +1007,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1023,6 +1023,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
   `setCtrl(false);
   `trChangeAnim(170);
   `setXV(0.0);
@@ -1035,8 +1037,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -1060,6 +1060,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
   `setCtrl(false);
   `setXV(0.0);
   `setYV(0.0);
@@ -1071,8 +1073,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -1092,6 +1092,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
   `setCtrl(false);
   `setXV(0.0);
   `setYV(0.0);
@@ -1103,8 +1105,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -1123,6 +1123,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
   `setCtrl(false);
   `clearHitCount();
   `clearHitDef();
@@ -1132,8 +1134,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -1193,6 +1193,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
   `stVal.ps.new(3);
   loop{index i = 0; do:
     `stVal.ps[i].p = 0;
@@ -1208,8 +1210,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1236,6 +1236,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::S;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -1244,9 +1247,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::S;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1305,6 +1305,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::N;
   `stVal.ps.new(3);
   loop{index i = 0; do:
     `stVal.ps[i].p = 0;
@@ -1320,8 +1322,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::C;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1345,6 +1345,9 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `ifAlaSetVyZero();
+  `stVal.typ = .StTy::C;
+  `stVal.phy = .StTy::C;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -1353,9 +1356,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `ifAlaSetVyZero();
-  `stVal.typ = .StTy::C;
-  `stVal.phy = .StTy::C;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1407,6 +1407,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `stVal.ps.new(3);
   loop{index i = 0; do:
     `stVal.ps[i].p = 0;
@@ -1422,8 +1424,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1459,6 +1459,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `setCtrl(false);
   `clearHitCount();
   `clearHitDef();
@@ -1468,8 +1470,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1504,6 +1504,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -1512,8 +1514,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1547,6 +1547,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -1555,8 +1557,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1609,6 +1609,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `stVal.ps.new(1);
   `stVal.ps[0].p = 0;
   `clearHitCount();
@@ -1619,8 +1621,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1643,6 +1643,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `setXV(0.0);
   `setYV(0.0);
   `clearHitCount();
@@ -1653,8 +1655,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1678,6 +1678,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -1686,8 +1688,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1724,6 +1724,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
   `setXV(0.0);
   `setYV(0.0);
   `clearHitCount();
@@ -1734,8 +1736,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::L;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1759,6 +1759,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::C;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -1767,8 +1769,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::L;
-  `stVal.phy = .StTy::C;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1845,6 +1845,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -1853,8 +1855,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::L;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1889,6 +1889,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -1897,8 +1899,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::L;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -1996,6 +1996,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
   `stVal.ps.new(3);
   loop{index i = 0; do:
     `stVal.ps[i].p = 0;
@@ -2009,8 +2011,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::L;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -2048,6 +2048,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -2056,8 +2058,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::L;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -2105,6 +2105,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::L;
+  `stVal.phy = .StTy::N;
   `stVal.ps.new(2);
   loop{index i = 0; do:
     `stVal.ps[i].p = 0;
@@ -2119,8 +2121,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::L;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -2141,6 +2141,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -2149,8 +2151,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::H;
 }
 
@@ -2198,6 +2198,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::A;
   `trChangeAnim(5200);
   `clearHitCount();
   `clearHitDef();
@@ -2207,8 +2209,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::A;
   `stVal.mov = .MovTy::H;
 }
 
@@ -2255,6 +2255,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::A;
+  `stVal.phy = .StTy::N;
   `trChangeAnim(5210);
   `setCtrl(false);
   `clearHitCount();
@@ -2265,8 +2267,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::A;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -2282,6 +2282,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
   `setCtrl(false);
   `trChangeAnim(5300);
   `setXV(0.0);
@@ -2294,8 +2296,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 
@@ -2318,6 +2318,8 @@ void c.Char::s##_@@P()
 void c.Char::s##_@@PInit()
 {
   `state = `s##_@@P;
+  `stVal.typ = .StTy::S;
+  `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
   `stVal.mctime = 0;
@@ -2326,8 +2328,6 @@ void c.Char::s##_@@PInit()
 void c.Char::s##_@@PSet()
 {
   `state = `s##_@@PInit;
-  `stVal.typ = .StTy::S;
-  `stVal.phy = .StTy::N;
   `stVal.mov = .MovTy::I;
 }
 

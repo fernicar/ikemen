@@ -860,7 +860,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
 }
 &HitBy
 {
-  public int byid;
+  public %int byid;
   public int hitf1;
   public int hitt1;
   public int hitf2;
@@ -896,7 +896,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public &.Fall fall;
   public void clear()
   {
-    `byid = -1;
+    `byid.new(0);
     `hitf1 = 0;
     `hitt1 = 0;
     `hitf2 = 0;
@@ -934,6 +934,32 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   /float getYaccel()
   {
     ret `yaccel == .com.FERR ? 0.35 : `yaccel;
+  }
+  /bool byidMatch(int id)
+  {
+    loop{index i = 0; while; do:
+      if(`byid[i] == id) ret true;
+      i++;
+    while i < #`byid:
+    }
+    ret false;
+  }
+  public void dropByid(int id)
+  {
+    loop{index i = 0; while; do:
+      if(`byid[i] == id){
+        %int tmp .= `byid[0..i] .= `byid[i+1..-1];
+        `byid = tmp;
+        ret ;
+      }
+      i++;
+    while i < #`byid:
+    }
+  }
+  public void addByid(int id)
+  {
+    `dropByid(id);
+    `byid .= id;
   }
 }
 &HitOverride
@@ -1006,7 +1032,8 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   {
     bool cmb = combo && `hb.guarded == 0;
     int fall = `hb.fallf, hc = `hb.hitcount, fc = `hb.fallcount;
-    int bi = `hb.byid, jgl = `hb.juggle;
+    %int bi = `hb.byid;
+    int jgl = `hb.juggle;
     `hb.clear();
     `hb.byid = bi;
     `hb.juggle = jgl;
@@ -1238,11 +1265,9 @@ public ^%^&Char chars;
 ^%&Projectile projs;
 ^%&Explod explods;
 &snd.Sound syssnd;
-^^&snd.Sound sounds;
 chars.new(4);
 projs.new(4);
 explods.new(4);
-sounds.new(4);
 
 
 ^%index expdrawlist;
@@ -1838,6 +1863,7 @@ public &Char
   public int atktmp, hittmp, acttmp, minus;
   public %&.RdCacheInfo enemyn;
   public ^&.act.Frame curFrame;
+  public %&.snd.Sound sounds;
   void dummy(){}
   public method$void() state = dummy, state_1 = dummy,
     state_2 = dummy, state_3 = dummy, state_4 = dummy;
@@ -2009,6 +2035,28 @@ public &Char
     }
     ret a;
   }
+  public ^&.snd.Sound newChannel(int ch, bool lowpriority)
+  {
+    index c = .m.min!int?(255, ch);
+    if(c >= 0) branch{
+    cond lowpriority:
+      if(#`sounds[c].sound > 0){
+        ret .consts.null!&.snd.Sound?();
+      }
+    comm:
+      `sounds.new[c];
+      ret `sounds[c..c+1];
+    }
+    .chars[`playerno][0]~sounds.new[255];
+    loop{index i = 255; do:
+      if(#.chars[`playerno][0]~sounds[i].sound == 0){
+        ret .chars[`playerno][0]~sounds[i..i+1];
+      }
+      i--;
+    while i >= 0:
+    }
+    ret .consts.null!&.snd.Sound?();
+  }
   public ^&.Explod newExplod(index idx=)
   {:<-
     ^&.Explod foo(index i)
@@ -2092,20 +2140,27 @@ public &Char
     while i < #`targets:
     }
   }
-  public void byidClear()
+  public void byBindClear()
   {
-    if(`sysivar[.iBINDTOID] == `stVal.hb.byid){
+    if(`stVal.hb.byidMatch(`sysivar[.iBINDTOID])){
       `sysivar[.iBINDTIME] = 0;
       `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
     }
-    `stVal.hb.byid = -1;
   }
   public void outTarget()
   {
-    if(`stVal.hb.byid < 0) ret;
-    ^`self c = .players.get(`stVal.hb.byid);
-    if(#c > 0) c~removeTarget(`id);
-    `byidClear();
+    loop{
+      index i = 0;
+      ^`self c;
+      while;
+    do:
+      c = .players.get(`stVal.hb.byid[i]);
+      if(#c > 0) c~removeTarget(`id);
+      i++;
+    while i < #`stVal.hb.byid:
+    }
+    `byBindClear();
+    `stVal.hb.byid.new(0);
   }
   void addChild(int hidx)
   {
@@ -2723,10 +2778,10 @@ public &Char
           if(--`sysivar[.iBINDTIME] == 0) branch{
             ^`self c = .players.get(`sysivar[.iBINDTOID]);
             if(#c == 0) break;
-          cond `stVal.hb.byid == c~id:
+          cond `stVal.hb.byidMatch(c~id):
             `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
             `setYV(c~sysfvar[.fVY]);
-          cond c~stVal.hb.byid == `id:
+          cond c~stVal.hb.byidMatch(`id):
             c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
             c~setYV(`sysfvar[.fVY]);
           }
@@ -2747,7 +2802,10 @@ public &Char
       }
     }
     ^`self c;
-    if(`ls(.lsGETHIT) && #(c = .players.get(`stVal.hb.byid)) > 0){
+    if(
+      `ls(.lsGETHIT) && #`stVal.hb.byid > 0
+      && #(c = .players.get(`stVal.hb.byid[-1])) > 0)
+    {
       if(`stVal.hb.p1getp2facing != 0){
         c~setFacing(`facing*`stVal.hb.p1getp2facing);
       }
@@ -2977,13 +3035,28 @@ public &Char
   }
   public bool isBound()
   {
-    if(`stVal.hb.byid < 0) ret false;
-    if(`sysivar[.iBINDTOID] == `stVal.hb.byid && `sysivar[.iBINDTIME] != 0){
-      ret true;
+    loop{
+      index i = 0;
+      ^`self by;
+      while;
+    do:
+      if(
+        `sysivar[.iBINDTOID] == `stVal.hb.byid[i]
+        && `sysivar[.iBINDTIME] != 0)
+      {
+        ret true;
+      }
+      by = .players.get(`stVal.hb.byid[i]);
+      if(
+        #by > 0 && by~sysivar[.iBINDTOID] == `id
+        && by~sysivar[.iBINDTIME] != 0)
+      {
+        ret true;
+      }
+      i++;
+    while i < #`stVal.hb.byid:
     }
-    ^`self by = .players.get(`stVal.hb.byid);
-    if(#by == 0) ret false;
-    ret by~sysivar[.iBINDTOID] == `id && by~sysivar[.iBINDTIME] != 0;
+    ret false;
   }
   public bool isFreezeX()
   {
@@ -3109,7 +3182,9 @@ public &Char
             `addLife(-`stVal.hb.damage, true, true)
             && `helperindex == 0) branch
           {
-            ^`self by = .players.get(`stVal.hb.byid);
+            ^`self by;
+            if(#`stVal.hb.byid == 0) else;
+            by = .players.get(`stVal.hb.byid[-1]);
             if(#by == 0) else;
           cond by~playerno == `playerno:
             .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
@@ -3120,7 +3195,9 @@ public &Char
           }
         else:
           if(`addLife(-`stVal.hb.damage, true, true)) branch{
-            ^`self by = .players.get(`stVal.hb.byid);
+            ^`self by;
+            if(#`stVal.hb.byid == 0) else;
+            by = .players.get(`stVal.hb.byid[-1]);
             if(#by == 0) else;
           cond (by~playerno&1) == (`playerno&1):
             if(`helperindex == 0) branch{
@@ -3229,7 +3306,10 @@ public &Char
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
-    if(#c == 0 || `destmp || (c~stVal.hb.byid == `id && c~ls(.lsBindCancel))){
+    if(
+      #c == 0 || `destmp || (
+        c~stVal.hb.byidMatch(`id) && c~ls(.lsBindCancel)))
+    {
       `sysivar[.iBINDTIME] = 0;
       ret;
     }
@@ -3263,7 +3343,7 @@ public &Char
       if(oldx != `sysfvar[.fX] && `sysivar[.iBINDTIME] != 0){
         ^`self c = .players.get(`sysivar[.iBINDTOID]);
         if(#c == 0) break;
-        if(c~stVal.hb.byid != `id){
+        if(!c~stVal.hb.byidMatch(`id)){
           `sysfvar[.fX] = oldx;
           break, break;
         }
@@ -3506,7 +3586,7 @@ public &Char
     int vo, float p, float fr, ^float x)
   {
     if(g < 0) ret;
-    ^&.snd.Sound sou = .newChannel(`playerno, ch, lw);
+    ^&.snd.Sound sou = `newChannel(ch, lw);
     if(#sou == 0) ret;
     branch{
     cond f:
@@ -3556,7 +3636,10 @@ public &Char
       while;
     do:
       c = .players.get(`targets[i]);
-      if(#c > 0) c~byidClear();
+      if(#c > 0){
+        c~byBindClear();
+        c~stVal.hb.dropByid(`id);
+      }
       i++;
     while i < #`targets:
     }
@@ -4565,7 +4648,8 @@ public &Char
       cond id < 0 || c~stVal.hb.hitid == id:
         tmp .= `targets[i];
       else:
-        c~byidClear();
+        c~byBindClear();
+        c~stVal.hb.dropByid(`id);
       }
       i++;
     while i < #`targets:
@@ -4582,7 +4666,8 @@ public &Char
           `targets .= tmp[i];
         else:
           c = .players.get(tmp[i]);
-          c~byidClear();
+          c~byBindClear();
+          c~stVal.hb.dropByid(`id);
         }
         i++;
       while i < #tmp:
@@ -5442,7 +5527,7 @@ public void PlayerList!&Char?::action(
   do:
     if(p~c~id < 0) p~c~id ^= -1;
     branch{
-    cond p~c~stVal.hb.byid < 0:
+    cond #p~c~stVal.hb.byid == 0:
       p~c~action();
     else:
       p~c~targetAction();
@@ -5606,7 +5691,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       `pyr.addPower(hit.hitgivepower);
       branch{
         if(hit.hitsoundg == .com.IERR) break;
-        sou = .newChannel(by.playerno, -1, false);
+        sou = by.newChannel(-1, false);
         if(#sou == 0) break;
       cond hit.hitsoundg < 0:
         if(#.fight~fsn > 0){
@@ -5662,7 +5747,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       case .StTy::L:
         by.veloff = by.stVal.hit.down_cornerpush_veloff * (float)by.facing;
       }
-      if(`pyr.hittmp < 2 || `pyr.stVal.hb.byid != by.id){
+      if(`pyr.hittmp < 2 || !`pyr.stVal.hb.byidMatch(by.id)){
         `pyr.stVal.hb.juggle = by.sysivar[.iAIRJUGGLE];
       }
       if(!by.ls(.lsNOJUGGLECHECK)){
@@ -5674,7 +5759,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       `pyr.addPower(hit.guardgivepower);
       branch{
         if(hit.guardsoundg == .com.IERR) break;
-        sou = .newChannel(by.playerno, -1, false);
+        sou = by.newChannel(-1, false);
         if(#sou == 0) break;
       cond hit.guardsoundg < 0:
         if(#.fight~fsn > 0){
@@ -5730,10 +5815,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       else:
         break, break;
       }
-      if(rtn && (!ho || `pyr.stVal.hb.byid < 0)){
-        `pyr.outTarget();
+      if(rtn && (!ho || #`pyr.stVal.hb.byid == 0)){
         by.addTarget(`pyr.id);
-        `pyr.stVal.hb.byid = by.id;
+        `pyr.stVal.hb.addByid(by.id);
       }
     }
     ret rtn;
@@ -5846,7 +5930,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     }
     if(
       p~c~stVal.hit.hitonce >= 0 && (
-        pyr.hittmp < 2 || pyr.stVal.hb.byid != p~c~id
+        pyr.hittmp < 2 || !pyr.stVal.hb.byidMatch(p~c~id)
         || p~c~ls(.lsNOJUGGLECHECK)
         || juggcheck(pyr.stVal.hb.juggle, p~c~stVal.juggle))
       && pyr.hittable(
@@ -5925,7 +6009,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       hoge = true;
       if(
         .projs[i][j].hit.hitonce >= 0 && (
-          pyr.hittmp < 2 || pyr.stVal.hb.byid != .chars[i][0]~id
+          pyr.hittmp < 2 || !pyr.stVal.hb.byidMatch(.chars[i][0]~id)
           || .chars[i][0]~ls(.lsNOJUGGLECHECK)
           || juggcheck(pyr.stVal.hb.juggle, .projs[i][j].hit.air_juggle))
         && .projs[i][j].timemiss <= 0
@@ -6044,24 +6128,6 @@ void sndbufClear()
 }
 sndbufClear();
 
-^&.snd.Sound newChannel(int pn, int ch, bool lowpriority)
-{
-  index c = .m.min!int?(255, ch);
-  if(c >= 0) branch{
-  cond lowpriority:
-    if(#.sounds[pn][c].sound > 0){
-      ret .consts.null!&.snd.Sound?();
-    }
-  comm:
-    ret .sounds[pn][c..c+1];
-  }
-  loop{index i = 255; do:
-    if(#.sounds[pn][i].sound == 0) ret .sounds[pn][i..i+1];
-    i--;
-  while i >= 0:
-  }
-  ret .consts.null!&.snd.Sound?();
-}
 void playSound()
 {
   if(.sdl.setSndBuf(.sndbuf)){
@@ -6070,13 +6136,18 @@ void playSound()
       .sndbuf, .com.xmin - .com.screenleft, .com.xmax + .com.screenright);
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
-        .sounds[i][j].mix(
-          .sndbuf, .com.xmin - .com.screenleft, .com.xmax + .com.screenright);
+        if(#.chars[i][j] > 0) loop{index k = 0; while; do:
+          .chars[i][j]~sounds[k].mix(
+            .sndbuf,
+            .com.xmin - .com.screenleft, .com.xmax + .com.screenright);
+          k++;
+        while k < #.chars[i][j]~sounds:
+        }
         j++;
-      while j < #.sounds[i]:
+      while j < #.chars[i]:
       }
       i++;
-    while i < #.sounds:
+    while i < #.chars:
     }
   }
 }
@@ -6086,12 +6157,16 @@ void stopAllSound()
     .sndbufClear();
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
-        .sounds[i][j].sound.new(0);
+        if(#.chars[i][j] > 0) loop{index k = 0; while; do:
+          .chars[i][j]~sounds[k].sound.new(0);
+          k++;
+        while k < #.chars[i][j]~sounds:
+        }
         j++;
-      while j < #.sounds[i]:
+      while j < #.chars[i]:
       }
       i++;
-    while i < #.sounds:
+    while i < #.chars:
     }
   }
 }
@@ -6218,7 +6293,7 @@ void rootAction()
     while;
   do:
     if(#.chars[i] > 0) branch{
-    cond .chars[i][0]~stVal.hb.byid < 0:
+    cond #.chars[i][0]~stVal.hb.byid == 0:
       .chars[i][0]~action();
     else:
       .chars[i][0]~targetAction();
@@ -6740,9 +6815,9 @@ void charClear(int pn)
   .projs[pn].new(0);
   .explods[pn].new(0);
   .expdrawlist[pn].new(0);
-  .sounds[pn].new(256);
   .chars[pn][0]~children.new(0);
   .chars[pn][0]~targets.new(0);
+  .chars[pn][0]~sounds.new(0);
 }
 
 public void nextRound(&.stage.Stage stg=)
