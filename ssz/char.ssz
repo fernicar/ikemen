@@ -3661,6 +3661,7 @@ public &Char
       i++;
     while i < #`children:
     }
+    `sounds.new(0);
     ^&.com.PalFX fx = `getPalfx();
     if(fx~player == `id) fx~time = 0;
     .players.destroy(`id);
