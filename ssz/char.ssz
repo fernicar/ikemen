@@ -2047,11 +2047,9 @@ public &Char
       `sounds.new[c];
       ret `sounds[c..c+1];
     }
-    .chars[`playerno][0]~sounds.new[255];
+    `sounds.new[255];
     loop{index i = 255; do:
-      if(#.chars[`playerno][0]~sounds[i].sound == 0){
-        ret .chars[`playerno][0]~sounds[i..i+1];
-      }
+      if(#`sounds[i].sound == 0) ret `sounds[i..i+1];
       i--;
     while i >= 0:
     }
