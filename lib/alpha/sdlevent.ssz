@@ -17,13 +17,13 @@ public &Key
   public void checkDown(|.sdl.SDLKey k, int m)
   {
     `down |=
-     `key == k
-     && `shift == (
-       (m & ((int).sdl.SDLMod::LSHIFT | (int).sdl.SDLMod::RSHIFT)) != 0)
-     && `ctrl == (
-       (m & ((int).sdl.SDLMod::LCTRL | (int).sdl.SDLMod::RCTRL)) != 0)
-     && `alt == (
-       (m & ((int).sdl.SDLMod::LALT | (int).sdl.SDLMod::RALT)) != 0);
+       `key == k
+       && `shift == (
+         (m & ((int).sdl.SDLMod::LSHIFT | (int).sdl.SDLMod::RSHIFT)) != 0)
+       && `ctrl == (
+         (m & ((int).sdl.SDLMod::LCTRL | (int).sdl.SDLMod::RCTRL)) != 0)
+       && `alt == (
+         (m & ((int).sdl.SDLMod::LALT | (int).sdl.SDLMod::RALT)) != 0);
   }
 }
 

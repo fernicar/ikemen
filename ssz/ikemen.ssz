@@ -33,7 +33,9 @@ void addFunc(^/char name, func .sc.fsig_t f)
 
 |.mac.RetState scGame(^char arg, ^char re=, &.sc.Function fn=)
 {
-  re = .s.iToS(.game());
+  int retval;
+  loop{do: retval = .game(); while retval == -2:}
+  re = .s.iToS(retval);
   ret .mac.RetState::OK;
 }
 |.mac.RetState scAddChar(^char arg, ^char re=, &.sc.Function fn=)
@@ -482,7 +484,7 @@ int game()
     }
     ret true;
   }
-  bool fight(^char ss=, ^&.sha.Share share)
+  int fight(^char ss=, ^&.sha.Share share)
   {
     .mes.SetSharedString(:ss:);
     bool b = .ssz.run("ssz/fighting.ssz");
@@ -498,7 +500,11 @@ int game()
     }
     .mes.GetSharedString(:ss=:);
     if(.s.equ(ss, "end")) .se.end = true;
-    ret b;
+    if(.s.equ(ss, "reload")){
+      .chr.chars.new(4);
+      ret -2;
+    }
+    ret b && !.s.equ(ss, "esc") ? `winp : -1;
   }
   {
     if(#.cmd.net > 0) .cmd.net~stop();
@@ -599,7 +605,8 @@ int game()
     sdr.copyRef!&.sha.Share?(share=);
     %char buf .= "gt<>" .= .s.iToS(sdr.p);
     ^char ss = buf;
-    if(!fight(ss=, share) || .s.equ(ss, "esc")) ret -1;
+    int res = fight(ss=, share);
+    if(res < 0) ret res;
     if(
       .com.tmode[0] == (int).com.TeamMode::Turns
       || .com.tmode[1] == (int).com.TeamMode::Turns)
@@ -640,7 +647,8 @@ int game()
           }
         }
         ss = buf;
-        if(!fight(ss=, share) || .s.equ(ss, "esc")) ret -1;
+        
+        if((res = fight(ss=, share)) < 0) ret res;
       while !.se.end:
       }
     }

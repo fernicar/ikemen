@@ -128,7 +128,7 @@ public int win = -1;
 
 |KeyEvent
 {
-  CtrlC, CtrlD, Pause, Scroll,
+  CtrlC, CtrlD, Pause, Scroll, F4, ShiftF4,
 
   NumEvents
 }
@@ -140,6 +140,9 @@ se.eventKeys[(int)KeyEvent::CtrlD].key = .sdl.SDLKey::d;
 se.eventKeys[(int)KeyEvent::CtrlD].ctrl = true;
 se.eventKeys[(int)KeyEvent::Pause].key = .sdl.SDLKey::PAUSE;
 se.eventKeys[(int)KeyEvent::Scroll].key = .sdl.SDLKey::SCROLLOCK;
+se.eventKeys[(int)KeyEvent::F4].key = .sdl.SDLKey::F4;
+se.eventKeys[(int)KeyEvent::ShiftF4].key = .sdl.SDLKey::F4;
+se.eventKeys[(int)KeyEvent::ShiftF4].shift = true;
 
 public bool keyDown(|.KeyEvent k)
 {

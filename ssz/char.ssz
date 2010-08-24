@@ -2040,7 +2040,7 @@ public &Char
     index c = .m.min!int?(255, ch);
     if(c >= 0) branch{
     cond lowpriority:
-      if(#`sounds[c].sound > 0){
+      if(#`sounds > c && #`sounds[c].sound > 0){
         ret .consts.null!&.snd.Sound?();
       }
     comm:
@@ -2573,11 +2573,12 @@ public &Char
       && (`stVal.hit.reversal_attr <= 0 || hit.reversal_attr <= 0))
     {
       if(
-        `stVal.hit.reversal_attr > 0 || (
-          hit.priority <= `stVal.hit.priority && (
-            hit.priority < `stVal.hit.priority
-            || `stVal.hit.bothhittype == .PriTy::Dodge
-            || hit.bothhittype != .PriTy::Hit))
+        (
+          `stVal.hit.reversal_attr > 0 || (
+            hit.priority <= `stVal.hit.priority && (
+              hit.priority < `stVal.hit.priority
+              || `stVal.hit.bothhittype == .PriTy::Dodge
+              || hit.bothhittype != .PriTy::Hit)))
         && countercheck(:`stVal.hit=:)) ret false;
     }
     ret `attrCheck(hit=);
@@ -3355,7 +3356,7 @@ public &Char
     if(.com.tickFrame()){
       `atktmp =
         (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
-        && !`isHitPaused() ? `stVal.no : -1;
+        && `isActive() ? `stVal.no : -1;
       branch{
       cond `stVal.mov == .MovTy::H:
         `hittmp =
@@ -5746,7 +5747,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       case .StTy::L:
         by.veloff = by.stVal.hit.down_cornerpush_veloff * (float)by.facing;
       }
-      if(`pyr.hittmp < 2 || !`pyr.stVal.hb.byidMatch(by.id)){
+      if(
+        `pyr.hittmp < 2
+        || #`pyr.stVal.hb.byid == 0 || `pyr.stVal.hb.byid[-1] != by.id)
+      {
         `pyr.stVal.hb.juggle = by.sysivar[.iAIRJUGGLE];
       }
       if(!by.ls(.lsNOJUGGLECHECK)){
@@ -5929,7 +5933,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     }
     if(
       p~c~stVal.hit.hitonce >= 0 && (
-        pyr.hittmp < 2 || !pyr.stVal.hb.byidMatch(p~c~id)
+        pyr.hittmp < 2
+        || #pyr.stVal.hb.byid == 0 || pyr.stVal.hb.byid[-1] != p~c~id
         || p~c~ls(.lsNOJUGGLECHECK)
         || juggcheck(pyr.stVal.hb.juggle, p~c~stVal.juggle))
       && pyr.hittable(
@@ -6008,7 +6013,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       hoge = true;
       if(
         .projs[i][j].hit.hitonce >= 0 && (
-          pyr.hittmp < 2 || !pyr.stVal.hb.byidMatch(.chars[i][0]~id)
+          pyr.hittmp < 2 || #pyr.stVal.hb.byid == 0
+          || pyr.stVal.hb.byid[-1] != .chars[i][0]~id
           || .chars[i][0]~ls(.lsNOJUGGLECHECK)
           || juggcheck(pyr.stVal.hb.juggle, .projs[i][j].hit.air_juggle))
         && .projs[i][j].timemiss <= 0

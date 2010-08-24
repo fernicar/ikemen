@@ -313,23 +313,6 @@ public &Sound
     }
     int lv = `volume, rv = `volume;
     branch{
-    cond #`chrx > 0:
-      {
-        float w = right - left,
-          c = left + w/2.0;
-        float x = `chrx<>+`x;
-        branch{
-        cond x < left: x = left;
-        cond x > right: x = right;
-        }
-        lv = (int)((float)lv*(w*(5.0/9.0)-(x - c)) / w);
-        rv = (int)((float)rv*(w*(5.0/9.0)+(x - c)) / w);
-      }
-    else:
-      lv = (int)((float)lv*(200.0-`x) / 360.0);
-      rv = (int)((float)lv*(200.0+`x) / 360.0);
-    }
-    branch{
     cond `sound~channels == 0d2:
       branch{
       cond `sound~bytesPerSample == 0d2:
