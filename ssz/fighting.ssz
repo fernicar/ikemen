@@ -305,7 +305,6 @@ void game()
       i++;
     while i < #.chr.chars:
     }
-    reset();
     stg~reset();//bgctrlの都合(循環参照可能な型を操作する)でfightingでreset
     loop{int i = 0; while; do:
       stg~action();
@@ -313,6 +312,7 @@ void game()
     while i < stagetime:
     }
     if(.com.round == 1) .sdl.playBGM("plugins", stg~bgmusic);
+    reset();
     float bl = (float)(stg~cam.boundleft - stg~cam.startx);
     float br = (float)(stg~cam.boundright - stg~cam.startx);
     float bt = (float)stg~cam.boundhigh;
@@ -371,8 +371,6 @@ void game()
         {
           .chr.chars[i][0]~sysivar[.chr.iLIFE] =
             .chr.chars[i][0]~sysivar[.chr.iLIFEMAX];
-          lif[i] = .chr.chars[i][0]~sysivar[.chr.iLIFE];
-          pow[i] = .chr.chars[i][0]~sysivar[.chr.iPOWER];
           if(#.chr.chars[i+2] > 0){
             .chr.chars[i+2][0]~sysivar[.chr.iLIFE] =
               .chr.chars[i+2][0]~sysivar[.chr.iLIFEMAX];
@@ -380,6 +378,8 @@ void game()
             pow[i+2] = .chr.chars[i+2][0]~sysivar[.chr.iPOWER];
           }
         }
+        lif[i] = .chr.chars[i][0]~sysivar[.chr.iLIFE];
+        pow[i] = .chr.chars[i][0]~sysivar[.chr.iPOWER];
         i++;
       while i < #.com.tmode:
       }

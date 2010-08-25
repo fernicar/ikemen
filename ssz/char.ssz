@@ -2545,7 +2545,7 @@ public &Char
     }
     if(hit.reversal_attr > 0){
       ret
-        `atktmp >= 0
+        `atktmp >= 0 && `stVal.hit.attr > 0
         && (`stVal.hit.attr & hit.reversal_attr & 63) != 0
         && (`stVal.hit.attr & hit.reversal_attr & !63) != 0;
     }
