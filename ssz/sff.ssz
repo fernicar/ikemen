@@ -588,6 +588,16 @@ public &Anim<frame_t>
       y2 += 240.0;
       if(rx != 0.0) y2 += ys;
     }
+    if(`tile.w == 0x1){
+      float tmp =
+        xs * ((float)`tile.x + (`tile.x > 0 ? 0.0 : (float)`spr~rct.w));
+      x2 -= (float)(int)(x2 / tmp) * tmp;
+    }
+    if(`tile.h == 0x1){
+      float tmp =
+        ys * ((float)`tile.y + (`tile.y > 0 ? 0.0 : (float)`spr~rct.h));
+      y2 -= (float)(int)(y2 / tmp) * tmp;
+    }
     .sdl.screen.renderMugenZoom(
       rect=, rx*.com.WidthScale, 0.0, `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
       (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,

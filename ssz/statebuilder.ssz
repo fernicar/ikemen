@@ -4182,8 +4182,8 @@ public &StateBuilder
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, text=,
-                "`defencemul=((float)`sysivar[.iDEFENCE]/100.0)*",
-                "$.v.toFloat();")) ret false;
+                "`defencemul=(float)`sysivar[.iDEFENCE]/(",
+                "$.v.toFloat()*100.0);")) ret false;
           else:
             break, default;
           }

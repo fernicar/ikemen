@@ -26,7 +26,6 @@ public &BGAction
   public float xradius, yradius;
   public int sinxtime, sinytime;
   public int sinxlooptime, sinylooptime;
-  public float xloop, yloop;
   new()
   {
     `clear();
@@ -38,15 +37,10 @@ public &BGAction
     `xradius = 0.0; `yradius = 0.0;
     `sinxtime = 0; `sinytime = 0;
     `sinxlooptime = 0; `sinylooptime = 0;
-    `xloop = 0.0; `yloop = 0.0;
   }
   public void action()
   {
     `x += `vx;
-    if(`xloop != 0.0){
-      `x =
-        (float)((int)(`x*65536.0) % (int)(`xloop*65536.0)) * (1.0 / 65536.0);
-    }
     `xoffset = `x;
     if(`sinxlooptime > 0){
       `xoffset +=
@@ -56,10 +50,6 @@ public &BGAction
     }
     //
     `y += `vy;
-    if(`yloop != 0.0){
-      `y =
-        (float)((int)(`y*65536.0) % (int)(`yloop*65536.0)) * (1.0 / 65536.0);
-    }
     `yoffset = `y;
     if(`sinylooptime > 0){
       `yoffset +=
@@ -359,12 +349,6 @@ public &BackGround
       if(#spr == 0) break;
       `xtscale = (float)`twidth / (float)spr~rct.w;
       `xbscale = (float)`bwidth / (float)spr~rct.w;
-      if(`anim.tile.w == 0x1){
-        `bga.xloop = (float)((int)spr~rct.w + `anim.tile.x)*`xtscale;
-      }
-      if(`anim.tile.h == 0x1){
-        `bga.yloop = (float)((int)spr~rct.h + `anim.tile.y)*`yscalestart;
-      }
     }
     branch{
     cond `actionno >= 0:
