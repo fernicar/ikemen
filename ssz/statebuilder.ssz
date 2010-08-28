@@ -3510,12 +3510,10 @@ public &StateBuilder
             "^&.com.PalFX fx=`getPalfx();fx~clear();fx~player=`id;";
         cond .s.equ(s, "allpalfx"):
           `state.ctrlList[-1].typ = .CtrlTy::AllPalFX;
-          `state.ctrlList[-1].task .=
-            ".tickallpal=.com.rootact;.com.allPalFX~clear();";
+          `state.ctrlList[-1].task .= ".com.allPalFX~clear();";
         cond .s.equ(s, "bgpalfx"):
           `state.ctrlList[-1].typ = .CtrlTy::BGPalFX;
-          `state.ctrlList[-1].task .=
-            ".tickbgpal=.com.rootact;.stage.bgPalFX~clear();";
+          `state.ctrlList[-1].task .= ".stage.bgPalFX~clear();";
         cond .s.equ(s, "trans"):
           `state.ctrlList[-1].typ = .CtrlTy::Trans;
           `state.ctrlList[-1].task .= "int t=0;";
@@ -3536,7 +3534,6 @@ public &StateBuilder
         cond .s.equ(s, "fallenvshake"):
           `state.ctrlList[-1].typ = .CtrlTy::FallEnvShake;
           `state.ctrlList[-1].task .=
-            ".tickeshake=.com.rootact;"
             ".stage.envShake.time=`stVal.hb.fall.envshake_time;"
             ".stage.envShake.freq=(`stVal.hb.fall.envshake_freq/180.0)*.m.PI;"
             ".stage.envShake.ampl=`stVal.hb.fall.envshake_ampl;"
@@ -3545,7 +3542,7 @@ public &StateBuilder
         cond .s.equ(s, "envcolor"):
           `state.ctrlList[-1].typ = .CtrlTy::EnvColor;
           `state.ctrlList[-1].task .=
-            ".tickenvcol=.com.rootact;.envcol_time=1;"
+            ".envcol_time=1;"
             ".envcol_r=255;.envcol_g=255;.envcol_b=255;.envcol_under=0;";
         cond .s.equ(s, "envshake"):
           `state.ctrlList[-1].typ = .CtrlTy::EnvShake;
@@ -4444,13 +4441,22 @@ public &StateBuilder
               .= "||t<.supertime){.supertime=t;.superplayer=`playerno;}";
             `state.flag = 1;
           cond .s.equ(name, "anim"):
-            if(#text > 0 && .s.toLowerChar(text[0]) == 's'){
+            branch{
+            cond text[0] == 'S' || text[0] == 's':
               text = text[1..-1];
+              if(
+                !`fullExpression(
+                  `state.ctrlList[-1].task=, text=,
+                  ".superanim=`getAction (", "$.v.toInt());")) ret false;
+            cond text[0] == 'F' || text[0] == 'f':
+              text = text[1..-1];
+              else;
+            else:
+              if(
+                !`fullExpression(
+                  `state.ctrlList[-1].task=, text=,
+                  ".superanim=.fight~getAction(", "$.v.toInt());")) ret false;
             }
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, text=,
-                ".superanim=.fight~getAction(", "$.v.toInt());")) ret false;
           cond .s.equ(name, "sound"):
             branch{
             cond text[0] == 'F' || text[0] == 'f':
@@ -6420,35 +6426,36 @@ public &StateBuilder
   {:<-
     public bool files(^/char sec, ^/char name, ^/char data)
     {
+      type _t = .com.readFileName;
       branch{
       cond .s.equ(name, "cmd"):
-        if(#`cmd == 0) `cmd = data;
+        if(#`cmd == 0) `cmd = _t(data);
       cond .s.equ(name, "cns"):
-        if(#`cns == 0) `cns = data;
+        if(#`cns == 0) `cns = _t(data);
       cond .s.equ(name, "st"):
-        if(#`st.new[0] == 0) `st[0] = data;
+        if(#`st.new[0] == 0) `st[0] = _t(data);
       cond .s.equ(name, "st0"):
-        if(#`st.new[1] == 0) `st[1] = data;
+        if(#`st.new[1] == 0) `st[1] = _t(data);
       cond .s.equ(name, "st1"):
-        if(#`st.new[2] == 0) `st[2] = data;
+        if(#`st.new[2] == 0) `st[2] = _t(data);
       cond .s.equ(name, "st2"):
-        if(#`st.new[3] == 0) `st[3] = data;
+        if(#`st.new[3] == 0) `st[3] = _t(data);
       cond .s.equ(name, "st3"):
-        if(#`st.new[4] == 0) `st[4] = data;
+        if(#`st.new[4] == 0) `st[4] = _t(data);
       cond .s.equ(name, "st4"):
-        if(#`st.new[5] == 0) `st[5] = data;
+        if(#`st.new[5] == 0) `st[5] = _t(data);
       cond .s.equ(name, "st5"):
-        if(#`st.new[6] == 0) `st[6] = data;
+        if(#`st.new[6] == 0) `st[6] = _t(data);
       cond .s.equ(name, "st6"):
-        if(#`st.new[7] == 0) `st[7] = data;
+        if(#`st.new[7] == 0) `st[7] = _t(data);
       cond .s.equ(name, "st7"):
-        if(#`st.new[8] == 0) `st[8] = data;
+        if(#`st.new[8] == 0) `st[8] = _t(data);
       cond .s.equ(name, "st8"):
-        if(#`st.new[9] == 0) `st[9] = data;
+        if(#`st.new[9] == 0) `st[9] = _t(data);
       cond .s.equ(name, "st9"):
-        if(#`st.new[10] == 0) `st[10] = data;
+        if(#`st.new[10] == 0) `st[10] = _t(data);
       cond .s.equ(name, "stcommon"):
-        if(#`stcommon == 0) `stcommon = data;
+        if(#`stcommon == 0) `stcommon = _t(data);
       }
       ret true;
     }

@@ -92,14 +92,14 @@ if(#file.find(selfile) == 0){
   f.open(selfile, "wb");
   f.writeAry!ubyte?()<, s.sToU8(
 \xfeff"
-#`
+#`#[
 randomselect
 kfmx
-#[#addChar#]#each
+#addChar#]#each
 
-#`
+#`#[
 ginga.def
-#[#addStage#]#each
+#addStage#]#each
 "
   );
 }

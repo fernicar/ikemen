@@ -1227,7 +1227,7 @@ const int lsBEDGECHANGE   = 0b00000000001000000000000000000000;
 const int lsGUARD         = 0b00000000010000000000000000000000;
 const int lsBindCancel    = 0b00000000100000000000000000000000;
 
-public uint specialFlag, specialFlagR;
+public uint specialFlag;
 const uint gsINTRO          = 0b00000000000000000000000000000001;
 const uint gsROUNDNOTOVER   = 0b00000000000000000000000000000010;
 const uint gsNOBARDISPLAY   = 0b00000000000000000000000000000100;
@@ -1241,7 +1241,7 @@ const uint gsNOKO           = 0b00000000000000000000001000000000;
 const uint gsNOKOSND        = 0b00000000000000000000010000000000;
 public bool gs(uint mask)
 {
-  ret ((.specialFlag | .specialFlagR) & mask) == mask;
+  ret (.specialFlag & mask) == mask;
 }
 
 const int sfAIRJUMP = 0b00000000000000000000000000000001;
@@ -1254,10 +1254,11 @@ const int sfWIN     = 0b00000000000000000000000000000010;
     public ^_t c;
     public ^self next;
   }
-  ^&Node!_t? top;
+  ^&Node!_t? top, end;
   public void clear()
   {
     `top.new(0);
+    `end.new(0);
   }
 }
 
@@ -1333,7 +1334,6 @@ int superunhittable = 1;
 int envcol_r = 255;
 int envcol_g = 255;
 int envcol_b = 255;
-bool tickenvcol = true, tickallpal = true, tickbgpal = true, tickeshake = true;
 
 &ModifyExplod
 {
@@ -1859,6 +1859,7 @@ public &Char
   public float attackmul, defencemul, attackdist;
   public float offsetx, offsety;
   public float veloff;
+  public float oldx;
   public bool destmp, cs1tmp, tmphit, angleset;
   public int atktmp, hittmp, acttmp, minus;
   public %&.RdCacheInfo enemyn;
@@ -1923,6 +1924,7 @@ public &Char
     `sprpriority = 0;
     `getcombo = 0;
     `veloff = 0.0;
+    `oldx = `sysfvar[.fX];
     `palfx.new(0);
     `aimg.timegap = -1;
     `frontw = `defFW();
@@ -3232,25 +3234,22 @@ public &Char
         if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
         if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
       }
-      `xScreenBound();
       `targetAction();
     }
   }
-  public float move(
-    float tension,
+  public void move(
     float highest=, float lowest=, float leftest=, float rightest=)
   {
     if(.com.tickFrame()){
       `action();//TargetDropされたとき
       if(`destmp){
         `destroySelf();
-        ret 0.0;
+        ret;
       }
       if(!`ls(.lsPOSFREEZEY) && `ls(.lsGRAVITY)){
         `sysfvar[.fVY] += `sysfvar[.fYACCEL];
       }
     }
-    float cvx = 0.0;
     if(`acttmp > 0){
       float sp = .m.min!float?(1.0, .com.turbo);
       if(!`ls(.lsPOSFREEZEX)){
@@ -3261,15 +3260,6 @@ public &Char
         }
       }
       if(!`ls(.lsPOSFREEZEY)) `sysfvar[.fY] += `sysfvar[.fVY] * sp;
-      if(`ls(.lsSCREENBOUNDX)){
-        if(tension > 0.0 && !`isFreezeX()) branch{
-        cond
-          `sysfvar[.fX] < .com.xmin - .com.screenleft + tension
-          || `sysfvar[.fX] > .com.xmax + .com.screenright - tension
-          :
-          cvx += `sysfvar[.fVX] * (float)`facing * sp;
-        }
-      }
       if(.com.tickNextFrame()) switch(`stVal.phy){
       case .StTy::S:
         if(!`ls(.lsPOSFREEZEX)) `sysfvar[.fVX] *= `sysfvar[.fSTAND_FRICTION];
@@ -3299,7 +3289,6 @@ public &Char
       highest = .m.min!float?(`sysfvar[.fY], highest);
       lowest = .m.min!float?(0.0)<, .m.max!float?(`sysfvar[.fY], lowest);
     }
-    ret cvx;
   }
   public void bind()
   {
@@ -3351,7 +3340,7 @@ public &Char
       }
     }
   }
-  public void update()
+  public float update(float tension)
   {
     if(.com.tickFrame()){
       `atktmp =
@@ -3384,6 +3373,18 @@ public &Char
     }
     `bind();
     `xScreenBound();
+    float cvx = 0.0;
+    if(`ls(.lsSCREENBOUNDX)){
+      if(tension > 0.0 && !`isFreezeX()) branch{
+      cond
+        `sysfvar[.fX] < .com.xmin - .com.screenleft + tension
+        || `sysfvar[.fX] > .com.xmax + .com.screenright - tension
+        :
+        cvx += `sysfvar[.fX] - `oldx;
+      }
+    }
+    `oldx = `sysfvar[.fX];
+    ret cvx;
   }
   public void posReset(float p1x, float p2x)
   {
@@ -3660,7 +3661,6 @@ public &Char
       i++;
     while i < #`children:
     }
-    `sounds.new(0);
     ^&.com.PalFX fx = `getPalfx();
     if(fx~player == `id) fx~time = 0;
     .players.destroy(`id);
@@ -3668,7 +3668,7 @@ public &Char
   }
   public void setX(float x)
   {
-    `sysfvar[.fX] = x;
+    `sysfvar[.fX] = `oldx = x;
     `enemyn.new(0);
     if(`player) loop{index i = (`playerno+1) & 1; while; do:
       loop{index j = 0; while; do:
@@ -4086,7 +4086,9 @@ public &Char
   {
     float x = .v.toFloat();
     if(x == .com.FERR) ret;
+    float tmp = `oldx;
     `setX(`sysfvar[.fX] + (float)`facing*x);
+    `oldx = tmp;
   }
   public void trAddY()
   {
@@ -5244,7 +5246,7 @@ public void Explod::update()
       {
         ^&.Char bc = .players.get(`bindid);
         if(#bc == 0){
-          `id = .com.IERR;
+          `bindtime = 0;
           break, break;
         }
         if(`offsetx != .com.FERR) `setX(bc~sysfvar[.fX] + `offsetx);
@@ -5377,22 +5379,13 @@ public ^&Char PlayerList!&Char?::get(int id)
 public ^&Char PlayerList!&Char?::enemy(int pno, int n)
 {
   int cnt = 0;
-  loop{index i = 0; while; do:
-    if(#.chars[i] > 0 && (i&1) != (pno&1) && n == cnt++){
-      ret .chars[i][0];
-    }
-    i++;
-  while i < #.chars:
-  }
   loop{
     *`top.self p = `top;
     while;
   do:
-    if((p~c~playerno&1) != (pno&1) && p~c~player && n == cnt++){
-      ret p~c;
-    }
+    if((p~c~playerno&1) != (pno&1) && p~c~player && n == cnt++) ret p~c;
     p = p~next;
-  while #p > 0 && p~c~helperindex != 0:
+  while #p > 0:
   }
   ret .consts.null!`_t?();
 }
@@ -5472,31 +5465,12 @@ public void PlayerList!&Char?::add(^&.Char c)
   if(#`top == 0){
     `top.new(1);
     `top~c = c;
+    `end = `top;
     ret;
   }
-  if(`top~c~helperindex == 0){
-    *`top.self tmp = `top;
-    `top.new(1);
-    `top~c = c;
-    `top~next = tmp;
-    ret;
-  }
-  loop{
-    *`top.self p = `top;
-    while;
-  do:
-    if(p~next~c~helperindex == 0){
-      *`top.self tmp = p~next;
-      p~next.new(1);
-      p~next~c = c;
-      p~next~next = tmp;
-      break, break;
-    }
-    p = p~next;
-  while #p~next > 0:
-    p~next.new(1);
-    p~next~c = c;
-  }
+  `end~next.new(1);
+  `end = `end~next;
+  `end~c = c;
 }
 public void PlayerList!&Char?::destroy(int id)
 {
@@ -5505,12 +5479,14 @@ public void PlayerList!&Char?::destroy(int id)
   .resetNumenemy();
   if(`top~c~id == id){
     `top = `top~next;
+    if(#`top == 0) `end.new(0);
     ret;
   }
   *`top.self p = `top;
   loop{while; do:
     if(p~next~c~id == id){
       p~next = p~next~next;
+      if(#p~next == 0) `end = p;
       break, break;
     }
     p = p~next;
@@ -5534,14 +5510,13 @@ public void PlayerList!&Char?::action(
     }
   continue:
     p = p~next;
-  while #p > 0 && p~c~helperindex != 0:
+  while #p > 0:
   }
   .update(tension, cvx=, highest=, lowest=, leftest=, rightest=);
   .com.gametime++;
   .rootAction();
 }
 public void PlayerList!&Char?::move(
-  float tension, float cvx=,
   float highest=, float lowest=, float leftest=, float rightest=)
 {
   loop{
@@ -5549,20 +5524,20 @@ public void PlayerList!&Char?::move(
     while;
   do:
     if(p~c~id < 0) continue;
-    cvx += p~c~move(tension, highest=, lowest=, leftest=, rightest=);
+    p~c~move(highest=, lowest=, leftest=, rightest=);
   continue:
     p = p~next;
   while #p > 0:
   }
 }
-public void PlayerList!&Char?::update()
+public void PlayerList!&Char?::update(float tension, float cvx=)
 {
   loop{
     *`top.self p = `top;
     while;
   do:
     if(p~c~id < 0) continue;
-    p~c~update();
+    cvx += p~c~update(tension);
   continue:
     p = p~next;
   while #p > 0:
@@ -5726,7 +5701,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         fx~invertall = hit.palfx_invertall;
       }
       if(hit.envshake_time > 0){
-        .tickeshake = .com.rootact;
         .stage.envShake.time = hit.envshake_time;
         .stage.envShake.freq = (hit.envshake_freq / 180.0) * .m.PI;
         .stage.envShake.ampl = hit.envshake_ampl;
@@ -5842,7 +5816,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       pl = pyr.sysfvar[.fX] - pyr.frontw;
       pr = pyr.sysfvar[.fX] + pyr.backw;
     }
-    pv = pyr.acttmp > 0 ? pyr.sysfvar[.fVX]*(float)pyr.facing : 0.0;
+    pv = pyr.acttmp > 0 ? pyr.sysfvar[.fVX] : 0.0;
     while;
   do:
     if(p~c~id < 0) continue;
@@ -5869,11 +5843,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         er = p~c~sysfvar[.fX] + p~c~backw;
       }
       if(el >= er) break;
-      float ev = p~c~acttmp > 0 ? p~c~sysfvar[.fVX]*(float)p~c~facing : 0.0;
+      float ev = p~c~acttmp > 0 ? p~c~sysfvar[.fVX] : 0.0;
       if((pl < el || pl < er)  && (el < pr || er < pr)){
         const float foo = 0.5;
         branch{
-          float tmp = (pyr.sysfvar[.fX] - pv) - (p~c~sysfvar[.fX] -  ev);
+          float tmp = pyr.sysfvar[.fX] - p~c~sysfvar[.fX];
         cond tmp < 0.0:
           pyr.sysfvar[.fX] -= (pr - el) * foo;
           p~c~sysfvar[.fX] += (pr - el) * foo;
@@ -5882,7 +5856,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           p~c~sysfvar[.fX] -= (er - pl) * foo;
         cond pyr.sysfvar[.fY] > p~c~sysfvar[.fY]:
           branch{
-          cond pyr.facing < 0:
+          cond pyr.facing < 0 ? pv >= 0.0 : pv < 0.0:
             pyr.sysfvar[.fX] -= (pr - el) * foo;
             p~c~sysfvar[.fX] += (pr - el) * foo;
           else:
@@ -5891,7 +5865,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           }
         else:
           branch{
-          cond p~c~facing < 0:
+          cond p~c~facing < 0 ? ev >= 0.0 : ev < 0.0:
             pyr.sysfvar[.fX] += (er - pl) * foo;
             p~c~sysfvar[.fX] -= (er - pl) * foo;
           else:
@@ -6250,8 +6224,8 @@ void update(
   float tension, float cvx=,
   float highest=, float lowest=, float leftest=, float rightest=)
 {
-  .players.move(tension, cvx=, highest=, lowest=, leftest=, rightest=);
-  .players.update();
+  .players.move(highest=, lowest=, leftest=, rightest=);
+  .players.update(tension, cvx=);
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
       if(.projs[i][j].id >= 0) .projs[i][j].update();
@@ -6265,9 +6239,7 @@ void update(
 
 void rootAction()
 {
-  if(.com.tickNextFrame()) loop{
-    .com.rootact = true;
-    .m.swap!uint?(.specialFlag=, .specialFlagR=);
+  if(.com.tickNextFrame()){
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
         if(.projs[i][j].id >= 0) .projs[i][j].projClsn();
@@ -6278,12 +6250,6 @@ void rootAction()
     while i < #.projs:
     }
     .players.getHit();
-    branch{
-    cond .super <= 0 && .pause <= 0:
-      .specialFlag = 0d0;
-    else:
-      .specialFlag &= !.gsROUNDNOTOVER;
-    }
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
         if(.projs[i][j].id >= 0) .projs[i][j].tick();
@@ -6294,20 +6260,6 @@ void rootAction()
     while i < #.projs:
     }
     .players.tick();
-    index i = 0;
-    while;
-  do:
-    if(#.chars[i] > 0) branch{
-    cond #.chars[i][0]~stVal.hb.byid == 0:
-      .chars[i][0]~action();
-    else:
-      .chars[i][0]~targetAction();
-    }
-    i++;
-  while i < #.chars:
-  break:
-    .m.swap!uint?(.specialFlag=, .specialFlagR=);
-    .com.rootact = false;
   }
 }
 
@@ -6353,20 +6305,12 @@ public float action(
   if(.com.intro == rs4t-1 && .com.turbo > 0.0 && #(x - .oldx) >= .com.turbo){
     .com.intro = rs4t;
   }
-  if(.com.tickNextFrame()){
-    if(.tickallpal) .com.allPalFX~step();
-    if(.tickbgpal) .stage.bgPalFX~step();
-    if(.tickeshake) .stage.envShake.next();
-    if(.tickenvcol && .envcol_time > 0) .envcol_time--;
-  }
-  if(.com.tickFrame()){
-    if(!.tickallpal) .com.allPalFX~step();
-    if(!.tickbgpal) .stage.bgPalFX~step();
-    if(!.tickeshake) .stage.envShake.next();
-    if(!.tickenvcol && .envcol_time > 0) .envcol_time--;
-  }
   branch{
   cond .com.tickFrame():
+    .com.allPalFX~step();
+    .stage.bgPalFX~step();
+    .stage.envShake.next();
+    if(.envcol_time > 0) .envcol_time--;
     loop{
       index i = 0;
       while;
@@ -6803,7 +6747,6 @@ void resetGbl()
   .superanim.new(0);
   .envcol_time = 0;
   .specialFlag = 0d0;
-  .specialFlagR = 0x0;
   .zoomdelay = 0.0;
   .playerid.new(0);
   .resetNumenemy();
@@ -6814,6 +6757,7 @@ void charClear(int pn)
 {
   loop{index j = 1; while; do:
     .chars[pn][j]~destroySelf();
+    .chars[pn][j]~sounds.new(0);
     j++;
   while j < #.chars[pn]:
   }
