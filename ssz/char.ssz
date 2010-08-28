@@ -3354,7 +3354,7 @@ public &Char
             && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
           * ((int)`isFall() + 1) + 1;
         if(
-          `sysfvar[.fY] == 0.0 && #`sysfvar[.fVX] >= 1.0
+          `isActive() && `sysfvar[.fY] == 0.0 && #`sysfvar[.fVX] >= 1.0
           && `stVal.time % 3 == 0)
         {
           `makeDust(0.0, 0.0);
