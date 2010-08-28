@@ -3353,6 +3353,12 @@ public &Char
             `stVal.hb.fallf != 0
             && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
           * ((int)`isFall() + 1) + 1;
+        if(
+          `sysfvar[.fY] == 0.0 && #`sysfvar[.fVX] >= 1.0
+          && `stVal.time % 3 == 0)
+        {
+          `makeDust(0.0, 0.0);
+        }
       else:
         if(`hittmp > 0) `hittmp = 0;
         `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
@@ -3778,6 +3784,20 @@ public &Char
     `sysivar[.iBINDTOID] = to.id;
     if(to.sysivar[.iBINDTOID] == `id) to.sysivar[.iBINDTIME] = 0;
     `sysivar[.iBINDFACING] = to.facing*2;
+  }
+  public void makeDust(float x, float y)
+  {
+    index i;
+    ^&.Explod e = `newExplod(i=);
+    if(#e==0)ret;
+    e~ani = .fight~getAction(120);
+    e~ontop = 1;
+    e~sprpriority = -5;
+    e~ownpal = 1;
+    e~offsetx = x;
+    e~offsety = y;
+    e~setPos(`=);
+    `insertExplod(i, 0);
   }
   public void trPlayerID()
   {
@@ -5856,7 +5876,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           p~c~sysfvar[.fX] -= (er - pl) * foo;
         cond pyr.sysfvar[.fY] > p~c~sysfvar[.fY]:
           branch{
-          cond pyr.facing < 0 ? pv >= 0.0 : pv < 0.0:
+          cond pyr.facing < 0 ? pv > 0.0 : pv <= 0.0:
             pyr.sysfvar[.fX] -= (pr - el) * foo;
             p~c~sysfvar[.fX] += (pr - el) * foo;
           else:
@@ -5865,7 +5885,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           }
         else:
           branch{
-          cond p~c~facing < 0 ? ev >= 0.0 : ev < 0.0:
+          cond p~c~facing < 0 ? ev > 0.0 : ev <= 0.0:
             pyr.sysfvar[.fX] += (er - pl) * foo;
             p~c~sysfvar[.fX] -= (er - pl) * foo;
           else:

@@ -3493,6 +3493,8 @@ public &StateBuilder
             "e~ontop=1;e~sprpriority=-5;e~ownpal=1;";
         cond .s.equ(s, "makedust"):
           `state.ctrlList[-1].typ = .CtrlTy::MakeDust;
+          `state.ctrlList[-1].task .=
+            "int s=3;float x=0.0,y=0.0,x2=.com.FERR,y2=.com.FERR;";
         cond .s.equ(s, "angledraw"):
           `state.ctrlList[-1].typ = .CtrlTy::AngleDraw;
           `state.ctrlList[-1].task .=
@@ -5852,6 +5854,35 @@ public &StateBuilder
             break, default;
           }
         case .CtrlTy::MakeDust:
+          branch{
+          cond .s.equ(name, "pos"):
+            `state.ctrlList[-1].task .= "x=";
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
+            `state.ctrlList[-1].task .= "$.v.toFloat();";
+            if(.s.equ(",")<, `tokenizer(text=)){
+              if(
+                !`fullExpression(
+                  `state.ctrlList[-1].task=, text=,
+                  "y=", "$.v.toFloat();")) ret false;
+            }
+          cond .s.equ(name, "pos2"):
+            `state.ctrlList[-1].task .= "x2=";
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
+            `state.ctrlList[-1].task .= "$.v.toFloat();";
+            if(.s.equ(",")<, `tokenizer(text=)){
+              if(
+                !`fullExpression(
+                  `state.ctrlList[-1].task=, text=,
+                  "y2=", "$.v.toFloat();")) ret false;
+            }
+          cond .s.equ(name, "spacing"):
+            if(
+              !`fullExpression(
+                `state.ctrlList[-1].task=, text=,
+                "s=.m.max!int?(1,", "$.v.toInt());")) ret false;
+          else:
+            break, default;
+          }
         case .CtrlTy::ForceFeedback:
         case .CtrlTy::Null:
         default:
@@ -6302,6 +6333,12 @@ public &StateBuilder
             dbuf .= ".appendToClipboard(`playerno,text,vars);";
           case .CtrlTy::AfterImageTime:
             if(`state.flag == 0) dbuf .= "`aimg.time=0;";
+          case .CtrlTy::MakeDust:
+            dbuf .=
+            "if(`stVal.time%s!=0)ret;"
+            "`makeDust(x,y);"
+            "if(x2==.com.FERR||x2==.com.FERR)ret;"
+            "`makeDust(x2,y2);";
           }
           branch{
           cond #dbuf > 64:
