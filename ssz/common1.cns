@@ -440,7 +440,7 @@ void c.Char::s##_@@P()
       `setYV(0.0);
       .v.setF(0.0)$`trSetY();
     case 2:
-      //MakeDust
+      `makeDust(-5.0, -2.0);
     case 7:
       .v.setI(0)$`trChangeState(-1, 1);
       ret;

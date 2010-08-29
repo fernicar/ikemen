@@ -3225,9 +3225,6 @@ public &StateBuilder
             `state.deftask=, text=,
             "`sprpriority=", "$.v.toInt();")) ret false;
       cond .s.equ(name, "anim"):
-        if(#text > 0 && .s.toLowerChar(text[0]) == 's'){
-          text = text[1..-1];
-        }
         if(
           !`fullExpression(
             `state.deftask=, text=,
@@ -3664,7 +3661,6 @@ public &StateBuilder
               `state.ctrlList[-1].task = buf;
             }
           cond .s.equ(name, "anim"):
-            if(#text > 0 && .s.toLowerChar(text[0]) == 's') text = text[1..-1];
             {
               %char buf;
               if(
@@ -6337,7 +6333,7 @@ public &StateBuilder
             dbuf .=
             "if(`stVal.time%s!=0)ret;"
             "`makeDust(x,y);"
-            "if(x2==.com.FERR||x2==.com.FERR)ret;"
+            "if(x2==.com.FERR||y2==.com.FERR)ret;"
             "`makeDust(x2,y2);";
           }
           branch{

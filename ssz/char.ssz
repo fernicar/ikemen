@@ -2988,6 +2988,11 @@ public &Char
         `ls(.lsANGLEDRAW)
         ? (`sysfvar[.fANGLE] == 0.0 ? 360.0 : `sysfvar[.fANGLE]) : 0.0;
     cond !`ls(.lsINVISIBLE):
+      if(`ls(.lsANGLEDRAW) && !`ls(.lsTRANS)){
+        `sysivar[.iSPECIALFLAG] |= .lsTRANS;
+        `sysivar[.iALPHAS] = 255;
+        `sysivar[.iALPHAD] = 0;
+      }
       .addAnimList(
         .anims=, `ani, sp,
         x - (float)(
@@ -5517,11 +5522,18 @@ public void PlayerList!&Char?::action(
   float x, float tension, float cvx=,
   float highest=, float lowest=, float leftest=, float rightest=)
 {
+  bool foo = true;
   loop{
     *`top.self p = `top;
     while;
   do:
-    if(p~c~id < 0) p~c~id ^= -1;
+    if(p~c~id < 0){
+      p~c~id ^= -1;
+      if(foo){
+        .commandUpdate();
+        foo = false;
+      }
+    }
     branch{
     cond #p~c~stVal.hb.byid == 0:
       p~c~action();
@@ -5532,6 +5544,7 @@ public void PlayerList!&Char?::action(
     p = p~next;
   while #p > 0:
   }
+  if(foo) .commandUpdate();
   .update(tension, cvx=, highest=, lowest=, leftest=, rightest=);
   .com.gametime++;
   .rootAction();
@@ -6257,6 +6270,19 @@ void update(
   }
 }
 
+void commandUpdate()
+{
+  loop{index i = 0; while; do:
+    if(#.chars[i] > 0){
+      .chars[i][0]~cmd.step(
+        .chars[i][0]~key, .chars[i][0]~facing,
+        .chars[i][0]~key < 0, .chars[i][0]~isHitPaused());
+    }
+    i++;
+  while i < #.chars:
+  }
+}
+
 void rootAction()
 {
   if(.com.tickNextFrame()){
@@ -6331,18 +6357,6 @@ public float action(
     .stage.bgPalFX~step();
     .stage.envShake.next();
     if(.envcol_time > 0) .envcol_time--;
-    loop{
-      index i = 0;
-      while;
-    do:
-      if(#.chars[i] > 0){
-        .chars[i][0]~cmd.step(
-          .chars[i][0]~key, .chars[i][0]~facing,
-          .chars[i][0]~key < 0, .chars[i][0]~isHitPaused());
-      }
-      i++;
-    while i < #.chars:
-    }
     branch{
     cond .super > 0:
       .super--;
