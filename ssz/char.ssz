@@ -4791,7 +4791,7 @@ public &Char
       if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
         if(
           c~addLife(
-            -`getDamage(-va, kill, absolute, `attackmul), true, true)) branch
+            -c~getDamage(-va, kill, absolute, `attackmul), true, true)) branch
         {
         cond (`playerno&1) == (c~playerno&1):
           if(c~helperindex == 0) branch{
@@ -5229,8 +5229,9 @@ public void Explod::update()
       p = `pausemovetime == 0;
     }
     bool act = !p && `ignorehitpause != 0;
-    if(!p && !act && (#c > 0 || #(c = .players.get(`player)) > 0)){
-      act = c~acttmp%2 != -1;
+    if(!p && !act){
+      if(#c == 0) c = .players.get(`player);
+      act = #c == 0 || c~acttmp%2 != -1;
     }
     if(act && `bindtime == 0){
       float sp = .m.min!float?(1.0, .com.turbo);

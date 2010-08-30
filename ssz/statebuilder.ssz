@@ -3391,7 +3391,7 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::PowerSet;
         cond .s.equ(s, "targetlifeadd"):
           `state.ctrlList[-1].typ = .CtrlTy::TargetLifeAdd;
-          `state.ctrlList[-1].task .= "int va=0,k=1,a=0,i=-1;";
+          `state.ctrlList[-1].task .= "int va=0,k=1,a=1,i=-1;";
         cond .s.equ(s, "targetbind"):
           `state.ctrlList[-1].typ = .CtrlTy::TargetBind;
           `state.ctrlList[-1].task .= "int t=1,i=-1;float x=0.0,y=0.0;";
