@@ -33,9 +33,7 @@ void addFunc(^/char name, func .sc.fsig_t f)
 
 |.mac.RetState scGame(^char arg, ^char re=, &.sc.Function fn=)
 {
-  int retval;
-  loop{do: retval = .game(); while retval == -2:}
-  re = .s.iToS(retval);
+  re = .s.iToS(.match());
   ret .mac.RetState::OK;
 }
 |.mac.RetState scAddChar(^char arg, ^char re=, &.sc.Function fn=)
@@ -388,14 +386,9 @@ void loadStage(^&.stage.Stage stg, ^/char file, ^int end)
   end<> = 1;
 }
 
-int game()
+int match()
 {
-  int winp = 0;
-  if(.se.end) ret -1;
   ^/char stag;
-  ^^/char cha.new(4);
-  ^int pal.new(4);
-  ^int ldend.new(1);
   branch{
   cond .syst.selinf.sel.curStageNo == 0:
     stag =
@@ -404,6 +397,27 @@ int game()
   else:
     stag = .syst.selinf.sel.stagelist[.syst.selinf.sel.curStageNo-1].def;
   }
+  ^int ldend.new(1);
+  ^&.stage.Stage stg.new(1);
+  thread!.loadStage? lstage;
+  ldend<> = 0;
+  lstage..(stg, stag, ldend);
+  loop{do:
+    if(ldend<> > 0) break;
+  while ldend<> >= 0 && .se.event():
+    ret -1;
+  }
+  int retval;
+  loop{do: retval = .game(stg); while retval == -2:}
+  ret retval;
+}
+int game(^&.stage.Stage stg)
+{
+  int winp = 0;
+  if(.se.end) ret -1;
+  ^^/char cha.new(4);
+  ^int pal.new(4);
+  ^int ldend.new(1);
   cha[0] = .syst.selinf.sel.charlist[.syst.selinf.p[0].selchr[0].i].def;
   pal[0] = .syst.selinf.p[0].selchr[0].pal;
   cha[1] = .syst.selinf.sel.charlist[.syst.selinf.p[1].selchr[0].i].def;
@@ -553,15 +567,6 @@ int game()
             \xfeff
             "lib c="\""char.ssz"\"";public void c.Char::stateInit3P(){}"));
       }
-    }
-    ^&.stage.Stage stg.new(1);
-    thread!.loadStage? lstage;
-    ldend<> = 0;
-    lstage..(stg, stag, ldend);
-    loop{do:
-      if(ldend<> > 0) break;
-    while ldend<> >= 0 && .se.event():
-      ret -1;
     }
     .chr.fight~fa[.com.tmode[0]][0].face_spr =
       p[0]~sf~getSprite(
