@@ -3491,7 +3491,7 @@ public &StateBuilder
         cond .s.equ(s, "makedust"):
           `state.ctrlList[-1].typ = .CtrlTy::MakeDust;
           `state.ctrlList[-1].task .=
-            "int s=3;float x=0.0,y=0.0,x2=.com.FERR,y2=.com.FERR;";
+            "int s=3;float x=0.0,y=0.0,x2=.com.FERR,y2=0.0;";
         cond .s.equ(s, "angledraw"):
           `state.ctrlList[-1].typ = .CtrlTy::AngleDraw;
           `state.ctrlList[-1].task .=
@@ -6333,7 +6333,7 @@ public &StateBuilder
             dbuf .=
             "if(`stVal.time%s!=0)ret;"
             "`makeDust(x,y);"
-            "if(x2==.com.FERR||y2==.com.FERR)ret;"
+            "if(x2==.com.FERR)ret;"
             "`makeDust(x2,y2);";
           }
           branch{

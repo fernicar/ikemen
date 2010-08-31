@@ -19,6 +19,7 @@ lib mes = <alpha/mesdialog.ssz>;
 int changeStateNest = 0;
 float oldx = 0.0;
 int slowt = 0;
+bool winskipped = false;
 
 public float zoomdelay = 0.0;
 
@@ -2890,7 +2891,7 @@ public &Char
         if(`stVal.no != 10) .v.setI(10)$`trSelfState(-1, -1);
       cond `stVal.typ == .StTy::C && `cmd.buffer~D < 0:
         if(`stVal.no != 12) .v.setI(12)$`trSelfState(-1, -1);
-      cond `stVal.typ != .StTy::A && `cmd.buffer~U > 0:
+      cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd.buffer~U > 0:
         if(`stVal.no != 40) .v.setI(40)$`trSelfState(-1, -1);
       cond
         `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
@@ -3219,6 +3220,9 @@ public &Char
       }
       if(!`cs1tmp){
         if(lc) .v.setI(52)$`trSelfState(-1, -1);
+        if(`stVal.no == 0 && `sysivar[.iLIFE] <= 0){
+          .v.setI(5050)$`trSelfState(-1, -1);
+        }
         `minus = 0;
         `state(::);
         if(!`isHitPaused()) `stVal.time++;
@@ -3626,7 +3630,9 @@ public &Char
   }
   public bool ctrlOver()
   {
-    ret .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime);
+    ret
+     .com.time == 0
+     || .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime);
   }
   public bool ctrl()
   {
@@ -6617,6 +6623,10 @@ public float action(
     cond .com.intro >= 1:
       .com.intro--;
     }
+    if(
+      .com.intro == 0 && .com.time > 0 && !.gs(.gsTIMERFREEZE)
+      && (.super <= 0 || .superpausebg == 0) 
+      && (.pause <= 0 || .pausebg == 0)) .com.time--;
     branch{
     cond .roundEnd() || finish():
       branch{
@@ -6629,15 +6639,25 @@ public float action(
       else:
         break;
       comm:
-        .com.intro--;
+        if(.winskipped || !.gs(.gsROUNDNOTOVER) || .com.intro > rs4t){
+          .com.intro--;
+          if(.com.time != 0 && .com.intro == rs4t-1) loop{
+            index i = 0;
+            while;
+          do:
+            if(#.chars[i] > 0) branch{
+            cond .chars[i][0]~isWin():
+            cond .chars[i][0]~stVal.no != 5150:
+              if(.chars[i][0]~sysivar[.iWAITWIN]-- > 0) .com.intro = rs4t;
+            }
+            i++;
+          while i < #.chars:
+          }
+        }
       }
     else:
       if(.com.intro < 0) .com.intro = 0;
     }
-    if(
-      .com.intro == 0 && .com.time > 0 && !.gs(.gsTIMERFREEZE)
-      && (.super <= 0 || .superpausebg == 0) 
-      && (.pause <= 0 || .pausebg == 0)) .com.time--;
   cond .fight~ro.cur == 1 && .com.tickNextFrame():
     posreset();
   }
@@ -6754,13 +6774,22 @@ public void draw(&.stage.Stage stg=, float x, float y, float scl)
   .drawAnimList(.topanims=, stg=, x, y);
   .fight~draw(2, lpl, names, .gs(.gsNOBARDISPLAY));
   .fight~ro.draw(2, .ko, winner);
-  if(.com.intro > .fight~ro.ctrl_time+1){
+  void fade(int alpha)
+  {
     .tmppl<> = 0x000000;
     .sdl.screen.renderMugenZoom(
-      .com.scrrect=, 0.0, 0.0, px, .tmppl, -1, onedot=, 0.0, 0.0, til=,
+      .com.scrrect=, 0.0, 0.0, `px, .tmppl, -1, `onedot=, 0.0, 0.0, `til=,
       (float).cfg.Width, (float).cfg.Width, (float).cfg.Height, 0.0, 0d0,
-      256*(.com.intro-(.fight~ro.ctrl_time+1))/.fight~ro.start_waittime,
-      0, dammy=);
+      alpha, 0, `dammy=);
+  }
+  if(.com.intro > .fight~ro.ctrl_time+1){
+    fade(256*(.com.intro-(.fight~ro.ctrl_time+1))/.fight~ro.start_waittime);
+  }
+  int tmp =
+    .fight~ro.over_hittime + .fight~ro.over_waittime
+    + (.fight~ro.over_time - .fight~ro.start_waittime);
+  if(.fight~ro.over_time >= .fight~ro.start_waittime && .com.intro < -tmp){
+    fade(256 * (-tmp - .com.intro) / .fight~ro.start_waittime);
   }
   .com.brightness = ob;
   if(.com.clsndraw) .drawClsn();
@@ -6786,6 +6815,7 @@ void resetGbl()
   .playerid.new(0);
   .resetNumenemy();
   .slowt = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
+  .winskipped = false;
 }
 
 void charClear(int pn)
@@ -6846,11 +6876,16 @@ public void nextRound(&.stage.Stage stg=)
 public bool roundOver()
 {
   if(.roundState() == 4 && .cmd.anybutton()){
-    ret true;
+    .com.intro =
+      .m.min!int?(
+        .com.intro,
+        -(
+          .fight~ro.over_hittime + .fight~ro.over_waittime
+          + (.fight~ro.over_time - .fight~ro.start_waittime)));
+    .winskipped = true;
   }
   ret
-    !.gs(.gsROUNDNOTOVER) && .com.intro < -(
-      .fight~ro.over_hittime + .fight~ro.over_waittime
-      + .fight~ro.over_wintime + .fight~ro.over_time);
+    .com.intro < -(
+      .fight~ro.over_hittime + .fight~ro.over_waittime + .fight~ro.over_time);
 }
 

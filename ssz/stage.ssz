@@ -93,7 +93,7 @@ public &Stage
   public &.Player p1, p2;
   public int screenleft = 15, screenright = 15;
   public int zoffset = 0;
-  public int zoffsetlink = -1;
+  public int zoffsetlink = 0;
   public float ztopscale = 1.0;
   public int reflection = 0;
   public bool hires = false, resetbg = true, debugbg = false, reflect = true;
@@ -401,7 +401,7 @@ public &Stage
       else:
         link = i;
       }
-      if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+      if(`zoffsetlink > 0 && `bg[i].id == `zoffsetlink){
         zofs = (int)`bg[i].starty;
       }
       i++;
@@ -530,7 +530,7 @@ public &Stage
       else:
         link = i;
       }
-      if(`zoffsetlink >= 0 && `bg[i].id == `zoffsetlink){
+      if(`zoffsetlink > 0 && `bg[i].id == `zoffsetlink){
         yofs = `bg[i].bga.yoffset;
       }
       if(`bg[i].active) `bg[i].anim.action();
