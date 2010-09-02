@@ -1055,11 +1055,11 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     branch{
     cond `typ == .StTy::A:
       `hb.airtype = `hb.typ = (int)hit.air_type;
-      `hb.airanimtype = (int)hit.air_animtype;
     else:
       `hb.groundtype = `hb.typ = (int)hit.ground_type;
-      `hb.groundanimtype = (int)hit.animtype;
     }
+    `hb.airanimtype = (int)hit.air_animtype;
+    `hb.groundanimtype = (int)hit.animtype;
     if(guard && ((int)`typ&hit.guardflag) != 0){
       `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
       `hb.hittime = hit.guard_hittime;
