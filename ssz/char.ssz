@@ -458,8 +458,7 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
     }
     loop{
       index i = `framegap;
-      index end =
-        end = (.m.min!int?(`reccount, `length)/`framegap) * `framegap;
+      index end = (.m.min!int?(`reccount, `length)/`framegap) * `framegap;
       .m.limMax!index?(end=, .cfg.AfterImageMax*`framegap);
       while;
     do:
