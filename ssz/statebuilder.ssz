@@ -1320,10 +1320,7 @@ public &StateBuilder
       cond .s.equ("type", token):
         out .= ".v.setI(" .= obj .= "stVal.hb.typ)";
       cond .s.equ("animtype", token):
-        out .=
-          ".v.setI(`stVal.hb.fallf!=0?(int)"
-          .= obj .= "stVal.hb.fall.animtype:"
-          .= obj .= "stVal.hb.animtype)";
+        out .= ".v.setI(" .= obj .= "gethitAnimtype())";
       cond .s.equ("airtype", token):
         out .= ".v.setI(" .= obj .= "stVal.hb.airtype)";
       cond .s.equ("groundtype", token):

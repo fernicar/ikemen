@@ -18,7 +18,7 @@ lib mes = <alpha/mesdialog.ssz>;
 
 int changeStateNest = 0;
 float oldx = 0.0;
-int slowt = 0;
+int slowt = 0, shuttertime = 0;
 bool winskipped = false;
 
 public float zoomdelay = 0.0;
@@ -457,11 +457,10 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
       ret;
     }
     loop{
-      index i = `framegap, end = .cfg.AfterImageMax*`framegap;
-      if(end > `reccount) end = (`reccount/`framegap) * `framegap;
-      if(end > `length/`timegap){
-        end = (`length/(`timegap*`framegap)) * `framegap;
-      }
+      index i = `framegap;
+      index end =
+        end = (.m.min!int?(`reccount, `length)/`framegap) * `framegap;
+      .m.limMax!index?(end=, .cfg.AfterImageMax*`framegap);
       while;
     do:
       .addAnimList(
@@ -868,7 +867,8 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public int hitt2;
   public int attr;
   public int typ;
-  public int animtype;
+  public int airanimtype;
+  public int groundanimtype;
   public int airtype;
   public int groundtype;
   public int damage;
@@ -904,7 +904,8 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hitt2 = 0;
     `attr = 0;
     `typ = -1;
-    `animtype = 0;
+    `airanimtype = 0;
+    `groundanimtype = 0;
     `airtype = 0;
     `groundtype = 0;
     `damage = 0;
@@ -1054,10 +1055,10 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     branch{
     cond `typ == .StTy::A:
       `hb.airtype = `hb.typ = (int)hit.air_type;
-      `hb.animtype = (int)hit.air_animtype;
+      `hb.airanimtype = (int)hit.air_animtype;
     else:
       `hb.groundtype = `hb.typ = (int)hit.ground_type;
-      `hb.animtype = (int)hit.animtype;
+      `hb.groundanimtype = (int)hit.animtype;
     }
     if(guard && ((int)`typ&hit.guardflag) != 0){
       `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
@@ -2511,6 +2512,13 @@ public &Char
     `intro = "";
     `ending = "";
   }
+  public int gethitAnimtype()
+  {
+    ret
+      `stVal.typ != .StTy::A ? `stVal.hb.groundanimtype : (
+        `stVal.hb.fallf != 0
+        ? (int)`stVal.hb.fall.animtype : `stVal.hb.airanimtype);
+  }
   public void setEnemyWinty()
   {
     if(`helperindex != 0) ret;
@@ -3551,9 +3559,16 @@ public &Char
     if(h.down_velocityx == .com.FERR) h.down_velocityx = h.air_velocityx;
     if(h.down_velocityy == .com.FERR) h.down_velocityy = h.air_velocityy;
     if(h.air_fall == .com.IERR) h.air_fall = h.ground_fall;
+    if(h.fall.animtype == .AnimTy::Unknown) branch{
+    cond h.air_animtype != .AnimTy::Unknown:
+      h.fall.animtype = h.air_animtype;
+    cond (int)h.animtype < 3:
+      h.fall.animtype = .AnimTy::Back;
+    else:
+      h.fall.animtype = h.animtype;
+    }
     if(h.air_animtype == .AnimTy::Unknown) h.air_animtype = h.animtype;
     if(h.air_type == .ReactTy::Unknown) h.air_type = h.ground_type;
-    if(h.fall.animtype == .AnimTy::Unknown) h.fall.animtype = h.animtype;
     if(h.forcestand == .com.IERR){
       h.forcestand = (int)(h.ground_velocityy != 0.0);
     }
@@ -6608,20 +6623,27 @@ public float action(
   }
   int slowfade = .fight~ro.slow_time * 2 / 5;
   branch{
-  cond .fight~ro.act(.syssnd=, .ko):
+  cond .shuttertime > 0 ? .com.tickNextFrame() : .fight~ro.act(.syssnd=, .ko):
     branch{
     cond .com.intro > .fight~ro.ctrl_time:
       .com.intro--;
       if(.gs(.gsINTRO) && .com.intro <= .fight~ro.ctrl_time){
         branch{
-        cond .cmd.anybutton():
-          posreset();
+        cond .shuttertime > 0 || .cmd.anybutton():
+          if(.shuttertime < 15) .shuttertime++;
+          branch{
+          cond .shuttertime == 15:
+            posreset();
+          else:
+            break, else;
+          }
         else:
           .com.intro = .fight~ro.ctrl_time+1;
         }
       }
-    cond .com.intro >= 1:
-      .com.intro--;
+    else:
+      if(.shuttertime == 0 && .com.intro >= 1) .com.intro--;
+      if(.shuttertime > 0) .shuttertime--;
     }
     if(
       .com.intro == 0 && .com.time > 0 && !.gs(.gsTIMERFREEZE)
@@ -6774,22 +6796,31 @@ public void draw(&.stage.Stage stg=, float x, float y, float scl)
   .drawAnimList(.topanims=, stg=, x, y);
   .fight~draw(2, lpl, names, .gs(.gsNOBARDISPLAY));
   .fight~ro.draw(2, .ko, winner);
-  void fade(int alpha)
+  void fade(.com.scrrect.self rect=, int alpha)
   {
     .tmppl<> = 0x000000;
     .sdl.screen.renderMugenZoom(
-      .com.scrrect=, 0.0, 0.0, `px, .tmppl, -1, `onedot=, 0.0, 0.0, `til=,
+      rect=, 0.0, 0.0, `px, .tmppl, -1, `onedot=, 0.0, 0.0, `til=,
       (float).cfg.Width, (float).cfg.Width, (float).cfg.Height, 0.0, 0d0,
       alpha, 0, `dammy=);
   }
   if(.com.intro > .fight~ro.ctrl_time+1){
-    fade(256*(.com.intro-(.fight~ro.ctrl_time+1))/.fight~ro.start_waittime);
+    fade(
+      .com.scrrect=,
+      256 * (.com.intro - (.fight~ro.ctrl_time+1)) / .fight~ro.start_waittime);
   }
   int tmp =
     .fight~ro.over_hittime + .fight~ro.over_waittime
     + (.fight~ro.over_time - .fight~ro.start_waittime);
   if(.fight~ro.over_time >= .fight~ro.start_waittime && .com.intro < -tmp){
-    fade(256 * (-tmp - .com.intro) / .fight~ro.start_waittime);
+    fade(.com.scrrect=, 256 * (-tmp - .com.intro) / .fight~ro.start_waittime);
+  }
+  if(.shuttertime > 0){
+    *.com.scrrect.self rect = .com.scrrect;
+    rect.h = (uint).shuttertime * ((.com.scrrect.h+0d1)>>0d1) / 0d15;
+    fade(rect=, 255);
+    rect.y = (int)(.com.scrrect.h - rect.h);
+    fade(rect=, 255);
   }
   .com.brightness = ob;
   if(.com.clsndraw) .drawClsn();
@@ -6815,6 +6846,7 @@ void resetGbl()
   .playerid.new(0);
   .resetNumenemy();
   .slowt = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
+  .shuttertime = 0;
   .winskipped = false;
 }
 

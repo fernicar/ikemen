@@ -1145,17 +1145,17 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     branch{
     cond `stVal.time == 0:
-      switch(`stVal.hb.animtype){
+      switch(`gethitAnimtype()){
       case 4, 5:
-        if(#`getAction(5047 + `stVal.hb.animtype) > 0){
-          `trChangeAnim(5047 + `stVal.hb.animtype);
+        if(#`getAction(5047 + `gethitAnimtype()) > 0){
+          `trChangeAnim(5047 + `gethitAnimtype());
           break, break;
         }
       case 3:<-
         `trChangeAnim(5030);
       default:
         `trChangeAnim(
-          (`stVal.hb.groundtype == 1 ? 5000 : 5010) + `stVal.hb.animtype);
+          (`stVal.hb.groundtype == 1 ? 5000 : 5010) + `gethitAnimtype());
       }
     cond `stVal.time > 0:
       `trChangeAnim(`animno);
@@ -1222,7 +1222,7 @@ void c.Char::s##_@@P()
     if(`stVal.time == 0) `trHitVelSetX();
     if(`trAnimTime()$.v.toInt() == 0){
       `trChangeAnim(
-        5005 + `stVal.hb.animtype + (int)(`stVal.hb.groundtype == 2)*10);
+        5005 + `gethitAnimtype() + (int)(`stVal.hb.groundtype == 2)*10);
     }
     if(`stVal.time >= `stVal.hb.slidetime) `sysfvar[.fVX] *= 0.6;
     if(`stVal.hb.hittime <= 0){
@@ -1258,16 +1258,16 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     branch{
     cond `stVal.time == 0:
-      switch(`stVal.hb.animtype){
+      switch(`gethitAnimtype()){
       case 4, 5:
-        if(#`getAction(5047 + `stVal.hb.animtype) > 0){
-          `trChangeAnim(5047 + `stVal.hb.animtype);
+        if(#`getAction(5047 + `gethitAnimtype()) > 0){
+          `trChangeAnim(5047 + `gethitAnimtype());
           break, break;
         }
       case 3:<-
         `trChangeAnim(5030);
       default:
-        `trChangeAnim(5020 + `stVal.hb.animtype);
+        `trChangeAnim(5020 + `gethitAnimtype());
       }
     cond `stVal.time > 0:
       `trChangeAnim(`animno);
@@ -1332,7 +1332,7 @@ void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
     if(`stVal.time == 0) `trHitVelSetX();
-    if(`trAnimTime()$.v.toInt() == 0) `trChangeAnim(5025 + `stVal.hb.animtype);
+    if(`trAnimTime()$.v.toInt() == 0) `trChangeAnim(5025 + `gethitAnimtype());
     if(`stVal.time >= `stVal.hb.slidetime) `sysfvar[.fVX] *= 0.6;
     if(`stVal.hb.hittime <= 0){
       `setXV(0.0);
@@ -1367,17 +1367,17 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     branch{
     cond `stVal.time == 0:
-      switch(`stVal.hb.animtype){
+      switch(`gethitAnimtype()){
       case 4, 5:
-        if(#`getAction(5047 + `stVal.hb.animtype) > 0){
-          `trChangeAnim(5047 + `stVal.hb.animtype);
+        if(#`getAction(5047 + `gethitAnimtype()) > 0){
+          `trChangeAnim(5047 + `gethitAnimtype());
           break, break;
         }
       case 3:<-
         `trChangeAnim(5030);
       default:
         `trChangeAnim(
-          (`stVal.hb.airtype == 1 ? 5000 : 5010) + `stVal.hb.animtype);
+          (`stVal.hb.airtype == 1 ? 5000 : 5010) + `gethitAnimtype());
       }
     cond `stVal.time > 0:
       `trChangeAnim(`animno);
