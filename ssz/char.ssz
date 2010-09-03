@@ -3166,7 +3166,9 @@ public &Char
       bool prep = `isPaused();
       if(#`palfx > 0 && !prep) `palfx~step();
       bool p = isSuperPaused() || isNormalPaused();
-      if(!p && prep && !`cs1tmp && `stVal.time == 0) `stVal.time++;
+      if(!p && prep && !`cs1tmp && !`isHitPaused() && `stVal.time == 0){
+        `stVal.time++;
+      }
       `acttmp = -(int)p * 2;
       bool lc = !`ls(.lsGETHIT) && `landCondition();
       `bind();
