@@ -3163,13 +3163,8 @@ public &Char
     }
     if(`minus != 2) ret;
     {
-      bool prep = `isPaused();
-      if(#`palfx > 0 && !prep) `palfx~step();
+      if(#`palfx > 0 && !`isPaused()) `palfx~step();
       bool p = isSuperPaused() || isNormalPaused();
-      if(!p && prep && !`cs1tmp && !`isHitPaused() && `stVal.time == 0){
-        `stVal.time++;
-        if(#`ani > 0) `ani~ani.action();
-      }
       `acttmp = -(int)p * 2;
       bool lc = !`ls(.lsGETHIT) && `landCondition();
       `bind();
