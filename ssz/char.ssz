@@ -3168,6 +3168,7 @@ public &Char
       bool p = isSuperPaused() || isNormalPaused();
       if(!p && prep && !`cs1tmp && !`isHitPaused() && `stVal.time == 0){
         `stVal.time++;
+        if(#`ani > 0) `ani~ani.action();
       }
       `acttmp = -(int)p * 2;
       bool lc = !`ls(.lsGETHIT) && `landCondition();
