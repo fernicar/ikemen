@@ -2514,9 +2514,9 @@ public &Char
   public int gethitAnimtype()
   {
     ret
-      `stVal.typ != .StTy::A ? `stVal.hb.groundanimtype : (
-        `stVal.hb.fallf != 0
-        ? (int)`stVal.hb.fall.animtype : `stVal.hb.airanimtype);
+      `stVal.hb.fallf != 0 ? (int)`stVal.hb.fall.animtype : (
+        `stVal.typ == .StTy::A
+        ? `stVal.hb.airanimtype : `stVal.hb.groundanimtype);
   }
   public void setEnemyWinty()
   {
@@ -2949,10 +2949,7 @@ public &Char
       }
     }
     `destmp = false;
-    if(`player){
-      `minus = -4;
-      `state_4(::);
-    }
+    if(`player) `state_4(::);
     `minus = 2;
     if(
       !`isPaused() && !`isHitPaused() && `stVal.no == 5110
@@ -3166,13 +3163,15 @@ public &Char
     }
     if(`minus != 2) ret;
     {
-      if(#`palfx > 0 && !`isPaused()) `palfx~step();
-      bool p = !`ls(.lsGETHIT) && (isSuperPaused() || isNormalPaused());
+      bool prep = `isPaused();
+      if(#`palfx > 0 && !prep) `palfx~step();
+      bool p = isSuperPaused() || isNormalPaused();
+      if(!p && prep && !`cs1tmp && `stVal.time == 0) `stVal.time++;
       `acttmp = -(int)p * 2;
       bool lc = !`ls(.lsGETHIT) && `landCondition();
       `bind();
       {
-        if(p) ret;
+        if(p && !`cs1tmp) ret;
         branch{
         cond .super > 0:
           if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
@@ -3232,7 +3231,7 @@ public &Char
         }
         `minus = 0;
         `state(::);
-        if(!`isHitPaused()) `stVal.time++;
+        if(`isActive()) `stVal.time++;
       }
     break:
       `minus = 1;
