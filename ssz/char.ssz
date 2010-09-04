@@ -5883,7 +5883,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       && pyr.sysfvar[.fY] - p~c~sysfvar[.fY] < .com.BodyHeight
       && p~c~sysfvar[.fY] - pyr.sysfvar[.fY] < .com.BodyHeight)
     {
-      if(pl >= pr) break;
       float el, er;
       branch{
       cond p~c~facing > 0:
@@ -5893,7 +5892,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         el = p~c~sysfvar[.fX] - p~c~frontw;
         er = p~c~sysfvar[.fX] + p~c~backw;
       }
-      if(el >= er) break;
       float ev = p~c~acttmp > 0 ? p~c~sysfvar[.fVX] : 0.0;
       if((pl < el || pl < er)  && (el < pr || er < pr)){
         const float foo = 0.5;

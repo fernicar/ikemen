@@ -860,18 +860,28 @@ public &Command
     }
     ret true;
   }
-  bool cmdeq(&`CmdButton cmd1, &`CmdButton cmd2)
-  {
-    if(#cmd1.key != #cmd2.key) ret false;
-    loop{index i = 0; while; do:
-      if(cmd1.key[i] != cmd2.key[i]) ret false;
-      i++;
-    while i < #cmd1.key:
-    }
-    ret true;
-  }
   bool isDToB(&`CmdButton cmd1, &`CmdButton cmd2)
-  {
+  {:<-
+    bool foo(&`CmdButton cmd1, &`CmdButton cmd2)
+    {
+      if(#cmd1.key != #cmd2.key) ret true;
+      loop{index i = 0; while; do:
+        if(
+          cmd1.key[i] != cmd2.key[i] && !(
+            (
+              .m.inRange!|.Key?(.Key::B, .Key::UF, cmd1.key[i])
+              || .m.inRange!|.Key?(.Key::Bs, .Key::UFs, cmd1.key[i]))
+            && (
+              .m.inRange!|.Key?(.Key::B, .Key::UF, cmd2.key[i])
+              || .m.inRange!|.Key?(.Key::Bs, .Key::UFs, cmd2.key[i]))))
+        {
+          ret true;
+        }
+        i++;
+      while i < #cmd1.key:
+      }
+      ret false;
+    }
     if(cmd2.slash) ret false;
     loop{index i = 0; while; do:
       if(cmd1.key[i] < .Key::a) break;
@@ -879,7 +889,7 @@ public &Command
     while i < #cmd1.key:
       ret false;
     }
-    ret !`cmdeq(cmd1, cmd2);
+    ret foo(cmd1, cmd2);
   }
   bool cmdChek(&.Buffer kbuf, bool ai)
   {
