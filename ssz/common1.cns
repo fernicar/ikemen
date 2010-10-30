@@ -1973,8 +1973,8 @@ void c.Char::s##_@@P()
     }
     if(
       `sysivar[.iLIFE] <= 0 && (
-      `trAnimTime()$.v.toInt() == 0 || `sysivar[0] != 0
-      || .m.inRange!int?(`animno, 5110, 5119)))
+        `trAnimTime()$.v.toInt() == 0 || `sysivar[0] != 0
+        || .m.inRange!int?(`animno, 5110, 5119)))
     {
       .v.setI(5150)$`trChangeState(-1, -1);
       ret;

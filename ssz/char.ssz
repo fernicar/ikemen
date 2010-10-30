@@ -557,6 +557,11 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   loop{
     index i = 0, vi = 0;
     .com.clipboardText[p].new[-1];
+    if(#.com.clipboardText[p] > 40){
+      ^%char tmp = .com.clipboardText[p][#.com.clipboardText[p]-40..-1];
+      .com.clipboardText[p].new(0);
+      .com.clipboardText[p] .= tmp;
+    }
     ^%char line = .com.clipboardText[p][#.com.clipboardText[p]-1..-1];
     while;
   do:
@@ -2953,9 +2958,9 @@ public &Char
     `minus = 2;
     if(
       !`isPaused() && !`isHitPaused() && `stVal.no == 5110
-      && `sysivar[.iLIFE] > 0 && `sysivar[.iRECOVERTIME] <= 0)
+      && `sysivar[.iRECOVERTIME] <= 0)
     {
-      .v.setI(5120)$`trSelfState(-1, -1);
+      .v.setI(`sysivar[.iLIFE] > 0 ? 5120 : 5150)$`trSelfState(-1, -1);
     }
   }
   public void drawAnim()
@@ -6627,6 +6632,7 @@ public float action(
           if(.shuttertime < 15) .shuttertime++;
           branch{
           cond .shuttertime == 15:
+            .resetGblEffect();
             posreset();
           else:
             break, else;
@@ -6820,15 +6826,11 @@ public void draw(&.stage.Stage stg=, float x, float y, float scl)
   if(.com.clsndraw) .drawClsn();
 }
 
-void resetGbl()
+void resetGblEffect()
 {
   .com.allPalFX~clear();
   .stage.bgPalFX~clear();
   .stage.envShake.clear();
-  .fight~reset();
-  .ko = .fgt.KOTy::NotYet;
-  .com.win = -1;
-  .winty[0] = .winty[1] = .fgt.WinTy::N;
   .pause = 0;
   .pausetime = 0;
   .super = 0;
@@ -6836,6 +6838,14 @@ void resetGbl()
   .superanim.new(0);
   .envcol_time = 0;
   .specialFlag = 0d0;
+}
+void resetGbl()
+{
+  .resetGblEffect();
+  .fight~reset();
+  .ko = .fgt.KOTy::NotYet;
+  .com.win = -1;
+  .winty[0] = .winty[1] = .fgt.WinTy::N;
   .zoomdelay = 0.0;
   .playerid.new(0);
   .resetNumenemy();

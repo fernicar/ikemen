@@ -139,11 +139,6 @@ void game()
     }
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0){
-        if(#.com.clipboardText[i] > 40){
-          ^%char tmp = .com.clipboardText[i][#.com.clipboardText[i]-40..-1];
-          .com.clipboardText.new(0);
-          .s.append!%char?(.com.clipboardText[i]=, tmp);
-        }
         loop{index j = 0; while; do:
           `put(0.0, y=, .com.clipboardText[i][j]);
           j++;
