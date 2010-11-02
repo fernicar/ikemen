@@ -2,9 +2,11 @@
 plugin bool YesNo(:^/char:) = "dll/mesdialog.dll";
 plugin void DoubleToStr(:^char=, double:) = "dll/mesdialog.dll";
 plugin bool GetClipboardStr(:^char=:) = "dll/mesdialog.dll";
-plugin void GetInifileString(:^/char, ^/char, ^/char, ^/char, ^char=:) = "dll/mesdialog.dll";
+plugin void GetInifileString(:^/char, ^/char, ^/char, ^/char, ^char=:) =
+  "dll/mesdialog.dll";
 plugin int GetInifileInt(:^/char, ^/char, ^/char, int:) = "dll/mesdialog.dll";
-plugin bool WriteInifileString(:^/char, ^/char, ^/char, ^/char:) = "dll/mesdialog.dll";
+plugin bool WriteInifileString(:^/char, ^/char, ^/char, ^/char:) =
+  "dll/mesdialog.dll";
 plugin void InputStr(:^/char, ^char=:) = "dll/mesdialog.dll";
 plugin bool UnCompress(:^ubyte=, ^/ubyte:) = "dll/mesdialog.dll";
 plugin void UbytesToStr(:|CodePage, ^char=, ^/ubyte:) = "dll/mesdialog.dll";
@@ -54,7 +56,7 @@ public void veryUnsafeCopy<dst_t, src_t>(dst_t d=, src_t s=)
 {
   lib math = <math.ssz>;
   plugin void VeryUnsafeCopy(:dst_t=, src_t=, index:) = "dll/mesdialog.dll";
-  VeryUnsafeCopy(:d=, s=, math.min!index?(sizeof(dst_t), sizeof(src_t)):);
+  VeryUnsafeCopy(:d=, s=, math.min!index?(typesize(dst_t), typesize(src_t)):);
 }
 
 

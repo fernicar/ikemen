@@ -182,7 +182,7 @@ void game()
     ^^/char sss = .s.split("<>", ss);
     &.com.SuperDangerousRef sdr;
     sdr.pos = 0;
-    sdr.l = sizeof(&.sha.Share);
+    sdr.l = typesize(&.sha.Share);
     sdr.p = .s.sToN!index?(sss[1]);
     sdr.copyToRef!&.sha.Share?(share=);
     .chr.chars = share~c;

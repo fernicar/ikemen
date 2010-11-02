@@ -2585,7 +2585,7 @@ public &Char
   {
     if(
       `atktmp >= 0 && (`stVal.hit.attr != 0 || `stVal.hit.reversal_attr > 0)
-      && (`stVal.hit.reversal_attr <= 0 || hit.reversal_attr <= 0))
+      && hit.reversal_attr <= 0)
     {
       if(
         (
@@ -2764,14 +2764,15 @@ public &Char
       branch{
       cond `stVal.hb.hitshaketime > 0:
         `stVal.hb.hitshaketime--;
-      cond `stVal.hb.hittime > 0:
-        `stVal.hb.hittime--;
-        if(`isFall()){
-          `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
-          `stVal.hb.fallcount++;
+      else:
+        if(`stVal.hb.hittime > 0){
+          `stVal.hb.hittime--;
+          if(`isFall()){
+            `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
+            `stVal.hb.fallcount++;
+          }
         }
-      cond `stVal.hb.fall.recovertime > 0:
-        `stVal.hb.fall.recovertime--;
+        if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
       }
       branch{
       cond `sysivar[.iHITPAUSETIME] > 0:

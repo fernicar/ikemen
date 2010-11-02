@@ -2163,10 +2163,7 @@ public &StateBuilder
           bool foo = true;
           ^/char data = .s.trim(line[f+1..-1]);
           if(#data == 0) break;
-          if(
-            typeidof(func_t) != typeidof(`stateBulid:<-state)
-            && data[0] == '"')
-          {
+          if(typeid(func_t) != typeid(`stateBulid:<-state) && data[0] == '"'){
             data = data[1...s.find(\", data[1..-1])+1];
           }
           if(!.s.equ(name[0..7], "trigger")){
@@ -2198,7 +2195,7 @@ public &StateBuilder
           }
           branch{
           cond
-            typeidof(func_t) == typeidof(`stateBulid:<-state)
+            typeid(func_t) == typeid(`stateBulid:<-state)
             && !typedeta && !.s.equ(name[0..7], "trigger")
             :
             branch{
