@@ -6633,8 +6633,8 @@ public float action(
           if(.shuttertime < 15) .shuttertime++;
           branch{
           cond .shuttertime == 15:
-            .resetGblEffect();
             posreset();
+            .resetGblEffect();
           else:
             break, else;
           }
