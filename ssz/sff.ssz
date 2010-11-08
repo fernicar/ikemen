@@ -621,8 +621,7 @@ public &Anim<frame_t>
     if(uagl == 0x0) branch{
     cond angleset:
       `draw(
-        .com.scrrect=, x+160.0 - xs*(float)(h*`frames[`drawidx].x),
-        y - ys*(float)(v*`frames[`drawidx].y),
+        .com.scrrect=, x+160.0 - xs*(float)(h*`frames[`drawidx].x), y,
         1.0, 1.0, xs, xs, ys, 0.0, 0.0, fx);
     else:
       `draw(
@@ -633,7 +632,8 @@ public &Anim<frame_t>
       ret;
     }
     .sdl.screen.renderMugenZoom(
-      .com.scrrect=, rx*.com.WidthScale, y*.com.HeightScale,
+      .com.scrrect=, rx*.com.WidthScale,
+      (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
       `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
       #xs*(float)`spr~rct.x*.com.WidthScale,
       #ys*(float)`spr~rct.y*.com.HeightScale,
