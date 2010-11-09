@@ -4422,7 +4422,7 @@ public &Char
   {
     if(.v.typ == .VarTy::SFalse) ret;
     p = .m.min!int?(99, .v.toInt());
-    if(p == 0) p = .consts.int_t::MAX;
+    if(p <= 0) p = .consts.int_t::MAX;
     p = .m.max!int?(0, p);
   }
   public void trCommand(^/char name)
