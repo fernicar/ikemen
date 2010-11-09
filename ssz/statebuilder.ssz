@@ -2156,9 +2156,13 @@ public &StateBuilder
       line = lines[i][0...s.find(";", lines[i])];
       f = .s.find("=", line);
       if(f > 0){
-        ^/char name =
-          @s.toLower()<, @s.trim()<,
-          @s.join(" ")<, @s.split(\x81\x40)<, line[0..f];
+        index foo = 0;
+        loop{while; do:
+          foo++;
+        while .s.cMatch!char?(" "\t, line[foo]):
+        }
+        foo += .s.cFind("= "\t, line[foo..-1]);
+        ^/char name = .s.toLower()<, .s.trim()<, line[0..foo];
         if(#name > 0){
           bool foo = true;
           ^/char data = .s.trim(line[f+1..-1]);
