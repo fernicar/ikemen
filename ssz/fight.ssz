@@ -95,8 +95,8 @@ public void readSpr(&.sff.Anim!&.bg.Frame? a=, ^/char data)
 
 public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
 {
-  ^int ary = .s.svToAry!int?(",", data);
-  ^&.bg.Action act = al.getAction(ary<>);
+  int ary = .com.atoi(data);
+  ^&.bg.Action act = al.getAction(ary);
   if(#act == 0) ret;
   a.setFrames(act~frames, act~loopstart, act~nrepeat);
   a.mask = 0;
@@ -322,7 +322,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       `front_lay.read(buf, sc=);
     }
     if(#(data = sc.benri(p, "counter.font")) > 0){
-      ^int nba = .s.svToAry!int?(",", data);
+      ^int nba = .com.csvToAry!int?(data);
       if(#nba < 2) break;
       `counter_fontn = nba[0];
       `counter_fontb = nba[1];
@@ -588,7 +588,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       .com.readPair!int?(`posx=, `posy=, data);
     }
     if(#(data = sc.benri(p, "name.font")) > 0){
-      ^int nba = .s.svToAry!int?(",", data);
+      ^int nba = .com.csvToAry!int?(data);
       if(#nba < 2) break;
       `name_fontn = nba[0];
       `name_fontb = nba[1];
@@ -669,20 +669,18 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     ^/char data;
     if(#(data = sc.get("pos")) > 0) .com.readPair!int?(`posx=, `posy=, data);
-    if(#(data = sc.get("start.x")) > 0) `start_x = .s.sToN!float?(data);
+    if(#(data = sc.get("start.x")) > 0) `start_x = .com.atof(data);
     if(#(data = sc.get("counter.font")) > 0){
       .com.readPair!int?(`counter_fontn=, `counter_fontb=, data);
     }
-    if(#(data = sc.get("counter.shake")) > 0){
-      `counter_shake = .s.sToN!int?(data);
-    }
+    if(#(data = sc.get("counter.shake")) > 0) `counter_shake = .com.atoi(data);
     `counter_lay.read("counter.", sc=);
     if(#(data = sc.get("text.font")) > 0){
       .com.readPair!int?(`text_fontn=, `text_fontb=, data);
     }
     if(#(data = sc.get("text.text")) > 0) `text_text = data;
     `text_lay.read("text.", sc=);
-    if(#(data = sc.get("displaytime")) > 0) `displaytime = .s.sToN!int?(data);
+    if(#(data = sc.get("displaytime")) > 0) `displaytime = .com.atoi(data);
   }
   public void step(^/int combo)
   {
@@ -803,7 +801,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       .com.readPair!int?(`sndg=, `sndi=, data);
     }
     if(#(data = sc.benri(h, "font")) > 0){
-      ^int nba = .s.svToAry!int?(",", data);
+      ^int nba = .com.csvToAry!int?(data);
       if(#nba < 2) break;
       `fontn = nba[0];
       `fontb = nba[1];
@@ -918,20 +916,18 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     ^/char data;
     if(#(data = sc.get("pos")) > 0) .com.readPair!int?(`posx=, `posy=, data);
-    if(#(data = sc.get("match.wins")) > 0) `match_wins = .s.sToN!int?(data);
+    if(#(data = sc.get("match.wins")) > 0) `match_wins = .com.atoi(data);
     if(#(data = sc.get("match.maxdrawgames")) > 0){
-      `match_maxdrawgames = .s.sToN!int?(data);
+      `match_maxdrawgames = .com.atoi(data);
     }
     if(#(data = sc.get("start.waittime")) > 0){
-      `start_waittime = .m.max!int?(1, .s.sToN!int?(data));
+      `start_waittime = .m.max!int?(1, .com.atoi(data));
     }
     if(#(data = sc.get("start.waittime")) > 0){
-      `start_waittime = .m.max!int?(1, .s.sToN!int?(data));
+      `start_waittime = .m.max!int?(1, .com.atoi(data));
     }
-    if(#(data = sc.get("round.time")) > 0) `round_time = .s.sToN!int?(data);
-    if(#(data = sc.get("round.sndtime")) > 0){
-      `round_sndtime = .s.sToN!int?(data);
-    }
+    if(#(data = sc.get("round.time")) > 0) `round_time = .com.atoi(data);
+    if(#(data = sc.get("round.sndtime")) > 0) `round_sndtime = .com.atoi(data);
     `round_default.read("round.default.", sc=, `al=);
     `round[0].read("round1.", sc=, `al=);
     `round[1].read("round2.", sc=, `al=);
@@ -942,32 +938,24 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     `round[6].read("round7.", sc=, `al=);
     `round[7].read("round8.", sc=, `al=);
     `round[8].read("round9.", sc=, `al=);
-    if(#(data = sc.get("fight.time")) > 0) `fight_time = .s.sToN!int?(data);
-    if(#(data = sc.get("fight.sndtime")) > 0){
-      `fight_sndtime = .s.sToN!int?(data);
-    }
+    if(#(data = sc.get("fight.time")) > 0) `fight_time = .com.atoi(data);
+    if(#(data = sc.get("fight.sndtime")) > 0) `fight_sndtime = .com.atoi(data);
     `fight.read("fight.", sc=, `al=);
     if(#(data = sc.get("ctrl.time")) > 0){
-      `ctrl_time = .m.max!int?(1, .s.sToN!int?(data));
+      `ctrl_time = .m.max!int?(1, .com.atoi(data));
     }
-    if(#(data = sc.get("ko.time")) > 0) `ko_time = .s.sToN!int?(data);
-    if(#(data = sc.get("ko.sndtime")) > 0) `ko_sndtime = .s.sToN!int?(data);
+    if(#(data = sc.get("ko.time")) > 0) `ko_time = .com.atoi(data);
+    if(#(data = sc.get("ko.sndtime")) > 0) `ko_sndtime = .com.atoi(data);
     `ko.read("ko.", sc=, `al=);
     `dko.read("dko.", sc=, `al=);
     `to.read("to.", sc=, `al=);
-    if(#(data = sc.get("slow.time")) > 0) `slow_time = .s.sToN!int?(data);
-    if(#(data = sc.get("over.waittime")) > 0){
-      `over_waittime = .s.sToN!int?(data);
-    }
-    if(#(data = sc.get("over.hittime")) > 0){
-      `over_hittime = .s.sToN!int?(data);
-    }
-    if(#(data = sc.get("over.wintime")) > 0){
-      `over_wintime = .s.sToN!int?(data);
-    }
-    if(#(data = sc.get("over.time")) > 0) `over_time = .s.sToN!int?(data);
-    if(#(data = sc.get("win.time")) > 0) `win_time = .s.sToN!int?(data);
-    if(#(data = sc.get("win.sndtime")) > 0) `win_sndtime = .s.sToN!int?(data);
+    if(#(data = sc.get("slow.time")) > 0) `slow_time = .com.atoi(data);
+    if(#(data = sc.get("over.waittime")) > 0) `over_waittime = .com.atoi(data);
+    if(#(data = sc.get("over.hittime")) > 0) `over_hittime = .com.atoi(data);
+    if(#(data = sc.get("over.wintime")) > 0) `over_wintime = .com.atoi(data);
+    if(#(data = sc.get("over.time")) > 0) `over_time = .com.atoi(data);
+    if(#(data = sc.get("win.time")) > 0) `win_time = .com.atoi(data);
+    if(#(data = sc.get("win.sndtime")) > 0) `win_sndtime = .com.atoi(data);
     `win.read("win.", sc=, `al=);
     `win2.read("win2.", sc=, `al=);
     `drawn.read("draw.", sc=, `al=);
@@ -1261,7 +1249,7 @@ public void setPerfect(|.WinTy wt=)
       .com.readPair!int?(`iconoffsetx=, `iconoffsety=, data);
     }
     if(#(data = sc.benri(p, "counter.font")) > 0){
-      ^int nba = .s.svToAry!int?(",", data);
+      ^int nba = .com.csvToAry!int?(data);
       if(#nba < 2) break;
       `counter_fontn = nba[0];
       `counter_fontb = nba[1];
@@ -1361,7 +1349,7 @@ public void setPerfect(|.WinTy wt=)
       %char buf .= p .= "perfect.";
       `icon_lay[(index).WinTy::Perfect].read(buf, sc=);
     }
-    if(#(data = sc.get("useiconupto")) > 0) `useiconupto = .s.sToN!int?(data);
+    if(#(data = sc.get("useiconupto")) > 0) `useiconupto = .com.atoi(data);
   }
   public void step()
   {
@@ -1443,7 +1431,7 @@ public void setPerfect(|.WinTy wt=)
     ^/char data;
     if(#(data = sc.get("pos")) > 0) .com.readPair!int?(`posx=, `posy=, data);
     if(#(data = sc.get("counter.font")) > 0){
-      ^int nba = .s.svToAry!int?(",", data);
+      ^int nba = .com.csvToAry!int?(data);
       if(#nba < 2) break;
       `counter_fontn = nba[0];
       `counter_fontb = nba[1];
@@ -1454,7 +1442,7 @@ public void setPerfect(|.WinTy wt=)
     if(#(data = sc.get("bg.anim")) > 0) .readAnim(`bg=, `al=, data);
     `bg_lay.read("bg.", sc=);
     if(#(data = sc.get("framespercount")) > 0){
-      `framespercount = .s.sToN!int?(data);
+      `framespercount = .com.atoi(data);
     }
   }
   public void step()

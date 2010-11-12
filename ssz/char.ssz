@@ -2202,7 +2202,7 @@ public &Char
       if(#(data = sc.get("displayname")) > 0) `displayname = data;
       if(#(data = sc.get("author")) > 0) `author = data;
       if(#(data = sc.get("pal.defaults")) > 0){
-        `pal_defaults = .s.svToAry!int?(",", data);
+        `pal_defaults = .com.csvToAry!int?(data);
       }
     }
     public void files(&.com.Section sc=)
@@ -2326,11 +2326,10 @@ public &Char
     {
       ^/char data;
       if(#(data = sc.get("command.time")) > 0){
-        `cmd.defaultTime = .s.sToN!`cmd.defaultTime.self?(data);
+        `cmd.defaultTime = .com.atoi(data);
       }
       if(#(data = sc.get("command.buffer.time")) > 0){
-        `cmd.defaultBufferTime =
-          .m.max!int?(1)<, .s.sToN!`cmd.defaultBufferTime.self?(data);
+        `cmd.defaultBufferTime = .m.max!int?(1)<, .com.atoi(data);
       }
     }
     public void command(&.com.Section sc=)
@@ -2340,12 +2339,9 @@ public &Char
       `cmd.ctmp~buffertime = `cmd.defaultBufferTime;
       ^/char data;
       if(#(data = sc.get("name")) > 0) `cmd.ctmp~name = data;
-      if(#(data = sc.get("time")) > 0){
-        `cmd.ctmp~time = .s.sToN!`cmd.ctmp<>.time.self?(data);
-      }
+      if(#(data = sc.get("time")) > 0) `cmd.ctmp~time = .com.atoi(data);
       if(#(data = sc.get("buffer.time")) > 0){
-        `cmd.ctmp~buffertime =
-          .m.max!int?(1)<, .s.sToN!`cmd.ctmp<>.buffertime.self?(data);
+        `cmd.ctmp~buffertime = .m.max!int?(1)<, .com.atoi(data);
       }
       if(#(data = sc.get("command")) > 0) `cmd.ctmp~readCmd(data);
       if(#`cmd.ctmp~cmd == 1 && `cmd.ctmp~cmd~slash){

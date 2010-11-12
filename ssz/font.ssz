@@ -44,7 +44,7 @@ public &Font
         .com.readPair!int?(`spacingx=, `spacingy=, data);
       }
       if(#(data = sc.get("colors")) > 0){
-        `colors = .mat.min!int?(255)<, .s.sToN!`colors.self?(data);
+        `colors = .mat.min!int?(255)<, .com.atoi(data);
       }
       if(#(data = sc.get("offset")) > 0){
         .com.readPair!int?(`offsetx=, `offsety=, data);
@@ -92,13 +92,13 @@ public &Font
         else:
           c = cap[0]<>;
         }
-        if(#cap >= 2) ofs = .s.sToN!int?(cap[1]);
+        if(#cap >= 2) ofs = .com.atoi(cap[1]);
         `mpl.new[-1];
         `map.set(c, `mpl[#`mpl-1..-1]);
         `mpl[-1].ofs = ofs;
         branch{
         cond #cap >= 3:
-          `mpl[-1].w = .s.sToN!int?(cap[2]);
+          `mpl[-1].w = .com.atoi(cap[2]);
           ofs += `mpl[-1].w - `sizex;
         else:
           `mpl[-1].w = `sizex;

@@ -1502,7 +1502,8 @@ public &StateBuilder
         oldin = in;
         bool foo = false;
         branch{
-        cond .s.equ("=", `tokenizer(in=)):
+          token = `tokenizer(in=);
+        cond #token > 0 && token[-1] == '=':
           if(!`expEqu(buf2=, in=)) ret false;
         else:
           in = oldin;
@@ -6511,34 +6512,31 @@ public &StateBuilder
     {
       branch{
       cond .s.equ(name, "life"):
-        `c.d.life = .s.sToN!`c.d.life.self?(data);
+        `c.d.life = .com.atoi(data);
       cond .s.equ(name, "power"):
-        `c.d.power = .s.sToN!`c.d.power.self?(data);
+        `c.d.power = .com.atoi(data);
       cond .s.equ(name, "attack"):
-        `c.d.attack = .s.sToN!`c.d.attack.self?(data);
+        `c.d.attack = .com.atoi(data);
       cond .s.equ(name, "defence"):
-        `c.d.defence = .s.sToN!`c.d.defence.self?(data);
+        `c.d.defence = .com.atoi(data);
       cond .s.equ(name, "fall.defence_up"):
-        `c.d.fall_defence_mul =
-          (.s.sToN!`c.d.fall_defence_mul.self?(data)+100.0) / 100.0;
+        `c.d.fall_defence_mul = (.com.atof(data)+100.0) / 100.0;
       cond .s.equ(name, "liedown.time"):
-        `c.d.liedown_time =
-          .m.max!int?(1)<, .s.sToN!`c.d.liedown_time.self?(data);
+        `c.d.liedown_time = .m.max!int?(1)<, .com.atoi(data);
       cond .s.equ(name, "airjuggle"):
-        `c.d.airjuggle = .s.sToN!`c.d.airjuggle.self?(data);
+        `c.d.airjuggle = .com.atoi(data);
       cond .s.equ(name, "sparkno"):
-        `c.d.sparkno = .s.sToN!`c.d.sparkno.self?(data);
+        `c.d.sparkno = .com.atoi(data);
       cond .s.equ(name, "guard.sparkno"):
-        `c.d.guard_sparkno = .s.sToN!`c.d.guard_sparkno.self?(data);
+        `c.d.guard_sparkno = .com.atoi(data);
       cond .s.equ(name, "ko.echo"):
-        `c.d.ko_echo = .s.sToN!`c.d.ko_echo.self?(data);
+        `c.d.ko_echo = .com.atoi(data);
       cond .s.equ(name, "volume"):
-        `c.d.volume = .s.sToN!`c.d.volume.self?(data);
+        `c.d.volume = .com.atoi(data);
       cond .s.equ(name, "intpersistindex"):
-        `c.d.intpersistindex = .s.sToN!`c.d.intpersistindex.self?(data);
+        `c.d.intpersistindex = .com.atoi(data);
       cond .s.equ(name, "floatpersistindex"):
-        `c.d.floatpersistindex =
-          .s.sToN!`c.d.floatpersistindex.self?(data);
+        `c.d.floatpersistindex = .com.atoi(data);
       }
       ret true;
     }
@@ -6547,36 +6545,36 @@ public &StateBuilder
       branch{
       cond .s.equ(name, "xscale"):
         {
-          ^float ary = .s.svToAry!float?(",", data);
+          ^float ary = .com.csvToAry!float?(data);
           `c.s.xscale = ary<>;
         }
       cond .s.equ(name, "yscale"):
         {
-          ^float ary = .s.svToAry!float?(",", data);
+          ^float ary = .com.csvToAry!float?(data);
           `c.s.yscale = ary<>;
         }
       cond .s.equ(name, "ground.back"):
-        `c.s.ground_back = .s.sToN!`c.s.ground_back.self?(data);
+        `c.s.ground_back = .com.atoi(data);
       cond .s.equ(name, "ground.front"):
-        `c.s.ground_front = .s.sToN!`c.s.ground_front.self?(data);
+        `c.s.ground_front = .com.atoi(data);
       cond .s.equ(name, "air.back"):
-        `c.s.air_back = .s.sToN!`c.s.air_back.self?(data);
+        `c.s.air_back = .com.atoi(data);
       cond .s.equ(name, "air.front"):
-        `c.s.air_front = .s.sToN!`c.s.air_front.self?(data);
+        `c.s.air_front = .com.atoi(data);
       cond .s.equ(name, "height"):
-        `c.s.height = .s.sToN!`c.s.height.self?(data);
+        `c.s.height = .com.atoi(data);
       cond .s.equ(name, "attack.dist"):
-        `c.s.attack_dist = .s.sToN!`c.s.attack_dist.self?(data);
+        `c.s.attack_dist = .com.atoi(data);
       cond .s.equ(name, "proj.attack.dist"):
-        `c.s.proj_attack_dist = .s.sToN!`c.s.proj_attack_dist.self?(data);
+        `c.s.proj_attack_dist = .com.atoi(data);
       cond .s.equ(name, "proj.doscale"):
-        `c.s.proj_doscale = .s.sToN!`c.s.proj_doscale.self?(data);
+        `c.s.proj_doscale = .com.atoi(data);
       cond .s.equ(name, "head.pos"):
         .com.readPair!int?(`c.s.head_posx=, `c.s.head_posy=, data);
       cond .s.equ(name, "mid.pos"):
         .com.readPair!int?(`c.s.mid_posx=, `c.s.mid_posy=, data);
       cond .s.equ(name, "shadowoffset"):
-        `c.s.shadowoffset = .s.sToN!`c.s.shadowoffset.self?(data);
+        `c.s.shadowoffset = .com.atoi(data);
       cond .s.equ(name, "draw.offset"):
         .com.readPair!int?(`c.s.draw_offsetx=, `c.s.draw_offsety=, data);
       }
@@ -6619,15 +6617,15 @@ public &StateBuilder
     {
       branch{
       cond .s.equ(name, "airjump.num"):
-        `c.m.airjump_num = .s.sToN!`c.m.airjump_num.self?(data);
+        `c.m.airjump_num = .com.atoi(data);
       cond .s.equ(name, "airjump.height"):
-        `c.m.airjump_height = .s.sToN!`c.m.airjump_height.self?(data);
+        `c.m.airjump_height = .com.atoi(data);
       cond .s.equ(name, "yaccel"):
-        `c.m.yaccel = .s.sToN!`c.m.yaccel.self?(data);
+        `c.m.yaccel = .com.atof(data);
       cond .s.equ(name, "stand.friction"):
-        `c.m.stand_friction = .s.sToN!`c.m.stand_friction.self?(data);
+        `c.m.stand_friction = .com.atof(data);
       cond .s.equ(name, "crouch.friction"):
-        `c.m.crouch_friction = .s.sToN!`c.m.crouch_friction.self?(data);
+        `c.m.crouch_friction = .com.atof(data);
       }
       ret true;
     }

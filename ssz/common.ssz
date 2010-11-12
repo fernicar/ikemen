@@ -177,29 +177,44 @@ public %^/char splitLines(^/char str)
   ret spl;
 }
 
-public int atoi(^/char str)
+public double atof(^/char str)
 {
   ^/char s = .s.trim(str);
-  if(#s == 0) ret 0;
+  if(#s == 0) ret 0.0;
   bool mi = s[0] == '-';
-  index i = (int)mi;
-  int n = 0;
-  loop{while; do:
-    if(s[i] < '0' || s[i] > '9') break;
-    n = n*10 + (int)(s[i] - '0');
+  index i = (int)mi, p = 0;
+  double f = 0.0;
+  loop{
+    while;
+  do:
+    branch{
+    cond s[i] >= '0' && s[i] <= '9':
+      f = f*10.0 + (double)(s[i] - '0');
+    cond s[i] == '.':
+      if(p > 0) else;
+      p = i + 1;
+    else:
+      break, break;
+    }
     i++;
   while i < #s:
   }
-  if(mi) n *= -1;
-  ret n;
+  if(p > 0) f *= 10.0**-(double)(i - p);
+  if(mi) f = -f;
+  ret f;
 }
 
-public ^int csvToAry(^/char csv)
+public long atoi(^/char str)
+{
+  ret (long).atof(str);
+}
+
+public ..csvToAry<_t>(^/char csv) ^_t
 {
   ^^/char spl = .s.split(",", csv);
-  ^int ary.new(#spl);
+  ^_t ary.new(#spl);
   loop{index i = 0; while; do:
-    ary[i] = .atoi(spl[i]);
+    ary[i] = (_t).atof(spl[i]);
     i++;
   while i < #ary:
   }
@@ -228,7 +243,7 @@ public &FXY
 
 public void readPair<_t>(_t x=, _t y=, ^/char data)
 {
-  ^_t xy = .s.svToAry!_t?(",", data);
+  ^_t xy = .csvToAry!_t?(data);
   x = xy[0];
   y = #xy >= 2 ? xy[1] : (_t)0;
 }
@@ -254,19 +269,19 @@ public &Layout
       .readPair!float?(`offset.x=, `offset.y=, data);
     }
     if(#(data = sc.benri(img, "displaytime")) > 0){
-      `displaytime = .s.sToN!int?(data);
+      `displaytime = .atoi(data);
     }
     if(#(data = sc.benri(img, "facing")) > 0){
-      `facing = .s.sToN!int?(data) < 0 ? -1: 1;
+      `facing = .atoi(data) < 0 ? -1: 1;
     }
     if(#(data = sc.benri(img, "vfacing")) > 0){
-      `vfacing = .s.sToN!int?(data) < 0 ? -1: 1;
+      `vfacing = .atoi(data) < 0 ? -1: 1;
     }
     if(#(data = sc.benri(img, "layerno")) > 0){
-      `layerno = .m.min!int?(2)<, .s.sToN!int?(data);
+      `layerno = .m.min!int?(2)<, .atoi(data);
     }
     if(#(data = sc.benri(img, "scale")) > 0){
-      ^float xy = .s.svToAry!float?(",", data);
+      ^float xy = .csvToAry!float?(data);
       `scale.x = xy[0];
       `scale.y = #xy >= 2 ? xy[1] : 1.0;
     }

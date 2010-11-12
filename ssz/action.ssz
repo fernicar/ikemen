@@ -56,7 +56,7 @@ public &Action
         {
           index f = .s.find(":", line);
           if(f < 0) break;
-          index siz = .s.sToN!siz.self?(line[f+1..-1]);
+          index siz = .com.atoi(line[f+1..-1]);
           if(siz <= 0) break;
           ^&.Rect clsn;
           branch{
@@ -83,10 +83,10 @@ public &Action
               break, break;
             }
             line = lines[i][fnd+1...s.find(";", lines[i])];
-            n = .s.sToN!n.self?()<, line[0...s.find("]", line)];
+            n = .com.atoi()<, line[0...s.find("]", line)];
             fnd = .s.find("=", line);
             if(fnd < 0) break;
-            ary = .s.svToAry!ary<>.self?(",", line[fnd+1..-1]);
+            ary = .com.csvToAry!short?(line[fnd+1..-1]);
             if(#ary < 4) break;
             branch{
             cond ary[0] <= ary[2]:
@@ -109,7 +109,7 @@ public &Action
           }
         }
       else:
-        ary = .com.csvToAry(line);
+        ary = .com.csvToAry!int?(line);
         if(#ary < 5) break;
         if(#`ani.frames > 0 && `ani.frames[-1].time < 0){
           `ani.frames[-1].time = 0;
@@ -153,9 +153,9 @@ public &Action
             {
               index di = .s.find("d", a);
               if(di < 0) break;
-              ushort tmp = .s.sToN!tmp.self?(a[2..di]);
+              ushort tmp = (ushort).com.atoi(a[2..di]);
               `ani.frames[-1].salpha = (tmp > 0d255 ? 0d255 : tmp);
-              tmp = .s.sToN!tmp.self?(a[di+1..-1]);
+              tmp = (ushort).com.atoi(a[di+1..-1]);
               `ani.frames[-1].dalpha = (tmp > 0d255 ? 0d255 : tmp);
               if(
                 `ani.frames[-1].salpha == 0d1

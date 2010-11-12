@@ -79,7 +79,7 @@ public &Action
         break, break;
       }
       line = lines[i][0...s.find(";", lines[i])];
-      ary = .com.csvToAry(line);
+      ary = .com.csvToAry!int?(line);
       branch{
       cond #ary >= 5:
         if(#`frames > 0 && `frames[-1].time < 0) `frames[-1].time = 0;
@@ -118,9 +118,9 @@ public &Action
             {
               index di = .s.find("d", a);
               if(di < 0) break;
-              ushort tmp = .s.sToN!tmp.self?(a[2..di]);
+              ushort tmp = (ushort).com.atoi(a[2..di]);
               `frames[-1].salpha = (tmp > 0d255 ? 0d255 : tmp);
-              tmp = .s.sToN!tmp.self?(a[di+1..-1]);
+              tmp = (ushort).com.atoi(a[di+1..-1]);
               `frames[-1].dalpha = (tmp > 0d255 ? 0d255 : tmp);
               if(`frames[-1].salpha == 0d1 && `frames[-1].dalpha == 0d255){
                 `frames[-1].salpha = 0d0;
@@ -188,16 +188,15 @@ public &BackGround
       `anim.frames[0].time = -1;
     }
     if(#(data = sc.get("actionno")) > 0){
-      ^int no = .s.svToAry!int?(",", data);
-      `actionno = no[0];
+      `actionno = .com.atoi(data);
       `anim.mask = 0;
     }
     if(#(data = sc.get("positionlink")) > 0){
-      `positionlink = .s.sToN!int?(data) != 0;
+      `positionlink = .com.atoi(data) != 0;
     }
-    if(#(data = sc.get("layerno")) > 0) `toplayer = .s.sToN!int?(data) != 0;
+    if(#(data = sc.get("layerno")) > 0) `toplayer = .com.atoi(data) != 0;
     if(#(data = sc.get("start")) > 0){
-      ^float xy = .s.svToAry!xy<>.self?(",", data);
+      ^float xy = .com.csvToAry!float?(data);
       float mul = hires ? 0.5 : 1.0;
       `startx = xy[0]*mul;
       branch{
@@ -208,7 +207,7 @@ public &BackGround
       }
     }
     if(#(data = sc.get("delta")) > 0){
-      ^float xy = .s.svToAry!xy<>.self?(",", data);
+      ^float xy = .com.csvToAry!float?(data);
       float mul = hires ? 0.5 : 1.0;
       `deltax = xy[0]*mul;
       branch{
@@ -237,7 +236,7 @@ public &BackGround
       `anim.mask = 0;
     }
     if(#(data = sc.get("alpha")) > 0){
-      ^int sd = .s.svToAry!sd<>.self?(",", data);
+      ^int sd = .com.csvToAry!int?(data);
       if(#sd >= 2){
         `anim.salpha = sd[0];
         if(`anim.salpha > 255) `anim.salpha = 255;
@@ -248,7 +247,7 @@ public &BackGround
     }
     if(#(data = sc.get("mask")) > 0){
       if(`actionno < 0 && `anim.salpha < 0) branch{
-        cond (.s.sToN!int?(data) != 0):
+        cond (.com.atoi(data) != 0):
           `anim.mask = 0;
         else:
           `anim.mask = -1;
@@ -258,7 +257,7 @@ public &BackGround
       .com.readPair!ushort?(`anim.tile.w=, `anim.tile.h=, data);
     }
     if(#(data = sc.get("tilespacing")) > 0){
-      ^short xy = .s.svToAry!xy<>.self?(",", data);
+      ^int xy = .com.csvToAry!int?(data);
       `anim.tile.x = xy[0];
       branch{
       cond #xy >= 2:
@@ -274,13 +273,13 @@ public &BackGround
       .com.readPair!float?(`rasterxtspeed=, `rasterxbspeed=, data);
     }
     if(#(data = sc.get("yscalestart")) > 0){
-      `yscalestart = 100.0 / .s.sToN!`yscalestart.self?(data);
+      `yscalestart = 100.0 / .com.atof(data);
     }
     if(#(data = sc.get("yscaledelta")) > 0){
-      `yscaledelta = .s.sToN!`yscaledelta.self?(data);
+      `yscaledelta = .com.atof(data);
     }
     if(#(data = sc.get("window")) > 0){
-      ^float ltrb = .s.svToAry!float?(",", data);
+      ^float ltrb = .com.csvToAry!float?(data);
       float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
       float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
       if(#ltrb >= 4){
@@ -291,7 +290,7 @@ public &BackGround
       }
     }
     if(#(data = sc.get("windowdelta")) > 0){
-      ^float xy = .s.svToAry!float?(",", data);
+      ^float xy = .com.csvToAry!float?(data);
       float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
       float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
       `windowdeltax = xy[0]*mulx;
@@ -302,9 +301,9 @@ public &BackGround
         `windowdeltay = `windowdeltax;
       }
     }
-    if(#(data = sc.get("id")) > 0) `id = .s.sToN!`id.self?(data);
+    if(#(data = sc.get("id")) > 0) `id = .com.atoi(data);
     if(#(data = sc.get("velocity")) > 0){
-      ^float xy = .s.svToAry!xy<>.self?(",", data);
+      ^float xy = .com.csvToAry!float?(data);
       float mul = hires ? 0.5 : 1.0;
       `startvx = `bga.vx = xy[0]*mul;
       branch{
@@ -315,7 +314,7 @@ public &BackGround
       }
     }
     if(#(data = sc.get("sin.x")) > 0){
-      ^float rp = .s.svToAry!rp<>.self?(",", data);
+      ^float rp = .com.csvToAry!float?(data);
       if(#rp < 2) break;
       `startxrad = `bga.xradius = rp[0];
       `startsinxlt = `bga.sinxlooptime = (int)rp[1];
@@ -327,7 +326,7 @@ public &BackGround
       }
     }
     if(#(data = sc.get("sin.y")) > 0){
-      ^float rp = .s.svToAry!rp<>.self?(",", data);
+      ^float rp = .com.csvToAry!float?(data);
       if(#rp < 2) break;
       `startyrad = `bga.yradius = rp[0];
       `startsinylt = `bga.sinylooptime = (int)rp[1];
@@ -452,7 +451,7 @@ public &BGCtrl
       }
     }
     if(#(data = sc.get("time")) > 0){
-      ^int times = .s.svToAry!times<>.self?(",", data);
+      ^int times = .com.csvToAry!int?(data);
       if(#times < 1) break;
       `starttime = `endtime = times[0];
       if(#times < 2) break;
@@ -461,10 +460,10 @@ public &BGCtrl
       `looptime = times[2];
     }
     if(#(data = sc.get("positionlink")) > 0){
-      `positionlink = .s.sToN!int?(data) != 0;
+      `positionlink = .com.atoi(data) != 0;
     }
     if(#(data = sc.get("value")) > 0){
-      ^float val = .s.svToAry!val<>.self?(",", data);
+      ^float val = .com.csvToAry!float?(data);
       if(#val < 1) break;
       `x = val[0];
       if(#val < 2) break;
@@ -474,11 +473,11 @@ public &BGCtrl
     }
     if(#(data = sc.get("x")) > 0){
       `setx = true;
-      `x = .s.sToN!`x.self?(data);
+      `x = .com.atof(data);
     }
     if(#(data = sc.get("y")) > 0){
       `sety = true;
-      `y = .s.sToN!`y.self?(data);
+      `y = .com.atof(data);
     }
   }
 }
