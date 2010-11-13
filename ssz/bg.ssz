@@ -305,12 +305,12 @@ public &BackGround
     if(#(data = sc.get("velocity")) > 0){
       ^float xy = .com.csvToAry!float?(data);
       float mul = hires ? 0.5 : 1.0;
-      `startvx = `bga.vx = xy[0]*mul;
+      `startvx = xy[0]*mul;
       branch{
       cond #xy >= 2:
-        `startvy = `bga.vy = xy[1]*mul;
+        `startvy = xy[1]*mul;
       else:
-        `startvy = `bga.vy = 0.0;
+        `startvy = 0.0;
       }
     }
     if(#(data = sc.get("sin.x")) > 0){

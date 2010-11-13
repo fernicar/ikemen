@@ -383,6 +383,10 @@ public &Stage
       cond `bg[i].positionlink && i > 0:
         `bg[i].startx += `bg[link].startx;
         `bg[i].starty += `bg[link].starty;
+        `bg[i].startvx += `bg[link].startvx;
+        `bg[i].startvy += `bg[link].startvy;
+        `bg[i].deltax *= `bg[link].deltax;
+        `bg[i].deltay *= `bg[link].deltay;
       else:
         link = i;
       }
@@ -504,17 +508,10 @@ public &Stage
     `bgctl.step!`self?(`=);
     `bga.action();
     loop{
-      index i = 0, link = 0;
+      index i = 0;
       float yofs = 0.0;
       while; do:
       `bg[i].bga.action();
-      branch{
-      cond i > 0 && `bg[i].positionlink:
-        `bg[i].bga.xoffset += `bg[link].bga.xoffset;
-        `bg[i].bga.yoffset += `bg[link].bga.yoffset;
-      else:
-        link = i;
-      }
       if(`zoffsetlink > 0 && `bg[i].id == `zoffsetlink){
         yofs = `bg[i].bga.yoffset;
       }

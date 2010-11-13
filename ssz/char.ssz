@@ -2801,6 +2801,7 @@ public &Char
       }
     }
     `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
+    if(`sysivar[.iBINDTIME] <= 0) `sysivar[.iBINDTOID] = -1;
     if(`tmphit){
       `stVal.hit.invalidate();
       `tmphit = false;
@@ -2893,7 +2894,7 @@ public &Char
         (int)(`stVal.typ == .StTy::C)*11 + (int)(`stVal.typ == .StTy::A)*51);
       `trSelfState(-1, -1);
     }
-    if(!`isPaused() && !`isHitPaused()) branch{
+    if(`isActive()) branch{
     cond `ctrl():
       branch{
       cond `stVal.typ == .StTy::S && `cmd.buffer~D > 0:
@@ -2953,12 +2954,6 @@ public &Char
     `destmp = false;
     if(`player) `state_4(::);
     `minus = 2;
-    if(
-      !`isPaused() && !`isHitPaused() && `stVal.no == 5110
-      && `sysivar[.iRECOVERTIME] <= 0)
-    {
-      .v.setI(`sysivar[.iLIFE] > 0 ? 5120 : 5150)$`trSelfState(-1, -1);
-    }
   }
   public void drawAnim()
   {
@@ -3806,7 +3801,10 @@ public &Char
   {
     `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
     `sysivar[.iBINDTOID] = to.id;
-    if(to.sysivar[.iBINDTOID] == `id) to.sysivar[.iBINDTIME] = 0;
+    if(to.sysivar[.iBINDTOID] == `id){
+      to.sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
+      to.sysivar[.iBINDTIME] = 0;
+    }
     `sysivar[.iBINDFACING] = to.facing*2;
   }
   public void makeDust(float x, float y)

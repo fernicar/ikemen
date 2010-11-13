@@ -43,6 +43,13 @@ trigger2 = !gethitvar(isbound)
 trigger2 = abs(vel x)+abs(vel y) < 0.01
 sysvar(55) = -1;RECOVERTIME
 
+[State -4, Getup3]
+type = SelfState
+triggerall = active
+triggerall = stateno = 5110
+trigger1 = sysvar(55) <= 0;RECOVERTIME
+value = ifelse(alive, 5120, 5150)
+
 [State -4, NoKO]
 type = SelfState
 triggerall = active
