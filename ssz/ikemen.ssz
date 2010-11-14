@@ -409,6 +409,7 @@ int match()
   }
   int retval;
   loop{do: retval = .game(stg); while retval == -2:}
+  if(retval < 0) .chr.chars.new(4);
   ret retval;
 }
 int game(^&.stage.Stage stg)

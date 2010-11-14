@@ -179,7 +179,7 @@ public &BackGround
     `bga.sinxlooptime = `startsinxlt;
     `bga.sinylooptime = `startsinylt;
   }
-  public void read(&.com.Section sc=, bool hires)
+  public void read(&.com.Section sc=, bool hires, ^/`self link)
   {
     ^/char data;
     if(#(data = sc.get("spriteno")) > 0){
@@ -193,6 +193,12 @@ public &BackGround
     }
     if(#(data = sc.get("positionlink")) > 0){
       `positionlink = .com.atoi(data) != 0;
+      if(`positionlink = #link > 0){
+        `startvx = link~startvx;
+        `startvy = link~startvy;
+        `deltax = link~deltax;
+        `deltay = link~deltay;
+      }
     }
     if(#(data = sc.get("layerno")) > 0) `toplayer = .com.atoi(data) != 0;
     if(#(data = sc.get("start")) > 0){
@@ -259,12 +265,7 @@ public &BackGround
     if(#(data = sc.get("tilespacing")) > 0){
       ^int xy = .com.csvToAry!int?(data);
       `anim.tile.x = xy[0];
-      branch{
-      cond #xy >= 2:
-        `anim.tile.y = xy[1];
-      cond `anim.tile.x != 0:
-        `anim.tile.h = 0d0;
-      }
+      `anim.tile.y = xy[1];
     }
     if(#(data = sc.get("width")) > 0){
       .com.readPair!ushort?(`twidth=, `bwidth=, data);

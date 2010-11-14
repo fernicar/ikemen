@@ -208,9 +208,11 @@ public &Stage
       if(#(data = sc.get("spr")) > 0) `spr = .com.readFileName(data);
       if(#(data = sc.get("debugbg")) > 0) `debugbg = .com.atoi(data) != 0;
     }
-    public void bg(&.com.Section sc=)
+    public void bg(&.com.Section sc=, index link=)
     {
-      `bg.new[-1].read(sc=, `hires);
+      if(#`bg > 0 && !`bg[-1].positionlink) link = #`bg - 1;
+      `bg.new[-1];
+      `bg[-1].read(sc=, `hires, `bg[link..link+1]);
     }
     public void begin(^^/char lines, index i=, ^/char section)
     {
@@ -319,7 +321,7 @@ public &Stage
         `bgctrlList[-1].positionlink |= `bgcdef.positionlink;
       }
     }
-    void section(^^/char lines, index i=)
+    void section(^^/char lines, index i=, index link=)
     {
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
@@ -352,7 +354,7 @@ public &Stage
       cond .s.equ(secname, "bgdef"):
         `load:<-bgdef(sc=);
       cond .s.equ(secname, "bg"):
-        `load:<-bg(sc=);
+        `load:<-bg(sc=, link=);
       cond .s.equ(secname, "bgctrldef"):
         `load:<-bgctrldef(sc=);
       cond .s.equ(secname, "bgctrl"):
@@ -363,8 +365,11 @@ public &Stage
     ^^/char lines = .com.splitLines(buf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `clear();
-    loop{index i = 0; while; do:
-      section(lines, i=);
+    loop{
+      index i = 0, link = -1;
+      while;
+    do:
+      section(lines, i=, link=);
       i++;
     while i < #lines:
     }
@@ -383,10 +388,6 @@ public &Stage
       cond `bg[i].positionlink && i > 0:
         `bg[i].startx += `bg[link].startx;
         `bg[i].starty += `bg[link].starty;
-        `bg[i].startvx += `bg[link].startvx;
-        `bg[i].startvy += `bg[link].startvy;
-        `bg[i].deltax *= `bg[link].deltax;
-        `bg[i].deltay *= `bg[link].deltay;
       else:
         link = i;
       }

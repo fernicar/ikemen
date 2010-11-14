@@ -5270,7 +5270,7 @@ public &StateBuilder
                   `state.ctrlList[-1].task=, text=,
                   ".alphad=", "$.v.toInt();")) ret false;
             else:
-              `state.ctrlList[-1].task .= exp .= ".alphad=255;";
+              `state.ctrlList[-1].task .= ".alphad=255;";
             }
           cond .s.equ(name, "ownpal"):
             if(`state.ctrlList[-1].typ != .CtrlTy::Explod) break, default;
