@@ -506,6 +506,7 @@ int game(^&.stage.Stage stg)
     .sdl.shareScreen();
     .com.debugdraw = share~dbgdw;
     .com.clsndraw = share~clsndw;
+    .se.full = share~fullscr;
     bool w1 = share~chr_p1w >= share~chr_p1mw;
     bool w2 = share~chr_p2w >= share~chr_p2mw;
     `winp = 0;
@@ -607,6 +608,7 @@ int game(^&.stage.Stage stg)
     share~clsndw = .com.clsndraw;
     share~powsh = .com.powershare;
     share~alvl = .com.autolevel;
+    share~fullscr = .se.full;
     &.com.SuperDangerousRef sdr;
     sdr.copyRef!&.sha.Share?(share=);
     %char buf .= "gt<>" .= .s.iToS(sdr.p);

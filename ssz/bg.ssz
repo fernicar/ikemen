@@ -21,7 +21,7 @@ public &Frame
 
 public &BGAction
 {
-  public float xoffset, yoffset;
+  public float xoffset, yoffset, sinxoffset, sinyoffset;
   public float x, y, vx, vy;
   public float xradius, yradius;
   public int sinxtime, sinytime;
@@ -33,6 +33,7 @@ public &BGAction
   public void clear()
   {
     `xoffset = 0.0; `yoffset = 0.0;
+    `sinxoffset = 0.0; `sinyoffset = 0.0;
     `x = 0.0; `y = 0.0; `vx = 0.0; `vy = 0.0;
     `xradius = 0.0; `yradius = 0.0;
     `sinxtime = 0; `sinytime = 0;
@@ -41,22 +42,22 @@ public &BGAction
   public void action()
   {
     `x += `vx;
-    `xoffset = `x;
     if(`sinxlooptime > 0){
-      `xoffset +=
+      `sinxoffset =
         `xradius*.m.sin(.m.PI*(double)`sinxtime / (double)`sinxlooptime);
       `sinxtime++;
       if(`sinxtime >= `sinxlooptime) `sinxtime = 0;
     }
+    `xoffset = `x + `sinxoffset;
     //
     `y += `vy;
-    `yoffset = `y;
     if(`sinylooptime > 0){
-      `yoffset +=
+      `sinyoffset =
         `yradius*.m.sin(.m.PI*(double)`sinytime / (double)`sinylooptime);
       `sinytime++;
       if(`sinytime >= `sinylooptime) `sinytime = 0;
     }
+    `yoffset = `y + `sinyoffset;
   }
 }
 

@@ -509,10 +509,18 @@ public &Stage
     `bgctl.step!`self?(`=);
     `bga.action();
     loop{
-      index i = 0;
+      index i = 0, link = 0;
       float yofs = 0.0;
-      while; do:
+      while;
+    do:
       `bg[i].bga.action();
+      branch{
+      cond i > 0 && `bg[i].positionlink:
+        `bg[i].bga.xoffset += `bg[link].bga.sinxoffset;
+        `bg[i].bga.yoffset += `bg[link].bga.sinyoffset;
+      else:
+        link = i;
+      }
       if(`zoffsetlink > 0 && `bg[i].id == `zoffsetlink){
         yofs = `bg[i].bga.yoffset;
       }
