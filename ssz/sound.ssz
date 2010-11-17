@@ -84,7 +84,7 @@ public &Snd
             ret false;
           }
           if(!`f.read!uint?(wav.samplesPerSec=)) ret false;
-          if(wav.samplesPerSec-0x1 >= 0x20000){
+          if(wav.samplesPerSec-0x1 >= 0x100000){
             %char buf;
             .error(buf .= "周波数が不正 " .= .s.iToS((int)wav.samplesPerSec));
             ret false;

@@ -78,6 +78,7 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   public int flag;
   public ^/char persist;
   public int no;
+  public bool i;
   new()
   {
     `clear();
@@ -276,11 +277,21 @@ const ^/char sndstart =
 const ^/char sndend = "`playSound(f,lw,lp,g,s,ch,vo,p,fr,x);";
 public &StateBuilder
 {
+  &StateNo
+  {
+    public int no;
+    public bool i;
+    public void set(int no, bool i)
+    {
+      `no = no;
+      `i = i;
+    }
+  }
   public ^/char cmd;
   public ^/char cns;
   public %^/char st;
   public ^/char stcommon;
-  public %int stnoList;
+  public %&StateNo stnoList;
   public &.State state;
   public ^/char lasterror;
   public &.Const c;
@@ -344,10 +355,10 @@ public &StateBuilder
       }], tmp);
     ret  tmp;
   }
-  bool existState(int no)
+  bool existState(int no, bool iflag)
   {
     loop{index i = 0; while; do:
-      if(`stnoList[i] == no) ret true;
+      if(`stnoList[i].no == no && `stnoList[i].i == iflag) ret true;
       i++;
     while i< #`stnoList:
     }
@@ -3623,7 +3634,7 @@ public &StateBuilder
               "", "$.v.isTrue()")) ret false;
         }
       cond .s.equ(name, "persistent"):
-        if(`state.no >= 0){
+        if(`state.no >= 0 && !`state.i){
           %char buf;
           if(
             !`fullExpression(
@@ -5910,18 +5921,25 @@ public &StateBuilder
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     loop{
       index i = 0, fnd;
-      ^char line;
+      ^/char line;
       while;
     do:
       if(
         #lines[i] <= 0 || lines[i][0] != '['
-        || .s.find("]", lines[i]) < 0 ) continue;
+        || .s.find("]", lines[i]) < 0) continue;
       line = .s.toLower(lines[i]);
       fnd = .s.cFind(" ]"\t, line);
       if(fnd < 0 || !.s.equ("statedef", line[1..fnd])) continue;
-      `state.no = .com.atoi(line[fnd+1..-1]);
-      if(`existState(`state.no)) continue;
-      `stnoList .= `state.no;
+      line = .s.trim(line[fnd..-1]);
+      `state.i = .s.equ("-i", line[0..2]);
+      if(`state.i){
+        %char tmp .= line[1..-1];
+        tmp[0] = '0';
+        line = tmp;
+      }
+      `state.no = .com.atoi(line);
+      if(`existState(`state.no, `state.i)) continue;
+      `stnoList.new[-1].set(`state.no, `state.i);
       `state.clear();
       i++;
       if(
@@ -5951,8 +5969,13 @@ public &StateBuilder
         &.tbl.NameTable!^/char? tbl;
         ^^/char item;
         branch{
+        cond `state.i:
+          fname .= "s_I" .= .s.iToS(`state.no);
         cond `state.no < 0:
-          fname .= "s_" .= .s.iToS(-`state.no);
+          {
+            ^char tmp;
+            fname .= "s_" .= .s.iToS(`state.no)=>tmp#tmp[1..-1];
+          }
         else:
           fname .= 's' .= .s.iToS(`state.no);
         }
@@ -6381,7 +6404,7 @@ public &StateBuilder
       break:
         if(`state.no == -1) buf .= \t"}"\r\n;
         buf .= "}"\r\n .= cbuf;
-        if(`state.no >= 0){
+        if(`state.no >= 0 && !`state.i){
           buf .=
             "void c.Char::" .= fname .= "Init()"\r\n
             "{"\r\n
@@ -6793,7 +6816,7 @@ public &StateBuilder
       \t"`state_1 = `s_1_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`state_2 = `s_2_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`state_3 = `s_3_" .= .s.iToS(`playerno) .= "P;"\r\n
-      \t"`state_4 = `s_4_" .= .s.iToS(`playerno) .= "P;"\r\n
+      \t"`state_i1 = `s_I1_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`clearSpSysVar();"\r\n
       \t"`cmd.bufReset(`key);"\r\n
       "}"\r\n;

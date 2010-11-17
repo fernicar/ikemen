@@ -1873,7 +1873,7 @@ public &Char
   public %&.snd.Sound sounds;
   void dummy(){}
   public method$void() state = dummy, state_1 = dummy,
-    state_2 = dummy, state_3 = dummy, state_4 = dummy;
+    state_2 = dummy, state_3 = dummy, state_i1 = dummy;
   new()
   {
     `ivar.new(61);
@@ -1902,7 +1902,7 @@ public &Char
     `state_1 = c.state_1;
     `state_2 = c.state_2;
     `state_3 = c.state_3;
-    `state_4 = c.state_4;
+    `state_i1 = c.state_i1;
     .s.copy!int?(`sysivar[10..-1], c.sysivar[10..-1]);
     .s.copy!float?(`sysfvar[10..-1], c.sysfvar[10..-1]);
     `sysivar[.iLIFE] = `sysivar[.iLIFEMAX];
@@ -2951,8 +2951,7 @@ public &Char
         `sysivar[.iSPECIALFLAG] |= .lsGUARD;
       }
     }
-    `destmp = false;
-    if(`player) `state_4(::);
+    if(`player) `state_i1(::);
     `minus = 2;
   }
   public void drawAnim()
@@ -4872,8 +4871,8 @@ public &Char
   {
     if(`stVal.mov != .MovTy::H) ret;
     if(f >= 0) `stVal.hb.fallf = (int)(f != 0);
-    if(vx != .com.FERR) `setXV(vx);
-    if(vy != .com.FERR) `setYV(vy);
+    if(vx != .com.FERR) `stVal.hb.fall.xvelocity = vx;
+    if(vy != .com.FERR) `stVal.hb.fall.yvelocity = vy;
   }
   public void trHitFallVel()
   {
