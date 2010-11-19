@@ -32,7 +32,7 @@ public &PcxHeader
 
 public &SffHeader
 {
-  ushort ver, ver2;
+  ubyte ver0, ver1, ver2, ver3;
   public uint subHeaderOffset, sizeOfSubheader;
   public uint numberOfGroups, numberOfImage;
   public ubyte paletteType;
@@ -52,14 +52,10 @@ public &SffHeader
         ret false;
       }
     }
-    if(!f.read!ubyte?(ub=)) ret false;
-    `ver = ub << 0d8;
-    if(!f.read!ubyte?(ub=)) ret false;
-    `ver |= ub;
-    if(!f.read!ubyte?(ub=)) ret false;
-    `ver2 = ub << 0d8;
-    if(!f.read!ubyte?(ub=)) ret false;
-    `ver2 |= ub;
+    if(!f.read!ubyte?(`ver3=)) ret false;
+    if(!f.read!ubyte?(`ver2=)) ret false;
+    if(!f.read!ubyte?(`ver1=)) ret false;
+    if(!f.read!ubyte?(`ver0=) || `ver0 != 0x1) ret false;
     if(!f.read!uint?(`numberOfGroups=)) ret false;
     if(!f.read!uint?(`numberOfImage=)) ret false;
     if(!f.read!uint?(`subHeaderOffset=)) ret false;

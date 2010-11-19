@@ -6023,7 +6023,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       while;
     do:
       if(
-        .projs[i][j].id < 0 || .projs[i][j].hits <= 0 || (
+        pyr.playerno == i || .projs[i][j].id < 0 || .projs[i][j].hits <= 0 || (
           .projs[i][j].hit.affectteam != 0 && ((pyr.playerno&1) != (i&1))
           != (.projs[i][j].hit.affectteam > 0))) continue;
       if(
