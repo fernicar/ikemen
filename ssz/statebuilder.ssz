@@ -985,6 +985,8 @@ public &StateBuilder
         else:
           out .= obj .= "trP2DistY()";
         }
+      cond .s.equ("z", token):
+        out .= ".v.setF(0.0)";
       else:
         if(!.s.equ("x", token)) in = oldin;
         branch{

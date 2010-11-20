@@ -538,8 +538,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       if(i == `numko) continue;
       .laydraw(
         .com.scrrect=, x, y, 1.0, layerno, `teammate_bg=, `teammate_bg_lay=);
-      .layspr(
-        x, y, layerno, `teammate_face_spr[i], `teammate_face_lay=);
+      .layspr(x, y, layerno, `teammate_face_spr[i], `teammate_face_lay=);
       if(i < `numko){
         .laydraw(
           .com.scrrect=, x, y, 1.0, layerno, `teammate_ko=, `teammate_ko_lay=);

@@ -2419,84 +2419,73 @@ public &Char
   }
   public bool loadPallet(^/char def, int no)
   {
-    ^uint pal;
-    pal.new(256);
-    `palno = no;
-    bool loaded = false, changed = false;
+    `sf~palList.resetRemap();
+    index tmp = 0;
     loop{
-      index i = 0, idx, n = no-1;
-      if(n < 0) n = 0;
-      n += n % 6 < 3 ? 3 : -3;
+      index i = 0;
       ubyte r, g, b;
+      ^uint pl;
+      while;
     do:
+      pl = `sf~palList.get(i);
       branch{
-      cond (i+n) % 6 < 3:
-        idx = (i+n)%12 + 3;
-      else:
-        idx = (i+n)%12 - 3;
-      }
-      {
         &.file.File f;
-        if(
-          .com.loadFile(def, `pal[idx]=)<, [bool(^/char fn){
-            f.open(fn, "rb"); ret f.read!ubyte?(r=);
-          }])
-        {
-          loop{
-            index j = 255;
-            continue;
-          do:
-            if(!f.read!ubyte?(r=)) ret false;
-          continue:
-            if(!f.read!ubyte?(g=)) ret false;
-            if(!f.read!ubyte?(b=)) ret false;
-            pal[j] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
-            j--;
-          while j >= 0:
-          }
-          {
-            ^&.sff.Sprite spr = `sf~getSprite(0, 0);
-            if(#spr > 0 && #spr~colorPallet > 0){
-              .s.copy!uint?(spr~colorPallet, pal);
-            }
-            spr = `sf~getSprite(9000, 0);
-            if(#spr > 0 && #spr~colorPallet > 0){
-              .s.copy!uint?(spr~colorPallet, pal);
-            }
-          }
-          loaded = true;
+      cond
+        .com.loadFile(def, `pal[i]=)<, [bool(^/char fn){
+          f.open(fn, "rb"); ret f.read!ubyte?(r=);
+        }]
+        :
+        loop{
+          index j = 255;
+          continue;
+        do:
+          if(!f.read!ubyte?(r=)) ret false;
+        continue:
+          if(!f.read!ubyte?(g=)) ret false;
+          if(!f.read!ubyte?(b=)) ret false;
+          pl[j] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
+          j--;
+        while j >= 0:
         }
+        if(i == 0) loop{index j = 0; while; do:
+          .s.copy!uint?(`sf~palList.get(j), pl);
+          j++;
+        while j < i:
+        }
+        tmp = i+1;
+      cond tmp > 0:
+        .s.copy!uint?(pl, `sf~palList.get(i-1));
       }
       i++;
-    while i < 12 && !loaded:
-      if(i < 12) loop{
-        index i = 0;
-        `drawpalno = idx+1;
-        while;
-      do:
-        if(i == `playerno || #.chars[i] == 0) continue;
+    while i < .sff.NumCharPalletes:
+    }
+    `palno = no;
+    .m.limRange!int?(`palno=, 1, .sff.NumCharPalletes);
+    `drawpalno = `palno;
+    if(tmp == 0) ret false;
+    loop{
+      index i = `palno-1;
+    do:
+      loop{index j = 0; while; do:
         if(
-          .s.equ(.chars[i][0]~def, `def)
-          && .chars[i][0]~drawpalno == `drawpalno)
-        {
-          loaded = false;
-          changed = true;
-          break, break, do;
-        }
-      continue:
-        i++;
-      while i < #.chars:
+          j != `playerno && #.chars[j] > 0 && .s.equ(.chars[j][0]~def, `def)
+          && .chars[j][0]~drawpalno == i+1) break;
+        j++;
+      while j < #.chars:
+        `drawpalno = i+1;
+        break, break;
       }
+      i++;
+      if(i >= .sff.NumCharPalletes) i = 0;
+    while i != `palno-1:
     }
-    if(!(loaded || changed)){
-      ^&.sff.Sprite spr = `sf~getSprite(0, 0);
-      if(#spr == 0 || #spr~colorPallet == 0) break;
-      ^&.sff.Sprite spr2 = `sf~getSprite(9000, 0);
-      if(#spr2 > 0 && #spr2~colorPallet > 0){
-        .s.copy!uint?(spr2~colorPallet, spr~colorPallet);
-      }
+    ^&.sff.Sprite spr = `sf~getSprite(0, 0);
+    if(#spr > 0){
+      `sf~palList.remap(spr~palidx, `drawpalno-1);
+      spr = `sf~getSprite(9000, 0);
+      if(#spr > 0) `sf~palList.remap(spr~palidx, `drawpalno-1);
     }
-    ret loaded || changed;
+    ret true;
   }
   public void clearDef()
   {
@@ -6655,7 +6644,7 @@ public float action(
       else:
         break;
       comm:
-        if(.winskipped || !.gs(.gsROUNDNOTOVER) || .com.intro > rs4t){
+        if(.winskipped || !.gs(.gsROUNDNOTOVER) || .com.intro >= rs4t){
           .com.intro--;
           if(.com.time != 0 && .com.intro == rs4t-1) loop{
             index i = 0;

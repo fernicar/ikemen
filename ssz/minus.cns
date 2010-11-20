@@ -97,10 +97,9 @@ triggerall = !ishelper
 triggerall = active
 triggerall = alive
 triggerall = sysvar(58) & 2;SYSFLAG,WIN
-trigger1 = stateno < 10 || sysvar(42);CTRL
+trigger1 = stateno < 130 || sysvar(42);CTRL
 trigger1 = statetype != a
 trigger1 = physics != a
-trigger1 = abs(vel x) < 0.01
 trigger1 = sysvar(58) := (sysvar(58) & ~2) || 1;SYSFLAG,WIN
 value = ifelse(Win, 180, ifelse(Lose, 170, 175))
 

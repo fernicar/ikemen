@@ -152,7 +152,7 @@ void addFunc(^/char name, func .sc.fsig_t f)
         #f == 0 || !f~data.cast(sf=)
         || !consteval(g=, mess[1]) || !consteval(n=, mess[2])) break;
       ^&.sff.Sff sff = sf~getSff();
-      if(#sff > 0) .syst.selinf.sel.randomspr = sff~getSprite(g, n);
+      if(#sff > 0) .syst.selinf.sel.randomspr = sff~getOwnPalSprite(g, n);
       break, break;
     }
   comm:
@@ -192,12 +192,14 @@ void addFunc(^/char name, func .sc.fsig_t f)
         c~sportrait~draw(
           x + (float)i*.syst.selinf.sel.cellsizex,
           y + (float)j*.syst.selinf.sel.cellsizey,
-          .syst.selinf.sel.cellscalex, .syst.selinf.sel.cellscaley);
+          .syst.selinf.sel.cellscalex, .syst.selinf.sel.cellscaley,
+          c~sportrait~colorPallet);
       cond .s.equ(c~def, "randomselect") && #.syst.selinf.sel.randomspr > 0:
         .syst.selinf.sel.randomspr~draw(
           x + (float)i*.syst.selinf.sel.cellsizex,
           y + (float)j*.syst.selinf.sel.cellsizey,
-          .syst.selinf.sel.randxscl, .syst.selinf.sel.randxscl);
+          .syst.selinf.sel.randxscl, .syst.selinf.sel.randxscl,
+          .syst.selinf.sel.randomspr~colorPallet);
       }
       i++;
     while i < .syst.selinf.sel.columns:
@@ -320,7 +322,9 @@ void addFunc(^/char name, func .sc.fsig_t f)
   }
   if(!.se.fskip){
     ^&.sys.Select::Char c = .syst.selinf.sel.getChar(n);
-    if(#c > 0 && #c~lportrait > 0) c~lportrait~draw(x, y, xscl, yscl);
+    if(#c > 0 && #c~lportrait > 0){
+      c~lportrait~draw(x, y, xscl, yscl, c~lportrait~colorPallet);
+    }
   }
   re.new(0);
   ret .mac.RetState::OK;
@@ -462,7 +466,7 @@ int game(^&.stage.Stage stg)
     branch{
     cond #p > 0:
       .chr.fight~fa[.com.tmode[pn]][pn+2].face_spr =
-        p~sf~getSprite(
+        p~sf~getOwnPalSprite(
           .chr.fight~fa[.com.tmode[pn]][pn+2].face_sprg,
           .chr.fight~fa[.com.tmode[pn]][pn+2].face_spri);
     cond .com.tmode[pn] == (int).com.TeamMode::Turns:
@@ -571,11 +575,11 @@ int game(^&.stage.Stage stg)
       }
     }
     .chr.fight~fa[.com.tmode[0]][0].face_spr =
-      p[0]~sf~getSprite(
+      p[0]~sf~getOwnPalSprite(
         .chr.fight~fa[.com.tmode[0]][0].face_sprg,
         .chr.fight~fa[.com.tmode[0]][0].face_spri);
     .chr.fight~fa[.com.tmode[1]][1].face_spr =
-      p[1]~sf~getSprite(
+      p[1]~sf~getOwnPalSprite(
         .chr.fight~fa[.com.tmode[1]][1].face_sprg,
         .chr.fight~fa[.com.tmode[1]][1].face_spri);
     foo(p[2], 0);
@@ -631,7 +635,7 @@ int game(^&.stage.Stage stg)
             p[0]~sf.new(0);
             if(!loadChar(p[0], cha[0], pal[0])) ret -1;
             .chr.fight~fa[.com.tmode[0]][0].face_spr =
-              p[0]~sf~getSprite(
+              p[0]~sf~getOwnPalSprite(
                 .chr.fight~fa[.com.tmode[0]][0].face_sprg,
                 .chr.fight~fa[.com.tmode[0]][0].face_spri);
             .com.rexisted[0] = 0;
@@ -648,7 +652,7 @@ int game(^&.stage.Stage stg)
             p[1]~sf.new(0);
             if(!loadChar(p[1], cha[1], pal[1])) ret -1;
             .chr.fight~fa[.com.tmode[1]][1].face_spr =
-              p[1]~sf~getSprite(
+              p[1]~sf~getOwnPalSprite(
                 .chr.fight~fa[.com.tmode[1]][1].face_sprg,
                 .chr.fight~fa[.com.tmode[1]][1].face_spri);
             .com.rexisted[1] = 0;

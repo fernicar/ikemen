@@ -8,6 +8,9 @@ lib tbl = <table.ssz>;
 lib cfg = "config.ssz";
 lib com = "common.ssz";
 
+
+const int NumCharPalletes = 12;
+
 void error(^/char m)
 {
   lib al = <alert.ssz>;
@@ -66,6 +69,37 @@ public &SffHeader
   }
 }
 
+&PalleteList
+{
+  /%^uint palletes;
+  %index palidxs;
+  public &.tbl.IntTable!uint, index? palTable;
+  public void clear()
+  {
+    `palletes.new(0);
+    `palidxs.new(0);
+    `palTable.clear();
+  }
+  public ^uint newPal(index pi=)
+  {
+    `palidxs .= (pi = #`palletes);
+    `palletes.new[-1].new(256);
+    ret `palletes[-1];
+  }
+  public ^uint get(index pi)
+  {
+    ret `palletes[`palidxs[pi]];
+  }
+  public void remap(index source, index dest)
+  {
+    `palidxs[source] = dest;
+  }
+  public void resetRemap()
+  {
+    loop{index i = 0; while; do: `palidxs[i] = i; i++; while i < #`palidxs:}
+  }
+}
+
 public &Sprite
 {
   public &.PcxHeader pcxHeader;
@@ -74,7 +108,7 @@ public &Sprite
   public %byte pluginbuf;
   public &.sdl.Rect rct;
   public short imageGroup, imageNumber;
-  public index link = -1;
+  public index palidx = -1, link = -1;
   public int rle = 0;
   public void shareCopy(`self sp=)
   {
@@ -83,7 +117,22 @@ public &Sprite
     `pxl = sp.pxl;
     `rct.w = sp.rct.w;
     `rct.h = sp.rct.h;
+    `palidx = sp.palidx;
     `rle = sp.rle;
+  }
+  public void copy(`self sp=)
+  {
+    `shareCopy(sp=);
+    `pluginbuf = sp.pluginbuf;
+    `rct = sp.rct;
+    `imageGroup = sp.imageGroup;
+    `imageNumber = sp.imageNumber;
+    `link = sp.link;
+  }
+  public ^uint getPal(&.PalleteList pl=)
+  {
+    if(#`colorPallet > 0) ret `colorPallet;
+    ret pl.get(`palidx);
   }
   public bool readHeader(&.file.File f=, long offset)
   {
@@ -110,8 +159,8 @@ public &Sprite
     ret true;
   }
   public bool read(
-    &.file.File f=, &.SffHeader sh=, long offset,
-    uint loh, uint nsh, ^`self prev, bool palletSame=, bool c00)
+    &.file.File f=, &.SffHeader sh=, long offset, uint loh, uint nsh,
+    ^`self prev, bool palletSame=, &.PalleteList pl=, bool c00)
   {
     uint lenghtOfSubheader = loh;
     if(nsh > (uint)offset) lenghtOfSubheader = nsh - (uint)offset;//lohを無視
@@ -129,17 +178,17 @@ public &Sprite
       index i = 0;
       ubyte r, g, b;
       if(palletSame){
-        if(#prev > 0) `colorPallet = prev~colorPallet;
-        if(#`colorPallet == 0) `colorPallet.new(256);
+        if(#prev > 0) `palidx = prev~palidx;
+        if(`palidx < 0) pl.newPal(`palidx=);
         break, break;
       }
-      `colorPallet.new(256);
+      ^uint pal = pl.newPal(`palidx=);
       if(c00) f.seek(offset + (long)lenghtOfSubheader - 768, .file.Seek::SET);
     do:
       if(!f.read!ubyte?(r=)) ret false;
       if(!f.read!ubyte?(g=)) ret false;
       if(!f.read!ubyte?(b=)) ret false;
-      `colorPallet[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
+      pal[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
       i++;
     while i < 256:
     }
@@ -193,6 +242,7 @@ public &Sprite
     &.SffHeader h;
     if(!h.read(f=)) ret false;
     uint shofs = h.subHeaderOffset, lenghtOfSubheader;
+    &.PalleteList pl;
     loop{
       index i = 0;
       %uint newSubHeaderOffset;
@@ -212,9 +262,7 @@ public &Sprite
     do:
       f.seek((long)shofs, .file.Seek::SET);
       if(!f.read!uint?(newSubHeaderOffset.new[-1]=) || !foo(::)) ret false;
-      if(
-        #`colorPallet > 0
-        && (`imageGroup != ig || `imageNumber != in)) continue;
+      if(`palidx >= 0 && (`imageGroup != ig || `imageNumber != in)) continue;
       loop{
         index ip = !(index)indexOfPrevious;
         uint dummy;
@@ -230,19 +278,21 @@ public &Sprite
       if(
         !`read(
           f=, h=, (long)(shofs + h.sizeOfSubheader), lenghtOfSubheader,
-          newSubHeaderOffset[-1], dummy, palletSame=, false)) ret false;
+          newSubHeaderOffset[-1], dummy, palletSame=, pl=, false)) ret false;
       if(`imageGroup == ig && `imageNumber == in) break;
       dummy.new(1);
-      dummy~colorPallet = `colorPallet;
+      dummy~palidx = `palidx;
     continue:
       shofs = newSubHeaderOffset[-1];
       i++;
     while i < (index)h.numberOfImage:
       ret false;
     }
+    `colorPallet = pl.get(`palidx);
+    `palidx = -1;
     ret true;
   }
-  public void draw(float x, float y, float xscale, float yscale)
+  public void draw(float x, float y, float xscale, float yscale, ^uint pal)
   {
     &.sdl.Rect tile;
     tile.set(0, 0, 0d0, 0d0);
@@ -252,8 +302,7 @@ public &Sprite
     if(yscale < 0.0) y2 = -y2 + 240.0;
     .sdl.screen.renderMugenZoom(
       .com.scrrect=, 0.0, 0.0,
-      `pxl, `colorPallet, 0, `rct=,
-      -x2*.com.WidthScale, -y2*.com.HeightScale,
+      `pxl, pal, 0, `rct=, -x2*.com.WidthScale, -y2*.com.HeightScale,
       tile=, xscale*.com.WidthScale, xscale*.com.WidthScale,
       yscale*.com.HeightScale, 0.0, 0x0, 255, `rle, `pluginbuf=);
   }
@@ -264,9 +313,20 @@ public &Sff
 {
   public &.SffHeader head;
   public &.tbl.IntTable!uint, &.Sprite? spriteTable;
+  public &.PalleteList palList;
+  new()
+  {
+    `clear();
+  }
   public void clear()
   {
     `spriteTable.clear();
+    `palList.clear();
+    loop{index i = 0, foo; while; do:
+      `palList.newPal(foo=);
+      i++;
+    while i < .NumCharPalletes:
+    }
   }
   public bool loadFile(^/char filename, bool chr)
   {
@@ -299,7 +359,7 @@ public &Sff
           !spriteList[i].read(
             f=, `head=, (long)(shofs + `head.sizeOfSubheader),
             lenghtOfSubheader, newSubHeaderOffset,
-            spriteList[prev..prev+1], ps=,
+            spriteList[prev..prev+1], ps=, `palList=,
             chr && spriteList[i].imageGroup == 0
             && spriteList[i].imageNumber == 0)) ret false;
         prev = i;
@@ -320,6 +380,15 @@ public &Sff
   public ^&.Sprite getSprite(short group, short number)
   {
     ret `spriteTable.get((uint)group | (uint)number<<0d16);
+  }
+  public ^&.Sprite getOwnPalSprite(short group, short number)
+  {
+    ^&.Sprite sp = `spriteTable.get((uint)group | (uint)number<<0d16);
+    if(#sp == 0) ret sp;
+    ^&.Sprite ops.new(1);
+    ops~copy(sp<>=);
+    ops~colorPallet = .s.clone!uint?(sp~getPal(`palList=));
+    ret ops;
   }
 }
 
@@ -555,8 +624,8 @@ public &Anim<frame_t>
   }
   ^uint palFoo(^&.com.PalFX fx)
   {
-    if(#fx == 0 || fx~time == 0) ret `spr~colorPallet;
-    ret fx~getFxPal(`spr~colorPallet, `alphaFoo() == -2);
+    if(#fx == 0 || fx~time == 0) ret `spr~getPal(`sff~palList=);
+    ret fx~getFxPal(`spr~getPal(`sff~palList=), `alphaFoo() == -2);
   }
   public void draw(
     &.sdl.Rect rect=, float x, float y, float cscalex, float cscaley,
