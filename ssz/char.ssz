@@ -1232,8 +1232,8 @@ const index fAIR_GETHIT_TRIP_GROUNDLEVEL               = 62;
 const index fDOWN_BOUNCE_OFFSETX                       = 63;
 const index fDOWN_BOUNCE_OFFSETY                       = 64;
 const index fDOWN_BOUNCE_YACCEL                        = 65;
-const index fDOWN_BOUNCE_GROUNDLEVEL                   = 65;
-const index fDOWN_FRICTION_THRESHOLD                   = 66;
+const index fDOWN_BOUNCE_GROUNDLEVEL                   = 66;
+const index fDOWN_FRICTION_THRESHOLD                   = 67;
 
 
 const int lsINVISIBLE     = 0b00000000000000000000000000000001;
