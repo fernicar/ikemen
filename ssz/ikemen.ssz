@@ -533,7 +533,7 @@ int game(^&.stage.Stage stg)
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0 && .s.equ(cha[i], .chr.chars[i][0]~def)){
         p[i] = .chr.chars[i][0];
-        p[i]~key = .com.com[i] ? !i : i;
+        p[i]~key = .com.com[i] != 0 ? !i : i;
       }
       i++;
     while i < #p:

@@ -659,10 +659,10 @@ inputdia#newInputDialog
   #`0#=gameMode
   #`1#=p2In
 
-  true#set1PCom
-  true#set2PCom
-  true#set3PCom
-  true#set4PCom
+  8#set1PCom
+  8#set2PCom
+  8#set3PCom
+  8#set4PCom
   false#setAutoLevel
 
   #`| setText | Port Change(#{|;#{#getListenPort#}#aenc#}) #portChange
@@ -696,12 +696,12 @@ inputdia#newInputDialog
   #for #!
 
   #`#gameMode#, == 0 #if #{false#setAutoLevel#}
-  #`#gameMode#, == 1 #if #{false#set1PCom#}
-  #`#gameMode#, == 2 #if #{2#=~p2In #`false#set1PCom #`false#set2PCom#}
+  #`#gameMode#, == 1 #if #{0#set1PCom#}
+  #`#gameMode#, == 2 #if #{2#=~p2In #`0#set1PCom #`0#set2PCom#}
   #`#gameMode#, == 3 #if #{
     2#=~p2In
-    false#set1PCom
-    false#set2PCom
+    0#set1PCom
+    0#set2PCom
     #`| popup | Input Server #inputdia
     #`$ $ #[ !(#{| isDone #inputdia#}) #] $ #\`#\refresh $ $ #for #!
     #`| setText
@@ -725,8 +725,8 @@ inputdia#newInputDialog
   #}
   #`#gameMode#, == 5 #if #{
     2#=~p2In
-    false#set1PCom
-    false#set2PCom
+    0#set1PCom
+    0#set2PCom
     #`replay/netplay.replay#enterReplay
     #`#init#!
     #synchronize

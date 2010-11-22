@@ -71,7 +71,7 @@ public &SffHeader
 
 &PalleteList
 {
-  /%^uint palletes;
+  %^uint palletes;
   %index palidxs;
   public &.tbl.IntTable!uint, index? palTable;
   public void clear()

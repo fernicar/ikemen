@@ -80,7 +80,7 @@ public &Stage
 {
   public ^/char spr;
   public ^/char bgmusic;
-  public ^/char name;
+  public ^/char name, author;
   public ^&.sff.Sff sf;
   public %&.bg.BackGround bg;
   public %&.bg.Action actionList;
@@ -124,6 +124,7 @@ public &Stage
     {
       ^/char data;
       if(#(data = sc.get("name")) > 0) `name = data;
+      if(#(data = sc.get("author")) > 0) `author = data;
     }
     public void camera(&.com.Section sc=)
     {

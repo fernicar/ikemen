@@ -795,37 +795,33 @@ public &Script
       re.new(0);
       ret .mac.RetState::OK;
     }
-    *sig_t _set1PCom(arg, re=)
+    |.mac.RetState setXPCom(int p, ^/char arg, ^char re=)
     {
-      bool b;
-      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
-      .com.com[0] = b;
+      int ai;
+      if(!consteval(ai=, arg)){
+        .mac.errormes .= arg .= " <-この式は変です"\r\n;
+        ret .mac.RetState::ERROR;
+      }
+      .m.limMin!int?(ai=, 0);
+      .com.com[0] = ai;
       re.new(0);
       ret .mac.RetState::OK;
+    }
+    *sig_t _set1PCom(arg, re=)
+    {
+      ret `call:<-setXPCom(0, arg, re=);
     }
     *sig_t _set2PCom(arg, re=)
     {
-      bool b;
-      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
-      .com.com[1] = b;
-      re.new(0);
-      ret .mac.RetState::OK;
+      ret `call:<-setXPCom(1, arg, re=);
     }
     *sig_t _set3PCom(arg, re=)
     {
-      bool b;
-      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
-      .com.com[2] = b;
-      re.new(0);
-      ret .mac.RetState::OK;
+      ret `call:<-setXPCom(2, arg, re=);
     }
     *sig_t _set4PCom(arg, re=)
     {
-      bool b;
-      if(!`readBool(b=, arg)) ret .mac.RetState::ERROR;
-      .com.com[3] = b;
-      re.new(0);
-      ret .mac.RetState::OK;
+      ret `call:<-setXPCom(3, arg, re=);
     }
     *sig_t _setListenPort(arg, re=)
     {

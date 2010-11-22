@@ -28,6 +28,8 @@ public float zoomdelay = 0.0;
 winty[0] = fgt.WinTy::N;
 winty[1] = fgt.WinTy::N;
 
+public ^&.stage.Stage stg;
+
 ^uint tmppl.new(256);
 
 %&act.DrawnClsn drawc1, drawc2, drawc2sp, drawwh;
@@ -149,7 +151,7 @@ public void addAnimList(
   }
 }
 
-public void drawAnimList(^&.AnimList al=, &.stage.Stage stg=, float x, float y)
+public void drawAnimList(^&.AnimList al=, float x, float y)
 {
   loop{while; do:
     if(#al~anim > 0){
@@ -216,7 +218,7 @@ public void addShadowList(^&.AnimList al, int sc, float so)
   }
 }
 
-public void drawShadowList(&.stage.Stage stg=, float x, float y)
+public void drawShadowList(float x, float y)
 {
   ^&.ShadowList sl = .shadows;
   ^uint pal, oldpal;
@@ -225,17 +227,17 @@ public void drawShadowList(&.stage.Stage stg=, float x, float y)
       #sl~al~anim == 0 || #sl~al~anim~ani.spr == 0) continue;
     branch{
     cond sl~color < 0:
-      pal = stg.sdw.pal;
+      pal = .stg~sdw.pal;
       {
-        int inte = stg.sdw.intensity;
+        int inte = .stg~sdw.intensity;
         branch{
-        cond sl~al~y < (float)stg.sdw.fadeend:
+        cond sl~al~y < (float).stg~sdw.fadeend:
           break, break, break, continue;
-        cond sl~al~y < (float)stg.sdw.fadebgn:
+        cond sl~al~y < (float).stg~sdw.fadebgn:
           inte =
             (int)(
-              (float)inte * ((float)stg.sdw.fadeend - sl~al~y)
-              / ((float)stg.sdw.fadeend - (float)stg.sdw.fadebgn));
+              (float)inte * ((float).stg~sdw.fadeend - sl~al~y)
+              / ((float).stg~sdw.fadeend - (float).stg~sdw.fadebgn));
         }
         sl~al~anim~ani.salpha = inte;
         sl~al~anim~ani.dalpha = 255 - inte;
@@ -249,7 +251,7 @@ public void drawShadowList(&.stage.Stage stg=, float x, float y)
     {
       oldpal = sl~al~anim~ani.spr~colorPallet;
       sl~al~anim~ani.spr~colorPallet = pal;
-      float syscl = stg.sdw.yscale;
+      float syscl = .stg~sdw.yscale;
       branch{
         float cs = sl~al~cscl;
       cond sl~al~angle != 0.0:
@@ -280,7 +282,7 @@ public void drawShadowList(&.stage.Stage stg=, float x, float y)
   }
 }
 
-public void drawReflection(&.stage.Stage stg=, float x, float y)
+public void drawReflection(float x, float y)
 {
   ^&.ShadowList sl = .shadows;
   loop{while; do:
@@ -294,9 +296,9 @@ public void drawReflection(&.stage.Stage stg=, float x, float y)
             sl~al~anim~ani.frames[sl~al~anim~ani.drawidx].dalpha;
       }
       sl~al~anim~ani.salpha =
-        (int)((float)sl~al~salpha*(float)stg.reflection / 255.0);
+        (int)((float)sl~al~salpha*(float).stg~reflection / 255.0);
       sl~al~anim~ani.dalpha =
-        .m.min!int?(255, sl~al~dalpha + (255-stg.reflection));
+        .m.min!int?(255, sl~al~dalpha + (255-.stg~reflection));
       if(
         sl~al~anim~ani.salpha == 1
         && sl~al~anim~ani.dalpha == 255)
@@ -756,6 +758,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public float maxdistx;
   public float mindisty;
   public float maxdisty;
+  public int forcenofall;
   public &.Fall fall;
   public void clear()
   {
@@ -854,6 +857,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `maxdistx = .com.FERR;
     `mindisty = .com.FERR;
     `maxdisty = .com.FERR;
+    `forcenofall = 0;
     `fall.clear();
   }
   public void invalidate()
@@ -1056,6 +1060,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.mindisty = hit.mindisty;
     `hb.maxdisty = hit.maxdisty;
     if(`hb.fall.xvelocity != .com.FERR) `hb.fall.xvelocity *= (float)f;
+    if(hit.forcenofall != 0) fall = 0;
     branch{
     cond `typ == .StTy::A:
       `hb.airtype = `hb.typ = (int)hit.air_type;
@@ -1206,6 +1211,29 @@ const index fANGLESCALEX      = 41;
 const index fANGLESCALEY      = 42;
 const index fCLSNXSCALE       = 43;
 const index fCLSNYSCALE       = 44;
+const index fAIR_GETHIT_GROUNDRECOVERX                 = 45;
+const index fAIR_GETHIT_GROUNDRECOVERY                 = 46;
+const index fAIR_GETHIT_AIRRECOVER_MULX                = 47;
+const index fAIR_GETHIT_AIRRECOVER_MULY                = 48;
+const index fAIR_GETHIT_AIRRECOVER_ADDX                = 49;
+const index fAIR_GETHIT_AIRRECOVER_ADDY                = 50;
+const index fAIR_GETHIT_AIRRECOVER_BACK                = 51;
+const index fAIR_GETHIT_AIRRECOVER_FWD                 = 52;
+const index fAIR_GETHIT_AIRRECOVER_UP                  = 53;
+const index fAIR_GETHIT_AIRRECOVER_DOWN                = 54;
+const index fSTAND_FRICTION_THRESHOLD                  = 55;
+const index fCROUCH_FRICTION_THRESHOLD                 = 56;
+const index fAIR_GETHIT_GROUNDLEVEL                    = 57;
+const index fAIR_GETHIT_GROUNDRECOVER_GROUND_THRESHOLD = 58;
+const index fAIR_GETHIT_GROUNDRECOVER_GROUNDLEVEL      = 59;
+const index fAIR_GETHIT_AIRRECOVER_THRESHOLD           = 60;
+const index fAIR_GETHIT_AIRRECOVER_YACCEL              = 61;
+const index fAIR_GETHIT_TRIP_GROUNDLEVEL               = 62;
+const index fDOWN_BOUNCE_OFFSETX                       = 63;
+const index fDOWN_BOUNCE_OFFSETY                       = 64;
+const index fDOWN_BOUNCE_YACCEL                        = 65;
+const index fDOWN_BOUNCE_GROUNDLEVEL                   = 65;
+const index fDOWN_FRICTION_THRESHOLD                   = 66;
 
 
 const int lsINVISIBLE     = 0b00000000000000000000000000000001;
@@ -1830,14 +1858,12 @@ public &Projectile
 public &Char
 {
   public ^/char def, name, displayname, author;
-  public ^int pal_defaults;
   public ^/char command;
   public ^/char sprite;
   public ^/char anim;
   public ^/char sound;
   public ^^/char pal;
-  public ^/char intro;
-  public ^/char ending;
+  public ^index palkeymap;
   public ^&.sff.Sff sf;
   public ^&.snd.Snd sn;
   public ^&.com.PalFX palfx;
@@ -1871,6 +1897,7 @@ public &Char
   public %&.RdCacheInfo enemyn;
   public ^&.act.Frame curFrame;
   public %&.snd.Sound sounds;
+  public short mver0 = 0, mver1 = 0;
   void dummy(){}
   public method$void() state = dummy, state_1 = dummy,
     state_2 = dummy, state_3 = dummy, state_i1 = dummy;
@@ -1879,7 +1906,7 @@ public &Char
     `ivar.new(61);
     `sysivar.new(60);
     `fvar.new(41);
-    `sysfvar.new(60);
+    `sysfvar.new(70);
     `clearVal();
   }
   void copyParent(`self c=)
@@ -1907,6 +1934,8 @@ public &Char
     .s.copy!float?(`sysfvar[10..-1], c.sysfvar[10..-1]);
     `sysivar[.iLIFE] = `sysivar[.iLIFEMAX];
     `sysivar[.iPOWER] = 0;
+    `mver0 = c.mver0;
+    `mver1 = c.mver1;
     `clearSpSysVar();
   }
   public void clearSpSysVar()
@@ -1971,22 +2000,11 @@ public &Char
   void clearHitDef()
   {
     `stVal.hit.clear();
-    if(`sysivar[.iHITPAUSETIME] > 0){
-      loop{
-        index i = 0;
-        ^`self c;
-        while;
-      do:
-        c = .players.get(`targets[i]);
-        if(#c > 0){
-          c~stVal.hb.hitshaketime -= `sysivar[.iHITPAUSETIME];
-          .m.limMin!int?(c~stVal.hb.hitshaketime=, 0);
-        }
-        i++;
-      while i < #`targets:
-      }
-      `sysivar[.iHITPAUSETIME] = 0;
-    }
+  }
+  void clearMoveHit()
+  {
+    `stVal.mctime = 0;
+    `sysivar[.iHITPAUSETIME] = 0;
   }
   void clearHitCount()
   {
@@ -2201,8 +2219,10 @@ public &Char
       if(#(data = sc.get("name")) > 0) `name = data;
       if(#(data = sc.get("displayname")) > 0) `displayname = data;
       if(#(data = sc.get("author")) > 0) `author = data;
-      if(#(data = sc.get("pal.defaults")) > 0){
-        `pal_defaults = .com.csvToAry!int?(data);
+      if(#(data = sc.get("mugenversion")) > 0){
+        ^short tmp = .s.svToAry!short?(".", data);
+        `mver0 = tmp[0];
+        if(#tmp >= 2) `mver1 = tmp[1];
       }
     }
     public void files(&.com.Section sc=)
@@ -2226,14 +2246,32 @@ public &Char
       if(#(data = sc.get("pal11")) > 0) `pal[10] = _t(data);
       if(#(data = sc.get("pal12")) > 0) `pal[11] = _t(data);
     }
-    public void arcade(&.com.Section sc=)
-    {
-      ^/char data;
-      if(#(data = sc.get("intro.storyboard")) > 0){
-        `intro = .com.readFileName(data);
+    public void keymap(&.com.Section sc=)
+    {:<-
+      void foo(index k, ^/char p)
+      {
+        `palkeymap[k] = .com.atoi(p)-1;
+        .m.limRange!index?(`palkeymap[k]=, 0, .sff.NumCharPalletes-1);
       }
-      if(#(data = sc.get("ending.storyboard")) > 0){
-        `ending = .com.readFileName(data);
+      ^/char data;
+      if(#(data = sc.get("a")) > 0) foo(0, data);
+      if(#(data = sc.get("b")) > 0) foo(1, data);
+      if(#(data = sc.get("c")) > 0) foo(2, data);
+      if(#(data = sc.get("x")) > 0) foo(3, data);
+      if(#(data = sc.get("y")) > 0) foo(4, data);
+      if(#(data = sc.get("z")) > 0) foo(5, data);
+      if(#(data = sc.get("a2")) > 0) foo(6, data);
+      if(#(data = sc.get("b2")) > 0) foo(7, data);
+      if(#(data = sc.get("c2")) > 0) foo(8, data);
+      if(#(data = sc.get("x2")) > 0) foo(9, data);
+      if(#(data = sc.get("y2")) > 0) foo(10, data);
+      if(#(data = sc.get("z2")) > 0) foo(11, data);
+    }
+    public void palette(^/char sec, &.com.Section sc=)
+    {
+      branch{
+      cond .s.equ(.s.toLower(sec[0..6]), "keymap"):
+        `load:<-keymap(sc=);
       }
     }
     void section(^^/char lines, index i=)
@@ -2248,8 +2286,8 @@ public &Char
         `load:<-info(sc=);
       cond .s.equ(secname, "files"):
         `load:<-files(sc=);
-      cond .s.equ(secname, "arcade"):
-        `load:<-arcade(sc=);
+      cond .s.equ(secname, "palette"):
+        `load:<-palette(sec, sc=);
       }
     }
     public void begin(^^/char lines, index i=, ^/char section)
@@ -2447,20 +2485,19 @@ public &Char
           j--;
         while j >= 0:
         }
-        if(i == 0) loop{index j = 0; while; do:
+        if(tmp == 0) loop{index j = 0; while; do:
           .s.copy!uint?(`sf~palList.get(j), pl);
           j++;
         while j < i:
         }
         tmp = i+1;
       cond tmp > 0:
-        .s.copy!uint?(pl, `sf~palList.get(i-1));
+        .s.copy!uint?(pl, `sf~palList.get(i >= 6 ? i % 6 : i - 1));
       }
       i++;
     while i < .sff.NumCharPalletes:
     }
-    `palno = no;
-    .m.limRange!int?(`palno=, 1, .sff.NumCharPalletes);
+    `palno = `palkeymap[no-1]+1;
     `drawpalno = `palno;
     if(tmp == 0) ret false;
     loop{
@@ -2479,12 +2516,7 @@ public &Char
       if(i >= .sff.NumCharPalletes) i = 0;
     while i != `palno-1:
     }
-    ^&.sff.Sprite spr = `sf~getSprite(0, 0);
-    if(#spr > 0){
-      `sf~palList.remap(spr~palidx, `drawpalno-1);
-      spr = `sf~getSprite(9000, 0);
-      if(#spr > 0) `sf~palList.remap(spr~palidx, `drawpalno-1);
-    }
+    `trRemapPal(1, 1, 1, `drawpalno);
     ret true;
   }
   public void clearDef()
@@ -2492,14 +2524,17 @@ public &Char
     `name = "";
     `displayname = "";
     `author = "";
-    `pal_defaults.new(0);
     `command = "";
     `sprite = "";
     `anim = "";
     `sound = "";
-    `pal.new(12);
-    `intro = "";
-    `ending = "";
+    `pal.new(.sff.NumCharPalletes);
+    `palkeymap.new(.sff.NumCharPalletes);
+    loop{index i = 0; while; do:
+      `palkeymap[i] = i;
+      i++;
+    while i < #`palkeymap:
+    }
   }
   public int gethitAnimtype()
   {
@@ -5203,6 +5238,18 @@ public &Char
   {
     .v.setB(.roundState() >= 3 && .com.win < 0);
   }
+  public void trRemapPal(int sg, int sn, int dg, int dn)
+  {
+    if(
+      sg != 1 || sn != 1 || dg != 1
+      || !.m.inRange!int?(1, .sff.NumCharPalletes, dn)) ret;
+    ^&.sff.Sprite spr = `sf~getSprite(0, 0);
+    if(#spr > 0){
+      `sf~palList.remap(spr~palidx, dn-1);
+      spr = `sf~getSprite(9000, 0);
+      if(#spr > 0) `sf~palList.remap(spr~palidx, dn-1);
+    }
+  }
 }
 
 public void Explod::update()
@@ -6196,7 +6243,7 @@ public void charInit(&.Char c=, int no, int idx)
     c.keyctrl = true;
     c.player = true;
   }
-  c.key = .m.inRange!int?(0, #.com.com-1, no) && !.com.com[no] ?  no : !no;
+  c.key = .m.inRange!int?(0, #.com.com-1, no) && .com.com[no] == 0 ?  no : !no;
 }
 
 public ^&Char create(int no)
@@ -6215,20 +6262,20 @@ public ^&Char create(int no)
   .players.add(c);
   ret c;
 }
-void gSetNormal(&.stage.Stage stg=, float scl, float x, float y)
+void gSetNormal(float scl, float x, float y)
 {
-  .com.scale = stg.ztopscale*scl;
-  .com.zoffset = (float)stg.zoffset*scl + (1.0 - scl)*240.0;
-  .com.yoffset = (stg.bga.yoffset-.stage.envShake.getOffset())*scl;
-  .com.xoffset = stg.bga.xoffset*scl;
-  .com.scrxmin = (float)stg.cam.boundleft - 160.0/stg.ztopscale;
-  .com.scrxmax = (float)stg.cam.boundright + 160.0/stg.ztopscale;
+  .com.scale = .stg~ztopscale*scl;
+  .com.zoffset = (float).stg~zoffset*scl + (1.0 - scl)*240.0;
+  .com.yoffset = (.stg~bga.yoffset-.stage.envShake.getOffset())*scl;
+  .com.xoffset = .stg~bga.xoffset*scl;
+  .com.scrxmin = (float).stg~cam.boundleft - 160.0/.stg~ztopscale;
+  .com.scrxmax = (float).stg~cam.boundright + 160.0/.stg~ztopscale;
   .com.screenx = x - 160.0 / .com.scale;
   .com.screeny = y - .com.zoffset / .com.scale;
   .com.camerax = x;
   .com.cameray = y;
-  .com.screenleft = (float)stg.screenleft;
-  .com.screenright = (float)stg.screenright;
+  .com.screenleft = (float).stg~screenleft;
+  .com.screenright = (float).stg~screenright;
   .com.xmin = .com.screenx + .com.screenleft;
   .com.xmax = .com.screenx + (320.0 / .com.scale) - .com.screenright;
   if(.com.xmin > .com.xmax){
@@ -6336,15 +6383,14 @@ void anim()
 }
 
 public float action(
-  &.stage.Stage stg=, float x=, float y=,
-  float leftest=, float rightest=, float scl)
+  float x=, float y=, float leftest=, float rightest=, float scl)
 {
   .anims.new(0);
   .topanims.new(0);
   .shadows.new(0);
   .resetDrawnClsnList();
-  .gSetNormal(stg=, scl, x, y);
-  float tension = (float)stg.cam.tension / .com.scale;
+  .gSetNormal(scl, x, y);
+  float tension = (float).stg~cam.tension / .com.scale;
   float cvx = 0.0;
   float highest = 0.0, lowest = .com.screeny;
   rightest = leftest = x;
@@ -6463,10 +6509,10 @@ public float action(
   if(.com.turbo > 0.0) .oldx = x;
   x += cvx;
   if(lowest >= highest) branch{
-  cond highest < (float)-stg.cam.floortension / .com.scale:
+  cond highest < (float)-.stg~cam.floortension / .com.scale:
     y =
-      (highest + (float)stg.cam.floortension / .com.scale)
-      * .com.scale * stg.cam.verticalfollow;
+      (highest + (float).stg~cam.floortension / .com.scale)
+      * .com.scale * .stg~cam.verticalfollow;
   else:
     y = 0.0;
   }
@@ -6586,20 +6632,20 @@ public float action(
     do:
       if(#.chars[i] > 0){
         if(.gs(.gsINTRO)) .charClear(i);
-        .chars[i][0]~posReset((float)`stg.p1.startx, (float)`stg.p2.startx);
+        .chars[i][0]~posReset((float).stg~p1.startx, (float).stg~p2.startx);
         .v.setI(0);
         .chars[i][0]~trSelfState(-1, 1);
       }
       i++;
     while i < #.chars:
-      `x = (float)`stg.cam.startx;
+      `x = (float).stg~cam.startx;
       `leftest =
         .m.max!float?(
-          (float).m.min!int?(`stg.p1.startx, `stg.p2.startx) - `x,
+          (float).m.min!int?(.stg~p1.startx, .stg~p2.startx) - `x,
           -160.0/.com.scale + .com.screenleft) + (`x - .oldx);
       `rightest =
         .m.min!float?(
-          (float).m.max!int?(`stg.p1.startx, `stg.p2.startx) - `x,
+          (float).m.max!int?(.stg~p1.startx, .stg~p2.startx) - `x,
           160.0/.com.scale - .com.screenright) + (`x - .oldx);
     }
   }
@@ -6715,11 +6761,11 @@ public float action(
   }
   leftest -= .com.screenleft;
   rightest += .com.screenright;
-  leftest *= stg.ztopscale;
-  rightest *= stg.ztopscale;
+  leftest *= .stg~ztopscale;
+  rightest *= .stg~ztopscale;
   ret tmp;
 }
-public void draw(&.stage.Stage stg=, float x, float y, float scl)
+public void draw(float x, float y, float scl)
 {
   ^&.fgt.LifePower lpl = .getLifePower();
   uint ecol =
@@ -6749,8 +6795,8 @@ public void draw(&.stage.Stage stg=, float x, float y, float scl)
   cond .gs(.gsNOBG):
     .sdl.screen.fill(.com.scrrect=, 0x00000000);
   else:
-    if(stg.debugbg) .sdl.screen.fill(.com.scrrect=, 0x00ff00ff);
-    stg.bgDraw(false, x, y, scl);
+    if(.stg~debugbg) .sdl.screen.fill(.com.scrrect=, 0x00ff00ff);
+    .stg~bgDraw(false, x, y, scl);
   }
   branch{
   cond<envu> .envcol_time != 0 && .envcol_under != 0:
@@ -6759,24 +6805,24 @@ public void draw(&.stage.Stage stg=, float x, float y, float scl)
     break;
   comm:
     if(!.gs(.gsGLOBALNOSHADOW)){
-      if(stg.reflection > 0) .drawReflection(stg=, x, y);
-      if(stg.sdw.intensity > 0) .drawShadowList(stg=, x, y);
+      if(.stg~reflection > 0) .drawReflection(x, y);
+      if(.stg~sdw.intensity > 0) .drawShadowList(x, y);
     }
   else:
     .fight~draw(0, lpl, names, .gs(.gsNOBARDISPLAY));
     .fight~ro.draw(0, .ko, winner);
   }
   if(.envcol_time == 0 || .envcol_under != 0){
-    .drawAnimList(.anims=, stg=, x, y);
+    .drawAnimList(.anims=, x, y);
   }
-  if(.envcol_time == 0 && !.gs(.gsNOFG)) stg.bgDraw(true, x, y, scl);
+  if(.envcol_time == 0 && !.gs(.gsNOFG)) .stg~bgDraw(true, x, y, scl);
   if(.envcol_time != 0 && .envcol_under == 0){
     .tmppl<> = ecol;
     .sdl.screen.fill(.com.scrrect=, ecol);
   }
   .fight~draw(1, lpl, names, .gs(.gsNOBARDISPLAY));
   .fight~ro.draw(1, .ko, winner);
-  .drawAnimList(.topanims=, stg=, x, y);
+  .drawAnimList(.topanims=, x, y);
   .fight~draw(2, lpl, names, .gs(.gsNOBARDISPLAY));
   .fight~ro.draw(2, .ko, winner);
   void fade(.com.scrrect.self rect=, int alpha)
@@ -6853,19 +6899,19 @@ void charClear(int pn)
   .chars[pn][0]~sounds.new(0);
 }
 
-public void nextRound(&.stage.Stage stg=)
+public void nextRound()
 {
   .resetGbl();
   .com.intro = .fight~ro.start_waittime + .fight~ro.ctrl_time+1;
   .com.time = .cfg.Time;
   .id = .cfg.HelperMax;
-  if(stg.resetbg) stg.reset();
-  .gSetNormal(stg=, 1.0, (float)stg.cam.startx, 0.0);
+  if(.stg~resetbg) .stg~reset();
+  .gSetNormal(1.0, (float).stg~cam.startx, 0.0);
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
     .id = .chars[i][0]~id + 1;
     .charClear(i);
-    .chars[i][0]~posReset((float)stg.p1.startx, (float)stg.p2.startx);
+    .chars[i][0]~posReset((float).stg~p1.startx, (float).stg~p2.startx);
     .chars[i][0]~setCtrl(false);
     .chars[i][0]~stVal.clear();
     .chars[i][0]~clearSpSysVar();

@@ -383,7 +383,7 @@ public &NetInput
     ho = ge = -1;
     `kb.new(#.com.com);
     loop{index i = 0; while; do:
-      if(!.com.com[i]) branch{
+      if(.com.com[i] == 0) branch{
       cond ho < 0:
         ho = i;
       cond ge < 0:

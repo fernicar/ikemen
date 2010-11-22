@@ -53,7 +53,10 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   HitAdd,
   PlaySnd, StopSnd, SndPan,
   DisplayToClipboard, AppendToClipboard, ClearClipboard,
-  ForceFeedback, Null
+  ForceFeedback,
+  VictoryQuote,
+  RemapPal,
+  Null
 }
 &StateCtrl
 {
@@ -210,6 +213,16 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   public float airjump_neuy;
   public float airjump_back;
   public float airjump_fwd;
+  public float air_gethit_groundrecoverx;
+  public float air_gethit_groundrecovery;
+  public float air_gethit_airrecover_mulx;
+  public float air_gethit_airrecover_muly;
+  public float air_gethit_airrecover_addx;
+  public float air_gethit_airrecover_addy;
+  public float air_gethit_airrecover_back;
+  public float air_gethit_airrecover_fwd;
+  public float air_gethit_airrecover_up;
+  public float air_gethit_airrecover_down;
   new()
   {
     `reset();
@@ -234,6 +247,16 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
     `airjump_neuy = -8.1;
     `airjump_back = -2.55;
     `airjump_fwd = 2.5;
+    `air_gethit_groundrecoverx = -0.15;
+    `air_gethit_groundrecovery = -3.5;
+    `air_gethit_airrecover_mulx = 0.5;
+    `air_gethit_airrecover_muly = 0.2;
+    `air_gethit_airrecover_addx = 0.0;
+    `air_gethit_airrecover_addy = -4.5;
+    `air_gethit_airrecover_back = -1.0;
+    `air_gethit_airrecover_fwd = 0.0;
+    `air_gethit_airrecover_up = -2.0;
+    `air_gethit_airrecover_down = 1.5;
   }
 }
 &Movement
@@ -243,6 +266,19 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   public float yaccel;
   public float stand_friction;
   public float crouch_friction;
+  public float stand_friction_threshold;
+  public float crouch_friction_threshold;
+  public float air_gethit_groundlevel;
+  public float air_gethit_groundrecover_ground_threshold;
+  public float air_gethit_groundrecover_groundlevel;
+  public float air_gethit_airrecover_threshold;
+  public float air_gethit_airrecover_yaccel;
+  public float air_gethit_trip_groundlevel;
+  public float down_bounce_offsetx;
+  public float down_bounce_offsety;
+  public float down_bounce_yaccel;
+  public float down_bounce_groundlevel;
+  public float down_friction_threshold;
   new()
   {
     `reset();
@@ -254,6 +290,19 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
     `yaccel = 0.44;
     `stand_friction = 0.85;
     `crouch_friction = 0.82;
+    `stand_friction_threshold = 0.02;
+    `crouch_friction_threshold = 0.05;
+    `air_gethit_groundlevel = 10.0;
+    `air_gethit_groundrecover_ground_threshold = -20.0;
+    `air_gethit_groundrecover_groundlevel = 10.0;
+    `air_gethit_airrecover_threshold = -1.0;
+    `air_gethit_airrecover_yaccel = 0.35;
+    `air_gethit_trip_groundlevel = 15.0;
+    `down_bounce_offsetx = 0.0;
+    `down_bounce_offsety = 20.0;
+    `down_bounce_yaccel = 0.4;
+    `down_bounce_groundlevel = 12.0;
+    `down_friction_threshold = 0.05;
   }
 }
 &Const
@@ -1060,7 +1109,7 @@ public &StateBuilder
           cond a:
             out .=
               ".v.setB(.s.equ(.s.toLower(" .= obj .= "author)"
-              .= ",.s.toLower("\" .= token .= \"")))";
+              .= ","\" .= .s.toLower(token) .= \""))";
           else:
             out .= obj .= "trPName(" .= .s.iToS(pn) .= ","\" .= token .= \"")";
           }
@@ -1181,6 +1230,66 @@ public &StateBuilder
         out .= ".v.setI(.fSTAND_FRICTION)$" .= obj .= "trSysFVar()";
       cond .s.equ("movement.crouch.friction", token):
         out .= ".v.setI(.fCROUCH_FRICTION)$" .= obj .= "trSysFVar()";
+      cond .s.equ("velocity.air.gethit.groundrecover.x", token):
+        out .= ".v.setI(.fAIR_GETHIT_GROUNDRECOVERX)$" .= obj .= "trSysFVar()";
+      cond .s.equ("velocity.air.gethit.groundrecover.y", token):
+        out .= ".v.setI(.fAIR_GETHIT_GROUNDRECOVERY)$" .= obj .= "trSysFVar()";
+      cond .s.equ("velocity.air.gethit.airrecover.mul.x", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_AIRRECOVER_MULX)$" .= obj .= "trSysFVar()";
+      cond .s.equ("velocity.air.gethit.airrecover.mul.y", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_AIRRECOVER_MULY)$" .= obj .= "trSysFVar()";
+      cond .s.equ("velocity.air.gethit.airrecover.add.x", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_AIRRECOVER_ADDX)$" .= obj .= "trSysFVar()";
+      cond .s.equ("velocity.air.gethit.airrecover.add.y", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_AIRRECOVER_ADDY)$" .= obj .= "trSysFVar()";
+      cond .s.equ("velocity.air.gethit.airrecover.back", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_AIRRECOVER_BACK)$" .= obj .= "trSysFVar()";
+      cond .s.equ("velocity.air.gethit.airrecover.fwd", token):
+        out .= ".v.setI(.fAIR_GETHIT_AIRRECOVER_FWD)$" .= obj .= "trSysFVar()";
+      cond .s.equ("velocity.air.gethit.airrecover.up", token):
+        out .= ".v.setI(.fAIR_GETHIT_AIRRECOVER_UP)$" .= obj .= "trSysFVar()";
+      cond .s.equ("velocity.air.gethit.airrecover.down", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_AIRRECOVER_DOWN)$" .= obj .= "trSysFVar()";
+      cond .s.equ("movement.stand.friction.threshold", token):
+        out .= ".v.setI(.fSTAND_FRICTION_THRESHOLD)$" .= obj .= "trSysFVar()";
+      cond .s.equ("movement.crouch.friction.threshold", token):
+        out .= ".v.setI(.fCROUCH_FRICTION_THRESHOLD)$" .= obj .= "trSysFVar()";
+      cond .s.equ("movement.air.gethit.groundlevel", token):
+        out .= ".v.setI(.fAIR_GETHIT_GROUNDLEVEL)$" .= obj .= "trSysFVar()";
+      cond .s.equ("movement.air.gethit.groundrecover.ground.threshold", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_GROUNDRECOVER_GROUND_THRESHOLD)$"
+          .= obj .= "trSysFVar()";
+      cond .s.equ("movement.air.gethit.groundrecover.groundlevel", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_GROUNDRECOVER_GROUNDLEVEL)$"
+          .= obj .= "trSysFVar()";
+      cond .s.equ("movement.air.gethit.airrecover.threshold", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_AIRRECOVER_THRESHOLD)$"
+          .= obj .= "trSysFVar()";
+      cond .s.equ("movement.air.gethit.airrecover.yaccel", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_AIRRECOVER_YACCEL)$" .= obj .= "trSysFVar()";
+      cond .s.equ("movement.air.gethit.trip.groundlevel", token):
+        out .=
+          ".v.setI(.fAIR_GETHIT_TRIP_GROUNDLEVEL)$" .= obj .= "trSysFVar()";
+      cond .s.equ("movement.down.bounce.offset.x", token):
+        out .= ".v.setI(.fDOWN_BOUNCE_OFFSETX)$" .= obj .= "trSysFVar()";
+      cond .s.equ("movement.down.bounce.offset.y", token):
+        out .= ".v.setI(.fDOWN_BOUNCE_OFFSETY)$" .= obj .= "trSysFVar()";
+      cond .s.equ("movement.down.bounce.yaccel", token):
+        out .= ".v.setI(.fDOWN_BOUNCE_YACCEL)$" .= obj .= "trSysFVar()";
+      cond .s.equ("movement.down.bounce.groundlevel", token):
+        out .= ".v.setI(.fDOWN_BOUNCE_GROUNDLEVEL)$" .= obj .= "trSysFVar()";
+      cond .s.equ("movement.down.friction.threshold", token):
+        out .= ".v.setI(.fDOWN_FRICTION_THRESHOLD)$" .= obj .= "trSysFVar()";
       else:
         branch{
         cond .cfg.IgnoreMostErrors:
@@ -1620,7 +1729,99 @@ public &StateBuilder
     cond .s.equ("roundstate", token):
       out .= "`trRoundState()";
     cond .s.equ("ishometeam", token):
-      out .= ".v.setB((" .= .s.iToS(`playerno&1) .= ")==.com.home)";
+      out .= ".v.setB((" .= obj .= "playerno&1)==.com.home)";
+    cond .s.equ("ailevel", token):
+      out .= ".v.setI(.com.com[" .= obj .= "playerno])";
+    cond .s.equ("const240p", token):
+      if(!`expValue(out=, in=)) ret false;
+    cond .s.equ("const480p", token):
+      if(!`expValue(out=, in=)) ret false;
+      out .= "$`trDiv(.v,.v.setF(2.0)$.v)";
+    cond .s.equ("const720p", token):
+      if(!`expValue(out=, in=)) ret false;
+      out .= "$`trDiv(.v,.v.setF(4.0)$.v)";
+    cond .s.equ("gamewidth", token):
+      out .= ".v.setI(320)";
+    cond .s.equ("gameheight", token):
+      out .= ".v.setI(240)";
+    cond .s.equ("cond", token):
+      out .= '(';
+      if(!.s.equ("(", `tokenizer(in=))){
+        %char buf;
+        `lasterror = (buf .= token .= "の次に(がありません");
+        ret false;
+      }
+      if(!`expBoolOr(out=, in=)) ret false;
+      out .= "$.v.isTrue()?";
+      if(!.s.equ(",", `tokenizer(in=))){
+        %char buf;
+        `lasterror = (buf .= token .= "は引数が3個必要です");
+        ret false;
+      }
+      if(!`expBoolOr(out=, in=)) ret false;
+      out .= ':';
+      if(!.s.equ(",", `tokenizer(in=))){
+        %char buf;
+        `lasterror = (buf .= token .= "は引数が3個必要です");
+        ret false;
+      }
+      if(!`expBoolOr(out=, in=)) ret false;
+      out .= ')';
+      if(!.s.equ(")", `tokenizer(in=))){
+        `lasterror = ")がありません";
+        ret false;
+      }
+    cond .s.equ("stagevar", token):
+      if(!.s.equ("(", `tokenizer(in=))){
+        %char buf;
+        `lasterror = (buf .= token .= "の次に(がありません");
+        ret false;
+      }
+      token = `tokenizer(in=);
+      if(!.s.equ(")", `tokenizer(in=))){
+        `lasterror = ")がありません";
+        ret false;
+      }
+      branch{
+      cond .s.equ("info.name", token):
+        {
+          int re = eqneq(out=, in=)<, [int(){
+            if(!.s.equ(\", `tokenizer(in=))){
+              `lasterror = "名前が"\""で囲まれていません";
+              ret -1;
+            }
+            index fnd = .s.find(\", in);
+            token = in[0..fnd];
+            in = in[fnd+1..-1];
+            out .=
+              ".v.setB(.s.equ(.s.toLower(.stg~name)"
+              .= ","\" .= .s.toLower(token) .= \""))";
+            ret 1;
+          }];
+          if(re < 0) ret false;
+          if(re == 0) break, else;
+        }
+      cond .s.equ("info.author", token):
+        {
+          int re = eqneq(out=, in=)<, [int(){
+            if(!.s.equ(\", `tokenizer(in=))){
+              `lasterror = "名前が"\""で囲まれていません";
+              ret -1;
+            }
+            index fnd = .s.find(\", in);
+            token = in[0..fnd];
+            in = in[fnd+1..-1];
+            out .=
+              ".v.setB(.s.equ(.s.toLower(.stg~author)"
+              .= ","\" .= .s.toLower(token) .= \""))";
+            ret 1;
+          }];
+          if(re < 0) ret false;
+          if(re == 0) break, else;
+        }
+      else:
+        break, else;
+      }
     cond .s.equ("playerid", token):
       if(!`expValue(out=, in=)) ret false;
       out .= '$' .= obj .= "trPlayerID()$(#.c>0?[._t(_=){";
@@ -2180,7 +2381,6 @@ public &StateBuilder
         if(#name > 0){
           bool foo = true;
           ^/char data = .s.trim(line[f+1..-1]);
-          if(#data == 0) break;
           if(typeid(func_t) != typeid(`stateBulid:<-state) && data[0] == '"'){
             data = data[1...s.find(\", data[1..-1])+1];
           }
@@ -2959,6 +3159,12 @@ public &StateBuilder
         !`fullExpression(
           `state.ctrlList[-1].task=, text=,
           ".fall.kill=(int)(", "$.v.isTrue());")) ret false;
+    cond .s.equ(name, "forcenofall"):
+      `state.ctrlList[-1].task .= obj;
+      if(
+        !`fullExpression(
+          `state.ctrlList[-1].task=, text=,
+          ".forcenofall=(int)(", "$.v.isTrue());")) ret false;
     else:
       switch(typ){
       case .CtrlTy::ReversalDef:
@@ -3301,7 +3507,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.deftask=, text=, "if(",
-            "$!.v.isTrue())`stVal.mctime=0;")) ret false;
+            "$!.v.isTrue())`clearMoveHit();")) ret false;
         `state.movehitpersist = 1;
       else:
         if(.cfg.IgnoreMostErrors) break;
@@ -3592,6 +3798,11 @@ public &StateBuilder
           `state.ctrlList[-1].task .= ".com.clipboardText[`playerno].new(0);";
         cond .s.equ(s, "forcefeedback"):
           `state.ctrlList[-1].typ = .CtrlTy::ForceFeedback;
+        cond .s.equ(s, "victoryquote"):
+          `state.ctrlList[-1].typ = .CtrlTy::VictoryQuote;
+        cond .s.equ(s, "remappal"):
+          `state.ctrlList[-1].typ = .CtrlTy::RemapPal;
+          `state.ctrlList[-1].task .= "int sg=1,sn=1,dg=1,dn=1;";
         cond .s.equ(s, "null"):
           `state.ctrlList[-1].typ = .CtrlTy::Null;
         else:
@@ -5897,7 +6108,32 @@ public &StateBuilder
           else:
             break, default;
           }
-        case .CtrlTy::ForceFeedback:
+        case .CtrlTy::RemapPal:
+          branch{
+          cond .s.equ(name, "source"):
+            `state.ctrlList[-1].task .= "sg=";
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
+            `state.ctrlList[-1].task .= "$.v.toInt();";
+            if(.s.equ(",")<, `tokenizer(text=)){
+              if(
+                !`fullExpression(
+                  `state.ctrlList[-1].task=, text=,
+                  "sn=", "$.v.toInt();")) ret false;
+            }
+          cond .s.equ(name, "dest"):
+            `state.ctrlList[-1].task .= "dg=";
+            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
+            `state.ctrlList[-1].task .= "$.v.toInt();";
+            if(.s.equ(",")<, `tokenizer(text=)){
+              if(
+                !`fullExpression(
+                  `state.ctrlList[-1].task=, text=,
+                  "dn=", "$.v.toInt();")) ret false;
+            }
+          else:
+            break, default;
+          }
+        case .CtrlTy::ForceFeedback, .CtrlTy::VictoryQuote:
         case .CtrlTy::Null:
         default:
           if(.cfg.IgnoreMostErrors) break;
@@ -6365,6 +6601,8 @@ public &StateBuilder
             "`makeDust(x,y);"
             "if(x2==.com.FERR)ret;"
             "`makeDust(x2,y2);";
+          case .CtrlTy::RemapPal:
+            dbuf .= "`trRemapPal(sg,sn,dg,dn);";
           }
           branch{
           cond #dbuf > 64:
@@ -6460,7 +6698,7 @@ public &StateBuilder
             buf .= \t"`clearHitDef();"\r\n;
           }
           if(`state.movehitpersist == 0){
-            buf .= \t"`stVal.mctime = 0;"\r\n;
+            buf .= \t"`clearMoveHit();"\r\n;
           }
           if(`state.juggle == 0) buf .= \t"`stVal.juggle = 0;"\r\n;
           buf .=
@@ -6487,39 +6725,24 @@ public &StateBuilder
   }
   public bool build(int no, ^/char def)
   {:<-
-    public bool files(^/char sec, ^/char name, ^/char data)
+    bool files(&.com.Section sc=)
     {
       type _t = .com.readFileName;
-      branch{
-      cond .s.equ(name, "cmd"):
-        if(#`cmd == 0) `cmd = _t(data);
-      cond .s.equ(name, "cns"):
-        if(#`cns == 0) `cns = _t(data);
-      cond .s.equ(name, "st"):
-        if(#`st.new[0] == 0) `st[0] = _t(data);
-      cond .s.equ(name, "st0"):
-        if(#`st.new[1] == 0) `st[1] = _t(data);
-      cond .s.equ(name, "st1"):
-        if(#`st.new[2] == 0) `st[2] = _t(data);
-      cond .s.equ(name, "st2"):
-        if(#`st.new[3] == 0) `st[3] = _t(data);
-      cond .s.equ(name, "st3"):
-        if(#`st.new[4] == 0) `st[4] = _t(data);
-      cond .s.equ(name, "st4"):
-        if(#`st.new[5] == 0) `st[5] = _t(data);
-      cond .s.equ(name, "st5"):
-        if(#`st.new[6] == 0) `st[6] = _t(data);
-      cond .s.equ(name, "st6"):
-        if(#`st.new[7] == 0) `st[7] = _t(data);
-      cond .s.equ(name, "st7"):
-        if(#`st.new[8] == 0) `st[8] = _t(data);
-      cond .s.equ(name, "st8"):
-        if(#`st.new[9] == 0) `st[9] = _t(data);
-      cond .s.equ(name, "st9"):
-        if(#`st.new[10] == 0) `st[10] = _t(data);
-      cond .s.equ(name, "stcommon"):
-        if(#`stcommon == 0) `stcommon = _t(data);
-      }
+      ^/char data;
+      if(#(data = sc.get("cmd")) > 0) `cmd = _t(data);
+      if(#(data = sc.get("cns")) > 0) `cns = _t(data);
+      if(#(data = sc.get("st")) > 0) `st.new[0] = _t(data);
+      if(#(data = sc.get("st0")) > 0) `st.new[1] = _t(data);
+      if(#(data = sc.get("st1")) > 0) `st.new[2] = _t(data);
+      if(#(data = sc.get("st2")) > 0) `st.new[3] = _t(data);
+      if(#(data = sc.get("st3")) > 0) `st.new[4] = _t(data);
+      if(#(data = sc.get("st4")) > 0) `st.new[5] = _t(data);
+      if(#(data = sc.get("st5")) > 0) `st.new[6] = _t(data);
+      if(#(data = sc.get("st6")) > 0) `st.new[7] = _t(data);
+      if(#(data = sc.get("st7")) > 0) `st.new[8] = _t(data);
+      if(#(data = sc.get("st8")) > 0) `st.new[9] = _t(data);
+      if(#(data = sc.get("st9")) > 0) `st.new[10] = _t(data);
+      if(#(data = sc.get("stcommon")) > 0) `stcommon = _t(data);
       ret true;
     }
     void section(%^/char lines, index i=)
@@ -6528,129 +6751,189 @@ public &StateBuilder
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
       i++;
+      &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "files"):
-        `parse!`build:<-files?(lines, i=, sec);
+        `build:<-files(sc=);
       }
     }
-    public bool data(^/char sec, ^/char name, ^/char data)
+    bool data(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "life"):
-        `c.d.life = .com.atoi(data);
-      cond .s.equ(name, "power"):
-        `c.d.power = .com.atoi(data);
-      cond .s.equ(name, "attack"):
-        `c.d.attack = .com.atoi(data);
-      cond .s.equ(name, "defence"):
-        `c.d.defence = .com.atoi(data);
-      cond .s.equ(name, "fall.defence_up"):
+      ^/char data;
+      if(#(data = sc.get("life")) > 0) `c.d.life = .com.atoi(data);
+      if(#(data = sc.get("power")) > 0) `c.d.power = .com.atoi(data);
+      if(#(data = sc.get("attack")) > 0) `c.d.attack = .com.atoi(data);
+      if(#(data = sc.get("defence")) > 0) `c.d.defence = .com.atoi(data);
+      if(#(data = sc.get("fall.defence_up")) > 0){
         `c.d.fall_defence_mul = (.com.atof(data)+100.0) / 100.0;
-      cond .s.equ(name, "liedown.time"):
+      }
+      if(#(data = sc.get("liedown.time")) > 0){
         `c.d.liedown_time = .m.max!int?(1)<, .com.atoi(data);
-      cond .s.equ(name, "airjuggle"):
-        `c.d.airjuggle = .com.atoi(data);
-      cond .s.equ(name, "sparkno"):
-        `c.d.sparkno = .com.atoi(data);
-      cond .s.equ(name, "guard.sparkno"):
+      }
+      if(#(data = sc.get("airjuggle")) > 0) `c.d.airjuggle = .com.atoi(data);
+      if(#(data = sc.get("sparkno")) > 0) `c.d.sparkno = .com.atoi(data);
+      if(#(data = sc.get("guard.sparkno")) > 0){
         `c.d.guard_sparkno = .com.atoi(data);
-      cond .s.equ(name, "ko.echo"):
-        `c.d.ko_echo = .com.atoi(data);
-      cond .s.equ(name, "volume"):
-        `c.d.volume = .com.atoi(data);
-      cond .s.equ(name, "intpersistindex"):
+      }
+      if(#(data = sc.get("ko.echo")) > 0) `c.d.ko_echo = .com.atoi(data);
+      if(#(data = sc.get("volume")) > 0) `c.d.volume = .com.atoi(data);
+      if(#(data = sc.get("intpersistindex")) > 0){
         `c.d.intpersistindex = .com.atoi(data);
-      cond .s.equ(name, "floatpersistindex"):
+      }
+      if(#(data = sc.get("floatpersistindex")) > 0){
         `c.d.floatpersistindex = .com.atoi(data);
       }
       ret true;
     }
-    public bool size(^/char sec, ^/char name, ^/char data)
+    bool size(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "xscale"):
-        {
-          ^float ary = .com.csvToAry!float?(data);
-          `c.s.xscale = ary<>;
-        }
-      cond .s.equ(name, "yscale"):
-        {
-          ^float ary = .com.csvToAry!float?(data);
-          `c.s.yscale = ary<>;
-        }
-      cond .s.equ(name, "ground.back"):
+      ^/char data;
+      if(#(data = sc.get("xscale")) > 0) `c.s.xscale = .com.atof(data);
+      if(#(data = sc.get("yscale")) > 0) `c.s.yscale = .com.atof(data);
+      if(#(data = sc.get("ground.back")) > 0){
         `c.s.ground_back = .com.atoi(data);
-      cond .s.equ(name, "ground.front"):
+      }
+      if(#(data = sc.get("ground.front")) > 0){
         `c.s.ground_front = .com.atoi(data);
-      cond .s.equ(name, "air.back"):
-        `c.s.air_back = .com.atoi(data);
-      cond .s.equ(name, "air.front"):
-        `c.s.air_front = .com.atoi(data);
-      cond .s.equ(name, "height"):
-        `c.s.height = .com.atoi(data);
-      cond .s.equ(name, "attack.dist"):
+      }
+      if(#(data = sc.get("air.back")) > 0) `c.s.air_back = .com.atoi(data);
+      if(#(data = sc.get("air.front")) > 0) `c.s.air_front = .com.atoi(data);
+      if(#(data = sc.get("height")) > 0) `c.s.height = .com.atoi(data);
+      if(#(data = sc.get("attack.dist")) > 0){
         `c.s.attack_dist = .com.atoi(data);
-      cond .s.equ(name, "proj.attack.dist"):
+      }
+      if(#(data = sc.get("proj.attack.dist")) > 0){
         `c.s.proj_attack_dist = .com.atoi(data);
-      cond .s.equ(name, "proj.doscale"):
+      }
+      if(#(data = sc.get("proj.doscale")) > 0){
         `c.s.proj_doscale = .com.atoi(data);
-      cond .s.equ(name, "head.pos"):
+      }
+      if(#(data = sc.get("head.pos")) > 0){
         .com.readPair!int?(`c.s.head_posx=, `c.s.head_posy=, data);
-      cond .s.equ(name, "mid.pos"):
+      }
+      if(#(data = sc.get("mid.pos")) > 0){
         .com.readPair!int?(`c.s.mid_posx=, `c.s.mid_posy=, data);
-      cond .s.equ(name, "shadowoffset"):
+      }
+      if(#(data = sc.get("shadowoffset")) > 0){
         `c.s.shadowoffset = .com.atoi(data);
-      cond .s.equ(name, "draw.offset"):
+      }
+      if(#(data = sc.get("draw.offset")) > 0){
         .com.readPair!int?(`c.s.draw_offsetx=, `c.s.draw_offsety=, data);
       }
       ret true;
     }
-    public bool velocity(
-      ^/char sec, ^/char name, ^/char data)
+    bool velocity(&.com.Section sc=)
     {
-      float dummy;
-      branch{
-      cond .s.equ(name, "walk.fwd"):
-        .com.readPair!float?(`c.v.walk_fwd=, dummy=, data);
-      cond .s.equ(name, "walk.back"):
-        .com.readPair!float?(`c.v.walk_back=, dummy=, data);
-      cond .s.equ(name, "run.fwd"):
+      ^/char data;
+      if(#(data = sc.get("walk.fwd")) > 0) `c.v.walk_fwd = .com.atof(data);
+      if(#(data = sc.get("walk.back")) > 0) `c.v.walk_back = .com.atof(data);
+      if(#(data = sc.get("run.fwd")) > 0){
         .com.readPair!float?(`c.v.run_fwdx=, `c.v.run_fwdy=, data);
-      cond .s.equ(name, "run.back"):
+      }
+      if(#(data = sc.get("run.back")) > 0){
         .com.readPair!float?(`c.v.run_backx=, `c.v.run_backy=, data);
-      cond .s.equ(name, "jump.neu"):
+      }
+      if(#(data = sc.get("jump.neu")) > 0){
         .com.readPair!float?(`c.v.jump_neux=, `c.v.jump_neuy=, data);
-      cond .s.equ(name, "jump.back"):
-        .com.readPair!float?(`c.v.jump_back=, dummy=, data);
-      cond .s.equ(name, "jump.fwd"):
-        .com.readPair!float?(`c.v.jump_fwd=, dummy=, data);
-      cond .s.equ(name, "runjump.back"):
+      }
+      if(#(data = sc.get("jump.back")) > 0) `c.v.jump_back = .com.atof(data);
+      if(#(data = sc.get("jump.fwd")) > 0) `c.v.jump_fwd = .com.atof(data);
+      if(#(data = sc.get("runjump.back")) > 0){
         .com.readPair!float?(`c.v.runjump_backx=, `c.v.runjump_backy=, data);
-      cond .s.equ(name, "runjump.fwd"):
+      }
+      if(#(data = sc.get("runjump.fwd")) > 0){
         .com.readPair!float?(`c.v.runjump_fwdx=, `c.v.runjump_fwdy=, data);
-      cond .s.equ(name, "airjump.neu"):
+      }
+      if(#(data = sc.get("airjump.neu")) > 0){
         .com.readPair!float?(`c.v.airjump_neux=, `c.v.airjump_neuy=, data);
-      cond .s.equ(name, "airjump.back"):
-        .com.readPair!float?(`c.v.airjump_back=, dummy=, data);
-      cond .s.equ(name, "airjump.fwd"):
-        .com.readPair!float?(`c.v.airjump_fwd=, dummy=, data);
+      }
+      if(#(data = sc.get("airjump.back")) > 0){
+        `c.v.airjump_back = .com.atof(data);
+      }
+      if(#(data = sc.get("airjump.fwd")) > 0){
+        `c.v.airjump_fwd = .com.atof(data);
+      }
+      if(#(data = sc.get("air.gethit.groundrecover")) > 0){
+        .com.readPair!float?(
+          `c.v.air_gethit_groundrecoverx=,
+          `c.v.air_gethit_groundrecovery=, data);
+      }
+      if(#(data = sc.get("air.gethit.airrecover.mul")) > 0){
+        .com.readPair!float?(
+          `c.v.air_gethit_airrecover_mulx=,
+          `c.v.air_gethit_airrecover_muly=, data);
+      }
+      if(#(data = sc.get("air.gethit.airrecover.add")) > 0){
+        .com.readPair!float?(
+          `c.v.air_gethit_airrecover_addx=,
+          `c.v.air_gethit_airrecover_addy=, data);
+      }
+      if(#(data = sc.get("air.gethit.airrecover.back")) > 0){
+        `c.v.air_gethit_airrecover_back = .com.atof(data);
+      }
+      if(#(data = sc.get("air.gethit.airrecover.fwd")) > 0){
+        `c.v.air_gethit_airrecover_fwd = .com.atof(data);
+      }
+      if(#(data = sc.get("air.gethit.airrecover.up")) > 0){
+        `c.v.air_gethit_airrecover_up = .com.atof(data);
+      }
+      if(#(data = sc.get("air.gethit.airrecover.down")) > 0){
+        `c.v.air_gethit_airrecover_down = .com.atof(data);
       }
       ret true;
     }
-    public bool movement(
-      ^/char sec, ^/char name, ^/char data)
+    bool movement(&.com.Section sc=)
     {
-      branch{
-      cond .s.equ(name, "airjump.num"):
+      ^/char data;
+      if(#(data = sc.get("airjump.num")) > 0){
         `c.m.airjump_num = .com.atoi(data);
-      cond .s.equ(name, "airjump.height"):
+      }
+      if(#(data = sc.get("airjump.height")) > 0){
         `c.m.airjump_height = .com.atoi(data);
-      cond .s.equ(name, "yaccel"):
-        `c.m.yaccel = .com.atof(data);
-      cond .s.equ(name, "stand.friction"):
+      }
+      if(#(data = sc.get("yaccel")) > 0) `c.m.yaccel = .com.atof(data);
+      if(#(data = sc.get("stand.friction")) > 0){
         `c.m.stand_friction = .com.atof(data);
-      cond .s.equ(name, "crouch.friction"):
+      }
+      if(#(data = sc.get("crouch.friction")) > 0){
         `c.m.crouch_friction = .com.atof(data);
+      }
+      if(#(data = sc.get("stand.friction.threshold")) > 0){
+        `c.m.stand_friction_threshold = .com.atof(data);
+      }
+      if(#(data = sc.get("crouch.friction.threshold")) > 0){
+        `c.m.crouch_friction_threshold = .com.atof(data);
+      }
+      if(#(data = sc.get("air.gethit.groundlevel")) > 0){
+        `c.m.air_gethit_groundlevel = .com.atof(data);
+      }
+      if(#(data = sc.get("air.gethit.groundrecover.ground.threshold")) > 0){
+        `c.m.air_gethit_groundrecover_ground_threshold = .com.atof(data);
+      }
+      if(#(data = sc.get("air.air.gethit.groundrecover.groundlevel")) > 0){
+        `c.m.air_gethit_groundrecover_groundlevel = .com.atof(data);
+      }
+      if(#(data = sc.get("air.gethit.airrecover.threshold")) > 0){
+        `c.m.air_gethit_airrecover_threshold = .com.atof(data);
+      }
+      if(#(data = sc.get("air.gethit.airrecover.yaccel")) > 0){
+        `c.m.air_gethit_airrecover_yaccel = .com.atof(data);
+      }
+      if(#(data = sc.get("air.gethit.trip.groundlevel")) > 0){
+        `c.m.air_gethit_trip_groundlevel = .com.atof(data);
+      }
+      if(#(data = sc.get("down.bounce.offset")) > 0){
+        .com.readPair!float?(
+          `c.m.down_bounce_offsetx=, `c.m.down_bounce_offsety=, data);
+      }
+      if(#(data = sc.get("down.bounce.yaccel")) > 0){
+        `c.m.down_bounce_yaccel = .com.atof(data);
+      }
+      if(#(data = sc.get("down.bounce.groundlevel")) > 0){
+        `c.m.down_bounce_groundlevel = .com.atof(data);
+      }
+      if(#(data = sc.get("down.friction.threshold")) > 0){
+        `c.m.down_friction_threshold = .com.atof(data);
       }
       ret true;
     }
@@ -6660,19 +6943,20 @@ public &StateBuilder
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
       i++;
+      &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "data"):
-        `parse!`build:<-data?(lines, i=, sec);
+        `build:<-data(sc=);
       cond .s.equ(secname, "size"):
-        `parse!`build:<-size?(lines, i=, sec);
+        `build:<-size(sc=);
         if(`c.s.proj_doscale != 0){
           `c.s.proj_xscale = `c.s.xscale;
           `c.s.proj_yscale = `c.s.yscale;
         }
       cond .s.equ(secname, "velocity"):
-        `parse!`build:<-velocity?(lines, i=, sec);
+        `build:<-velocity(sc=);
       cond .s.equ(secname, "movement"):
-        `parse!`build:<-movement?(lines, i=, sec);
+        `build:<-movement(sc=);
       }
     }
     `playerno = no;
@@ -6729,10 +7013,8 @@ public &StateBuilder
       \t"`sysivar[.iDEFENCE] = " .= .s.iToS(`c.d.defence) .= ";"\r\n
       \t"`sysfvar[.fFALL_DEFENCE_MUL] = "
       .= `fToS(`c.d.fall_defence_mul) .= ";"\r\n
-      \t"`sysivar[.iLIEDOWN_TIME] = "
-      .= .s.iToS(`c.d.liedown_time) .= ";"\r\n
-      \t"`sysivar[.iAIRJUGGLE] = "
-      .= .s.iToS(`c.d.airjuggle) .= ";"\r\n
+      \t"`sysivar[.iLIEDOWN_TIME] = " .= .s.iToS(`c.d.liedown_time) .= ";"\r\n
+      \t"`sysivar[.iAIRJUGGLE] = " .= .s.iToS(`c.d.airjuggle) .= ";"\r\n
       \t"`sysivar[.iSPARKNO] = "
       .= (`c.d.sparkno >= 0 ? .s.iToS(`c.d.sparkno) : "!.com.IERR")
       .= ";"\r\n
@@ -6747,67 +7029,62 @@ public &StateBuilder
       .= .s.iToS(`c.d.floatpersistindex) .= ";"\r\n
       \t"`sysfvar[.fXSCALE] = " .= `fToS(`c.s.xscale) .= ";"\r\n
       \t"`sysfvar[.fYSCALE] = " .= `fToS(`c.s.yscale) .= ";"\r\n
-      \t"`sysivar[.iGROUND_BACK] = "
-      .= .s.iToS(`c.s.ground_back) .= ";"\r\n
-      \t"`sysivar[.iGROUND_FRONT] = "
-      .= .s.iToS(`c.s.ground_front) .= ";"\r\n
+      \t"`sysivar[.iGROUND_BACK] = " .= .s.iToS(`c.s.ground_back) .= ";"\r\n
+      \t"`sysivar[.iGROUND_FRONT] = " .= .s.iToS(`c.s.ground_front) .= ";"\r\n
       \t"`sysivar[.iAIR_BACK] = " .= .s.iToS(`c.s.air_back) .= ";"\r\n
-      \t"`sysivar[.iAIR_FRONT] = "
-      .= .s.iToS(`c.s.air_front) .= ";"\r\n
+      \t"`sysivar[.iAIR_FRONT] = " .= .s.iToS(`c.s.air_front) .= ";"\r\n
       \t"`sysivar[.iHEIGHT] = " .= .s.iToS(`c.s.height) .= ";"\r\n
-      \t"`sysivar[.iATTACK_DIST] = "
-      .= .s.iToS(`c.s.attack_dist) .= ";"\r\n
+      \t"`sysivar[.iATTACK_DIST] = " .= .s.iToS(`c.s.attack_dist) .= ";"\r\n
       \t"`sysivar[.iPROJ_ATTACK_DIST] = "
       .= .s.iToS(`c.s.proj_attack_dist) .= ";"\r\n
-      \t"`sysivar[.iPROJ_DOSCALE] = "
-      .= .s.iToS(`c.s.proj_doscale) .= ";"\r\n
-      \t"`sysivar[.iHEAD_POSX] = "
-      .= .s.iToS(`c.s.head_posx) .= ";"\r\n
-      \t"`sysivar[.iHEAD_POSY] = "
-      .= .s.iToS(`c.s.head_posy) .= ";"\r\n
+      \t"`sysivar[.iPROJ_DOSCALE] = " .= .s.iToS(`c.s.proj_doscale) .= ";"\r\n
+      \t"`sysivar[.iHEAD_POSX] = " .= .s.iToS(`c.s.head_posx) .= ";"\r\n
+      \t"`sysivar[.iHEAD_POSY] = " .= .s.iToS(`c.s.head_posy) .= ";"\r\n
       \t"`sysivar[.iMID_POSX] = " .= .s.iToS(`c.s.mid_posx) .= ";"\r\n
       \t"`sysivar[.iMID_POSY] = " .= .s.iToS(`c.s.mid_posy) .= ";"\r\n
-      \t"`sysivar[.iSHADOWOFFSET] = "
-      .= .s.iToS(`c.s.shadowoffset) .= ";"\r\n
-      \t"`sysivar[.iDRAW_OFFSETX] = "
-      .= .s.iToS(`c.s.draw_offsetx) .= ";"\r\n
-      \t"`sysivar[.iDRAW_OFFSETY] = "
-      .= .s.iToS(`c.s.draw_offsety) .= ";"\r\n
+      \t"`sysivar[.iSHADOWOFFSET] = " .= .s.iToS(`c.s.shadowoffset) .= ";"\r\n
+      \t"`sysivar[.iDRAW_OFFSETX] = " .= .s.iToS(`c.s.draw_offsetx) .= ";"\r\n
+      \t"`sysivar[.iDRAW_OFFSETY] = " .= .s.iToS(`c.s.draw_offsety) .= ";"\r\n
       \t"`sysfvar[.fWALK_FWD] = " .= `fToS(`c.v.walk_fwd) .= ";"\r\n
-      \t"`sysfvar[.fWALK_BACK] = "
-      .= `fToS(`c.v.walk_back) .= ";"\r\n
+      \t"`sysfvar[.fWALK_BACK] = " .= `fToS(`c.v.walk_back) .= ";"\r\n
       \t"`sysfvar[.fRUN_FWDX] = " .= `fToS(`c.v.run_fwdx) .= ";"\r\n
       \t"`sysfvar[.fRUN_FWDY] = " .= `fToS(`c.v.run_fwdy) .= ";"\r\n
-      \t"`sysfvar[.fRUN_BACKX] = "
-      .= `fToS(`c.v.run_backx) .= ";"\r\n
-      \t"`sysfvar[.fRUN_BACKY] = "
-      .= `fToS(`c.v.run_backy) .= ";"\r\n
-      \t"`sysfvar[.fJUMP_NEUX] = "
-      .= `fToS(`c.v.jump_neux) .= ";"\r\n
-      \t"`sysfvar[.fJUMP_NEUY] = "
-      .= `fToS(`c.v.jump_neuy) .= ";"\r\n
-      \t"`sysfvar[.fJUMP_BACK] = "
-      .= `fToS(`c.v.jump_back) .= ";"\r\n
+      \t"`sysfvar[.fRUN_BACKX] = " .= `fToS(`c.v.run_backx) .= ";"\r\n
+      \t"`sysfvar[.fRUN_BACKY] = " .= `fToS(`c.v.run_backy) .= ";"\r\n
+      \t"`sysfvar[.fJUMP_NEUX] = " .= `fToS(`c.v.jump_neux) .= ";"\r\n
+      \t"`sysfvar[.fJUMP_NEUY] = " .= `fToS(`c.v.jump_neuy) .= ";"\r\n
+      \t"`sysfvar[.fJUMP_BACK] = " .= `fToS(`c.v.jump_back) .= ";"\r\n
       \t"`sysfvar[.fJUMP_FWD] = " .= `fToS(`c.v.jump_fwd) .= ";"\r\n
-      \t"`sysfvar[.fRUNJUMP_BACKX] = "
-      .= `fToS(`c.v.runjump_backx) .= ";"\r\n
-      \t"`sysfvar[.fRUNJUMP_BACKY] = "
-      .= `fToS(`c.v.runjump_backy) .= ";"\r\n
-      \t"`sysfvar[.fRUNJUMP_FWDX] = "
-      .= `fToS(`c.v.runjump_fwdx) .= ";"\r\n
-      \t"`sysfvar[.fRUNJUMP_FWDY] = "
-      .= `fToS(`c.v.runjump_fwdy) .= ";"\r\n
-      \t"`sysfvar[.fAIRJUMP_NEUX] = "
-      .= `fToS(`c.v.airjump_neux) .= ";"\r\n
-      \t"`sysfvar[.fAIRJUMP_NEUY] = "
-      .= `fToS(`c.v.airjump_neuy) .= ";"\r\n
-      \t"`sysfvar[.fAIRJUMP_BACK] = "
-      .= `fToS(`c.v.airjump_back) .= ";"\r\n
-      \t"`sysfvar[.fAIRJUMP_FWD] = "
-      .= `fToS(`c.v.airjump_fwd) .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_BACKX] = " .= `fToS(`c.v.runjump_backx) .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_BACKY] = " .= `fToS(`c.v.runjump_backy) .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_FWDX] = " .= `fToS(`c.v.runjump_fwdx) .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_FWDY] = " .= `fToS(`c.v.runjump_fwdy) .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_NEUX] = " .= `fToS(`c.v.airjump_neux) .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_NEUY] = " .= `fToS(`c.v.airjump_neuy) .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_BACK] = " .= `fToS(`c.v.airjump_back) .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_FWD] = " .= `fToS(`c.v.airjump_fwd) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_GROUNDRECOVERX] = "
+      .= `fToS(`c.v.air_gethit_groundrecoverx) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_GROUNDRECOVERY] = "
+      .= `fToS(`c.v.air_gethit_groundrecovery) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_MULX] = "
+      .= `fToS(`c.v.air_gethit_airrecover_mulx) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_MULY] = "
+      .= `fToS(`c.v.air_gethit_airrecover_muly) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_ADDX] = "
+      .= `fToS(`c.v.air_gethit_airrecover_addx) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_ADDY] = "
+      .= `fToS(`c.v.air_gethit_airrecover_addy) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_BACK] = "
+      .= `fToS(`c.v.air_gethit_airrecover_back) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_FWD] = "
+      .= `fToS(`c.v.air_gethit_airrecover_fwd) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_UP] = "
+      .= `fToS(`c.v.air_gethit_airrecover_up) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_DOWN] = "
+      .= `fToS(`c.v.air_gethit_airrecover_down) .= ";"\r\n
       \t"`sysivar[.iAIRJUMP_CNT] = 0;"\r\n
-      \t"`sysivar[.iAIRJUMP_NUM] = "
-      .= .s.iToS(`c.m.airjump_num) .= ";"\r\n
+      \t"`sysivar[.iAIRJUMP_NUM] = " .= .s.iToS(`c.m.airjump_num) .= ";"\r\n
       \t"`sysivar[.iAIRJUMP_HEIGHT] = "
       .= .s.iToS(`c.m.airjump_height) .= ";"\r\n
       \t"`sysfvar[.fYACCEL] = " .= `fToS(`c.m.yaccel) .= ";"\r\n
@@ -6815,6 +7092,32 @@ public &StateBuilder
       .= `fToS(`c.m.stand_friction) .= ";"\r\n
       \t"`sysfvar[.fCROUCH_FRICTION] = "
       .= `fToS(`c.m.crouch_friction) .= ";"\r\n
+      \t"`sysfvar[.fSTAND_FRICTION_THRESHOLD] = "
+      .= `fToS(`c.m.stand_friction_threshold) .= ";"\r\n
+      \t"`sysfvar[.fCROUCH_FRICTION_THRESHOLD] = "
+      .= `fToS(`c.m.crouch_friction_threshold) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_GROUNDLEVEL] = "
+      .= `fToS(`c.m.air_gethit_groundlevel) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_GROUNDRECOVER_GROUND_THRESHOLD] = "
+      .= `fToS(`c.m.air_gethit_groundrecover_ground_threshold) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_GROUNDRECOVER_GROUNDLEVEL] = "
+      .= `fToS(`c.m.air_gethit_groundrecover_groundlevel) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_THRESHOLD] = "
+      .= `fToS(`c.m.air_gethit_airrecover_threshold) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_YACCEL] = "
+      .= `fToS(`c.m.air_gethit_airrecover_yaccel) .= ";"\r\n
+      \t"`sysfvar[.fAIR_GETHIT_TRIP_GROUNDLEVEL] = "
+      .= `fToS(`c.m.air_gethit_trip_groundlevel) .= ";"\r\n
+      \t"`sysfvar[.fDOWN_BOUNCE_OFFSETX] = "
+      .= `fToS(`c.m.down_bounce_offsetx) .= ";"\r\n
+      \t"`sysfvar[.fDOWN_BOUNCE_OFFSETY] = "
+      .= `fToS(`c.m.down_bounce_offsety) .= ";"\r\n
+      \t"`sysfvar[.fDOWN_BOUNCE_YACCEL] = "
+      .= `fToS(`c.m.down_bounce_yaccel) .= ";"\r\n
+      \t"`sysfvar[.fDOWN_BOUNCE_GROUNDLEVEL] = "
+      .= `fToS(`c.m.down_bounce_groundlevel) .= ";"\r\n
+      \t"`sysfvar[.fDOWN_FRICTION_THRESHOLD] = "
+      .= `fToS(`c.m.down_friction_threshold) .= ";"\r\n
       \t"`state_1 = `s_1_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`state_2 = `s_2_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`state_3 = `s_3_" .= .s.iToS(`playerno) .= "P;"\r\n
