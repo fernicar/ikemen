@@ -2825,7 +2825,7 @@ public &Char
       }
     }
     `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
-    if(`sysivar[.iBINDTIME] <= 0) `sysivar[.iBINDTOID] = -1;
+    if(`sysivar[.iBINDTIME] == 0) `sysivar[.iBINDTOID] = -1;
     if(`tmphit){
       `stVal.hit.invalidate();
       `tmphit = false;

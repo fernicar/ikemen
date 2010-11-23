@@ -90,7 +90,7 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   {
     `ctrlList.new(0);
     `deftask.new(0);
-    `typ = .chr.StTy::S;
+    `typ = .chr.StTy::U;
     `phy = .chr.StTy::N;
     `mov = .chr.MovTy::I;
     `hitcountpersist = 0;
