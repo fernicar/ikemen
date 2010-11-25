@@ -2,6 +2,8 @@
 lib stage = "stage.ssz";
 lib chr = "char.ssz";
 lib cmd = "command.ssz";
+lib com = "common.ssz";
+lib se = <alpha/sdlevent.ssz>;
 
 public &Share
 {
@@ -16,6 +18,54 @@ public &Share
   public ^&.cmd.NetInput net;
   public ^&.cmd.FileInput rep;
   public bool dbgdw, clsndw, powsh, alvl, fullscr;
+  public void copy()
+  {
+    `c = .chr.chars;
+    `f = .chr.fight;
+    `st = .chr.stg;
+    `tm = .com.tmode;
+    `nt = .com.numturns;
+    `re = .com.rexisted;
+    `chr_home = .com.home;
+    `chr_round = .com.round;
+    `chr_p1mw = .com.p1mw;
+    `chr_p2mw = .com.p2mw;
+    `chr_p1w = .com.p1wins;
+    `chr_p2w = .com.p2wins;
+    `chr_drw = .com.draws;
+    `com = .com.com;
+    `net = .cmd.net;
+    `rep = .cmd.replay;
+    `dbgdw = .com.debugdraw;
+    `clsndw = .com.clsndraw;
+    `powsh = .com.powershare;
+    `alvl = .com.autolevel;
+    `fullscr = .se.full;
+  }
+  public void push()
+  {
+    .chr.chars = `c;
+    .chr.fight = `f;
+    .chr.stg = `st;
+    .com.tmode = `tm;
+    .com.numturns = `nt;
+    .com.rexisted = `re;
+    .com.home = `chr_home;
+    .com.round = `chr_round;
+    .com.p1mw = `chr_p1mw;
+    .com.p2mw = `chr_p2mw;
+    .com.p1wins = `chr_p1w;
+    .com.p2wins = `chr_p2w;
+    .com.draws = `chr_drw;
+    .com.com = `com;
+    .cmd.net = `net;
+    .cmd.replay = `rep;
+    .com.debugdraw = `dbgdw;
+    .com.clsndraw = `clsndw;
+    .com.powershare = `powsh;
+    .com.autolevel = `alvl;
+    .se.full = `fullscr;
+  }
 }
 
 

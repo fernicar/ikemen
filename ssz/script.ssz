@@ -76,7 +76,6 @@ public &Macro
       .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<,
       argTxt[0..#argTxt-1];
     `text = argTxt[-1];
-
   }
   public ^char getBlock(^^/char argTxt)
   {
@@ -722,7 +721,7 @@ public &Script
     }
     *sig_t _defMacro(arg, re=)
     {
-    ^^/char tmp = .splitArgs(arg);
+      ^^/char tmp = .splitArgs(arg);
       ^&.Function f = `newObj!&.Macro, .recvMacro?(tmp[0]);
       ^&.Macro m;
       f~data.cast(m=);
@@ -803,7 +802,7 @@ public &Script
         ret .mac.RetState::ERROR;
       }
       .m.limMin!int?(ai=, 0);
-      .com.com[0] = ai;
+      .com.com[p] = ai;
       re.new(0);
       ret .mac.RetState::OK;
     }

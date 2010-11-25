@@ -20,6 +20,8 @@ lib tbl = <table.ssz>;
 lib file = <file.ssz>;
 lib cmd = "command.ssz";
 
+const double lvmul = 2.0**(1.0/12.0);
+
 &WincntMgr
 {
   /^/char wincFN = "autolevel.txt";
@@ -184,28 +186,8 @@ void game()
     sdr.l = typesize(&.sha.Share);
     sdr.p = .s.sToN!index?(sss[1]);
     sdr.copyToRef!&.sha.Share?(share=);
-    .chr.chars = share~c;
-    .chr.fight = share~f;
-    .chr.stg = share~st;
+    share~push();
     stagetime = share~stt;
-    .com.tmode = share~tm;
-    .com.numturns = share~nt;
-    .com.rexisted = share~re;
-    .com.home = share~chr_home;
-    .com.round = share~chr_round;
-    .com.p1mw = share~chr_p1mw;
-    .com.p2mw = share~chr_p2mw;
-    .com.p1wins = share~chr_p1w;
-    .com.p2wins = share~chr_p2w;
-    .com.draws = share~chr_drw;
-    .com.com = share~com;
-    .cmd.net = share~net;
-    .cmd.replay = share~rep;
-    .com.debugdraw = share~dbgdw;
-    .com.clsndraw = share~clsndw;
-    .com.powershare = share~powsh;
-    .com.autolevel = share~alvl;
-    .se.full = share~fullscr;
     .cmd.synchronize();
     .wm.init();
     ^int level;
@@ -280,7 +262,7 @@ void game()
         case (int).com.TeamMode::Turns:
           lm *= 3.0 / (float).com.numturns[i&1];
         }
-        double hoge = 1.2**((double)-level[i]);
+        double hoge = .lvmul**((double)-level[i]);
         .chr.chars[i][0]~sysivar[.chr.iLIFEMAX] = (int).m.ceil(hoge * lm);
         if(.com.rexisted[i&1] > 0){
           .chr.chars[i][0]~sysivar[.chr.iLIFE] =
@@ -390,7 +372,7 @@ void game()
             !.chr.chars[i][0]~isLose()
             && .com.tmode[i] != (int).com.TeamMode::Turns)
           :
-          hoge = 1.2**((double)(level[i]+level[i+2&3])*0.5);
+          hoge = .lvmul**(double)level[i];
           .chr.chars[i][0]~sysivar[.chr.iLIFE] =
             .m.max!int?(1)<, (int).m.ceil(
               hoge * (float)(
@@ -398,6 +380,7 @@ void game()
                 ? .chr.chars[i][0]~sysivar[.chr.iLIFE]
                 : .chr.chars[i][0]~sysivar[.chr.iLIFEMAX]));
           if(#.chr.chars[i+2] > 0){
+            hoge = .lvmul**(double)level[i+2];
             .chr.chars[i+2][0]~sysivar[.chr.iLIFE] =
               .m.max!int?(1)<, (int).m.ceil(
                 hoge * (float)(
@@ -455,14 +438,8 @@ void game()
   break:
     .chr.stg~bgctl.clear();//bgctrlをでfightingで開放
     if(#.cmd.net > 0) .cmd.net~stop();
-    share~chr_round = .com.round;
-    share~chr_p1w = .com.p1wins;
-    share~chr_p2w = .com.p2wins;
-    share~chr_drw = .com.draws;
+    share~copy();
     share~stt = stagetime;
-    share~dbgdw = .com.debugdraw;
-    share~clsndw = .com.clsndraw;
-    share~fullscr = .se.full;
     oldshare.copyToRef!&.sha.Share?(share=);
   }
 }

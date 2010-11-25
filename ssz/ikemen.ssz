@@ -379,9 +379,9 @@ void loadCharacter(^&.chr.Char p, ^/char file, ^int end)
   end<> = 1;
 }
 
-void loadStage(^&.stage.Stage stg, ^/char file, ^int end)
+void loadStage(^/char file, ^int end)
 {
-  if(!stg~load(file)){
+  if(!.chr.stg~load(file)){
     %char buf .= file .= ": ステージ初期化に失敗";
     .al.alert!.self?(buf);
     end<> = -1;
@@ -402,21 +402,21 @@ int match()
     stag = .syst.selinf.sel.stagelist[.syst.selinf.sel.curStageNo-1].def;
   }
   ^int ldend.new(1);
-  ^&.stage.Stage stg.new(1);
+  .chr.stg.new(1);
   thread!.loadStage? lstage;
   ldend<> = 0;
-  lstage..(stg, stag, ldend);
+  lstage..(stag, ldend);
   loop{do:
     if(ldend<> > 0) break;
   while ldend<> >= 0 && .se.event():
     ret -1;
   }
   int retval;
-  loop{do: retval = .game(stg); while retval == -2:}
+  loop{do: retval = .game(); while retval == -2:}
   if(retval < 0) .chr.chars.new(4);
   ret retval;
 }
-int game(^&.stage.Stage stg)
+int game()
 {
   int winp = 0;
   if(.se.end) ret -1;
@@ -508,11 +508,9 @@ int game(^&.stage.Stage stg)
     .mes.SetSharedString(:ss:);
     bool b = .ssz.run("ssz/fighting.ssz");
     .sdl.shareScreen();
-    .com.debugdraw = share~dbgdw;
-    .com.clsndraw = share~clsndw;
-    .se.full = share~fullscr;
-    bool w1 = share~chr_p1w >= share~chr_p1mw;
-    bool w2 = share~chr_p2w >= share~chr_p2mw;
+    share~push();
+    bool w1 = .com.p1wins >= .com.p1mw;
+    bool w2 = .com.p2wins >= .com.p2mw;
     `winp = 0;
     if(w1 != w2){
       `winp++;
@@ -586,33 +584,20 @@ int game(^&.stage.Stage stg)
     foo(p[3], 1);
     .chr.fight~wi[0].clear();
     .chr.fight~wi[1].clear();
-    ^&.sha.Share share.new(1);
-    share~c = .chr.chars;
-    share~f = .chr.fight;
-    share~st = stg;
-    share~stt = 0;
-    share~tm = .com.tmode;
-    share~nt = .com.numturns;
-    share~re = .com.rexisted;
-    share~chr_home = 0;
-    share~chr_round = 1;
-    share~chr_p1mw =
+    .com.home = 0;
+    .com.round = 1;
+    .com.p1mw =
       .com.tmode[1] == (int).com.TeamMode::Turns
       ? .com.numturns[1] : .chr.fight~ro.match_wins;
-    share~chr_p2mw =
+    .com.p2mw =
       .com.tmode[0] == (int).com.TeamMode::Turns
       ? .com.numturns[0] : .chr.fight~ro.match_wins;
-    share~chr_p1w = 0;
-    share~chr_p2w = 0;
-    share~chr_drw = 0;
-    share~com = .com.com;
-    share~net = .cmd.net;
-    share~rep = .cmd.replay;
-    share~dbgdw = .com.debugdraw;
-    share~clsndw = .com.clsndraw;
-    share~powsh = .com.powershare;
-    share~alvl = .com.autolevel;
-    share~fullscr = .se.full;
+    .com.p1wins = 0;
+    .com.p2wins = 0;
+    .com.draws = 0;
+    ^&.sha.Share share.new(1);
+    share~copy();
+    share~stt = 0;
     &.com.SuperDangerousRef sdr;
     sdr.copyRef!&.sha.Share?(share=);
     %char buf .= "gt<>" .= .s.iToS(sdr.p);
@@ -625,13 +610,13 @@ int game(^&.stage.Stage stg)
     {
       loop{while; do:
         if(p[0]~sysivar[.chr.iLIFE] <= 0){
-          if(share~chr_p2w >= share~chr_p2mw) break, break;
+          if(.com.p2wins >= .com.p2mw) break, break;
           if(.com.tmode[0] == (int).com.TeamMode::Turns){
-            share~f~fa[.com.tmode[0]][0].numko++;
+            .chr.fight~fa[.com.tmode[0]][0].numko++;
             cha[0] =
               .syst.selinf.sel.charlist[
-                .syst.selinf.p[0].selchr[share~chr_p2w].i].def;
-            pal[0] = .syst.selinf.p[0].selchr[share~chr_p2w].pal;
+                .syst.selinf.p[0].selchr[.com.p2wins].i].def;
+            pal[0] = .syst.selinf.p[0].selchr[.com.p2wins].pal;
             p[0]~sf.new(0);
             if(!loadChar(p[0], cha[0], pal[0])) ret -1;
             .chr.fight~fa[.com.tmode[0]][0].face_spr =
@@ -642,13 +627,13 @@ int game(^&.stage.Stage stg)
           }
         }
         if(p[1]~sysivar[.chr.iLIFE] <= 0){
-          if(share~chr_p1w >= share~chr_p1mw) break, break;
+          if(.com.p1wins >= .com.p1mw) break, break;
           if(.com.tmode[1] == (int).com.TeamMode::Turns){
-            share~f~fa[.com.tmode[1]][1].numko++;
+            .chr.fight~fa[.com.tmode[1]][1].numko++;
             cha[1] =
               .syst.selinf.sel.charlist[
-                .syst.selinf.p[1].selchr[share~chr_p1w].i].def;
-            pal[1] = .syst.selinf.p[1].selchr[share~chr_p1w].pal;
+                .syst.selinf.p[1].selchr[.com.p1wins].i].def;
+            pal[1] = .syst.selinf.p[1].selchr[.com.p1wins].pal;
             p[1]~sf.new(0);
             if(!loadChar(p[1], cha[1], pal[1])) ret -1;
             .chr.fight~fa[.com.tmode[1]][1].face_spr =
