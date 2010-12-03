@@ -87,23 +87,29 @@ const double lvmul = 2.0**(1.0/12.0);
   }
   void win(index i)
   {
-    ^int item = `getItem(.chr.chars[i][0]~def);
+    %char buf .=
+      .chr.chars[i][0]~def .= ' ' .= .s.iToS(.chr.chars[i][0]~palno);
+    ^int item = `getItem(buf);
     item<> +=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
       && .com.tmode[i&1] != (int).com.TeamMode::Simul ? 2 : 1;
-    `winct.set(.chr.chars[i][0]~def, item);
+    `winct.set(buf, item);
   }
   void lose(index i)
   {
-    ^int item = `getItem(.chr.chars[i][0]~def);
+    %char buf .=
+      .chr.chars[i][0]~def .= ' ' .= .s.iToS(.chr.chars[i][0]~palno);
+    ^int item = `getItem(buf);
     item<> -=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
       && .com.tmode[i&1] != (int).com.TeamMode::Simul ? 2 : 1;
-    `winct.set(.chr.chars[i][0]~def, item);
+    `winct.set(buf, item);
   }
-  public int getLevel(^/char name)
+  public int getLevel(index i)
   {
-    ^int item = `getItem(name);
+    %char buf .=
+      .chr.chars[i][0]~def .= ' ' .= .s.iToS(.chr.chars[i][0]~palno);
+    ^int item = `getItem(buf);
     ret item<>;
   }
 }
@@ -194,15 +200,15 @@ void game()
     level.new(4);
     if(#.chr.chars[0] > 0){
       .chr.chars[0][0]~stateInit0P();
-      level[0] = level[2] = .wm.getLevel(.chr.chars[0][0]~def);
+      level[0] = level[2] = .wm.getLevel(0);
     }
     if(#.chr.chars[1] > 0){
       .chr.chars[1][0]~stateInit1P();
-      level[1] = level[3] = .wm.getLevel(.chr.chars[1][0]~def);
+      level[1] = level[3] = .wm.getLevel(1);
     }
     if(#.chr.chars[2] > 0){
       .chr.chars[2][0]~stateInit2P();
-      level[2] = .wm.getLevel(.chr.chars[2][0]~def);
+      level[2] = .wm.getLevel(2);
       if(.com.powershare){
         int pmax =
           .m.max!int?(
@@ -214,7 +220,7 @@ void game()
     }
     if(#.chr.chars[3] > 0){
       .chr.chars[3][0]~stateInit3P();
-      level[3] = .wm.getLevel(.chr.chars[3][0]~def);
+      level[3] = .wm.getLevel(3);
       if(.com.powershare){
         int pmax =
           .m.max!int?(

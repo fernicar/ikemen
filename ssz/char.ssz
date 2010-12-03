@@ -1657,6 +1657,11 @@ public &Projectile
       `velocityy += `accely;
       `velocityx *= `velmulx;
       `velocityy *= `velmuly;
+      if(`velocityx < 0.0){
+        `facing *= -1;
+        `velocityx *= -1.0;
+        `accelx *= -1.0;
+      }
     }
   }
   public bool hitCheck(&.Projectile pr=)
@@ -2153,6 +2158,15 @@ public &Char
       `targets .= id;
     }
   }
+  public bool isTarget(int id)
+  {
+    loop{index i = 0; while; do:
+      if(`targets[i] == id) ret true;
+      i++;
+    while i < #`targets:
+    }
+    ret false;
+  }
   public void removeTarget(int id)
   {
     loop{index i = 0; while; do:
@@ -2173,17 +2187,19 @@ public &Char
   }
   public void outTarget()
   {
-    loop{
-      index i = 0;
-      ^`self c;
-      while;
-    do:
-      c = .players.get(`stVal.hb.byid[i]);
-      if(#c > 0) c~removeTarget(`id);
-      i++;
-    while i < #`stVal.hb.byid:
+    if(`hittmp >= 0){
+      loop{
+        index i = 0;
+        ^`self c;
+        while;
+      do:
+        c = .players.get(`stVal.hb.byid[i]);
+        if(#c > 0) c~removeTarget(`id);
+        i++;
+      while i < #`stVal.hb.byid:
+      }
+      `byBindClear();
     }
-    `byBindClear();
     `stVal.hb.byid.new(0);
   }
   void addChild(int hidx)
@@ -2813,10 +2829,10 @@ public &Char
           if(--`sysivar[.iBINDTIME] == 0) branch{
             ^`self c = .players.get(`sysivar[.iBINDTOID]);
             if(#c == 0) break;
-          cond `stVal.hb.byidMatch(c~id):
+          cond c~isTarget(`id):
             `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
             `setYV(c~sysfvar[.fVY]);
-          cond c~stVal.hb.byidMatch(`id):
+          cond `isTarget(c~id):
             c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
             c~setYV(`sysfvar[.fVY]);
           }
@@ -3327,10 +3343,7 @@ public &Char
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
-    if(
-      #c == 0 || `destmp || (
-        c~stVal.hb.byidMatch(`id) && c~ls(.lsBindCancel)))
-    {
+    if(#c == 0 || `destmp || (`isTarget(c~id) && c~ls(.lsBindCancel))){
       `sysivar[.iBINDTIME] = 0;
       ret;
     }
@@ -3364,7 +3377,7 @@ public &Char
       if(oldx != `sysfvar[.fX] && `sysivar[.iBINDTIME] != 0){
         ^`self c = .players.get(`sysivar[.iBINDTOID]);
         if(#c == 0) break;
-        if(!c~stVal.hb.byidMatch(`id)){
+        if(!`isTarget(c~id)){
           `sysfvar[.fX] = oldx;
           break, break;
         }
@@ -3403,7 +3416,7 @@ public &Char
       }
       if(
         `stVal.playerno == `playerno && (
-          `hittmp == 0 || (
+          `hittmp <= 0 || (
             .roundState() == 2
             && `sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0)))
       {
@@ -4661,6 +4674,11 @@ public &Char
       p.scaley *= `sysfvar[.fYSCALE];
     }
     p.playerno = `playerno;
+    if(p.velocityx < 0.0){
+      p.facing *= -1;
+      p.velocityx *= -1.0;
+      p.accelx *= -1.0;
+    }
   }
   public void trDestroySelf()
   {
@@ -6100,8 +6118,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if(
             foo(
               hit, .chars[i][0]<>=, .projs[i][j].hit=,
-              .projs[i][j].y - .chars[i][0]~sysfvar[.fY],
-              .projs[i][j].facing * (.projs[i][j].velocityx < 0.0 ? -1 : 1),
+              .projs[i][j].y - .chars[i][0]~sysfvar[.fY], .projs[i][j].facing,
               .projs[i][j].misstime <= 0 && (
                 #hit == 1 ? .projs[i][j].hit.pausetime
                 : .projs[i][j].hit.guard_pausetime) <= 0
