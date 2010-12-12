@@ -650,6 +650,25 @@ public &StateBuilder
     }
     ret true;
   }
+  bool tojikakko(^/char in=)
+  {
+    loop{
+      ^/char token;
+      continue;
+    do:
+      if(.cfg.IgnoreMostErrors){
+        %char o;
+        if(!`expBoolOr(o=, in=)) ret false;
+        break, continue;
+      }
+      `lasterror = "括弧が閉じていません";
+      ret false;
+    continue:
+      token = `tokenizer(in=);
+    while #token > 0 && !.s.equ(")", token) && !.s.equ("]", token):
+    }
+    ret true;
+  }
   bool expRedirectable(^/char obj, ^/char name, %char out=, ^/char in=)
   {:<-
     bool var(^/char obj, ^/char v, %char out=, ^/char in=)
@@ -705,19 +724,7 @@ public &StateBuilder
     if(#num == 0) branch{
       ^/char token = name;
     cond .s.equ("(", token) || .s.equ("[", token):
-      if(!`expBoolOr(out=, in=)) ret false;
-      loop{continue; do:
-        if(.cfg.IgnoreMostErrors && .s.equ(",", token)){
-          *out.self o;
-          if(!`expBoolOr(o=, in=)) ret false;
-          break, continue;
-        }
-        `lasterror = "括弧が閉じていません";
-        ret false;
-      continue:
-        token = `tokenizer(in=);
-      while !.s.equ(")", token) && !.s.equ("]", token):
-      }
+      if(!`expBoolOr(out=, in=) || !`tojikakko(in=)) ret false;
     cond .s.equ("+", token):
       if(!`expPostNot(out=, in=)) ret false;
     cond .s.equ("-", token):
@@ -2078,10 +2085,8 @@ public &StateBuilder
         ret false;
       }
     else:
-      if(!.s.equ(")", token) && !.s.equ("]", token)){
-        `lasterror = "括弧が閉じていません";
-        ret false;
-      }
+      in = oldin;
+      if(!`tojikakko(in=)) ret false;
       in = oldoldin;
       branch{
       cond not:
@@ -3826,7 +3831,10 @@ public &StateBuilder
       cond .s.equ(name[0..7], "trigger"):
         {
           index idx;
-          if(!.s.sToNumber!idx.self?(idx=, name[7..-1]) || idx <= 0){
+          if(
+            !.s.sToNumber!idx.self?(idx=, name[7..-1])
+            || idx <= 0 || idx > 65536)
+          {
             if(.cfg.IgnoreMostErrors) loop{
               index tail = #name-1;
             do:
