@@ -2376,13 +2376,27 @@ public &StateBuilder
       line = lines[i][0...s.find(";", lines[i])];
       f = .s.find("=", line);
       if(f > 0){
-        index foo = 0;
-        loop{while; do:
-          foo++;
-        while .s.cMatch!char?(" "\t, line[foo]):
+        ^/char name = .s.trim()<, line[0..f];
+        name = .s.toLower()<, name[0.. .s.cFind(" "\t, name)];
+        index nr = -1;
+        branch{
+        cond .s.equ(name[0..3], "var"):
+          nr = 3;
+        cond .s.equ(name[0..4], "fvar"):
+          nr = 4;
+        cond .s.equ(name[0..6], "sysvar"):
+          nr = 6;
+        cond .s.equ(name[0..7], "sysfvar"):
+          nr = 7;
+        else:
+          break;
+        comm:
+          name = .s.trim()<, line[0..f];
+          if(!.s.equ(name[0..nr], .s.toLower(name[0..nr]))){
+            %char buf .= .s.toLower(name[0..nr]) .= name[nr..-1];
+            name = buf;
+          }
         }
-        foo += .s.cFind("= "\t, line[foo..-1]);
-        ^/char name = .s.toLower()<, .s.trim()<, line[0..foo];
         if(#name > 0){
           bool foo = true;
           ^/char data = .s.trim(line[f+1..-1]);
@@ -2390,17 +2404,6 @@ public &StateBuilder
             data = data[1...s.find(\", data[1..-1])+1];
           }
           if(!.s.equ(name[0..7], "trigger")){
-            index nr = -1;
-            branch{
-            cond .s.equ(name[0..3], "var"):
-              nr = 3;
-            cond .s.equ(name[0..4], "fvar"):
-              nr = 4;
-            cond .s.equ(name[0..6], "sysvar"):
-              nr = 6;
-            cond .s.equ(name[0..7], "sysfvar"):
-              nr = 7;
-            }
             tbl.operate(name[0..nr])<,
               [void(^int d=){
                 if(#d > 0){
