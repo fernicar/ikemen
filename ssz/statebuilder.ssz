@@ -2368,12 +2368,12 @@ public &StateBuilder
       bool typedeta = false;
       while;
     do:
-      if(#lines[i] > 0 && lines[i][0] == '['){
-        if(.s.find("]", lines[i]) < 0) break, continue;
+      line = lines[i][0.. .s.find(";", lines[i])];
+      if(#line > 0 && line[0] == '['){
+        if(.s.find("]", line) < 0) break, continue;
         i--;
         break, break;
       }
-      line = lines[i][0...s.find(";", lines[i])];
       f = .s.find("=", line);
       if(f > 0){
         ^/char name = .s.trim()<, line[0..f];
@@ -6173,10 +6173,9 @@ public &StateBuilder
       ^/char line;
       while;
     do:
-      if(
-        #lines[i] <= 0 || lines[i][0] != '['
-        || .s.find("]", lines[i]) < 0) continue;
-      line = .s.toLower(lines[i]);
+      line = lines[i][0.. .s.find(";", lines[i])];
+      if(#line <= 0 || line[0] != '[' || .s.find("]", line) < 0) continue;
+      line = .s.toLower(line);
       fnd = .s.cFind(" ]"\t, line);
       if(fnd < 0 || !.s.equ("statedef", line[1..fnd])) continue;
       line = .s.trim(line[fnd..-1]);
@@ -6650,7 +6649,7 @@ public &StateBuilder
         }
       while
         i+1 < #lines && #lines[i+1] > 0 && lines[i+1][0] == '['
-        && .s.find("]", lines[i+1]) >= 0
+        && .s.find("]", lines[i+1][0.. .s.find(";", lines[i+1])]) >= 0
         :
       break:
         if(`state.no == -1) buf .= \t"}"\r\n;

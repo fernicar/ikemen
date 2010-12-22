@@ -526,6 +526,7 @@ public &Section
 public ^/char sectionName(^/char sec=)
 {
   if(#sec == 0 || sec[0] != '[') ret "";
+  sec = sec[0.. .s.find(";", sec)];
   index f = .s.find("]", sec);
   if(f < 0) ret "";
   sec = sec[1..f];
