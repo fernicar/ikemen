@@ -938,7 +938,7 @@ public &StateBuilder
           buf .= "$.v)";
           if(!.s.equ(",", `tokenizer(in=))){
             %char buf;
-            `lasterror = (buf .= token .= ",がありません");
+            `lasterror = ",がありません";
             ret false;
           }
           oldin = in;
@@ -952,8 +952,7 @@ public &StateBuilder
           if(!`expBoolOr(out=, in=)) ret false;
           out .= "$.v)$.v,";
           if(!.s.equ(",", `tokenizer(in=))){
-            %char buf;
-            `lasterror = (buf .= token .= ",がありません");
+            `lasterror = ",がありません";
             ret false;
           }
           oldin = in;

@@ -5262,11 +5262,9 @@ public &Char
       sg != 1 || sn != 1 || dg != 1
       || !.m.inRange!int?(1, .sff.NumCharPalletes, dn)) ret;
     ^&.sff.Sprite spr = `sf~getSprite(0, 0);
-    if(#spr > 0){
-      `sf~palList.remap(spr~palidx, dn-1);
-      spr = `sf~getSprite(9000, 0);
-      if(#spr > 0) `sf~palList.remap(spr~palidx, dn-1);
-    }
+    if(#spr > 0) `sf~palList.remap(spr~palidx, dn-1);
+    spr = `sf~getSprite(9000, 0);
+    if(#spr > 0) `sf~palList.remap(spr~palidx, dn-1);
   }
 }
 

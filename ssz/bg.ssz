@@ -107,7 +107,13 @@ public &Action
           if(`frames[-1].h < 0) `frames[-1].x *= -1;
           if(`frames[-1].v < 0) `frames[-1].y *= -1;
           if(#spl < 7) break;
-          ^/char a = .s.toLower()<, .s.trim(spl[6]);
+          ^/char a;
+          loop{index i = 6; while; do:
+            if(#(a = .s.trim(spl[i])) > 0) break;
+            i++;
+          while i < #spl:
+          }
+          a = .s.toLower(a);
           branch{
           cond .s.equ(a, "a1"):
             `frames[-1].salpha = 0d255;

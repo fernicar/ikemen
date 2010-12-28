@@ -154,8 +154,7 @@ public &Sprite
     if(!f.read!ushort?(`pcxHeader.palletInfo=)) ret false;
     `rct.w = `pcxHeader.w-`pcxHeader.x + 0x1;
     `rct.h = `pcxHeader.h-`pcxHeader.y + 0x1;
-    `rle =
-      `pcxHeader.encoding == 0x1 ? (int)`pcxHeader.bytesPerLine : 0;
+    `rle = `pcxHeader.encoding == 0x1 ? (int)`pcxHeader.bytesPerLine : 0;
     ret true;
   }
   public bool read(
