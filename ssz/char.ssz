@@ -4404,6 +4404,21 @@ public &Char
     `cs1tmp = true;
     ret true;
   }
+  public bool changeState1kai(int p, int no)
+  {
+    int n = .m.max!int?(0, no);
+    if(!`changeState1(p, n)){
+      if(.changeStateNest < 2500){
+        `trDestroySelf();
+        `state = `dummy;
+        `stVal.prevno = `stVal.no;
+        `stVal.no = n;
+        `stVal.playerno = p;
+      }
+      ret false;
+    }
+    ret true;
+  }
   public void changeState2()
   {
     if(`cs1tmp){
@@ -4417,8 +4432,7 @@ public &Char
     if(n == .com.IERR) ret;
     if(anim >= 0) `trChangeAnim(anim);
     if(ctrl >= 0) `setCtrl(ctrl != 0);
-    branch{
-    cond `changeState1(p, n):
+    if(`changeState1kai(p, n)){
       if(`minus <= 0) `changeState2();
       if(`minus == 0){
         if(`id >= 0){
@@ -4426,17 +4440,6 @@ public &Char
           `state(::);
           .changeStateNest--;
         }
-      }
-    cond .changeStateNest < 2500:
-      `trDestroySelf();
-      branch{
-      cond n < 0:
-        .v.setI(0)$`trChangeState2(p, anim, ctrl);
-      else:
-        `state = `dummy;
-        `stVal.prevno = `stVal.no;
-        `stVal.no = n;
-        `stVal.playerno = p;
       }
     }
   }
@@ -4782,7 +4785,7 @@ public &Char
       c = .players.get(`targets[i]);
       if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
         c~setCtrl(false);
-        c~changeState1(pno, state);
+        c~changeState1kai(pno, state);
       }
       i++;
     while i < #`targets:
