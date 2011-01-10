@@ -2976,7 +2976,9 @@ public &StateBuilder
       `state.ctrlList[-1].task .=
         obj .= ".mindistx=" .= obj .= ".maxdistx=";
       if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
-      `state.ctrlList[-1].task .= "$.v.toFloat();";
+      `state.ctrlList[-1].task .=
+        "$.v.toFloat();if(" .= obj .= ".p2facing==.com.IERR)"
+        .= obj .= ".p2facing=1;";
       if(.s.equ(",")<, `tokenizer(text=)){
         `state.ctrlList[-1].task .=
           obj .= ".mindisty=" .= obj .= ".maxdisty=";
