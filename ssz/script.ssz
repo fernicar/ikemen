@@ -614,12 +614,18 @@ public &InputDialog
   ret .mac.RetState::OK;
 }
 
+^int mtx.new(1);
+^&.Script tmpsc;
 
 public ^&Script newRoot()
 {
   ^&.Script sc;
-  sc.new(1);
-  sc~setThis(sc);
+  lock(.mtx){
+    sc.new(1);
+    .tmpsc = sc;
+    sc~setThis();
+    .tmpsc.new(0);
+  }
   ret sc;
 }
 
@@ -627,11 +633,11 @@ public ^&Script newRoot()
 public &Script
 {
   core &.mac.Macro c;
-  ^self this, parent;
+  /^self this, parent;
   &.tbl.NameTable!&.Function? fun;
-  public void setThis(^`self th)
+  public void setThis()
   {
-    if(#`this == 0) `this = th;
+    if(#`this == 0) `this = .tmpsc;
   }
   public |.mac.RetState call(^char arg, ^/char name, ^char re=)
   {:<-
