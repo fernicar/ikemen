@@ -3396,7 +3396,7 @@ public &Char
       cond `stVal.mov == .MovTy::H:
         `hittmp =
           (int)(
-            `stVal.hb.fallf != 0 && `hittmp > 0
+            `stVal.hb.fallf != 0 && `hittmp > 0 && !`isBound()
             && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
           * ((int)`isFall() + 1) + 1;
         if(
@@ -5704,7 +5704,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(pro == 0) by.sprpriority = hit.p1sprpriority;
     `pyr.sprpriority = hit.p2sprpriority;
     if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
-      `pyr.stVal.typ == .StTy::S;
+      `pyr.stVal.typ = .StTy::S;
     }
     bool rtn = false, damageable = false, ho = false;
     int p2s = 0;
