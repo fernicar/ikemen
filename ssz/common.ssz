@@ -300,6 +300,13 @@ public ^char readFileName(^/char f)
   ret tmp;
 }
 
+public void error<_t>(^/char m)
+{
+  lib al = <alert.ssz>;
+  al.alert!_t?(m);
+}
+
+
 ^uint workpal;
 workpal.new(256);
 public &PalFX

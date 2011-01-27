@@ -4,7 +4,6 @@ lib s = <string.ssz>;
 lib consts = <consts.ssz>;
 lib mes = <alpha/mesdialog.ssz>;
 lib tbl = <table.ssz>;
-lib al = <alert.ssz>;
 lib m = <math.ssz>;
 lib chr = "char.ssz";
 lib com = "common.ssz";
@@ -15,7 +14,7 @@ const ^/char kuuhaktokigou = " !=<>()|&+-*/%,[]^|:"\"\t\r\n;
 void errmes(^/char fn, ^/char line, index ln, ^/char mess)
 {
   %char buf;
-  .al.alert!.self?(
+  .com.error!.self?(
     buf .= fn .= '(' .= .s.iToS(ln+1) .= ')' .= \r\n .= line .= \r\n .= mess);
 }
 
@@ -3811,7 +3810,7 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::VictoryQuote;
         cond .s.equ(s, "remappal"):
           `state.ctrlList[-1].typ = .CtrlTy::RemapPal;
-          `state.ctrlList[-1].task .= "int sg=1,sn=1,dg=1,dn=1;";
+          `state.ctrlList[-1].task .= "int sg=-1,sn=-1,dg=-1,dn=-1;";
         cond .s.equ(s, "null"):
           `state.ctrlList[-1].typ = .CtrlTy::Null;
         else:
@@ -6163,7 +6162,7 @@ public &StateBuilder
     {
       if(.cfg.IgnoreMostErrors) ret true;
       %char buf;
-      .al.alert!.self?(buf .= st .= "を読み込めません");
+      .com.error!.self?(buf .= st .= "を読み込めません");
       ret false;
     }
     ^/char fn = st;
@@ -6988,7 +6987,7 @@ public &StateBuilder
         ret (mainbuf = .file.loadAsciiText(f))$#mainbuf > 0;}])
     {
       %char buf;
-      .al.alert!.self?(buf .= `cns .= "を読み込めません");
+      .com.error!.self?(buf .= `cns .= "を読み込めません");
       ret false;
     }
     lines = .com.splitLines(mainbuf);

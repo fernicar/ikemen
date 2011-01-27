@@ -6,7 +6,6 @@ lib s = <string.ssz>;
 lib m = <math.ssz>;
 lib file = <file.ssz>;
 lib se = <alpha/sdlevent.ssz>;
-lib al = <alert.ssz>;
 lib mac = <macro.ssz>;
 lib stb = "statebuilder.ssz";
 lib cfg = "config.ssz";
@@ -346,7 +345,7 @@ void addFunc(^/char name, func .sc.fsig_t f)
 bool init()
 {
   if(!.syst.init()){
-    .al.alert!.self?("system初期化に失敗");
+    .com.error!.self?("system初期化に失敗");
     ret false;
   }
   .addFunc("game", .scGame);
@@ -372,7 +371,7 @@ void loadCharacter(^&.chr.Char p, ^/char file, ^int end)
   &.stb.StateBuilder chara;
   if(!chara.build(p~playerno, file) || !p~load(file)){
     %char buf .= file .= ": キャラ初期化に失敗";
-    .al.alert!.self?(buf);
+    .com.error!.self?(buf);
     end<> = -1;
     ret;
   }
@@ -383,7 +382,7 @@ void loadStage(^/char file, ^int end)
 {
   if(!.chr.stg~load(file)){
     %char buf .= file .= ": ステージ初期化に失敗";
-    .al.alert!.self?(buf);
+    .com.error!.self?(buf);
     end<> = -1;
     ret;
   }
@@ -658,7 +657,7 @@ int game()
 void main()
 {//Itumademo Kanseishinai Eienni Mikansei ENgine
   if(!.sdl.init("I.K.E.M.E.N", .cfg.Width, .cfg.Height)){
-    .al.alert!.self?("初期化に失敗");
+    .com.error!.self?("初期化に失敗");
     ret;
   }
   .sdl.showCursor(false);
@@ -667,7 +666,7 @@ void main()
   .script~init(tmp .= .cfg.system .= "#loadFile#!");
   ^char out;
   if(.script~run(out=) == .mac.RetState::ERROR){
-    .al.alert!.script<>.self?(.mac.errormes);
+    .com.error!.script<>.self?(.mac.errormes);
   }
 }
 

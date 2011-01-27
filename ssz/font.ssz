@@ -9,12 +9,6 @@ lib cfg = "config.ssz";
 lib sff = "sff.ssz";
 lib com = "common.ssz";
 
-void error(^/char m)
-{
-  lib al = <alert.ssz>;
-  al.alert!.self?(m);
-}
-
 public &Font
 {
   &CharOffset
@@ -139,7 +133,7 @@ public &Font
       i++;
     while i < 12:
       if(!.s.equ(s, "ElecbyteFnt"\0)){
-        .error("ElecbyteFntじゃない");
+        .com.error!.self?("ElecbyteFntじゃない");
         ret false;
       }
     }
@@ -149,11 +143,7 @@ public &Font
     if(!f.read!uint?(pcxDataLenght=)) ret false;
     if(!f.read!uint?(txtDataOffset=)) ret false;
     if(!f.read!uint?(txtDataLenght=)) ret false;
-    if(!`img.readHeader(f=, (long)pcxDataOffset)) ret false;
-    if(`img.pcxHeader.bpp != 0d8){
-      .error("256色じゃない");
-      ret false;
-    }
+    if(!`img.readPcxHeader(f=, (long)pcxDataOffset)) ret false;
     f.seek((long)pcxDataOffset+128, .file.Seek::SET);
     `img.pxl.new((index)pcxDataLenght-128-768);
     f.readAry!ubyte?(`img.pxl);
@@ -169,7 +159,7 @@ public &Font
       i++;
     while i < 256:
     }
-    `img.rleDecode();
+    `img.rlePcxDecode();
     f.seek((long)txtDataOffset, .file.Seek::SET);
     %char buf;
     loop{while; do:

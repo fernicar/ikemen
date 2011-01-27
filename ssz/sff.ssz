@@ -11,35 +11,12 @@ lib com = "common.ssz";
 
 const int NumCharPalletes = 12;
 
-void error(^/char m)
-{
-  lib al = <alert.ssz>;
-  al.alert!.self?(m);
-}
-
-public &PcxHeader
-{
-  public ubyte manufacturer;
-  public ubyte version;
-  public ubyte encoding;
-  public ubyte bpp;
-  public ushort x, y, w, h;
-  public ushort hdpi, vdpi;
-  //ここに48byte
-  public ubyte reserved;
-  public ubyte nPlanes;
-  public ushort bytesPerLine;
-  public ushort palletInfo;
-  //ここに58byte
-}
-
 public &SffHeader
 {
-  ubyte ver0, ver1, ver2, ver3;
-  public uint subHeaderOffset, sizeOfSubheader;
-  public uint numberOfGroups, numberOfImage;
-  public ubyte paletteType;
-  public bool read(&.file.File f=)
+  public ubyte ver0, ver1, ver2, ver3;
+  public uint firstSpriteHeaderOffset, firstPaletteHeaderOffset;
+  public uint numberOfPalettes, numberOfSprites;
+  public bool read(&.file.File f=, uint lofs=, uint tofs=)
   {
     ubyte ub;
     loop{
@@ -51,20 +28,39 @@ public &SffHeader
       i++;
     while i < 12:
       if(!.s.equ(s, "ElecbyteSpr"\0)){
-        .error("ElecbyteSprじゃない");
+        .com.error!self?("ElecbyteSprじゃない");
         ret false;
       }
     }
     if(!f.read!ubyte?(`ver3=)) ret false;
     if(!f.read!ubyte?(`ver2=)) ret false;
     if(!f.read!ubyte?(`ver1=)) ret false;
-    if(!f.read!ubyte?(`ver0=) || `ver0 != 0x1) ret false;
-    if(!f.read!uint?(`numberOfGroups=)) ret false;
-    if(!f.read!uint?(`numberOfImage=)) ret false;
-    if(!f.read!uint?(`subHeaderOffset=)) ret false;
-    if(!f.read!uint?(`sizeOfSubheader=)) ret false;
-    `sizeOfSubheader = 0d32;//ちゃんと設定してないファイルがある
-    if(!f.read!ubyte?(`paletteType=)) ret false;
+    if(!f.read!ubyte?(`ver0=)) ret false;
+    uint dummy;
+    switch(`ver0){
+    case 0d1:
+      if(!f.read!uint?(dummy=)) ret false;
+      `numberOfPalettes = 0x0;
+      if(!f.read!uint?(`numberOfSprites=)) ret false;
+      if(!f.read!uint?(`firstSpriteHeaderOffset=)) ret false;
+      if(!f.read!uint?(dummy=)) ret false;
+      `firstPaletteHeaderOffset = 0x0;
+    case 0d2:
+      if(!f.read!uint?(dummy=)) ret false;
+      if(!f.read!uint?(dummy=)) ret false;
+      if(!f.read!uint?(dummy=)) ret false;
+      if(!f.read!uint?(dummy=)) ret false;
+      if(!f.read!uint?(dummy=)) ret false;
+      if(!f.read!uint?(`firstSpriteHeaderOffset=)) ret false;
+      if(!f.read!uint?(`numberOfSprites=)) ret false;
+      if(!f.read!uint?(`firstPaletteHeaderOffset=)) ret false;
+      if(!f.read!uint?(`numberOfPalettes=)) ret false;
+      if(!f.read!uint?(lofs=)) ret false;
+      if(!f.read!uint?(dummy=)) ret false;
+      if(!f.read!uint?(tofs=)) ret false;
+    default:
+      ret false;
+    }
     ret true;
   }
 }
@@ -82,9 +78,14 @@ public &SffHeader
   }
   public ^uint newPal(index pi=)
   {
-    `palidxs .= (pi = #`palletes);
+    `palidxs.new[#`palletes] = (pi = #`palletes);
     `palletes.new[-1].new(256);
     ret `palletes[-1];
+  }
+  public void setSource(index pi, ^uint pal)
+  {
+    `palidxs.new[pi] = pi;
+    `palletes.new[pi] = pal;
   }
   public ^uint get(index pi)
   {
@@ -102,7 +103,6 @@ public &SffHeader
 
 public &Sprite
 {
-  public &.PcxHeader pcxHeader;
   public ^uint colorPallet;
   public ^ubyte pxl;
   public %byte pluginbuf;
@@ -112,7 +112,6 @@ public &Sprite
   public int rle = 0;
   public void shareCopy(`self sp=)
   {
-    `pcxHeader = sp.pcxHeader;
     `colorPallet = sp.colorPallet;
     `pxl = sp.pxl;
     `rct.w = sp.rct.w;
@@ -134,27 +133,61 @@ public &Sprite
     if(#`colorPallet > 0) ret `colorPallet;
     ret pl.get(`palidx);
   }
-  public bool readHeader(&.file.File f=, long offset)
+  public bool readHeader(&.file.File f=)
+  {
+    if(!f.read!short?(`rct.x=)) ret false;
+    if(!f.read!short?(`rct.y=)) ret false;
+    if(!f.read!short?(`imageGroup=)) ret false;
+    if(!f.read!short?(`imageNumber=)) ret false;
+    ret true;
+  }
+  public bool readPcxHeader(&.file.File f=, long offset)
   {
     f.seek(offset, .file.Seek::SET);
-    if(!f.read!ubyte?(`pcxHeader.manufacturer=)) ret false;
-    if(!f.read!ubyte?(`pcxHeader.version=)) ret false;
-    if(!f.read!ubyte?(`pcxHeader.encoding=)) ret false;
-    if(!f.read!ubyte?(`pcxHeader.bpp=)) ret false;
-    if(!f.read!ushort?(`pcxHeader.x=)) ret false;
-    if(!f.read!ushort?(`pcxHeader.y=)) ret false;
-    if(!f.read!ushort?(`pcxHeader.w=)) ret false;
-    if(!f.read!ushort?(`pcxHeader.h=)) ret false;
-    if(!f.read!ushort?(`pcxHeader.hdpi=)) ret false;
-    if(!f.read!ushort?(`pcxHeader.vdpi=)) ret false;
-    f.seek(offset+64, .file.Seek::SET);
-    if(!f.read!ubyte?(`pcxHeader.reserved=)) ret false;
-    if(!f.read!ubyte?(`pcxHeader.nPlanes=)) ret false;
-    if(!f.read!ushort?(`pcxHeader.bytesPerLine=)) ret false;
-    if(!f.read!ushort?(`pcxHeader.palletInfo=)) ret false;
-    `rct.w = `pcxHeader.w-`pcxHeader.x + 0x1;
-    `rct.h = `pcxHeader.h-`pcxHeader.y + 0x1;
-    `rle = `pcxHeader.encoding == 0x1 ? (int)`pcxHeader.bytesPerLine : 0;
+    ubyte dummy, encoding, bpp;
+    if(!f.read!ubyte?(dummy=)) ret false;
+    if(!f.read!ubyte?(dummy=)) ret false;
+    if(!f.read!ubyte?(encoding=)) ret false;
+    if(!f.read!ubyte?(bpp=)) ret false;
+    if(bpp != 0d8){
+      .com.error!.self?("256色じゃない");
+      ret false;
+    }
+    ushort x, y, w, h;
+    if(!f.read!ushort?(x=)) ret false;
+    if(!f.read!ushort?(y=)) ret false;
+    if(!f.read!ushort?(w=)) ret false;
+    if(!f.read!ushort?(h=)) ret false;
+    f.seek(offset+66, .file.Seek::SET);
+    ushort bpl;
+    if(!f.read!ushort?(bpl=)) ret false;
+    `rct.w = w - x + 0x1;
+    `rct.h = h - y + 0x1;
+    `rle = encoding == 0x1 ? (int)bpl : 0;
+    ret true;
+  }
+  public bool readHeaderV2(
+    &.file.File f=, uint ofs=, uint siz=,
+    uint lofs, uint tofs, ushort idxlnked=)
+  {
+    if(!f.read!short?(`imageGroup=)) ret false;
+    if(!f.read!short?(`imageNumber=)) ret false;
+    if(!f.read!ushort?(`rct.w=)) ret false;
+    if(!f.read!ushort?(`rct.h=)) ret false;
+    if(!f.read!short?(`rct.x=)) ret false;
+    if(!f.read!short?(`rct.y=)) ret false;
+    if(!f.read!ushort?(idxlnked=)) ret false;
+    ubyte fmt, dummy;
+    if(!f.read!ubyte?(fmt=)) ret false;
+    `rle = -(int)fmt;
+    if(!f.read!ubyte?(dummy=)) ret false;
+    if(!f.read!uint?(ofs=)) ret false;
+    if(!f.read!uint?(siz=)) ret false;
+    ushort pali, flg;
+    if(!f.read!ushort?(pali=)) ret false;
+    `palidx = (index)pali;
+    if(!f.read!ushort?(flg=)) ret false;
+    ofs += (flg & 0d1) == 0x0 ? lofs : tofs;
     ret true;
   }
   public bool read(
@@ -165,11 +198,7 @@ public &Sprite
     if(nsh > (uint)offset) lenghtOfSubheader = nsh - (uint)offset;//lohを無視
     if(!f.read!bool?(palletSame=)) ret false;
     if(#prev == 0) palletSame = false;
-    if(!`readHeader(f=, offset)) ret false;
-    if(`pcxHeader.bpp != 0d8){
-      .error("256色じゃない");
-      ret false;
-    }
+    if(!`readPcxHeader(f=, offset)) ret false;
     f.seek(offset + 128, .file.Seek::SET);
     `pxl.new((index)lenghtOfSubheader - (128+(c00||palletSame?0:768)));
     f.readAry!ubyte?(`pxl);
@@ -196,11 +225,28 @@ public &Sprite
       || (index)`rct.w*(index)`rct.h
       < (`rct.w >= 0d256 ? (#`pxl/256)*(index)`rct.w : #`pxl))
     {
-      `rleDecode();
+      `rlePcxDecode();
     }
     ret true;
   }
-  public void rleDecode()
+  public bool readV2(&.file.File f=, long ofs, uint dsz)
+  {
+    f.seek(ofs+4, .file.Seek::SET);
+    `pxl.new((index)dsz);
+    f.readAry!ubyte?(`pxl);
+    if(`rle < 0) switch(-`rle){
+    case 2:
+      `rle8Decode();
+    case 3:
+      `rle5Decode();
+    case 4:
+      `lz5Decode();
+    default:
+      ret false;
+    }
+    ret true;
+  }
+  public void rlePcxDecode()
   {
     if(#`pxl == 0 || `rle <= 0) ret;
     ^/ubyte rle = `pxl;
@@ -234,60 +280,226 @@ public &Sprite
     }
     `rle = 0;
   }
+  public void rle8Decode()
+  {
+    if(#`pxl == 0) ret;
+    ^/ubyte rle = `pxl;
+    `pxl.new((index)((uint)`rct.w * `rct.h));
+    loop{
+      int leng = #`pxl;
+      index i = 0, j = 0;
+      while;
+    do:
+      loop{
+        int size;
+        ubyte d = rle[i++];
+        branch{
+        cond (d&0xC0) == 0x40:
+          size = (int)(d & 0x3F);
+          d = rle[i++];
+        else:
+          size = 1;
+        }
+        while;
+      do:
+        `pxl[j++] = d;
+      while --size >= 0:
+      }
+    while j < leng:
+    }
+    `rle = 0;
+  }
+  public void rle5Decode()
+  {
+    if(#`pxl == 0) ret;
+    ^/ubyte rle = `pxl;
+    `pxl.new((index)((uint)`rct.w * `rct.h));
+    loop{
+      int leng = #`pxl;
+      index i = 0, j = 0;
+      while;
+    do:
+      loop{
+        int rlen = (int)rle[i++] + 1;
+        int dlen = (int)(rle[i] & 0x7F);
+        ubyte c = rle[i++]>>0d7 != 0x0 ? rle[i++] : 0x0;
+        while;
+      do:
+        `pxl[j++] = c;
+      while --rlen >= 0:
+        if(--dlen >= 0){
+          c = rle[i] & 0x1F;
+          rlen = (int)(rle[i++]>>0d5) + 1;
+          break, while;
+        }
+      }
+    while j < leng:
+    }
+    `rle = 0;
+  }
+  public void lz5Decode()
+  {
+    if(#`pxl == 0) ret;
+    ^/ubyte rle = `pxl;
+    `pxl.new((index)((uint)`rct.w * `rct.h));
+    loop{
+      int leng = #`pxl;
+      index i = 0, j = 0;
+      uint s = 0x0, rbc = 0x0;
+      ubyte ct = rle[i++], rb = 0x0;
+      while;
+    do:
+      branch{
+        int size;
+        uint d;
+      cond (ct & 0d1<<s) != 0x0:
+        loop{
+          d = rle[i++];
+          branch{
+          cond (d&0x3F) == 0x00:
+            d = d<<0d2 | rle[i++];
+            size = (int)rle[i++] + 3;
+          else:
+            rb |= (d&0xC0) >> rbc;
+            rbc += 0d2;
+            size = (int)(d & 0x3F);
+            branch{
+            cond rbc < 0d8:
+              d = rle[i++] + 0x1;
+            else:
+              d = rb + 0d1;
+              rbc = 0x0;
+              rb = 0x0;
+            }
+          }
+          while;
+        do:
+          `pxl[j] = `pxl[j-(index)d];
+          j++;
+        while --size >= 0:
+        }
+      else:
+        loop{
+          d = rle[i++];
+          branch{
+          cond (d&0xE0) == 0x00:
+            size = (int)rle[i++] + 8;
+          else:
+            d &= 0x1F;
+            size = (int)(d >> 0d6);
+          }
+          while;
+        do:
+          `pxl[j++] = d;
+        while --size >= 0:
+        }
+      }
+      if(++s > 0d8){
+        s = 0x0;
+        ct = rle[i++];
+      }
+    while j < leng:
+    }
+    `rle = 0;
+  }
   public bool loadFromSff(^/char fn, short ig, short in)
   {
     &.file.File f;
     if(!f.open(fn, "rb")) ret false;
     &.SffHeader h;
-    if(!h.read(f=)) ret false;
-    uint shofs = h.subHeaderOffset, lenghtOfSubheader;
+    uint lofs, tofs;
+    if(!h.read(f=, lofs=, tofs=)) ret false;
+    uint shofs = h.firstSpriteHeaderOffset, misc, size;
+    ushort indexOfPrevious;
     &.PalleteList pl;
     loop{
       index i = 0;
-      %uint newSubHeaderOffset;
-      ushort indexOfPrevious;
+      %uint newSubHeaderOffset .= shofs;
       bool palletSame;
       ~$bool() foo = [bool(){
-        if(!f.read!uint?(lenghtOfSubheader=)) ret false;
-        if(!f.read!short?(`rct.x=)) ret false;
-        if(!f.read!short?(`rct.y=)) ret false;
-        if(!f.read!short?(`imageGroup=)) ret false;
-        if(!f.read!short?(`imageNumber=)) ret false;
-        if(!f.read!ushort?(indexOfPrevious=)) ret false;
+        switch(h.ver0){
+        case 0d1:
+          if(!f.read!uint?(misc=)) ret false;
+          if(!f.read!uint?(size=)) ret false;
+          if(!`readHeader(f=)) ret false;
+          if(!f.read!ushort?(indexOfPrevious=)) ret false;
+        case 0d2:
+          if(
+            !`readHeaderV2(
+              f=, misc=, size=, lofs, tofs, indexOfPrevious=)) ret false;
+        }
         ret true;
       }];
       ^`self dummy;
       while;
     do:
+      newSubHeaderOffset .= shofs;
       f.seek((long)shofs, .file.Seek::SET);
-      if(!f.read!uint?(newSubHeaderOffset.new[-1]=) || !foo(::)) ret false;
+      if(!foo(::)) ret false;
       if(`palidx >= 0 && (`imageGroup != ig || `imageNumber != in)) continue;
       loop{
-        index ip = !(index)indexOfPrevious;
-        uint dummy;
+        uint ip = !indexOfPrevious;
         while;
       do:
-        if(ip == (index)indexOfPrevious) ret false;
-        ip = (index)indexOfPrevious;
-        shofs = ip == 0 ? h.subHeaderOffset : newSubHeaderOffset[ip-1];
+        if(ip == indexOfPrevious) ret false;
+        ip = indexOfPrevious;
+        shofs =
+          h.ver0 == 0d1 ? newSubHeaderOffset[(index)ip]
+          : h.firstSpriteHeaderOffset + ip*0d28;
         f.seek((long)shofs, .file.Seek::SET);
-        if(!f.read!uint?(dummy=) || !foo(::)) ret false;
-      while lenghtOfSubheader == 0d0:
+        if(!foo(::)) ret false;
+      while size == 0d0:
       }
-      if(
-        !`read(
-          f=, h=, (long)(shofs + h.sizeOfSubheader), lenghtOfSubheader,
-          newSubHeaderOffset[-1], dummy, palletSame=, pl=, false)) ret false;
+      switch(h.ver0){
+      case 0d1:
+        if(
+          !`read(
+            f=, h=, (long)(shofs + 0d32), size,
+            misc, dummy, palletSame=, pl=, false)) ret false;
+      case 0d2:
+        if(!`readV2(f=, (long)misc, size)) ret false;
+      }
       if(`imageGroup == ig && `imageNumber == in) break;
       dummy.new(1);
       dummy~palidx = `palidx;
     continue:
-      shofs = newSubHeaderOffset[-1];
+      shofs = h.ver0 == 0d1 ? misc : shofs + 0d28;
       i++;
-    while i < (index)h.numberOfImage:
+    while i < (index)h.numberOfSprites:
       ret false;
     }
-    `colorPallet = pl.get(`palidx);
+    if(h.ver0 == 0d1){
+      `colorPallet = pl.get(`palidx);
+      `palidx = -1;
+      ret true;
+    }
+    loop{
+      uint ip;
+      indexOfPrevious = (uint)`palidx;
+    do:
+      ip = indexOfPrevious;
+      shofs = h.firstPaletteHeaderOffset + ip*0d16;
+      f.seek((long)shofs + 6, .file.Seek::SET);
+      if(!f.read!ushort?(indexOfPrevious=)) ret false;
+      if(!f.read!uint?(misc=)) ret false;
+      if(!f.read!uint?(size=)) ret false;
+    while size == 0d0 && ip != indexOfPrevious:
+    }
+    f.seek((long)(lofs+misc), .file.Seek::SET);
+    `colorPallet.new(256);
+    loop{
+      index i = 0, l = (index)size / 4;
+      ubyte r, g, b, dummy;
+    do:
+      if(!f.read!ubyte?(r=)) ret false;
+      if(!f.read!ubyte?(g=)) ret false;
+      if(!f.read!ubyte?(b=)) ret false;
+      if(!f.read!ubyte?(dummy=)) ret false;
+      `colorPallet[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
+      i++;
+    while i < l:
+    }
+    if(#`colorPallet == 0) `colorPallet.new(256);
     `palidx = -1;
     ret true;
   }
@@ -321,9 +533,16 @@ public &Sff
   {
     `spriteTable.clear();
     `palList.clear();
-    loop{index i = 0, foo; while; do:
+    loop{
+      index i = 0, foo;
+      ^index idx;
+      while;
+    do:
       `palList.newPal(foo=);
       i++;
+      idx.new(1);
+      idx<> = foo;
+      `palList.palTable.set(0d1<<0d16 | (uint)i, idx);
     while i < .NumCharPalletes:
     }
   }
@@ -332,35 +551,86 @@ public &Sff
     &.file.File f;
     if(!f.open(filename, "rb")) ret false;
     `clear();
-    if(!`head.read(f=)) ret false;
-    uint shofs = `head.subHeaderOffset, lenghtOfSubheader;
+    uint lofs, tofs;
+    if(!`head.read(f=, lofs=, tofs=)) ret false;
+    if(`head.ver0 != 0d1)loop{
+       index i = 0;
+       ^uint pal;
+       ushort group, item, link, dummy;
+       uint ofs, siz;
+       ^index idx;
+       while;
+    do:
+      f.seek((long)`head.firstPaletteHeaderOffset + 16*i, .file.Seek::SET);
+      if(!f.read!ushort?(group=)) ret false;
+      if(!f.read!ushort?(item=)) ret false;
+      if(!f.read!ushort?(dummy=)) ret false;
+      if(!f.read!ushort?(link=)) ret false;
+      if(!f.read!uint?(ofs=)) ret false;
+      if(!f.read!uint?(siz=)) ret false;
+      idx.new(1);
+      branch{
+      cond siz == 0x0:
+        pal = `palList.get((index)link);
+        idx<> = (index)link;
+      else:
+        f.seek((long)(lofs+ofs), .file.Seek::SET);
+        pal.new(256);
+        loop{
+          index i = 0, l = (index)siz / 4;
+          ubyte r, g, b, dummy8;
+        do:
+          if(!f.read!ubyte?(r=)) ret false;
+          if(!f.read!ubyte?(g=)) ret false;
+          if(!f.read!ubyte?(b=)) ret false;
+          if(!f.read!ubyte?(dummy8=)) ret false;
+          pal[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
+          i++;
+        while i < l:
+        }
+        idx<> = i;
+      }
+      `palList.setSource(i, pal);
+      `palList.palTable.set((uint)group<<0d16 | item, idx);
+      i++;
+    while i < (index)`head.numberOfPalettes:
+    }
+    uint shofs = `head.firstSpriteHeaderOffset, size;
     loop{
       index i = 0;
-      uint newSubHeaderOffset;
+      uint misc;
       ^&.Sprite spriteList;
-      spriteList.new((index)`head.numberOfImage);
+      spriteList.new((index)`head.numberOfSprites);
       ushort indexOfPrevious;
       index prev = -1;
       while;
     do:
       f.seek((long)shofs, .file.Seek::SET);
-      if(!f.read!uint?(newSubHeaderOffset=)) ret false;
-      if(!f.read!uint?(lenghtOfSubheader=)) ret false;
-      if(!f.read!short?(spriteList[i].rct.x=)) ret false;
-      if(!f.read!short?(spriteList[i].rct.y=)) ret false;
-      if(!f.read!short?(spriteList[i].imageGroup=)) ret false;
-      if(!f.read!short?(spriteList[i].imageNumber=)) ret false;
-      if(!f.read!ushort?(indexOfPrevious=)) ret false;
+      switch(`head.ver0){
+      case 0d1:
+        if(!f.read!uint?(misc=)) ret false;
+        if(!f.read!uint?(size=)) ret false;
+        if(!spriteList[i].readHeader(f=)) ret false;
+        if(!f.read!ushort?(indexOfPrevious=)) ret false;
+      case 0d2:
+        if(
+          !spriteList[i].readHeaderV2(
+            f=, misc=, size=, lofs, tofs, indexOfPrevious=)) ret false;
+      }
       branch{
         bool ps;
-      cond lenghtOfSubheader != 0d0:
-        if(
-          !spriteList[i].read(
-            f=, `head=, (long)(shofs + `head.sizeOfSubheader),
-            lenghtOfSubheader, newSubHeaderOffset,
-            spriteList[prev..prev+1], ps=, `palList=,
-            chr && spriteList[i].imageGroup == 0
-            && spriteList[i].imageNumber == 0)) ret false;
+      cond size != 0d0:
+        switch(`head.ver0){
+        case 0d1:
+          if(
+            !spriteList[i].read(
+              f=, `head=, (long)(shofs + 0d32),
+              size, misc, spriteList[prev..prev+1], ps=, `palList=,
+              chr && spriteList[i].imageGroup == 0
+              && spriteList[i].imageNumber == 0)) ret false;
+        case 0d2:
+          if(!spriteList[i].readV2(f=, (long)misc, size)) ret false;
+        }
         prev = i;
       else:
         spriteList[i].shareCopy(spriteList[(index)indexOfPrevious]=);
@@ -370,9 +640,9 @@ public &Sff
         (uint)spriteList[i].imageGroup
         | (uint)spriteList[i].imageNumber<<0d16,
         [void(^&.Sprite s=){if(#s == 0) s = spriteList[i..i+1];}]);
-      shofs = newSubHeaderOffset;
+      shofs = `head.ver0 == 0d1 ? misc : shofs + 0d28;
       i++;
-    while i < (index)`head.numberOfImage:
+    while i < (index)`head.numberOfSprites:
     }
     ret true;
   }

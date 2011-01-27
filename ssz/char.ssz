@@ -2475,7 +2475,7 @@ public &Char
   {
     `sf~palList.resetRemap();
     index tmp = 0;
-    loop{
+    if(`sf~head.ver0 == 0d1) loop{
       index i = 0;
       ubyte r, g, b;
       ^uint pl;
@@ -4358,11 +4358,10 @@ public &Char
   public bool changeState1(int p, int n)
   {
     if(.changeStateNest >= 2500){
-      lib al = <alert.ssz>;
       %char buf .=
         "2500 loops: " .= `name .= ", " .= .s.iToS(`stVal.prevno) .= " -> "
         .= .s.iToS(`stVal.no) .= " -> " .= .s.iToS(n);
-      al.alert!.self?(buf);
+      .com.error!.self?(buf);
       ret false;
     }
     if(n < 0) ret false;
@@ -5254,13 +5253,18 @@ public &Char
   }
   public void trRemapPal(int sg, int sn, int dg, int dn)
   {
-    if(
-      sg != 1 || sn != 1 || dg != 1
-      || !.m.inRange!int?(1, .sff.NumCharPalletes, dn)) ret;
-    ^&.sff.Sprite spr = `sf~getSprite(0, 0);
-    if(#spr > 0) `sf~palList.remap(spr~palidx, dn-1);
-    spr = `sf~getSprite(9000, 0);
-    if(#spr > 0) `sf~palList.remap(spr~palidx, dn-1);
+    if(sg < 0 || sn < 0 || dg < 0 || dn < 0) ret;
+    ^index si = `sf~palList.palTable.get((uint)sg << 0d16 | (ushort)sn);
+    ^index di = `sf~palList.palTable.get((uint)dg << 0d16 | (ushort)dn);
+    if(#si == 0) ret;
+    if(#di == 0) di = si;
+    `sf~palList.remap(si<>, di<>);
+    if(sg == 1 && sn == 1 && `sf~head.ver0 == 0d1){
+      ^&.sff.Sprite spr = `sf~getSprite(0, 0);
+      if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
+      spr = `sf~getSprite(9000, 0);
+      if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
+    }
   }
 }
 

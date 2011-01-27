@@ -5,12 +5,7 @@ lib consts = <consts.ssz>;
 lib tbl = <table.ssz>;
 lib mat = <math.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
-
-void error(^/char m)
-{
-  lib al = <alert.ssz>;
-  al.alert!.self?(m);
-}
+lib com = "common.ssz";
 
 public &SndNnm
 {
@@ -48,14 +43,14 @@ public &Snd
         if(!`f.read!ubyte?(ub=)) ret false;
         s .= (char)ub;
       while ++i < 4:
-        if(!.s.equ(s, "RIFF")){.error("RIFFじゃない"); ret false;}
+        if(!.s.equ(s, "RIFF")){.com.error!.self?("RIFFじゃない"); ret false;}
       }
       if(!`f.read!uint?(riffSize=)) ret false;
       loop{index i = 0; %char s; do:
         if(!`f.read!ubyte?(ub=)) ret false;
         s .= (char)ub;
       while ++i < 4:
-        if(!.s.equ(s, "WAVE")){.error("WAVEじゃない"); ret false;}
+        if(!.s.equ(s, "WAVE")){.com.error!.self?("WAVEじゃない"); ret false;}
       }
       loop{
         ushort fmtID, mushi;
@@ -75,25 +70,26 @@ public &Snd
           fmtSize = size;
           if(!`f.read!ushort?(fmtID=)) ret false;
           if(fmtID != 0x1){
-            .error("リニアPCMじゃない");
+            .com.error!.self?("リニアPCMじゃない");
             ret false;
           }
           if(!`f.read!ushort?(wav.channels=)) ret false;
           if(wav.channels-0x1 >= 0x2){
-            .error("チャンネル数が不正");
+            .com.error!.self?("チャンネル数が不正");
             ret false;
           }
           if(!`f.read!uint?(wav.samplesPerSec=)) ret false;
           if(wav.samplesPerSec-0x1 >= 0x100000){
             %char buf;
-            .error(buf .= "周波数が不正 " .= .s.iToS((int)wav.samplesPerSec));
+            .com.error!.self?(
+              buf .= "周波数が不正 " .= .s.iToS((int)wav.samplesPerSec));
             ret false;
           }
           if(!`f.read!uint?(musi=)) ret false;
           if(!`f.read!ushort?(mushi=)) ret false;
           if(!`f.read!ushort?(wav.bytesPerSample=)) ret false;
           if(wav.bytesPerSample != 0x8 && wav.bytesPerSample != 0x10){
-            .error("bit数が不正");
+            .com.error!.self?("bit数が不正");
             ret false;
           }
           wav.bytesPerSample >>= 0x3;
@@ -109,7 +105,7 @@ public &Snd
         && ofs < (long)`subHeaderOffset + (long)riffSize + 24
         :
       break:
-        if(fmtSize == 0x0) .error("fmt がない");
+        if(fmtSize == 0x0) .com.error!.self?("fmt がない");
       }
       ret fmtSize > 0x0;
     }
@@ -123,7 +119,7 @@ public &Snd
       i++;
     while i < 12:
       if(!.s.equ(s, "ElecbyteSnd"\0)){
-        .error("ElecbyteSndじゃない");
+        .com.error!.self?("ElecbyteSndじゃない");
         ret false;
       }
     }

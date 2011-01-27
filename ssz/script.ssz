@@ -3,7 +3,6 @@
 lib mac = <macro.ssz>;
 lib tbl = <table.ssz>;
 lib s = <string.ssz>;
-lib al = <alert.ssz>;
 lib consts = <consts.ssz>;
 lib se = <alpha/sdlevent.ssz>;
 lib file = <file.ssz>;
@@ -986,7 +985,7 @@ public &Script
   }
   public void error(^/char cc)
   {
-    .al.alert!`self?(cc[0..200]);
+    .com.error!`self?(cc[0..200]);
   }
   public ^self newBlock(^char txt)
   {
