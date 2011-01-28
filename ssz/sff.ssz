@@ -320,17 +320,16 @@ public &Sprite
       while;
     do:
       loop{
-        int rlen = (int)rle[i++] + 1;
+        int rlen = (int)rle[i++];
         int dlen = (int)(rle[i] & 0x7F);
         ubyte c = rle[i++]>>0d7 != 0x0 ? rle[i++] : 0x0;
-        while;
       do:
         `pxl[j++] = c;
       while --rlen >= 0:
         if(--dlen >= 0){
           c = rle[i] & 0x1F;
-          rlen = (int)(rle[i++]>>0d5) + 1;
-          break, while;
+          rlen = (int)(rle[i++]>>0d5);
+          break, do;
         }
       }
     while j < leng:
@@ -357,22 +356,21 @@ public &Sprite
           d = rle[i++];
           branch{
           cond (d&0x3F) == 0x00:
-            d = d<<0d2 | rle[i++];
-            size = (int)rle[i++] + 3;
+            d = (d<<0d2 | rle[i++]) + 0d1;
+            size = (int)rle[i++] + 2;
           else:
             rb |= (d&0xC0) >> rbc;
             rbc += 0d2;
             size = (int)(d & 0x3F);
             branch{
             cond rbc < 0d8:
-              d = rle[i++] + 0x1;
+              d = (uint)rle[i++] + 0x1;
             else:
-              d = rb + 0d1;
+              d = (uint)rb + 0d1;
               rbc = 0x0;
               rb = 0x0;
             }
           }
-          while;
         do:
           `pxl[j] = `pxl[j-(index)d];
           j++;
@@ -385,8 +383,8 @@ public &Sprite
           cond (d&0xE0) == 0x00:
             size = (int)rle[i++] + 8;
           else:
+            size = (int)(d >> 0d5);
             d &= 0x1F;
-            size = (int)(d >> 0d6);
           }
           while;
         do:
@@ -394,7 +392,7 @@ public &Sprite
         while --size >= 0:
         }
       }
-      if(++s > 0d8){
+      if(++s >= 0d8){
         s = 0x0;
         ct = rle[i++];
       }
