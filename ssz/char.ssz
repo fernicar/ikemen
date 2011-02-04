@@ -2064,7 +2064,6 @@ public &Char
       i++;
     while i< #`actionList:
     }
-    if(#a > 0) a~ani.updateSprite();
     ret a;
   }
   public ^&.snd.Sound newChannel(int ch, bool lowpriority)
@@ -2111,6 +2110,9 @@ public &Char
   public void insertExplod(index i, int scn)
   {
     .explods[`playerno][i].stconno = scn;
+    if(#.explods[`playerno][i].ani > 0){
+      .explods[`playerno][i].ani~ani.updateSprite();
+    }
     loop{
       index ii = 0;
       int p;
@@ -4678,6 +4680,7 @@ public &Char
       p.velocityx *= -1.0;
       p.accelx *= -1.0;
     }
+    if(#p.ani > 0) p.ani~ani.updateSprite();
   }
   public void trDestroySelf()
   {
