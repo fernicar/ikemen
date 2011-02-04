@@ -2064,6 +2064,7 @@ public &Char
       i++;
     while i< #`actionList:
     }
+    if(#a > 0) a~ani.updateSprite();
     ret a;
   }
   public ^&.snd.Sound newChannel(int ch, bool lowpriority)

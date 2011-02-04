@@ -848,7 +848,7 @@ public &Anim<frame_t>
   public void updateSprite()
   {
     if(#`frames == 0) ret;
-    if(`newframe){
+    if(`newframe && #`sff > 0){
       `spr = `sff~getSprite(`frames[`current].group, `frames[`current].number);
     }
     `newframe = false;
