@@ -4486,10 +4486,13 @@ public &Char
   public void trP2BodyDistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
+    bool foo = (`sysfvar[.fX] <= e~sysfvar[.fX]) ^ (`facing < 0);
+    bool bar = (e~sysfvar[.fX] <= `sysfvar[.fX]) ^ (e~facing < 0);
     .v.setF()<, .m.floor(
       (float)`facing*(
-        e~sysfvar[.fX] - `sysfvar[.fX] + (float)e~facing*e~frontw)
-      - `frontw);
+        e~sysfvar[.fX] - `sysfvar[.fX]
+        + (float)e~facing * (bar ? e~frontw : -e~backw))
+      - (foo ? `frontw : -`backw));
   }
   public void trP2BodyDistY()
   {
