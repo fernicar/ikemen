@@ -4495,7 +4495,9 @@ public &Char
   public void trP2BodyDistY()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    .v.setF((e~sysfvar[.fY] - e~getHeight()) - (`sysfvar[.fY] - `getHeight()));
+    float dist = e~sysfvar[.fY] - `sysfvar[.fY];
+    .v.setF()<, .m.floor(
+      dist + (dist <= 0.0 ? 0.0 : -e~getHeight()) + `getHeight());
   }
   public void trRootDistX()
   {
