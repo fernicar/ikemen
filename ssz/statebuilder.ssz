@@ -2398,7 +2398,10 @@ public &StateBuilder
         if(#name > 0){
           bool foo = true;
           ^/char data = .s.trim(line[f+1..-1]);
-          if(typeid(func_t) != typeid(`stateBulid:<-state) && data[0] == '"'){
+          if(
+            typeid(func_t) != typeid(`stateBulid:<-state)
+            && #data > 0 && data[0] == '"')
+          {
             data = data[1...s.find(\", data[1..-1])+1];
           }
           if(!.s.equ(name[0..7], "trigger")){
@@ -2520,6 +2523,7 @@ public &StateBuilder
       `state.ctrlList[-1].task .= "$.v.toInt();";
       if(.s.equ(",")<, `tokenizer(text=)){
         text = .s.toLower()<, .s.trim(text);
+        if(#text == 0) break;
         switch(text[0]){
         case 'H', 'h':
           `state.ctrlList[-1].task .= obj .= ".bothhittype=.PriTy::Hit;";
@@ -2560,6 +2564,7 @@ public &StateBuilder
     cond .s.equ(name, "sparkno"):
       flg = -1;
       branch{
+        if(#text == 0) else;
       cond text[0] == 'F' || text[0] == 'f':
       cond text[0] == 'S' || text[0] == 's':
         flg = 0;
@@ -2590,6 +2595,7 @@ public &StateBuilder
     cond .s.equ(name, "hitsound"):
       flg = -1;
       branch{
+        if(#text == 0) else;
       cond text[0] == 'F' || text[0] == 'f':
       cond text[0] == 'S' || text[0] == 's':
         flg = 0;
@@ -2614,6 +2620,7 @@ public &StateBuilder
     cond .s.equ(name, "guardsound"):
       flg = -1;
       branch{
+        if(#text == 0) else;
       cond text[0] == 'F' || text[0] == 'f':
       cond text[0] == 'S' || text[0] == 's':
         flg = 0;
@@ -2636,6 +2643,10 @@ public &StateBuilder
             ".guardsoundn=", "$.v.toInt();")) ret false;
       }
     cond .s.equ(name, "ground.type") || .s.equ(name, "air.type"):
+      if(#text == 0){
+        `lasterror = "値が指定されていません";
+        ret false;
+      }
       switch(text[0]){
         ^/char tmp = (name[0] == 'g' ? ".ground_type" : ".air_type");
       case 'H', 'h':
@@ -3012,6 +3023,7 @@ public &StateBuilder
     cond .s.equ(name, "guard.sparkno"):
       flg = -1;
       branch{
+        if(#text == 0) else;
       cond text[0] == 'F' || text[0] == 'f':
       cond text[0] == 'S' || text[0] == 's':
         flg = 0;
@@ -3129,6 +3141,10 @@ public &StateBuilder
           `state.ctrlList[-1].task=, text=,
           ".hitonce=(int)(", "$.v.isTrue());")) ret false;
     cond .s.equ(name, "affectteam"):
+      if(#text == 0){
+        `lasterror = "値が指定されていません";
+        ret false;
+      }
       switch(text[0]){
       case 'E', 'e':
         `state.ctrlList[-1].task .= obj .= ".affectteam=1;";
@@ -3348,6 +3364,7 @@ public &StateBuilder
         cond .s.equ(name, "postype"):
           text = .s.toLower(text);
           branch{
+            if(#text == 0) else;
           cond .s.equ(text[0..2], "p2"):
             `state.ctrlList[-1].task .= "pt=1;";
           cond text[0] == 'p':
@@ -3397,6 +3414,10 @@ public &StateBuilder
       ^/char text = data;
       branch{
       cond .s.equ(name, "type"):
+        if(#data == 0){
+          `lasterror = "値が指定されていません";
+          ret false;
+        }
         switch(.s.toLowerChar(data[0])){
         case 's':
           `state.typ = .chr.StTy::S;
@@ -3416,6 +3437,10 @@ public &StateBuilder
           }
         }
       cond .s.equ(name, "movetype"):
+        if(#data == 0){
+          `lasterror = "値が指定されていません";
+          ret false;
+        }
         switch(.s.toLowerChar(data[0])){
         case 'i':
           `state.mov = .chr.MovTy::I;
@@ -3433,6 +3458,10 @@ public &StateBuilder
           }
         }
       cond .s.equ(name, "physics"):
+        if(#data == 0){
+          `lasterror = "値が指定されていません";
+          ret false;
+        }
         switch(.s.toLowerChar(data[0])){
         case 's':
           `state.phy = .chr.StTy::S;
@@ -4303,6 +4332,10 @@ public &StateBuilder
           branch{
             text = .s.toLower(text);
           cond .s.equ(name, "statetype") || .s.equ(name, "value"):
+            if(#text == 0){
+              `lasterror = "値が指定されていません";
+              ret false;
+            }
             switch(text[0]){
             case 's':
               `state.ctrlList[-1].task .= "`stVal.typ=.StTy::S;";
@@ -4320,6 +4353,10 @@ public &StateBuilder
               }
             }
           cond .s.equ(name, "physics"):
+            if(#text == 0){
+              `lasterror = "値が指定されていません";
+              ret false;
+            }
             switch(text[0]){
             case 's':
               `state.ctrlList[-1].task .= "`stVal.phy=.StTy::S;";
@@ -4337,6 +4374,10 @@ public &StateBuilder
               }
             }
           cond .s.equ(name, "movetype"):
+            if(#text == 0){
+              `lasterror = "値が指定されていません";
+              ret false;
+            }
             switch(text[0]){
             case 'i':
               `state.ctrlList[-1].task .= "`stVal.mov=.MovTy::I;";
@@ -4680,6 +4721,7 @@ public &StateBuilder
             `state.flag = 1;
           cond .s.equ(name, "anim"):
             branch{
+              if(#text == 0) else;
             cond text[0] == 'S' || text[0] == 's':
               text = text[1..-1];
               if(
@@ -4697,6 +4739,7 @@ public &StateBuilder
             }
           cond .s.equ(name, "sound"):
             branch{
+              if(#text == 0) else;
             cond text[0] == 'F' || text[0] == 'f':
               `state.ctrlList[-1].task .= "f=true;";
             cond text[0] == 'S' || text[0] == 's':
@@ -4770,6 +4813,7 @@ public &StateBuilder
           branch{
           cond .s.equ(name, "value"):
             branch{
+              if(#text == 0) else;
             cond text[0] == 'F' || text[0] == 'f':
               `state.ctrlList[-1].task .= "f=true;";
             cond text[0] == 'S' || text[0] == 's':
@@ -4866,6 +4910,10 @@ public &StateBuilder
         case .CtrlTy::Helper:
           branch{
           cond .s.equ(name, "helpertype"):
+            if(#text == 0){
+              `lasterror = "値が指定されていません";
+              ret false;
+            }
             text = .s.toLower(text);
             switch(text[0]){
             case 'n':
@@ -4912,6 +4960,7 @@ public &StateBuilder
           cond .s.equ(name, "postype"):
             text = .s.toLower(text);
             branch{
+              if(#text == 0) else;
             cond .s.equ(text[0..2], "p2"):
               `state.ctrlList[-1].task .= "pt=1;";
             cond text[0] == 'p':
@@ -5317,6 +5366,7 @@ public &StateBuilder
           cond .s.equ(name, "postype"):
             text = .s.toLower(text);
             branch{
+              if(#text == 0) else;
             cond .s.equ(text[0..2], "p2"):
               `state.ctrlList[-1].task .= exp .= ".postype=1;";
             cond text[0] == 'p':
@@ -5517,6 +5567,7 @@ public &StateBuilder
           cond .s.equ(name, "anim"):
             if(`state.ctrlList[-1].typ != .CtrlTy::Explod) break, default;
             branch{
+              if(#text == 0) else;
             cond text[0] == 'F' || text[0] == 'f':
               `state.ctrlList[-1].task .= exp .= ".ani=.fight~";
             cond text[0] == 'S' || text[0] == 's':
@@ -6014,6 +6065,7 @@ public &StateBuilder
           branch{
           cond .s.equ(name, "value") || .s.equ(name, "anim"):
             branch{
+              if(#text == 0) else;
             cond text[0] == 'F' || text[0] == 'f':
               `state.ctrlList[-1].task .= "e~ani=.fight~";
             cond text[0] == 'S' || text[0] == 's':
