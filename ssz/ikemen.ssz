@@ -331,8 +331,12 @@ void addFunc(^/char name, func .sc.fsig_t f)
 |.mac.RetState scRefresh(^char arg, ^char re=, &.sc.Function fn=)
 {
   if(!.se.fskip){
+  /?/*.cfg.OpenGL:
+    .sdl.GlSwapBuffers(::);
+  /*true:
     .sdl.screen.flip();
-    .sdl.screen.fill(.com.scrrect=, 0x00000000);
+    .com.screenFill(0x00000000);
+  /*?*/
   }
   .sc.playSound();
   if(!.cmd.update()) .se.end = true;
@@ -402,14 +406,18 @@ int match()
   }
   ^int ldend.new(1);
   .chr.stg.new(1);
-  thread!.loadStage? lstage;
   ldend<> = 0;
+/?/*.cfg.OpenGL:
+  .loadStage(stag, ldend);
+/*true:
+  thread!.loadStage? lstage;
   lstage..(stag, ldend);
   loop{do:
     if(ldend<> > 0) break;
   while ldend<> >= 0 && .se.event():
     ret -1;
   }
+/*?*/
   int retval;
   loop{do: retval = .game(); while retval == -2:}
   if(retval < 0) .chr.chars.new(4);
@@ -439,12 +447,16 @@ int game()
   {
     if(#p~sf == 0){
       `ldend<> = 0;
+    /?/*.cfg.OpenGL:
+      .loadCharacter(p, cha, `ldend);
+    /*true:
       thread!.loadCharacter? lcha..(p, cha, `ldend);
       loop{do:
         if(`ldend<> > 0) break;
       while `ldend<> >= 0 && .se.event():
         ret false;
       }
+    /*?*/
     }
     p~loadPallet(cha, pal);
     ret true;
@@ -506,7 +518,7 @@ int game()
   {
     .mes.SetSharedString(:ss:);
     bool b = .ssz.run("ssz/fighting.ssz");
-    .sdl.shareScreen();
+    .sdl.shareScreen(.cfg.OpenGL);
     share~push();
     bool w1 = .com.p1wins >= .com.p1mw;
     bool w2 = .com.p2wins >= .com.p2mw;
@@ -656,10 +668,13 @@ int game()
 
 void main()
 {//Itumademo Kanseishinai Eienni Mikansei ENgine
-  if(!.sdl.init("I.K.E.M.E.N", .cfg.Width, .cfg.Height)){
+  if(!.sdl.init("I.K.E.M.E.N", .cfg.Width, .cfg.Height, .cfg.OpenGL)){
     .com.error!.self?("初期化に失敗");
     ret;
   }
+/?/*.cfg.OpenGL:
+  .sdl.InitMugenGl(::);
+/*?*/
   .sdl.showCursor(false);
   if(!.init()) ret;
   %char tmp;

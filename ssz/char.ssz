@@ -30,8 +30,6 @@ winty[1] = fgt.WinTy::N;
 
 public ^&.stage.Stage stg;
 
-^uint tmppl.new(256);
-
 %&act.DrawnClsn drawc1, drawc2, drawc2sp, drawwh;
 void resetDrawnClsnList()
 {
@@ -43,31 +41,32 @@ void resetDrawnClsnList()
 void drawClsn()
 {
   ^ubyte pxl;
-  ^uint pal;
   pxl.new(1);
   pxl<> = 0x0;
-  pal.new(256);
-  pal<> = 0xff0000;
+  &.sff.Sprite spr.rct.set(0, 0, 0x1, 0x1);
+  spr.colorPallet.new(256);
+  spr.colorPallet<> = 0xff0000;
+  spr.setPxl(pxl);
   loop{index i = 0; while; do:
-    .drawc1[i].draw(pxl, pal, (int)0x3feff);
+    .drawc1[i].draw(spr=, (int)0x3feff);
     i++;
   while i < #.drawc1:
   }
-  pal<> = 0x0000ff;
+  spr.colorPallet<> = 0x0000ff;
   loop{index i = 0; while; do:
-    .drawc2[i].draw(pxl, pal, (int)0x3feff);
+    .drawc2[i].draw(spr=, (int)0x3feff);
     i++;
   while i < #.drawc2:
   }
-  pal<> = 0x00ff00;
+  spr.colorPallet<> = 0x00ff00;
   loop{index i = 0; while; do:
-    .drawc2sp[i].draw(pxl, pal, (int)0x3feff);
+    .drawc2sp[i].draw(spr=, (int)0x3feff);
     i++;
   while i < #.drawc2sp:
   }
-  pal<> = 0x404040;
+  spr.colorPallet<> = 0x404040;
   loop{index i = 0; while; do:
-    .drawwh[i].draw(pxl, pal, (int)0x3feff);
+    .drawwh[i].draw(spr=, (int)0x3feff);
     i++;
   while i < #.drawwh:
   }
@@ -243,7 +242,7 @@ public void drawShadowList(float x, float y)
         sl~al~anim~ani.dalpha = 255 - inte;
       }
     else:
-      pal = .tmppl;
+      pal = .com.tmppl;
       loop{index i = 0; do: pal[i] = (uint)sl~color; while ++i < 256:}
       sl~al~anim~ani.salpha = 1;
       sl~al~anim~ani.dalpha = 255;
@@ -6792,11 +6791,9 @@ public void draw(float x, float y, float scl)
   uint ecol =
     ((uint).envcol_b&0xff)
     | ((uint).envcol_g<<0d8&0xff00) | ((uint).envcol_r<<0d16&0xff0000);
-  &.sdl.Rect onedot.set(0, 0, 0d1, 0d1), til.set(0, 0, 0d0, 0d0);
   ^ubyte px;
   px.new(1);
   px<> = 0d0;
-  %byte dammy;
   %^/char winner;
   if(.com.win >= 0){
     winner.new[-1] = .chars[.com.win][0]~displayname;
@@ -6814,14 +6811,14 @@ public void draw(float x, float y, float scl)
   .com.brightness = 256 >> (int)(.super > 0 && .superdarken != 0);
   if(.envcol_time == 0) branch{
   cond .gs(.gsNOBG):
-    .sdl.screen.fill(.com.scrrect=, 0x00000000);
+    .com.screenFill(0x00000000);
   else:
-    if(.stg~debugbg) .sdl.screen.fill(.com.scrrect=, 0x00ff00ff);
+    if(.stg~debugbg) .com.screenFill(0x00ff00ff);
     .stg~bgDraw(false, x, y, scl);
   }
   branch{
   cond<envu> .envcol_time != 0 && .envcol_under != 0:
-    .sdl.screen.fill(.com.scrrect=, ecol);
+    .com.screenFill(ecol);
   cond<envt> .envcol_time != 0:
     break;
   comm:
@@ -6838,8 +6835,7 @@ public void draw(float x, float y, float scl)
   }
   if(.envcol_time == 0 && !.gs(.gsNOFG)) .stg~bgDraw(true, x, y, scl);
   if(.envcol_time != 0 && .envcol_under == 0){
-    .tmppl<> = ecol;
-    .sdl.screen.fill(.com.scrrect=, ecol);
+    .com.screenFill(ecol);
   }
   .fight~draw(1, lpl, names, .gs(.gsNOBARDISPLAY));
   .fight~ro.draw(1, .ko, winner);
@@ -6848,11 +6844,7 @@ public void draw(float x, float y, float scl)
   .fight~ro.draw(2, .ko, winner);
   void fade(.com.scrrect.self rect=, int alpha)
   {
-    .tmppl<> = 0x000000;
-    .sdl.screen.renderMugenZoom(
-      rect=, 0.0, 0.0, `px, .tmppl, -1, `onedot=, 0.0, 0.0, `til=,
-      (float).cfg.Width, (float).cfg.Width, (float).cfg.Height, 0.0, 0d0,
-      alpha, 0, `dammy=);
+    .com.rectFill(rect=, 0x000000, alpha);
   }
   if(.com.intro > .fight~ro.ctrl_time+1){
     fade(

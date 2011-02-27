@@ -306,6 +306,34 @@ public void error<_t>(^/char m)
   al.alert!_t?(m);
 }
 
+public ^uint tmppl.new(256);
+/?/*!.cfg.OpenGL:
+^ubyte px.new(1);
+px<> = 0x0;
+/*?*/
+public void rectFill(.scrrect.self rect=, uint color, int alpha)
+{
+/?/*.cfg.OpenGL:
+  .sdl.MugenFillGl(:rect, color, alpha:);
+/*true:
+  &.sdl.Rect onedot.set(0, 0, 0d1, 0d1), til.set(0, 0, 0d0, 0d0);
+  %byte dammy;
+  .tmppl<> = color;
+  .sdl.screen.renderMugenZoom(
+    rect=, 0.0, 0.0, .px, .tmppl, -1, onedot=, 0.0, 0.0, til=,
+    (float).cfg.Width, (float).cfg.Width, (float).cfg.Height, 0.0, 0d0,
+    alpha, 0, dammy=);
+/*?*/
+}
+
+public void screenFill(uint color)
+{
+/?/*.cfg.OpenGL:
+  .rectFill(.scrrect=, color, 255);
+/*true:
+  .sdl.screen.fill(.scrrect=, color);
+/*?*/
+}
 
 ^uint workpal;
 workpal.new(256);

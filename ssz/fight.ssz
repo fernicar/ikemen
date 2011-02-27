@@ -63,13 +63,20 @@ public void layspr(
     y2 *= -1.0;
     y2 += 240.0;
   }
+  float xs = l.scale.x*(float)l.facing*.com.WidthScale;
+/?/*.cfg.OpenGL:
+  .sdl.RenderMugenGl(:
+    spr~pxl<>, spr~colorPallet<>=, 0, spr~rct=, -x2*.com.WidthScale,
+    -y2*.com.HeightScale, tile=,
+    xs, xs, l.scale.y*(float)l.vfacing*.com.HeightScale,
+    0.0, 0.0, 255, .com.scrrect=, 0.0, 0.0:);
+/*true:
   .sdl.screen.renderMugenZoom(
     .com.scrrect=, 0.0, 0.0, spr~pxl, spr~colorPallet,
     0, spr~rct=, -x2*.com.WidthScale, -y2*.com.HeightScale, tile=,
-    l.scale.x*(float)l.facing*.com.WidthScale,
-    l.scale.x*(float)l.facing*.com.WidthScale,
-    l.scale.y*(float)l.vfacing*.com.HeightScale,
+    xs, xs, l.scale.y*(float)l.vfacing*.com.HeightScale,
     0.0, 0x0, 255, spr~rle, spr~pluginbuf=);
+/*?*/
 }
 
 public &ActionList

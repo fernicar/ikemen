@@ -625,20 +625,27 @@ public &Surface screen;
   }
 }
 &ScreenReleaseGuard srg;
+/bool ogl = false;
 
-
-public bool init(^/char t, int w, int h)
+public bool init(^/char t, int w, int h, bool gl)
 {
-  plugin void Init(:&.Surface=, ^/char, int, int:) =
-    "dll/sdlplugin.dll";
-  Init(:.screen=, t, w, h:);
+  plugin void GlInit(:&.Surface=, ^/char, int, int:) = "dll/sdlplugin.dll";
+  plugin void Init(:&.Surface=, ^/char, int, int:) = "dll/sdlplugin.dll";
+  branch{
+  cond gl:
+    GlInit(:.screen=, t, w, h:);
+    .ogl = true;
+  else:
+    Init(:.screen=, t, w, h:);
+  }
   ret !.screen.null();
 }
 
-public bool shareScreen()
+public bool shareScreen(bool gl)
 {
   plugin void ShareScreen(:&.Surface=:) = "dll/sdlplugin.dll";
   ShareScreen(:.screen=:);
+  .ogl = gl;
   ret !.screen.null();
 }
 
@@ -655,3 +662,33 @@ public void showCursor(bool show)
   CursorShow(:show:);
 }
 
+public &GlTexture
+{
+  uint id = 0;
+  delete()
+  {
+    `clear();
+  }
+  public void clear()
+  {
+    plugin void DeleteGlTexture(:uint:) = "dll/sdlplugin.dll";
+    DeleteGlTexture(:`id:);
+    `id = 0x0;
+  }
+  public bool load8bitTexture(^ubyte pxl, ushort w, ushort h)
+  {
+    plugin uint Load8bitTexture(:ubyte=, ushort, ushort:) =
+      "dll/sdlplugin.dll";
+    if(#pxl == 0 || #pxl != (index)((uint)w*h)) ret false;
+    `clear();
+    `id = Load8bitTexture(:pxl<>=, w, h:);
+    ret `id != 0x0;
+  }
+}
+
+plugin void MugenFillGl(:&Rect, uint, int:) = "dll/sdlplugin.dll";
+plugin void InitMugenGl(::) = "dll/sdlplugin.dll";
+plugin bool RenderMugenGl(:
+  &GlTexture, uint=, int, &Rect=, float, float, &Rect=, float, float, float,
+  float, float, int, &Rect=, float, float:) = "dll/sdlplugin.dll";
+plugin void GlSwapBuffers(::) = "dll/sdlplugin.dll";

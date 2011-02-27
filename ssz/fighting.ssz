@@ -438,7 +438,11 @@ void game()
     if(.se.fskip) while;
     .chr.draw(x, y, scl);
     drawDebug();
+  /?/*.cfg.OpenGL:
+    .sdl.GlSwapBuffers(::);
+  /*true:
     .sdl.screen.flip();
+  /*?*/
   while !.se.esc && .cmd.update():
     if(.se.esc) .mes.SetSharedString(:"esc":);
   break:
@@ -452,7 +456,7 @@ void game()
 
 void main()
 {
-  if(!.sdl.shareScreen()){
+  if(!.sdl.shareScreen(.cfg.OpenGL)){
     .al.alert!.self?("初期化に失敗");
     ret;
   }

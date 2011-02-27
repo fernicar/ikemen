@@ -78,7 +78,7 @@ public bool event()
         :
         switch(.sdle.key.keysym.sym){
         case .sdl.SDLKey::RETURN:
-          if(!.sdl.fullScreen(!!.full)) ret false;
+          if(!.sdl.ogl && !.sdl.fullScreen(!!.full)) ret false;
         case .sdl.SDLKey::F4:
           .end = true;
           ret false;

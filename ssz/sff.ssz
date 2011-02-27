@@ -104,8 +104,12 @@ public &SffHeader
 public &Sprite
 {
   public ^uint colorPallet;
+/?/*.cfg.OpenGL:
+  public ^&.sdl.GlTexture pxl;
+/*true:
   public ^ubyte pxl;
   public %byte pluginbuf;
+/*?*/
   public &.sdl.Rect rct;
   public short imageGroup, imageNumber;
   public index palidx = -1, link = -1;
@@ -122,7 +126,9 @@ public &Sprite
   public void copy(`self sp=)
   {
     `shareCopy(sp=);
+  /?/*!.cfg.OpenGL:
     `pluginbuf = sp.pluginbuf;
+  /*?*/
     `rct = sp.rct;
     `imageGroup = sp.imageGroup;
     `imageNumber = sp.imageNumber;
@@ -200,8 +206,8 @@ public &Sprite
     if(#prev == 0) palletSame = false;
     if(!`readPcxHeader(f=, offset)) ret false;
     f.seek(offset + 128, .file.Seek::SET);
-    `pxl.new((index)lenghtOfSubheader - (128+(c00||palletSame?0:768)));
-    f.readAry!ubyte?(`pxl);
+    ^ubyte px.new((index)lenghtOfSubheader - (128+(c00||palletSame?0:768)));
+    f.readAry!ubyte?(px);
     loop{
       index i = 0;
       ubyte r, g, b;
@@ -221,39 +227,50 @@ public &Sprite
     while i < 256:
     }
     if(
-      !.cfg.SaveMemory
+      !.cfg.SaveMemory || .cfg.OpenGL
       || (index)`rct.w*(index)`rct.h
-      < (`rct.w >= 0d256 ? (#`pxl/256)*(index)`rct.w : #`pxl))
+      < (`rct.w >= 0d256 ? (#px/256)*(index)`rct.w : #px))
     {
-      `rlePcxDecode();
+      `rlePcxDecode(px=);
     }
+    `setPxl(px);
     ret true;
   }
   public bool readV2(&.file.File f=, long ofs, uint dsz)
   {
     f.seek(ofs+4, .file.Seek::SET);
-    `pxl.new((index)dsz);
-    f.readAry!ubyte?(`pxl);
+    ^ubyte px.new((index)dsz);
+    f.readAry!ubyte?(px);
     if(`rle < 0) switch(-`rle){
     case 2:
-      `rle8Decode();
+      `rle8Decode(px=);
     case 3:
-      `rle5Decode();
+      `rle5Decode(px=);
     case 4:
-      `lz5Decode();
+      `lz5Decode(px=);
     default:
       ret false;
     }
+    `setPxl(px);
     ret true;
   }
-  public void rlePcxDecode()
+  public void setPxl(^ubyte px)
   {
-    if(#`pxl == 0 || `rle <= 0) ret;
-    ^/ubyte rle = `pxl;
-    `pxl.new((index)((uint)`rct.w * `rct.h));
+  /?/*.cfg.OpenGL:
+    `pxl.new(1);
+    `pxl~load8bitTexture(px, `rct.w, `rct.h);
+  /*true:
+    `pxl = px;
+  /*?*/
+  }
+  public void rlePcxDecode(^ubyte px=)
+  {
+    if(#px == 0 || `rle <= 0) ret;
+    ^/ubyte rle = px;
+    px.new((index)((uint)`rct.w * `rct.h));
     loop{
       int w = (int)`rct.w;
-      int leng = #`pxl;
+      int leng = #px;
       index i = 0, j = 0, k = 0;
     do:
       loop{
@@ -268,7 +285,7 @@ public &Sprite
         }
         while;
       do:
-        `pxl[j] = d;
+        px[j] = d;
         j += (int)(k < w);
         if(++k == `rle){
           k = 0;
@@ -280,13 +297,13 @@ public &Sprite
     }
     `rle = 0;
   }
-  public void rle8Decode()
+  public void rle8Decode(^ubyte px=)
   {
-    if(#`pxl == 0) ret;
-    ^/ubyte rle = `pxl;
-    `pxl.new((index)((uint)`rct.w * `rct.h));
+    if(#px == 0) ret;
+    ^/ubyte rle = px;
+    px.new((index)((uint)`rct.w * `rct.h));
     loop{
-      int leng = #`pxl;
+      int leng = #px;
       index i = 0, j = 0;
       while;
     do:
@@ -302,20 +319,20 @@ public &Sprite
         }
         while;
       do:
-        `pxl[j++] = d;
+        px[j++] = d;
       while --size >= 0:
       }
     while j < leng:
     }
     `rle = 0;
   }
-  public void rle5Decode()
+  public void rle5Decode(^ubyte px=)
   {
-    if(#`pxl == 0) ret;
-    ^/ubyte rle = `pxl;
-    `pxl.new((index)((uint)`rct.w * `rct.h));
+    if(#px == 0) ret;
+    ^/ubyte rle = px;
+    px.new((index)((uint)`rct.w * `rct.h));
     loop{
-      int leng = #`pxl;
+      int leng = #px;
       index i = 0, j = 0;
       while;
     do:
@@ -324,7 +341,7 @@ public &Sprite
         int dlen = (int)(rle[i] & 0x7F);
         ubyte c = rle[i++]>>0d7 != 0x0 ? rle[i++] : 0x0;
       do:
-        `pxl[j++] = c;
+        px[j++] = c;
       while --rlen >= 0:
         if(--dlen >= 0){
           c = rle[i] & 0x1F;
@@ -336,13 +353,13 @@ public &Sprite
     }
     `rle = 0;
   }
-  public void lz5Decode()
+  public void lz5Decode(^ubyte px=)
   {
-    if(#`pxl == 0) ret;
-    ^/ubyte rle = `pxl;
-    `pxl.new((index)((uint)`rct.w * `rct.h));
+    if(#px == 0) ret;
+    ^/ubyte rle = px;
+    px.new((index)((uint)`rct.w * `rct.h));
     loop{
-      int leng = #`pxl;
+      int leng = #px;
       index i = 0, j = 0;
       uint s = 0x0, rbc = 0x0;
       ubyte ct = rle[i++], rb = 0x0;
@@ -372,7 +389,7 @@ public &Sprite
             }
           }
         do:
-          `pxl[j] = `pxl[j-(index)d];
+          px[j] = px[j-(index)d];
           j++;
         while --size >= 0:
         }
@@ -388,7 +405,7 @@ public &Sprite
           }
           while;
         do:
-          `pxl[j++] = d;
+          px[j++] = d;
         while --size >= 0:
         }
       }
@@ -509,11 +526,20 @@ public &Sprite
     float y2 = y - yscale*(float)`rct.y;
     if(xscale < 0.0) x2 *= -1.0;
     if(yscale < 0.0) y2 = -y2 + 240.0;
+  /?/*.cfg.OpenGL:
+    if(#`pxl > 0){
+      .sdl.RenderMugenGl(:
+        `pxl<>, pal<>=, 0, `rct=, -x2*.com.WidthScale, -y2*.com.HeightScale,
+        tile=, xscale*.com.WidthScale, xscale*.com.WidthScale,
+        yscale*.com.HeightScale, 0.0, 0.0, 255, .com.scrrect=, 0.0, 0.0:);
+    }
+  /*true:
     .sdl.screen.renderMugenZoom(
       .com.scrrect=, 0.0, 0.0,
       `pxl, pal, 0, `rct=, -x2*.com.WidthScale, -y2*.com.HeightScale,
       tile=, xscale*.com.WidthScale, xscale*.com.WidthScale,
       yscale*.com.HeightScale, 0.0, 0x0, 255, `rle, `pluginbuf=);
+  /*?*/
   }
 }
 
@@ -917,7 +943,6 @@ public &Anim<frame_t>
     }
     if(ys < 0.0){
       y2 *= -1.0;
-      y2 += 240.0;
       if(rx != 0.0) y2 += ys;
     }
     if(`tile.w == 0x1){
@@ -930,6 +955,15 @@ public &Anim<frame_t>
         ys * ((float)`tile.y + (`tile.y > 0 ? 0.0 : (float)`spr~rct.h));
       y2 -= (float)(int)(y2 / tmp) * tmp;
     }
+  /?/*.cfg.OpenGL:
+    ^uint pal = `palFoo(fx);
+    .sdl.RenderMugenGl(:
+      `spr~pxl<>, pal<>=, `mask, `spr~rct=, (rx-x2)*.com.WidthScale,
+      -y2*.com.HeightScale, `tile=, xs*.com.WidthScale,
+      cscalex*bs*(float)h*.com.WidthScale, ys*.com.HeightScale,
+      cscalex*rasterxadd*(.com.WidthScale/.com.HeightScale),
+      0.0, `alphaFoo(), rect=, rx*.com.WidthScale, 0.0:);
+  /*true:
     .sdl.screen.renderMugenZoom(
       rect=, rx*.com.WidthScale, 0.0, `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
       (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,
@@ -937,6 +971,7 @@ public &Anim<frame_t>
       cscalex*bs*(float)h*.com.WidthScale, ys*.com.HeightScale,
       cscalex*rasterxadd*(.com.WidthScale/.com.HeightScale),
       0x0, `alphaFoo(), `spr~rle, `spr~pluginbuf=);
+  /*?*/
   }
   public void angleDraw(
     float x, float y, float xscale, float yscale,
@@ -963,6 +998,17 @@ public &Anim<frame_t>
     comm:
       ret;
     }
+  /?/*.cfg.OpenGL:
+    ^uint pal = `palFoo(fx);
+    .sdl.RenderMugenGl(:
+      `spr~pxl<>, pal<>=, `mask, `spr~rct=,
+      #xs*(float)`spr~rct.x*.com.WidthScale,
+      #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
+      xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
+      ys*(float)v*.com.HeightScale, 0.0, (double)uagl*.m.PI/512.0, `alphaFoo(),
+      .com.scrrect=, rx*.com.WidthScale,
+      (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
+  /*true:
     .sdl.screen.renderMugenZoom(
       .com.scrrect=, rx*.com.WidthScale,
       (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
@@ -972,6 +1018,7 @@ public &Anim<frame_t>
       `tile=, xs*(float)h*.com.WidthScale,
       xs*(float)h*.com.WidthScale, ys*(float)v*.com.HeightScale,
       0.0, uagl, `alphaFoo(), `spr~rle, `spr~pluginbuf=);
+  /*?*/
   }
   public void setup(^&.Sff sff)
   {

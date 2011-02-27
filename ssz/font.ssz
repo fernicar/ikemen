@@ -145,8 +145,8 @@ public &Font
     if(!f.read!uint?(txtDataLenght=)) ret false;
     if(!`img.readPcxHeader(f=, (long)pcxDataOffset)) ret false;
     f.seek((long)pcxDataOffset+128, .file.Seek::SET);
-    `img.pxl.new((index)pcxDataLenght-128-768);
-    f.readAry!ubyte?(`img.pxl);
+    ^ubyte px.new((index)pcxDataLenght-128-768);
+    f.readAry!ubyte?(px);
     loop{
       index i = 0;
       ubyte r, g, b;
@@ -159,7 +159,7 @@ public &Font
       i++;
     while i < 256:
     }
-    `img.rlePcxDecode();
+    `img.rlePcxDecode(px=);
     f.seek((long)txtDataOffset, .file.Seek::SET);
     %char buf;
     loop{while; do:
@@ -201,18 +201,20 @@ public &Font
       `mpl[i].img.new(#pal);
       loop{index j = 0; while; do:
         branch{
+          ^ubyte px2;
         cond j == 0:
           `mpl[i].img[j].shareCopy(`img=);
-          `mpl[i].img[j].pxl.new(`mpl[i].w * (int)`img.rct.h);
+          `mpl[i].img[j].rct.w = (ushort)`mpl[i].w;
+         px2.new(`mpl[i].w * (int)`img.rct.h);
           copyCharRect(
-            `mpl[i].img[j].pxl, `mpl[i].w, `img.pxl,
-            `mpl[i].ofs, (int)`img.rct.w, (int)`img.rct.h);
+            px2, `mpl[i].w, px, `mpl[i].ofs, (int)`img.rct.w, (int)`img.rct.h);
+          `mpl[i].img[j].setPxl(px2);
         else:
           `mpl[i].img[j].shareCopy(`mpl[i].img[j-1]=);
+          `mpl[i].img[j].rct.w = (ushort)`mpl[i].w;
         }
         `mpl[i].img[j].rct.x = 0;
         `mpl[i].img[j].rct.y = 0;
-        `mpl[i].img[j].rct.w = (ushort)`mpl[i].w;
         `mpl[i].img[j].colorPallet = pal[j];
         j++;
       while j < #`mpl[i].img:
@@ -252,11 +254,19 @@ public &Font
     ^&.sff.Sprite spr = `getCharSpr(bank, ch);
     if(#spr == 0 || #spr~pxl == 0) ret 0.0;
     &.sdl.Rect tile.set(0, 0, 0x0, 0x0);
+  /?/*.cfg.OpenGL:
+    .sdl.RenderMugenGl(:
+      spr~pxl<>, spr~colorPallet<>=, 0, spr~rct=, -x*.com.WidthScale,
+      -y*.com.HeightScale, tile=, xscl*.com.WidthScale,
+      xscl*.com.WidthScale, yscl*.com.HeightScale,
+      0.0, 0.0, 255, .com.scrrect=, 0.0, 0.0:);
+  /*true:
     .sdl.screen.renderMugenZoom(
       .com.scrrect=, 0.0, 0.0, spr~pxl, spr~colorPallet, 0, spr~rct=,
       -x*.com.WidthScale, -y*.com.HeightScale, tile=,
       xscl*.com.WidthScale, xscl*.com.WidthScale, yscl*.com.HeightScale,
       0.0, 0x0, 255, 0, spr~pluginbuf=);
+  /*?*/
     ret (float)spr~rct.w * xscl;
   }
   public void drawText(
