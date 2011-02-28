@@ -56,13 +56,8 @@ public void layspr(
     x + l.offset.x - l.scale.x*(float)(spr~rct.x*l.facing);
   float y2 =
     y + l.offset.y - l.scale.y*(float)(spr~rct.y*l.vfacing);
-  if(l.scale.x*(float)l.facing < 0.0){
-    x2 *= -1.0;
-  }
-  if(l.scale.y*(float)l.vfacing < 0.0){
-    y2 *= -1.0;
-    y2 += 240.0;
-  }
+  if(l.scale.x*(float)l.facing < 0.0) x2 *= -1.0;
+  if(l.scale.y*(float)l.vfacing < 0.0) y2 *= -1.0;
   float xs = l.scale.x*(float)l.facing*.com.WidthScale;
 /?/*.cfg.OpenGL:
   .sdl.RenderMugenGl(:
