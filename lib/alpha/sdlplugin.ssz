@@ -687,7 +687,7 @@ public &GlTexture
 }
 
 plugin void MugenFillGl(:&Rect, uint, int:) = "dll/sdlplugin.dll";
-plugin void InitMugenGl(::) = "dll/sdlplugin.dll";
+plugin bool InitMugenGl(::) = "dll/sdlplugin.dll";
 plugin bool RenderMugenGl(:
   &GlTexture, uint=, int, &Rect=, float, float, &Rect=, float, float, float,
   float, float, int, &Rect=, float, float:) = "dll/sdlplugin.dll";
