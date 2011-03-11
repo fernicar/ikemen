@@ -3068,6 +3068,7 @@ public &Char
       {
         `sysivar[.iLIFE] = 1;
       }
+      if(.roundState() == 4) `outTarget();
     }
   }
   public bool isPaused()
@@ -6480,27 +6481,30 @@ public float action(
   while i < #.chars:
   }
   .fight~step(.com.tmode, .getLifePower(), hbuf, cb, .syssnd=);
-  if(#.superanim > 0){
-    .addAnimList(
-      .topanims=, .superanim, 5, .superposx, .superposy, .com.scale,
-      (float).superfacing, 1.0, 0.0, false, 1.0, 1.0, -1, 0, 256,
-      .consts.null!&.com.PalFX?(), 0, 0.0);
-    if(.superanim~ani.loopend) .superanim.new(0);
-  }
-  .anim();
-  loop{index i = 0; while; do:
-    loop{index j = #.expdrawlist[i]-1; while; do:
-      if(.explods[i][.expdrawlist[i][j]].id != .com.IERR){
-        .explods[i][.expdrawlist[i][j]].update();
-      }
-      if(.explods[i][.expdrawlist[i][j]].id == .com.IERR){
-        .delIL(.expdrawlist[i]=, j);
-      }
-      j--;
-    while j >= 0:
+  void sprite()
+  {
+    if(#.superanim > 0){
+      .addAnimList(
+        .topanims=, .superanim, 5, .superposx, .superposy, .com.scale,
+        (float).superfacing, 1.0, 0.0, false, 1.0, 1.0, -1, 0, 256,
+        .consts.null!&.com.PalFX?(), 0, 0.0);
+      if(.superanim~ani.loopend) .superanim.new(0);
     }
-    i++;
-  while i < #.explods:
+    .anim();
+    loop{index i = 0; while; do:
+      loop{index j = #.expdrawlist[i]-1; while; do:
+        if(.explods[i][.expdrawlist[i][j]].id != .com.IERR){
+          .explods[i][.expdrawlist[i][j]].update();
+        }
+        if(.explods[i][.expdrawlist[i][j]].id == .com.IERR){
+          .delIL(.expdrawlist[i]=, j);
+        }
+        j--;
+      while j >= 0:
+      }
+      i++;
+    while i < #.explods:
+    }
   }
   leftest -= x;
   rightest -= x;
@@ -6729,8 +6733,12 @@ public float action(
     else:
       if(.com.intro < 0) .com.intro = 0;
     }
+    sprite();
   cond .fight~ro.cur == 1 && .com.tickNextFrame():
+    sprite();
     posreset();
+  else:
+    sprite();
   }
   if(.com.turbo == 0.0 || .com.tickNextFrame()) branch{
     float spd =
