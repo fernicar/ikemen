@@ -2636,7 +2636,7 @@ public &Char
     }
     ret `attrCheck(hit=);
   }
-  public bool hitCheck(`self atk=)
+  public bool clsnCheck(`self atk=, bool c1atk, bool c1slf)
   {
     float xscl1 = atk.sysfvar[.fCLSNXSCALE],
       yscl1 = atk.sysfvar[.fCLSNYSCALE];
@@ -2676,9 +2676,8 @@ public &Char
     }
     if(#atk.ani == 0 || #atk.curFrame == 0) ret false;
     if(#`ani == 0 || #`curFrame == 0) ret false;
-    ^&.act.Rect clsn1 = atk.curFrame~clsn1;
-    ^&.act.Rect clsn2 = `curFrame~clsn2;
-    if(atk.stVal.hit.reversal_attr > 0) clsn2 = `curFrame~clsn1;
+    ^&.act.Rect clsn1 = c1atk ? atk.curFrame~clsn1 : atk.curFrame~clsn2;
+    ^&.act.Rect clsn2 = c1slf ? `curFrame~clsn1 : `curFrame~clsn2;
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
         if(hentei(clsn1[i], clsn2[j])) ret true;
@@ -2689,6 +2688,10 @@ public &Char
     while i < #clsn1:
     }
     ret false;
+  }
+  public bool hitCheck(`self atk=)
+  {
+    ret `clsnCheck(atk=, true, atk.stVal.hit.reversal_attr > 0);
   }
   public bool projHitCheck(&.Projectile pr=)
   {
@@ -3114,9 +3117,7 @@ public &Char
   }
   public bool pushable()
   {
-    ret
-      `ls(.lsPLAYERPUSH) && !`isFreezeX()
-      && #`curFrame > 0 && (#`curFrame~clsn1 > 0 || #`curFrame~clsn2 > 0);
+    ret `ls(.lsPLAYERPUSH) && !`isFreezeX();
   }
   public bool isFall()
   {
@@ -5916,6 +5917,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
   loop{
     *`top.self p = `top;
     float pl, pr, pv;
+    int contact = 0;
     branch{
     cond pyr.facing > 0:
       pl = pyr.sysfvar[.fX] - pyr.backw;
@@ -5928,15 +5930,80 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     while;
   do:
     if(p~c~id < 0) continue;
+    contact = 0;
     if(
-      (pyr.playerno&1) != (p~c~playerno&1) && pyr.pushable() && p~c~pushable()
-      && (
-        (
-          pyr.stVal.typ != .StTy::A || pyr.stVal.mov != .MovTy::A
-          || p~c~stVal.typ != .StTy::L)
-        && (
-          pyr.stVal.typ != .StTy::L
-          || p~c~stVal.typ != .StTy::A || p~c~stVal.mov != .MovTy::A))
+      p~c~atktmp < 0 || p~c~id == pyr.id || (
+        p~c~stVal.hit.affectteam != 0
+        && ((pyr.playerno&1) != (p~c~playerno&1))
+        != (p~c~stVal.hit.affectteam > 0))) continue;
+    if(
+      p~c~stVal.mov == .MovTy::A && (
+        p~c~attackdist >= #(pyr.sysfvar[.fX] - p~c~sysfvar[.fX])))
+    {
+      pyr.inguarddist = true;
+    }
+    if(
+      p~c~stVal.hit.hitonce >= 0 && (
+        pyr.hittmp < 2
+        || #pyr.stVal.hb.byid == 0 || pyr.stVal.hb.byid[-1] != p~c~id
+        || p~c~ls(.lsNOJUGGLECHECK)
+        || juggcheck(pyr.stVal.hb.juggle, p~c~stVal.juggle))
+      && pyr.hittable(
+        p~c~stVal.hit=, [bool(&.Hitdef h=){
+          ret p~c~attrCheck(h=)&&p~c~hitCheck(pyr=);}]))
+    {
+      if(
+        .m.inRange!float?(
+          0.0, (float)p~c~stVal.hit.guard_dist,
+          (pyr.sysfvar[.fX] - p~c~sysfvar[.fX])*(float)p~c~facing))
+      {
+        pyr.inguarddist = true;
+      }
+      if(p~c~stVal.hit.reversal_attr <= 0) contact = -1;
+      if(pyr.hitCheck(p~c<>=)){
+        if(contact < 0) contact = 1;
+        branch{
+          int h =
+            pyr.stVal.setHb(
+              p~c~stVal.hit=, !p~c~ls(.lsUNGUARDABLE) && pyr.ls(.lsGUARD),
+              pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT), pyr.facing);
+          if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
+        cond #h == 1:
+          p~c~stVal.mctyp = .MoveContact::Hit;
+          if(p~c~stVal.hit.reversal_attr > 0){
+            pyr.stVal.mctyp = .MoveContact::Reversed;
+            pyr.stVal.mctime = -1;
+            pyr.tmphit = true;
+            if(pyr.hittmp == 0) pyr.hittmp = -1;
+            if(!pyr.ls(.lsGETHIT)){
+              pyr.sysivar[.iHITPAUSETIME] =
+                .m.max!int?(1, p~c~stVal.hit.shaketime);
+            }
+          }
+          if(!p~c~ls(.lsGETHIT)){
+            p~c~sysivar[.iHITPAUSETIME] =
+              .m.max!int?(1, p~c~stVal.hit.pausetime);
+          }
+          p~c~sysivar[.iUNIQHITCOUNT]++;
+        else:
+          p~c~stVal.mctyp = .MoveContact::Guarded;
+          if(!p~c~ls(.lsGETHIT)){
+            p~c~sysivar[.iHITPAUSETIME] =
+              .m.max!int?(1, p~c~stVal.hit.guard_pausetime);
+          }
+        comm:
+          if(h > 0) pyr.sysivar[.iHITPAUSETIME] = 0;
+          if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
+          p~c~stVal.mctime = -1;
+        break:
+          p~c~tmphit = true;
+        }
+      }
+    }
+  continue:
+    if(
+      p~c~id >= 0 && (pyr.playerno&1) != (p~c~playerno&1)
+      && pyr.pushable() && p~c~pushable()
       && pyr.sysfvar[.fY] - p~c~sysfvar[.fY] < .com.BodyHeight
       && p~c~sysfvar[.fY] - pyr.sysfvar[.fY] < .com.BodyHeight)
     {
@@ -5950,7 +6017,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         er = p~c~sysfvar[.fX] + p~c~backw;
       }
       float ev = p~c~acttmp > 0 ? p~c~sysfvar[.fVX] : 0.0;
-      if((pl < el || pl < er)  && (el < pr || er < pr)){
+      if(
+        (pl < el || pl < er) && (el < pr || er < pr) && (
+          contact > 0 || (contact == 0 && pyr.clsnCheck(p~c<>=, true, false))
+          || pyr.clsnCheck(p~c<>=, false, false)))
+      {
         const float foo = 0.5;
         branch{
           float tmp = pyr.sysfvar[.fX] - p~c~sysfvar[.fX];
@@ -6000,74 +6071,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
       }
     }
-    if(
-      p~c~atktmp < 0 || p~c~id == pyr.id || (
-        p~c~stVal.hit.affectteam != 0
-        && ((pyr.playerno&1) != (p~c~playerno&1))
-        != (p~c~stVal.hit.affectteam > 0))) continue;
-    if(
-      p~c~stVal.mov == .MovTy::A && (
-        p~c~attackdist >= #(pyr.sysfvar[.fX] - p~c~sysfvar[.fX])))
-    {
-      pyr.inguarddist = true;
-    }
-    if(
-      p~c~stVal.hit.hitonce >= 0 && (
-        pyr.hittmp < 2
-        || #pyr.stVal.hb.byid == 0 || pyr.stVal.hb.byid[-1] != p~c~id
-        || p~c~ls(.lsNOJUGGLECHECK)
-        || juggcheck(pyr.stVal.hb.juggle, p~c~stVal.juggle))
-      && pyr.hittable(
-        p~c~stVal.hit=, [bool(&.Hitdef h=){
-          ret p~c~attrCheck(h=)&&p~c~hitCheck(pyr=);}]))
-    {
-      if(
-        .m.inRange!float?(
-          0.0, (float)p~c~stVal.hit.guard_dist,
-          (pyr.sysfvar[.fX] - p~c~sysfvar[.fX])*(float)p~c~facing))
-      {
-        pyr.inguarddist = true;
-      }
-      if(pyr.hitCheck(p~c<>=)){
-        branch{
-          int h =
-            pyr.stVal.setHb(
-              p~c~stVal.hit=, !p~c~ls(.lsUNGUARDABLE) && pyr.ls(.lsGUARD),
-              pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT), pyr.facing);
-          if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
-        cond #h == 1:
-          p~c~stVal.mctyp = .MoveContact::Hit;
-          if(p~c~stVal.hit.reversal_attr > 0){
-            pyr.stVal.mctyp = .MoveContact::Reversed;
-            pyr.stVal.mctime = -1;
-            pyr.tmphit = true;
-            if(pyr.hittmp == 0) pyr.hittmp = -1;
-            if(!pyr.ls(.lsGETHIT)){
-              pyr.sysivar[.iHITPAUSETIME] =
-                .m.max!int?(1, p~c~stVal.hit.shaketime);
-            }
-          }
-          if(!p~c~ls(.lsGETHIT)){
-            p~c~sysivar[.iHITPAUSETIME] =
-              .m.max!int?(1, p~c~stVal.hit.pausetime);
-          }
-          p~c~sysivar[.iUNIQHITCOUNT]++;
-        else:
-          p~c~stVal.mctyp = .MoveContact::Guarded;
-          if(!p~c~ls(.lsGETHIT)){
-            p~c~sysivar[.iHITPAUSETIME] =
-              .m.max!int?(1, p~c~stVal.hit.guard_pausetime);
-          }
-        comm:
-          if(h > 0) pyr.sysivar[.iHITPAUSETIME] = 0;
-          if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
-          p~c~stVal.mctime = -1;
-        break:
-          p~c~tmphit = true;
-        }
-      }
-    }
-  continue:
     p = p~next;
   while #p > 0:
   }
