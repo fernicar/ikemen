@@ -2040,28 +2040,13 @@ TUserFunc(
 TUserFunc(uint32_t, Load8bitTexture, uint16_t h, uint16_t w, uint8_t* ppxl)
 {
 	static std::basic_string<uint8_t> buf;
-	int32_t texw = 1, texh = 1;
-	while(texw < w) texw <<= 1;
-	while(texh < h) texh <<= 1;
-	buf.resize((size_t)texw*texh);
-	if(buf.size() <= 0) return 0;
-	uint8_t* p = (uint8_t*)buf.data();
-	int i, j;
-	while(p < buf.data() + texw*h){
-		for(i = 0; i < w; i++) p[i] = *ppxl++;
-		for(j = w; j < texw; j++) p[j] = 0;
-		p += texw;
-	}
-	for(j = h; j < texh; j++){
-		for(i = 0; i < texw; i++) p[i] = 0;
-		p += texw;
-	}
 	uint32_t texid;
 	glGenTextures(1, &texid);
 	glBindTexture(GL_TEXTURE_2D, texid);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(
 		GL_TEXTURE_2D, 0, GL_LUMINANCE,
-		texw, texh, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, buf.data());
+		w, h, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, ppxl);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	return texid;
@@ -2141,14 +2126,14 @@ TUserFunc(bool, InitMugenGl)
 
 void drawQuads(
 	float x1, float y1, float x2, float y2, float x3, float y3,
-	float x4, float y4, float fw, float fh, float r, float g, float b, float a)
+	float x4, float y4, float r, float g, float b, float a)
 {
 	glColor4f(r, g, b, a);
-	glTexCoord2f(0, fh);
+	glTexCoord2f(0, 1.0);
 	glVertex2f(x1, y1);
-	glTexCoord2f(fw, fh);
+	glTexCoord2f(1.0, 1.0);
 	glVertex2f(x2, y2);
-	glTexCoord2f(fw, 0);
+	glTexCoord2f(1.0, 0);
 	glVertex2f(x3, y3);
 	glTexCoord2f(0, 0);
 	glVertex2f(x4, y4);
@@ -2156,7 +2141,7 @@ void drawQuads(
 
 void drawTileWidth(
 	float x1, float y1, float x2, float y2, float x3, float y3,
-	float x4, float y4,	float fw, float fh, float xtw, float xbw,
+	float x4, float y4, float xtw, float xbw,
 	float xtopscl, float xbotscl, SDL_Rect tile, float rcx,
 	float r, float g, float b, float a)
 {
@@ -2189,7 +2174,7 @@ void drawTileWidth(
 					&& (x3d < (float)g_w || x4d < (float)g_w)))
 			{
 				drawQuads(
-					x1d, y1, x2d, y2, x3d, y3, x4d, y4, fw, fh, r, g, b, a);
+					x1d, y1, x2d, y2, x3d, y3, x4d, y4, r, g, b, a);
 			}
 		}
 	}
@@ -2208,7 +2193,7 @@ void drawTileWidth(
 				(0.0 < x3 || 0.0 < x4)
 				&& (x3 < (float)g_w || x4 < (float)g_w)))
 		{
-			drawQuads(x1, y1, x2, y2, x3, y3, x4, y4, fw, fh, r, g, b, a);
+			drawQuads(x1, y1, x2, y2, x3, y3, x4, y4, r, g, b, a);
 		}
 		if(tile.w != 1) n--;
 		if(n <= 0) break;
@@ -2220,7 +2205,7 @@ void drawTileWidth(
 	}
 }
 void drawTile(
-	uint16_t w, uint16_t h, float x, float y, float fw, float fh,
+	uint16_t w, uint16_t h, float x, float y,
 	SDL_Rect tile, float xtopscl, float xbotscl,  float yscl, float rasterxadd,
 	float angle, float rcx, float rcy, float r, float g, float b, float a)
 {
@@ -2239,7 +2224,7 @@ void drawTile(
 		kaiten(x2, y2, angle, rcx, rcy);
 		kaiten(x3, y3, angle, rcx, rcy);
 		kaiten(x4, y4, angle, rcx, rcy);
-		drawQuads(x1, y1, x2, y2, x3, y3, x4, y4, fw, fh, r, g, b, a);
+		drawQuads(x1, y1, x2, y2, x3, y3, x4, y4, r, g, b, a);
 	}else{
 		if(tile.h == 1){
 			float x1d=x1, y1d=y1, x2d=x2, y2d=y2, x3d=x3;
@@ -2266,7 +2251,7 @@ void drawTile(
 					&& (y1d > (float)-g_h || y4d > (float)-g_h)))
 				{
 					drawTileWidth(
-						x1d, y1d, x2d, y2d, x3d, y3d, x4d, y4d, fw, fh,
+						x1d, y1d, x2d, y2d, x3d, y3d, x4d, y4d,
 						x3d-x4d, x2d-x1d, (x3d-x4d)/(float)w,
 						(x2d-x1d)/(float)w, tile, rcx, r, g, b, a);
 				}
@@ -2284,7 +2269,7 @@ void drawTile(
 				&& (y1 > (float)-g_h || y4 > (float)-g_h)))
 			{
 				drawTileWidth(
-					x1, y1, x2, y2, x3, y3, x4, y4, fw, fh, x3-x4, x2-x1,
+					x1, y1, x2, y2, x3, y3, x4, y4, x3-x4, x2-x1,
 					(x3-x4)/(float)w, (x2-x1)/(float)w, tile, rcx, r, g, b, a);
 			}
 			if(tile.h != 1) n--;
@@ -2316,10 +2301,6 @@ TUserFunc(
 	if(tl.y > 0) tl.y -= r.h;
 	if(tl.w == 0) tl.x = 0;
 	if(tl.h == 0) tl.y = 0;
-	int32_t texw = 1, texh = 1;
-	while(texw < r.w) texw <<= 1;
-	while(texh < r.h) texh <<= 1;
-	float fw = (float)r.w/(float)texw, fh = (float)r.h/(float)texh;
 	if(xtopscl >= 0) x = -x;
 	x += rcx;
 	rcy = -rcy;
@@ -2357,13 +2338,13 @@ TUserFunc(
 		glUniform1f(glGetUniformLocation(g_mugenshader, "alp"), 1.0);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		drawTile(
-			r.w, r.h, x, y, fw, fh, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, 1);
 	}else if(alpha == -2){
 		glUniform1f(glGetUniformLocation(g_mugenshader, "alp"), 1.0);
 		glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 		drawTile(
-			r.w, r.h, x, y, fw, fh, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, 1);
 	}else if(alpha <= 0){
 	}else if(alpha < 255){
@@ -2372,14 +2353,14 @@ TUserFunc(
 			(GLfloat)alpha / 255.0f);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		drawTile(
-			r.w, r.h, x, y, fw, fh, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, (GLfloat)alpha / 255.0f);
 		glUseProgram(0);
 	}else if(alpha < 512){
 		glUniform1f(glGetUniformLocation(g_mugenshader, "alp"), 1.0);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		drawTile(
-			r.w, r.h, x, y, fw, fh, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, 1);
 	}else{
 		int src = alpha & 0xff;
@@ -2389,13 +2370,13 @@ TUserFunc(
 			1.0f - (GLfloat)dst / 255.0f);
 		glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 		drawTile(
-			r.w, r.h, x, y, fw, fh, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, 1.0f - (GLfloat)dst / 255.0f);
 		glUniform1f(
 			glGetUniformLocation(g_mugenshader, "alp"), (GLfloat)src / 255.0f);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		drawTile(
-			r.w, r.h, x, y, fw, fh, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, (GLfloat)src / 255.0f);
 	}
 	//
