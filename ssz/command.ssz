@@ -982,7 +982,7 @@ public &Command
     {
       int ocbt = `curbuftime;
       if(#kbuf == 0 || !`cmdChek(kbuf<>, ai)){
-        index foo = `tameidx == `cmdidx ? `cmdidx : -1;
+        index foo = `tameidx == `cmdidx && `cmdidx == 0 ? 0 : -1;
         `clear();
         `tameidx = foo;
         ret;
