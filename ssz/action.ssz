@@ -62,19 +62,18 @@ public &Action
           branch{
           cond line[4] == '1':
             clsn1.new(siz);
-            clsn1d.new(0);
             clsn = clsn1;
             if(.s.equ("default", line[5..12])) clsn1d = clsn1;
             defaul1 = false;
           cond line[4] == '2':
             clsn2.new(siz);
-            clsn2d.new(0);
             clsn = clsn2;
             if(.s.equ("default", line[5..12])) clsn2d = clsn2;
             defaul2 = false;
           else:
             break, break;
           }
+          if(siz <= 0) break;
           i++;
           loop{
             index fnd, n;
