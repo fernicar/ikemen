@@ -118,7 +118,7 @@ public &Action
           cond .s.equ(a, "a1"):
             `frames[-1].salpha = 0d255;
             `frames[-1].dalpha = 0d128;
-          cond .s.equ(a, "s"):
+          cond .s.equ(a[0..1], "s"):
             `frames[-1].salpha = 0d1;
             `frames[-1].dalpha = 0d255;
           cond .s.equ(a[0..2], "as"):

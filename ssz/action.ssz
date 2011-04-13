@@ -40,8 +40,8 @@ public &Action
     loop{
       ^int ary;
       ^/char line;
-      ^&.Rect clsn1, clsn2;
-      bool defaul1 = false, defaul2 = false;
+      ^&.Rect clsn1, clsn1d, clsn2, clsn2d;
+      bool defaul1 = true, defaul2 = true;
       while;
     do:
       if(#lines[i] > 0 && lines[i][0] == '['){
@@ -57,17 +57,21 @@ public &Action
           index f = .s.find(":", line);
           if(f < 0) break;
           index siz = .com.atoi(line[f+1..-1]);
-          if(siz <= 0) break;
+          if(siz < 0) break;
           ^&.Rect clsn;
           branch{
           cond line[4] == '1':
             clsn1.new(siz);
+            clsn1d.new(0);
             clsn = clsn1;
-            defaul1 = .s.equ("default", line[5..12]);
+            if(.s.equ("default", line[5..12])) clsn1d = clsn1;
+            defaul1 = false;
           cond line[4] == '2':
             clsn2.new(siz);
+            clsn2d.new(0);
             clsn = clsn2;
-            defaul2 = .s.equ("default", line[5..12]);
+            if(.s.equ("default", line[5..12])) clsn2d = clsn2;
+            defaul2 = false;
           else:
             break, break;
           }
@@ -121,10 +125,11 @@ public &Action
         `ani.frames[-1].y = ary[3];
         `ani.frames[-1].time = ary[4];
         if(`ani.frames[-1].time < -1) `ani.frames[-1].time = 0;
+        if(defaul1) clsn1 = clsn1d;
+        if(defaul2) clsn2 = clsn2d;
         `ani.frames[-1].clsn1 = clsn1;
         `ani.frames[-1].clsn2 = clsn2;
-        if(!defaul1) clsn1.new(0);
-        if(!defaul2) clsn2.new(0);
+        defaul1 = defaul2 = true;
         {
           ^^/char spl = .s.split(",", line);
           if(#spl < 6) break;
@@ -152,7 +157,7 @@ public &Action
           cond .s.equ(a, "a1"):
             `ani.frames[-1].salpha = 0d255;
             `ani.frames[-1].dalpha = 0d128;
-          cond .s.equ(a, "s"):
+          cond .s.equ(a[0..1], "s"):
             `ani.frames[-1].salpha = 0d1;
             `ani.frames[-1].dalpha = 0d255;
           cond .s.equ(a[0..2], "as"):
