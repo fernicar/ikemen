@@ -3530,6 +3530,10 @@ public &Char
     if((`facing < 0) != (f < 0)){
       `facing *= -1;
       `sysfvar[.fVX] *= -1.0;
+      `stVal.hb.xvel *= -1.0;
+      if(`stVal.hb.fall.xvelocity != .com.FERR){
+        `stVal.hb.fall.xvelocity *= -1.0;
+      }
     }
   }
   void setFWidth(float f)
