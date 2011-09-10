@@ -1037,7 +1037,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `mctyp = .MoveContact::Hit;
     `mctime = 0;
   }
-  public int setHb(&.Hitdef hit=, bool guard, bool combo, int f)
+  public int setHb(&.Hitdef hit=, bool guard, bool combo)
   {
     bool cmb = combo && `hb.guarded == 0;
     int fall = `hb.fallf, hc = `hb.hitcount, fc = `hb.fallcount;
@@ -1058,7 +1058,6 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.maxdistx = hit.maxdistx;
     `hb.mindisty = hit.mindisty;
     `hb.maxdisty = hit.maxdisty;
-    if(`hb.fall.xvelocity != .com.FERR) `hb.fall.xvelocity *= (float)f;
     if(hit.forcenofall != 0) fall = 0;
     branch{
     cond `typ == .StTy::A:
@@ -1083,7 +1082,6 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
         `hb.xvel = hit.guard_velocity;
         `hb.yvel = hit.ground_velocityy;
       }
-      `hb.xvel *= (float)f;
       `hb.absdamage = hit.guarddamage;
       `hb.hitcount = hc;
       ret 2 * (`hb.typ == 0 || hit.reversal_attr > 0 ? -1 : 1);
@@ -1116,7 +1114,6 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
       `hb.yvel = hit.ground_velocityy;
       `hb.fallf = hit.ground_fall;
     }
-    `hb.xvel *= (float)f;
     `hb.absdamage = hit.hitdamage;
     `hb.hitcount = cmb ? hc+1 : 1;
     `hb.fallcount = fc;
@@ -4904,7 +4901,7 @@ public &Char
   }
   public void trHitXvel(int f)
   {
-    .v.setF(`stVal.hb.xvel * (float)f);
+    .v.setF(`stVal.hb.xvel * -(float)f);
   }
   public void trFallXvel(int f)
   {
@@ -4912,7 +4909,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF(`stVal.hb.fall.xvelocity * (float)f);
+    .v.setF(`stVal.hb.fall.xvelocity * -(float)f);
   }
   public void trHitFallSet(int f, float vx, float vy)
   {
@@ -4924,9 +4921,7 @@ public &Char
   public void trHitFallVel()
   {
     if(`stVal.mov != .MovTy::H) ret;
-    if(`stVal.hb.fall.xvelocity != .com.FERR){
-      `setXV(`stVal.hb.fall.xvelocity * (float)`facing);
-    }
+    if(`stVal.hb.fall.xvelocity != .com.FERR) `setXV(`stVal.hb.fall.xvelocity);
     `setYV(`stVal.hb.fall.yvelocity);
   }
   public void trHitFall()
@@ -4944,7 +4939,7 @@ public &Char
   public void trHitVelSetX()
   {
     if(`stVal.mov != .MovTy::H) ret;
-    `setXV(`stVal.hb.xvel * (float)`facing);
+    `setXV(`stVal.hb.xvel);
   }
   public void trHitVelSetY()
   {
@@ -4953,7 +4948,7 @@ public &Char
   }
   public void trHitVelX()
   {
-    .v.setF(`stVal.mov != .MovTy::H ? -`stVal.hb.xvel * (float)`facing : 0.0);
+    .v.setF(`stVal.mov != .MovTy::H ? -`stVal.hb.xvel : 0.0);
   }
   public void trHitVelY()
   {
@@ -5966,7 +5961,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           int h =
             pyr.stVal.setHb(
               p~c~stVal.hit=, !p~c~ls(.lsUNGUARDABLE) && pyr.ls(.lsGUARD),
-              pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT), pyr.facing);
+              pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT));
           if(!foo(h, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
         cond #h == 1:
           p~c~stVal.mctyp = .MoveContact::Hit;
@@ -6121,7 +6116,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           int hit =
             pyr.stVal.setHb(
               .projs[i][j].hit=, pyr.ls(.lsGUARD),
-               pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT), pyr.facing);
+               pyr.stVal.mov == .MovTy::H || pyr.ls(.lsGETHIT));
           if(
             foo(
               hit, .chars[i][0]<>=, .projs[i][j].hit=,
