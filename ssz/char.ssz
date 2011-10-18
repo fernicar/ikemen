@@ -6657,10 +6657,13 @@ public float action(
       while;
     do:
       if(#.chars[i] > 0){
-        if(.gs(.gsINTRO)) .charClear(i);
+        if(.gs(.gsINTRO)){
+          .charClear(i);
+          .v.setI(0);
+          .chars[i][0]~trSelfState(-1, 1);
+        }
         .chars[i][0]~posReset((float).stg~p1.startx, (float).stg~p2.startx);
-        .v.setI(0);
-        .chars[i][0]~trSelfState(-1, 1);
+        .chars[i][0]~sysivar[.iCTRL] = 1;
       }
       i++;
     while i < #.chars:
@@ -6697,7 +6700,13 @@ public float action(
         }
       }
     else:
-      if(.shuttertime == 0 && .com.intro >= 1) .com.intro--;
+      if(.shuttertime == 0 && .com.intro >= 1){
+        .com.intro--;
+        if(.com.intro == 0) loop{index i = 0; while; do:
+          if(#.chars[i] > 0) .chars[i][0]~cmd.bufReset(-257);
+          i++;
+        while i < #.chars:}
+      }
       if(.shuttertime > 0) .shuttertime--;
     }
     if(
