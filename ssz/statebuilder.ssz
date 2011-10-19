@@ -6601,7 +6601,7 @@ public &StateBuilder
             dbuf .= "`trTargetDrop(ex,one);";
           case .CtrlTy::HitOverride:
             dbuf .=
-              "if(st>=0&&t!=.com.IERR&&s>=0&&s<8)"
+              "if(s<0||s>7)s=0;if(st>=0&&t!=.com.IERR)"
               "{`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
               "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;}";
           case .CtrlTy::BindToRoot:
