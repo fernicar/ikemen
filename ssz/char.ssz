@@ -4148,7 +4148,7 @@ public &Char
   public void trSetX()
   {
     float x = .v.toFloat();
-    if(x == .com.FERR) ret;
+    if(x == .com.FERR || x == `sysfvar[.fX]) ret;
     `setX(x);
     `sysivar[.iBINDTIME] = 0;
     `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
@@ -4156,7 +4156,7 @@ public &Char
   public void trSetY()
   {
     float y = .v.toFloat();
-    if(y == .com.FERR) ret;
+    if(y == .com.FERR || y == `sysfvar[.fY]) ret;
     `setY(y);
     `sysivar[.iBINDTIME] = 0;
     `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
