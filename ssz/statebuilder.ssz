@@ -6605,7 +6605,7 @@ public &StateBuilder
               "{`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
               "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;}";
           case .CtrlTy::BindToRoot:
-            dbuf .= "`bind();";
+            dbuf .= "`bind();`tickBind();";
           case .CtrlTy::BindToTarget:
             dbuf .= "`trBindToTarget(hmf);";
           case .CtrlTy::HitFallSet:

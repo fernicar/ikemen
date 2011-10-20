@@ -2795,6 +2795,21 @@ public &Char
     }
     ret false;
   }
+  public void tickBind()
+  {
+    if(`sysivar[.iBINDTIME] > 0){
+      if(--`sysivar[.iBINDTIME] == 0) branch{
+        ^`self c = .players.get(`sysivar[.iBINDTOID]);
+        if(#c == 0) break;
+      cond c~isTarget(`id):
+        `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
+        `setYV(c~sysfvar[.fVY]);
+      cond `isTarget(c~id):
+        c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
+        c~setYV(`sysfvar[.fVY]);
+      }
+    }
+  }
   public void tick()
   {
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
@@ -2827,18 +2842,7 @@ public &Char
           i++;
         while i < #`stVal.ho:
         }
-        if(`sysivar[.iBINDTIME] > 0){
-          if(--`sysivar[.iBINDTIME] == 0) branch{
-            ^`self c = .players.get(`sysivar[.iBINDTOID]);
-            if(#c == 0) break;
-          cond c~isTarget(`id):
-            `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
-            `setYV(c~sysfvar[.fVY]);
-          cond `isTarget(c~id):
-            c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
-            c~setYV(`sysfvar[.fVY]);
-          }
-        }
+        `tickBind();
         `sysivar[.iSPECIALFLAG] &= !.lsGUARD;
       }
     }
@@ -4148,18 +4152,14 @@ public &Char
   public void trSetX()
   {
     float x = .v.toFloat();
-    if(x == .com.FERR || x == `sysfvar[.fX]) ret;
+    if(x == .com.FERR) ret;
     `setX(x);
-    `sysivar[.iBINDTIME] = 0;
-    `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
   }
   public void trSetY()
   {
     float y = .v.toFloat();
-    if(y == .com.FERR || y == `sysfvar[.fY]) ret;
+    if(y == .com.FERR) ret;
     `setY(y);
-    `sysivar[.iBINDTIME] = 0;
-    `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
   }
   public void trAddX()
   {
@@ -4722,6 +4722,7 @@ public &Char
       `sysfvar[.fBINDPOSY] += (float)c~sysivar[.iHEAD_POSY];
     }
     `bind();
+    `tickBind();
   }
   public void setBindFacing(int f)
   {
