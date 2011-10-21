@@ -3060,11 +3060,24 @@ public &Char
         an, `angleset, `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY]);
     }
     if(.com.tickNextFrame()){
-      if(
-        .supertime < 0
-        && (`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H)
-      {
-        `defencemul *= .superp2defmul;
+      if(.pausetime < 0){
+        if(
+          (.pause > 0 || #`stVal.hb.byid > 0)
+          && `sysivar[.iMOVETIMEPAUSE] > 0)
+        {
+          `sysivar[.iMOVETIMEPAUSE]--;
+        }
+      }
+      if(.supertime < 0){
+        if(
+          (.super > 0 || #`stVal.hb.byid > 0)
+          && `sysivar[.iMOVETIMESUPER] > 0)
+        {
+          `sysivar[.iMOVETIMESUPER]--;
+        }
+        if((`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H){
+          `defencemul *= .superp2defmul;
+        }
       }
       if(
         !.roundEnd() && .gs(.gsNOKO)
@@ -3194,13 +3207,13 @@ public &Char
     {
       ret
         .super > 0 && `sysivar[.iSUPERMOVETIME] == 0
-        && (`sysivar[.iMOVETIMESUPER] <= 0 || #`stVal.hb.byid > 0);
+        && `sysivar[.iMOVETIMESUPER] <= 0;
     }
     bool isNormalPaused()
     {
       ret
         .super <= 0 && .pause > 0 && `sysivar[.iPAUSEMOVETIME] == 0
-        && (`sysivar[.iMOVETIMEPAUSE] <= 0 || #`stVal.hb.byid > 0);
+        && `sysivar[.iMOVETIMEPAUSE] <= 0;
     }
     if(`minus != 2) ret;
     {
