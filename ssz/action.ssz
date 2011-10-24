@@ -117,6 +117,9 @@ public &Action
         if(#`ani.frames > 0 && `ani.frames[-1].time < 0){
           `ani.frames[-1].time = 0;
         }
+        if(`ani.loopstart == #`ani.frames-1 && `ani.frames[-1].time == 0){
+          `ani.loopstart = #`ani.frames;
+        }
         `ani.frames.new[-1];
         `ani.frames[-1].group = ary[0];
         `ani.frames[-1].number = ary[1];
