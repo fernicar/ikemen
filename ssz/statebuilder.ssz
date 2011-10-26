@@ -673,7 +673,7 @@ public &StateBuilder
     ^/char oldin = in;
     ^/char token = `tokenizer(in=);
     if(.s.equ(")", token)) ret true;
-    if(#token > 0 && token[-1] == '='){
+    if(.cfg.IgnoreMostErrors && #token > 0 && token[-1] == '='){
       in = oldin;
       ret true;
     }
