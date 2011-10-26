@@ -227,24 +227,24 @@ public &Anim
   cond .s.equ(mess[0], "addPos"):
     {
       float x = 0.0, y = 0.0;
-      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
-      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      if(#mess >= 2 && !<consteval>(x=, mess[1])) break, else;
+      if(#mess >= 3 && !<consteval>(y=, mess[2])) break, else;
       an~addPos(x, y);
     }
     re.new(0);
   cond .s.equ(mess[0], "setPos"):
     {
       float x = 0.0, y = 0.0;
-      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
-      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      if(#mess >= 2 && !<consteval>(x=, mess[1])) break, else;
+      if(#mess >= 3 && !<consteval>(y=, mess[2])) break, else;
       an~setPos(x, y);
     }
     re.new(0);
   cond .s.equ(mess[0], "setScale"):
     {
       float x = 0.0, y = 0.0;
-      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
-      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      if(#mess >= 2 && !<consteval>(x=, mess[1])) break, else;
+      if(#mess >= 3 && !<consteval>(y=, mess[2])) break, else;
       an~setScale(x, y);
     }
     re.new(0);
@@ -263,31 +263,31 @@ public &Anim
   cond .s.equ(mess[0], "setTile"):
     {
       ushort x = 0x0, y = 0x0;
-      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
-      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      if(#mess >= 2 && !<consteval>(x=, mess[1])) break, else;
+      if(#mess >= 3 && !<consteval>(y=, mess[2])) break, else;
       an~setTile(x, y);
     }
     re.new(0);
   cond .s.equ(mess[0], "setColorKey"):
     {
       int ck = 0;
-      if(#mess >= 2 && !consteval(ck=, mess[1])) break, else;
+      if(#mess >= 2 && !<consteval>(ck=, mess[1])) break, else;
       an~setColorKey(ck);
     }
   cond .s.equ(mess[0], "setAlpha"):
     {
       short sa = 255, da = 0;
-      if(#mess >= 2 && !consteval(sa=, mess[1])) break, else;
-      if(#mess >= 3 && !consteval(da=, mess[2])) break, else;
+      if(#mess >= 2 && !<consteval>(sa=, mess[1])) break, else;
+      if(#mess >= 3 && !<consteval>(da=, mess[2])) break, else;
       an~setAlpha(sa, da);
     }
   cond .s.equ(mess[0], "setWindow"):
     {
       float x = 0.0, y = 0.0, w = 320.0, h = 240.0;
-      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
-      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
-      if(#mess >= 4 && !consteval(w=, mess[3])) break, else;
-      if(#mess >= 5 && !consteval(h=, mess[4])) break, else;
+      if(#mess >= 2 && !<consteval>(x=, mess[1])) break, else;
+      if(#mess >= 3 && !<consteval>(y=, mess[2])) break, else;
+      if(#mess >= 4 && !<consteval>(w=, mess[3])) break, else;
+      if(#mess >= 5 && !<consteval>(h=, mess[4])) break, else;
       an~setWindow(x, y, w, h);
     }
   else:
@@ -382,16 +382,16 @@ public &TextImg
   cond .s.equ(mess[0], "setPos"):
     {
       float x = 0.0, y = 0.0;
-      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
-      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      if(#mess >= 2 && !<consteval>(x=, mess[1])) break, else;
+      if(#mess >= 3 && !<consteval>(y=, mess[2])) break, else;
       ti~setPos(x, y);
     }
     re.new(0);
   cond .s.equ(mess[0], "setScale"):
     {
       float x = 0.0, y = 0.0;
-      if(#mess >= 2 && !consteval(x=, mess[1])) break, else;
-      if(#mess >= 3 && !consteval(y=, mess[2])) break, else;
+      if(#mess >= 2 && !<consteval>(x=, mess[1])) break, else;
+      if(#mess >= 3 && !<consteval>(y=, mess[2])) break, else;
       ti~setScale(x, y);
     }
   cond .s.equ(mess[0], "setText"):
@@ -401,14 +401,14 @@ public &TextImg
   cond .s.equ(mess[0], "setBank"):
     {
       int b = 0;
-      if(#mess >= 2 && !consteval(b=, mess[1])) break, else;
+      if(#mess >= 2 && !<consteval>(b=, mess[1])) break, else;
       ti~setBank(b);
     }
     re.new(0);
   cond .s.equ(mess[0], "setAlign"):
     {
       int a = 0;
-      if(#mess >= 2 && !consteval(a=, mess[1])) break, else;
+      if(#mess >= 2 && !<consteval>(a=, mess[1])) break, else;
       ti~setAlign(a);
     }
     re.new(0);
@@ -464,8 +464,8 @@ public &Snd
     if(#mess < 3) else;
     {
       int g, n;
-      if(!consteval(g=, mess[1])) break, else;
-      if(!consteval(n=, mess[2])) break, else;
+      if(!<consteval>(g=, mess[1])) break, else;
+      if(!<consteval>(n=, mess[2])) break, else;
       sn~play(g, n);
     }
     re.new(0);
@@ -522,7 +522,7 @@ public &Command
   cond .s.equ(mess[0], "input"):
     {
       int p;
-      if(!consteval(p=, mess[1])) break, else;
+      if(!<consteval>(p=, mess[1])) break, else;
       cm~input(p);
     }
     re.new(0);
@@ -540,7 +540,7 @@ public &Command
   cond .s.equ(mess[0], "cmdBufReset"):
     {
       int p;
-      if(!consteval(p=, mess[1])) break, else;
+      if(!<consteval>(p=, mess[1])) break, else;
       cm~cmdBufReset(p);
     }
     re.new(0);
@@ -659,7 +659,7 @@ public &Script
     *sig_t _expr(arg, re=)
     {
       long l;
-      if(!consteval(l=, arg)){
+      if(!<consteval>(l=, arg)){
         .mac.errormes .= arg .= " <-この式は変です"\r\n;
         ret .mac.RetState::ERROR;
       }
@@ -669,7 +669,7 @@ public &Script
     *sig_t _calc(arg, re=)
     {
       double d;
-      if(!consteval(d=, arg)){
+      if(!<consteval>(d=, arg)){
         .mac.errormes .= arg .= " <-この式は変です"\r\n;
         ret .mac.RetState::ERROR;
       }
@@ -689,7 +689,9 @@ public &Script
       cond #args >= 2:
         {
           int mi, ma;
-          if(!consteval(mi=, args[0]) || !consteval(ma=, args[1])) break, else;
+          if(!<consteval>(mi=, args[0]) || !<consteval>(ma=, args[1])){
+            break, break, else;
+          }
           re = .s.iToS(.m.randI(mi, ma));
         }
       cond #args[0] == 0:
@@ -802,7 +804,7 @@ public &Script
     |.mac.RetState setXPCom(int p, ^/char arg, ^char re=)
     {
       int ai;
-      if(!consteval(ai=, arg)){
+      if(!<consteval>(ai=, arg)){
         .mac.errormes .= arg .= " <-この式は変です"\r\n;
         ret .mac.RetState::ERROR;
       }
@@ -935,14 +937,14 @@ public &Script
       {
         %char buf;
         buf .= '_' .= .s.trim(name);
-        if(!consteval(met=, buf)) ret `funCall(arg, buf[1..-1], re=);
+        if(!<consteval>(met=, buf)) ret `funCall(arg, buf[1..-1], re=);
       }
     }
     ret met(:arg, re=:);
   }
   bool readBool(bool b=, ^/char arg)
   {
-    if(!consteval(b=, arg)){
+    if(!<consteval>(b=, arg)){
       .mac.errormes .= arg .= " <-この条件式は変です"\r\n;
       ret false;
     }

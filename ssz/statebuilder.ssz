@@ -668,6 +668,18 @@ public &StateBuilder
     }
     ret true;
   }
+  bool kakkotojiru(^/char in=)
+  {
+    ^/char oldin = in;
+    ^/char token = `tokenizer(in=);
+    if(.s.equ(")", token)) ret true;
+    if(#token > 0 && token[-1] == '='){
+      in = oldin;
+      ret true;
+    }
+    `lasterror = ")がありません";
+    ret false;
+  }
   bool expRedirectable(^/char obj, ^/char name, %char out=, ^/char in=)
   {:<-
     bool var(^/char obj, ^/char v, %char out=, ^/char in=)
@@ -708,10 +720,7 @@ public &StateBuilder
         {
           int re = proc(::);
           if(re < 0) ret re;
-          if(kakko && !.s.equ(")", `tokenizer(in=))){
-            `lasterror = ")がありません";
-            ret -1;
-          }
+          if(kakko && !`kakkotojiru(in=)) ret -1;
           if(re == 0) ret re;
         }
         if(not) out .= "$`trBoolNot()";
@@ -785,10 +794,7 @@ public &StateBuilder
       }
       if(!`expBoolOr(out=, in=)) ret false;
       out .= "$.v)";
-      if(!.s.equ(")", `tokenizer(in=))){
-        `lasterror = ")がありません";
-        ret false;
-      }
+      if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("exp", token):
       if(!`expValue(out=, in=)) ret false;
       out .= "$`trExp()";
@@ -815,10 +821,7 @@ public &StateBuilder
       }
       if(!`expBoolOr(out=, in=)) ret false;
       out .= "$.v)";
-      if(!.s.equ(")", `tokenizer(in=))){
-        `lasterror = ")がありません";
-        ret false;
-      }
+      if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("random", token):
       out .= ".v.setI(.m.rand(0,999))";
     cond .s.equ("gametime", token):
@@ -1303,10 +1306,7 @@ public &StateBuilder
           break, break, else;
         }
       }
-      if(!.s.equ(")", `tokenizer(in=))){
-        `lasterror = ")がありません";
-        ret false;
-      }
+      if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("sysvar", token):
       if(!var(obj, "SysIVar", out=, in=)) ret false;
     cond .s.equ("sysfvar", token):
@@ -1519,10 +1519,7 @@ public &StateBuilder
       else:
         break, else;
       }
-      if(!.s.equ(")", `tokenizer(in=))){
-        `lasterror = ")がありません";
-        ret false;
-      }
+      if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("hitdefattr", token):
       {
         int flg;
@@ -1772,10 +1769,7 @@ public &StateBuilder
       }
       if(!`expBoolOr(out=, in=)) ret false;
       out .= ')';
-      if(!.s.equ(")", `tokenizer(in=))){
-        `lasterror = ")がありません";
-        ret false;
-      }
+      if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("stagevar", token):
       if(!.s.equ("(", `tokenizer(in=))){
         %char buf;
@@ -1783,10 +1777,7 @@ public &StateBuilder
         ret false;
       }
       token = `tokenizer(in=);
-      if(!.s.equ(")", `tokenizer(in=))){
-        `lasterror = ")がありません";
-        ret false;
-      }
+      if(!`kakkotojiru(in=)) ret false;
       branch{
       cond .s.equ("info.name", token):
         {
@@ -1857,10 +1848,7 @@ public &StateBuilder
         else:
           out .= '$' .= obj .= "trEnemy()";
         }
-        if(!.s.equ(")", `tokenizer(in=))){
-          `lasterror = ")がありません";
-          ret false;
-        }
+        if(!`kakkotojiru(in=)) ret false;
         if(!.s.equ(",")<, `tokenizer(in=)) else;
       cond .s.equ(",", token):
         branch{

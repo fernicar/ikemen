@@ -53,8 +53,8 @@ void addFunc(^/char name, func .sc.fsig_t f)
     .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
   int c = .syst.selinf.sel.columns, r = .syst.selinf.sel.rows;
   branch{
-  cond #mess >= 1 && !consteval(c=, mess[0]):
-  cond #mess >= 2 && !consteval(r=, mess[1]):
+  cond #mess >= 1 && !<consteval>(c=, mess[0]):
+  cond #mess >= 2 && !<consteval>(r=, mess[1]):
   else:
     break;
   comm:
@@ -72,8 +72,8 @@ void addFunc(^/char name, func .sc.fsig_t f)
     .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
   float x = .syst.selinf.sel.cellsizex, y = .syst.selinf.sel.cellsizey;
   branch{
-  cond #mess >= 1 && !consteval(x=, mess[0]):
-  cond #mess >= 2 && !consteval(y=, mess[1]):
+  cond #mess >= 1 && !<consteval>(x=, mess[0]):
+  cond #mess >= 2 && !<consteval>(y=, mess[1]):
   else:
     break;
   comm:
@@ -91,8 +91,8 @@ void addFunc(^/char name, func .sc.fsig_t f)
     .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
   float x = .syst.selinf.sel.cellscalex, y = .syst.selinf.sel.cellscaley;
   branch{
-  cond #mess >= 1 && !consteval(x=, mess[0]):
-  cond #mess >= 2 && !consteval(y=, mess[1]):
+  cond #mess >= 1 && !<consteval>(x=, mess[0]):
+  cond #mess >= 2 && !<consteval>(y=, mess[1]):
   else:
     break;
   comm:
@@ -111,13 +111,15 @@ void addFunc(^/char name, func .sc.fsig_t f)
   int pn, tm, nt;
   branch{
   cond #mess < 2:
-  cond !consteval(pn=, mess[0]) || !.m.inRange!int?(1, 2, pn):
-  cond !consteval(tm=, mess[1]) || !.m.inRange!int?(0, 2, tm):
-  cond #mess >= 3 && (!consteval(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt)):
+  cond !<consteval>(pn=, mess[0]) || !.m.inRange!int?(1, 2, pn):
+  cond !<consteval>(tm=, mess[1]) || !.m.inRange!int?(0, 2, tm):
+  cond
+    #mess >= 3 && (!<consteval>(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt))
+    :
   else:
     branch{
     cond #mess >= 3:
-      if(!consteval(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt)) break;
+      if(!<consteval>(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt)) break;
     else:
       nt = .com.numturns[pn-1];
     comm:
@@ -140,8 +142,8 @@ void addFunc(^/char name, func .sc.fsig_t f)
   float xs = .syst.selinf.sel.randxscl, ys = .syst.selinf.sel.randyscl;
   branch{
   cond #mess < 3:
-  cond #mess >= 4 && !consteval(xs=, mess[3]):
-  cond #mess >= 5 && !consteval(ys=, mess[4]):
+  cond #mess >= 4 && !<consteval>(xs=, mess[3]):
+  cond #mess >= 5 && !<consteval>(ys=, mess[4]):
   else:
     {
       ^&.sc.Function f = fn.block~getObj(mess[0]);
@@ -149,7 +151,7 @@ void addFunc(^/char name, func .sc.fsig_t f)
       int g, n;
       if(
         #f == 0 || !f~data.cast(sf=)
-        || !consteval(g=, mess[1]) || !consteval(n=, mess[2])) break;
+        || !<consteval>(g=, mess[1]) || !<consteval>(n=, mess[2])) break;
       ^&.sff.Sff sff = sf~getSff();
       if(#sff > 0) .syst.selinf.sel.randomspr = sff~getOwnPalSprite(g, n);
       break, break;
@@ -170,9 +172,9 @@ void addFunc(^/char name, func .sc.fsig_t f)
   float x = 0.0, y = 0.0;
   index offset = 0;
   branch{
-  cond #mess >= 1 && !consteval(x=, mess[0]):
-  cond #mess >= 2 && !consteval(y=, mess[1]):
-  cond #mess >= 3 && !consteval(offset=, mess[2]):
+  cond #mess >= 1 && !<consteval>(x=, mess[0]):
+  cond #mess >= 2 && !<consteval>(y=, mess[1]):
+  cond #mess >= 3 && !<consteval>(offset=, mess[2]):
   else:
     break;
   comm:
@@ -215,7 +217,7 @@ void addFunc(^/char name, func .sc.fsig_t f)
     .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
   index n = 0;
   branch{
-  cond #mess >= 1 && !consteval(n=, mess[0]):
+  cond #mess >= 1 && !<consteval>(n=, mess[0]):
   else:
     break;
   comm:
@@ -241,9 +243,9 @@ void addFunc(^/char name, func .sc.fsig_t f)
   int pn, cn, pl;
   branch{
   cond #mess < 3:
-  cond !consteval(pn=, mess[0]) || !.m.inRange!int?(1, 2, pn):
-  cond !consteval(cn=, mess[1]):
-  cond !consteval(pl=, mess[2]) || !.m.inRange!int?(0, 12, pl):
+  cond !<consteval>(pn=, mess[0]) || !.m.inRange!int?(1, 2, pn):
+  cond !<consteval>(cn=, mess[1]):
+  cond !<consteval>(pl=, mess[2]) || !.m.inRange!int?(0, 12, pl):
   else:
     break;
   comm:
@@ -273,7 +275,7 @@ void addFunc(^/char name, func .sc.fsig_t f)
     .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
   index n = .syst.selinf.sel.curStageNo;
   branch{
-  cond #mess >= 1 && !consteval(n=, mess[0]):
+  cond #mess >= 1 && !<consteval>(n=, mess[0]):
   else:
     break;
   comm:
@@ -290,7 +292,7 @@ void addFunc(^/char name, func .sc.fsig_t f)
     .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
   index n = .syst.selinf.sel.curStageNo;
   branch{
-  cond #mess >= 1 && !consteval(n=, mess[0]):
+  cond #mess >= 1 && !<consteval>(n=, mess[0]):
   else:
     break;
   comm:
@@ -308,11 +310,11 @@ void addFunc(^/char name, func .sc.fsig_t f)
   index n = 0;
   float x = 0.0, y = 0.0, xscl = 1.0, yscl = 1.0;
   branch{
-  cond #mess >= 1 && !consteval(n=, mess[0]):
-  cond #mess >= 2 && !consteval(x=, mess[1]):
-  cond #mess >= 3 && !consteval(y=, mess[2]):
-  cond #mess >= 4 && !consteval(xscl=, mess[3]):
-  cond #mess >= 5 && !consteval(yscl=, mess[4]):
+  cond #mess >= 1 && !<consteval>(n=, mess[0]):
+  cond #mess >= 2 && !<consteval>(x=, mess[1]):
+  cond #mess >= 3 && !<consteval>(y=, mess[2]):
+  cond #mess >= 4 && !<consteval>(xscl=, mess[3]):
+  cond #mess >= 5 && !<consteval>(yscl=, mess[4]):
   else:
     break;
   comm:

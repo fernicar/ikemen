@@ -428,12 +428,12 @@ public &NetInput
     if(`st<> != .NetState::End && `st<> != .NetState::Error){
       `st<> = .NetState::Stop;
     }
-    wait(`sen, `rec);
+    <wait>(`sen, `rec);
   }
   public void end()
   {
     if(`st<> != .NetState::Error) `st<> = .NetState::End;
-    wait(`sen, `rec);
+    <wait>(`sen, `rec);
   }
   public bool synchronize()
   {

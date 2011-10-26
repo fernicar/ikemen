@@ -2234,6 +2234,7 @@ public &Char
       if(#(data = sc.get("name")) > 0) `name = data;
       if(#(data = sc.get("displayname")) > 0) `displayname = data;
       if(#(data = sc.get("author")) > 0) `author = data;
+      if(#(data = sc.get("authorname")) > 0) `author = data;
       if(#(data = sc.get("mugenversion")) > 0){
         ^short tmp = .s.svToAry!short?(".", data);
         `mver0 = tmp[0];
@@ -4384,7 +4385,7 @@ public &Char
     }
     if(n < 0) ret false;
     %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PSet";
-    if(!consteval(`state=, buf)) ret false;
+    if(!<consteval>(`state=, buf)) ret false;
     if(!`cs1tmp) `stVal.prevno = `stVal.no;
     if(`stVal.playerno != `playerno && p != `stVal.playerno) loop{
       index i = #.expdrawlist[`stVal.playerno]-1;
