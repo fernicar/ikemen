@@ -757,6 +757,10 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public float maxdistx;
   public float mindisty;
   public float maxdisty;
+  public float snapx;
+  public float snapy;
+  public int snapf;
+  public int snapt;
   public int forcenofall;
   public &.Fall fall;
   public void clear()
@@ -856,6 +860,10 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `maxdistx = .com.FERR;
     `mindisty = .com.FERR;
     `maxdisty = .com.FERR;
+    `snapx = 0.0;
+    `snapy = 0.0;
+    `snapf = 0;
+    `snapt = 0;
     `forcenofall = 0;
     `fall.clear();
   }
@@ -901,6 +909,10 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public float maxdistx;
   public float mindisty;
   public float maxdisty;
+  public float snapx;
+  public float snapy;
+  public int snapf;
+  public int snapt;
   public &.Fall fall;
   public void clear()
   {
@@ -938,6 +950,10 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `maxdistx = .com.FERR;
     `mindisty = .com.FERR;
     `maxdisty = .com.FERR;
+    `snapx = 0.0;
+    `snapy = 0.0;
+    `snapf = 0;
+    `snapt = 0;
     `fall.clear();
   }
   /float getYaccel()
@@ -1058,6 +1074,10 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.maxdistx = hit.maxdistx;
     `hb.mindisty = hit.mindisty;
     `hb.maxdisty = hit.maxdisty;
+    `hb.snapx = hit.snapx;
+    `hb.snapy = hit.snapy;
+    `hb.snapf = hit.snapf;
+    `hb.snapt = hit.snapt;
     if(hit.forcenofall != 0) fall = 0;
     branch{
     cond `typ == .StTy::A:
@@ -2814,41 +2834,6 @@ public &Char
   public void tick()
   {
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
-    if(!`isPaused()){
-      branch{
-      cond `stVal.hb.hitshaketime > 0:
-        `stVal.hb.hitshaketime--;
-      else:
-        if(`stVal.hb.hittime > 0){
-          `stVal.hb.hittime--;
-          if(`isFall()){
-            `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
-            `stVal.hb.fallcount++;
-          }
-        }
-        if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
-      }
-      branch{
-      cond `sysivar[.iHITPAUSETIME] > 0:
-        `sysivar[.iHITPAUSETIME]--;
-      else:
-        if(`stVal.mctime > 0) `stVal.mctime++;
-      }
-      if(!`isHitPaused()){
-        if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
-        if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
-        if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
-        loop{index i = 0; while; do:
-          if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
-          i++;
-        while i < #`stVal.ho:
-        }
-        `tickBind();
-        `sysivar[.iSPECIALFLAG] &= !.lsGUARD;
-      }
-    }
-    `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
-    if(`sysivar[.iBINDTIME] == 0) `sysivar[.iBINDTOID] = -1;
     if(`tmphit){
       `stVal.hit.invalidate();
       `tmphit = false;
@@ -2899,7 +2884,50 @@ public &Char
             (c~sysfvar[.fY] + `stVal.hb.maxdisty);
         }
       }
+      if(`stVal.hb.snapt != 0){
+        `setBindToId(c<>=);
+        `sysivar[.iBINDTIME] = `stVal.hb.snapt;
+        `sysivar[.iBINDFACING] = `stVal.hb.snapf;
+        `sysfvar[.fBINDPOSX] = `stVal.hb.snapx;
+        `sysfvar[.fBINDPOSY] = `stVal.hb.snapy;
+        `bind();
+      }
     }
+    if(!`isPaused()){
+      branch{
+      cond `stVal.hb.hitshaketime > 0:
+        `stVal.hb.hitshaketime--;
+      else:
+        if(`stVal.hb.hittime > 0){
+          `stVal.hb.hittime--;
+          if(`isFall()){
+            `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
+            `stVal.hb.fallcount++;
+          }
+        }
+        if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
+      }
+      branch{
+      cond `sysivar[.iHITPAUSETIME] > 0:
+        `sysivar[.iHITPAUSETIME]--;
+      else:
+        if(`stVal.mctime > 0) `stVal.mctime++;
+      }
+      if(!`isHitPaused()){
+        if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
+        if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
+        if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
+        loop{index i = 0; while; do:
+          if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
+          i++;
+        while i < #`stVal.ho:
+        }
+        `tickBind();
+        `sysivar[.iSPECIALFLAG] &= !.lsGUARD;
+      }
+    }
+    `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
+    if(`sysivar[.iBINDTIME] == 0) `sysivar[.iBINDTOID] = -1;
     if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     `enemyn.new(0);
     if(`ls(.lsGETHIT)) branch{
@@ -3242,48 +3270,17 @@ public &Char
         if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       break:
         if(!`isHitPaused()) `changeState2();
-        if(`stVal.hb.damage != 0 && `stVal.mov == .MovTy::H) branch{
-        cond `stVal.hb.guarded != 0:
-          if(
-            `addLife(-`stVal.hb.damage, true, true)
-            && `helperindex == 0) branch
-          {
-            ^`self by;
-            if(#`stVal.hb.byid == 0) else;
-            by = .players.get(`stVal.hb.byid[-1]);
-            if(#by == 0) else;
-          cond by~playerno == `playerno:
-            .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
-          cond (by~playerno&1) == (`playerno&1):
-            .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
-          else:
-            .winty[(`playerno+1)&1] = .fgt.WinTy::C;
-          }
-        else:
-          if(`addLife(-`stVal.hb.damage, true, true)) branch{
-            ^`self by;
-            if(#`stVal.hb.byid == 0) else;
-            by = .players.get(`stVal.hb.byid[-1]);
-            if(#by == 0) else;
-          cond (by~playerno&1) == (`playerno&1):
-            if(`helperindex == 0) branch{
-            cond by~playerno == `playerno:
-              .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
-            else:
-              .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
-            }
-          else:
-            `setEnemyWinty();
-          }
-        }
       }
       if(!`cs1tmp){
         if(lc) .v.setI(52)$`trSelfState(-1, -1);
-        if(`stVal.no == 0 && `sysivar[.iLIFE] <= 0){
-          .v.setI(5050)$`trSelfState(-1, -1);
-        }
         `minus = 0;
         `state(::);
+        if(
+          (`stVal.no == 0 || .m.inRange!int?(120, 159, `stVal.no))
+          && `sysivar[.iLIFE] <= 0)
+        {
+          .v.setI(5050)$`trSelfState(-1, -1);
+        }
         if(`isActive()) `stVal.time++;
       }
     break:
@@ -3424,6 +3421,40 @@ public &Char
         {
           `makeDust(0.0, 0.0);
         }
+        if(`stVal.hb.damage != 0) branch{
+        cond `stVal.hb.guarded != 0:
+          if(
+            `addLife(-`stVal.hb.damage, true, true)
+            && `helperindex == 0) branch
+          {
+            ^`self by;
+            if(#`stVal.hb.byid == 0) else;
+            by = .players.get(`stVal.hb.byid[-1]);
+            if(#by == 0) else;
+          cond by~playerno == `playerno:
+            .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
+          cond (by~playerno&1) == (`playerno&1):
+            .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
+          else:
+            .winty[(`playerno+1)&1] = .fgt.WinTy::C;
+          }
+        else:
+          if(`addLife(-`stVal.hb.damage, true, true)) branch{
+            ^`self by;
+            if(#`stVal.hb.byid == 0) else;
+            by = .players.get(`stVal.hb.byid[-1]);
+            if(#by == 0) else;
+          cond (by~playerno&1) == (`playerno&1):
+            if(`helperindex == 0) branch{
+            cond by~playerno == `playerno:
+              .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
+            else:
+              .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
+            }
+          else:
+            `setEnemyWinty();
+          }
+        }
       else:
         if(`hittmp > 0) `hittmp = 0;
         `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
@@ -3433,6 +3464,7 @@ public &Char
         `stVal.hb.fallcount = 0;
         `stVal.hb.juggle = 0;
       }
+      `stVal.hb.damage = 0;
       if(
         `stVal.playerno == `playerno && (
           `hittmp <= 0 || (
@@ -3659,6 +3691,11 @@ public &Char
     if(h.p1facing == .com.IERR) h.p1facing = 0;
     if(h.p2facing == .com.IERR) h.p2facing = 0;
     if(h.p1getp2facing == .com.IERR) h.p1getp2facing = 0;
+    if(h.snapx == .com.FERR) h.snapx = 0.0;
+    if(h.snapy == .com.FERR) h.snapy = 0.0;
+    if(h.snapf == .com.IERR) h.snapf = 0;
+    .m.limRange!int?(h.snapf=, -1, 1);
+    if(h.snapt == .com.IERR) h.snapt = 0;
     if(h.fall.yvelocity == .com.FERR) h.fall.yvelocity = -4.5;
     if(h.fall.recovertime == .com.IERR) h.fall.recovertime = 4;
     if(h.fall.damage == .com.IERR) h.fall.damage = 0;
@@ -5927,7 +5964,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     ret a <= 0 || a <= h;
   }
   pyr.inguarddist = false;
-  pyr.stVal.hb.damage = 0;
   loop{
     *`top.self p = `top;
     float pl, pr, pv;
@@ -6678,7 +6714,6 @@ public float action(
           .chars[i][0]~trSelfState(-1, 1);
         }
         .chars[i][0]~posReset((float).stg~p1.startx, (float).stg~p2.startx);
-        .chars[i][0]~sysivar[.iCTRL] = 1;
       }
       i++;
     while i < #.chars:
@@ -6718,7 +6753,10 @@ public float action(
       if(.shuttertime == 0 && .com.intro >= 1){
         .com.intro--;
         if(.com.intro == 0) loop{index i = 0; while; do:
-          if(#.chars[i] > 0) .chars[i][0]~cmd.bufReset(-257);
+          if(#.chars[i] > 0){
+            .chars[i][0]~cmd.bufReset(-257);
+            .chars[i][0]~sysivar[.iCTRL] = 1;
+          }
           i++;
         while i < #.chars:}
       }

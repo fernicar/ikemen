@@ -2971,19 +2971,31 @@ public &StateBuilder
           `state.ctrlList[-1].task=, text=,
           ".forcestand=(int)(", "$.v.isTrue());")) ret false;
     cond .s.equ(name, "snap"):
-      `state.ctrlList[-1].task .=
-        obj .= ".mindistx=" .= obj .= ".maxdistx=";
+      `state.ctrlList[-1].task .= obj .= ".snapx=";
       if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
       `state.ctrlList[-1].task .=
         "$.v.toFloat();if(" .= obj .= ".p2facing==.com.IERR)"
-        .= obj .= ".p2facing=1;";
+        .= obj .= ".p2facing=1;" .= obj .= ".snapt=1;";
       if(.s.equ(",")<, `tokenizer(text=)){
-        `state.ctrlList[-1].task .=
-          obj .= ".mindisty=" .= obj .= ".maxdisty=";
+        `state.ctrlList[-1].task .= obj .= ".snapy=";
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, text=,
             "", "$.v.toFloat();")) ret false;
+        if(.s.equ(",")<, `tokenizer(text=)){
+          `state.ctrlList[-1].task .= obj .= ".snapf=";
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, text=,
+              "", "$.v.toInt();")) ret false;
+          if(.s.equ(",")<, `tokenizer(text=)){
+            `state.ctrlList[-1].task .= obj .= ".snapt=";
+            if(
+              !`fullExpression(
+                `state.ctrlList[-1].task=, text=,
+                "", "$.v.toInt();")) ret false;
+          }
+        }
       }
     cond .s.equ(name, "guard.ctrltime"):
       `state.ctrlList[-1].task .= obj;
