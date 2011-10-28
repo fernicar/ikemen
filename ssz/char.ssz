@@ -5345,88 +5345,85 @@ public void Explod::update()
       ret;
     }
   }
-  {
-    float scl = 1.0, cscl = .com.scale, xofs = 0.0, yofs = 0.0;
-    bool p = false;
+  float scl = 1.0, cscl = .com.scale, xofs = 0.0, yofs = 0.0;
+  bool p = false;
+  branch{
+  cond .super > 0:
+    p = `supermovetime == 0;
+  cond .pause > 0:
+    p = `pausemovetime == 0;
+  }
+  bool act = !p && `ignorehitpause != 0;
+  if(!p && !act){
+    if(#c == 0) c = .players.get(`player);
+    act = #c == 0 || c~acttmp%2 != -1;
+  }
+  if(act && `bindtime == 0){
+    float sp = .m.min!float?(1.0, .com.turbo);
+    `x += `velocityx*(float)(`facing*`relativef) * sp;
+    `y += `velocityy * sp;
+    if(.com.tickNextFrame()){
+      `velocityx += `accelx;
+      `velocityy += `accely;
+    }
+  }
+  if(`bindtime != 0) branch{
+  cond `postype >= 4:
+    cscl = 1.0;
+    `x = .com.camerax + `offsetx + (`postype == 4 ? -160.0 : 160.0);
+    xofs = -.com.xoffset;
+    `y = .com.cameray + `offsety - .com.zoffset;
+    yofs = -.com.yoffset;
+  else:
+    {
+      ^&.Char bc = .players.get(`bindid);
+      if(#bc == 0){
+        `bindtime = 0;
+        break, break;
+      }
+      if(`offsetx != .com.FERR) `setX(bc~sysfvar[.fX] + `offsetx);
+      if(`offsety != .com.FERR) `setY(bc~sysfvar[.fY] + `offsety);
+    }
+  }
+  if(.com.tickNextFrame()){
+    if(#`ani > 0) branch{
+    cond act:
+      `ani~ani.action();
+    else:
+      `ani~ani.updateSprite();
+    }
+    if(p) break;
     branch{
     cond .super > 0:
-      p = `supermovetime == 0;
+      if(`supermovetime > 0) `supermovetime--;
     cond .pause > 0:
-      p = `pausemovetime == 0;
+      if(`pausemovetime > 0) `pausemovetime--;
     }
-    bool act = !p && `ignorehitpause != 0;
-    if(!p && !act){
-      if(#c == 0) c = .players.get(`player);
-      act = #c == 0 || c~acttmp%2 != -1;
-    }
-    if(act && `bindtime == 0){
-      float sp = .m.min!float?(1.0, .com.turbo);
-      `x += `velocityx*(float)(`facing*`relativef) * sp;
-      `y += `velocityy * sp;
-      if(.com.tickNextFrame()){
-        `velocityx += `accelx;
-        `velocityy += `accely;
+    if(!act) break;
+    if(`removetime > 0) `removetime--;
+    if(`bindtime > 0) `bindtime--;
+  }
+  branch{
+    type _t = $void(.anims.self=);
+    ~_t aal = [_t(a=){
+      if(`ownpal == 0 && #c == 0){
+        if(#(c = .players.get(`player)) == 0) ret;
       }
-    }
-    if(.com.tickNextFrame()){
-      if(#`ani > 0) branch{
-      cond act:
-        `ani~ani.action();
-      else:
-        `ani~ani.updateSprite();
-      }
-      if(p) break;
-      branch{
-      cond .super > 0:
-        if(`supermovetime > 0) `supermovetime--;
-      cond .pause > 0:
-        if(`pausemovetime > 0) `pausemovetime--;
-      }
-      if(!act) break;
-      if(`removetime > 0) `removetime--;
-      if(`bindtime > 0) `bindtime--;
-    }
-  break:
-    if(`bindtime != 0) branch{
-    cond `postype >= 4:
-      cscl = 1.0;
-      `x = .com.camerax + `offsetx + (`postype == 4 ? -160.0 : 160.0);
-      xofs = -.com.xoffset;
-      `y = .com.cameray + `offsety - .com.zoffset;
-      yofs = -.com.yoffset;
-    else:
-      {
-        ^&.Char bc = .players.get(`bindid);
-        if(#bc == 0){
-          `bindtime = 0;
-          break, break;
-        }
-        if(`offsetx != .com.FERR) `setX(bc~sysfvar[.fX] + `offsetx);
-        if(`offsety != .com.FERR) `setY(bc~sysfvar[.fY] + `offsety);
-      }
-    }
-    branch{
-      type _t = $void(.anims.self=);
-      ~_t aal = [_t(a=){
-        if(`ownpal == 0 && #c == 0){
-          if(#(c = .players.get(`player)) == 0) ret;
-        }
-        .addAnimList(
-          a=, `ani, `sprpriority, `x+xofs, `y+yofs, cscl,
-          (float)`facing*`scalex*scl, (float)`vfacing*`scaley*scl,
-          0.0, false, 1.0, 1.0, `alphas < 0 ? -1 : `alphas,
-          `alphad, 256 >> (int)(
-            .super > 0 && .superdarken != 0
-            && (#c > 0 || #(c = .players.get(`player)) > 0)
-            && c~playerno != .superplayer),
-          `ownpal == 0 ? c~getPalfx() : .consts.null!&.com.PalFX?(),
-          `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 0.0);
-      }];
-    cond `ontop != 0:
-      aal(:.topanims=:);
-    else:
-      aal(:.anims=:);
-    }
+      .addAnimList(
+        a=, `ani, `sprpriority, `x+xofs, `y+yofs, cscl,
+        (float)`facing*`scalex*scl, (float)`vfacing*`scaley*scl,
+        0.0, false, 1.0, 1.0, `alphas < 0 ? -1 : `alphas,
+        `alphad, 256 >> (int)(
+          .super > 0 && .superdarken != 0
+          && (#c > 0 || #(c = .players.get(`player)) > 0)
+          && c~playerno != .superplayer),
+        `ownpal == 0 ? c~getPalfx() : .consts.null!&.com.PalFX?(),
+        `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 0.0);
+    }];
+  cond `ontop != 0:
+    aal(:.topanims=:);
+  else:
+    aal(:.anims=:);
   }
 }
 public void Explod::setPos(&.Char c=)
@@ -5436,9 +5433,7 @@ public void Explod::setPos(&.Char c=)
     `bindid = c.id;
     `facing = c.facing*`relativef;
     `offsetx *= (float)c.facing;
-    if(`offsetx != .com.FERR) `setX(c.sysfvar[.fX] + `offsetx);
-    if(`offsety != .com.FERR) `setY(c.sysfvar[.fY] + `offsety);
-    break;
+    if(`bindtime == 0) `bindtime = 1;
   case 1:
     {
       ^&.Char bc = .players.enemyNear(c=, 0);
@@ -5446,10 +5441,8 @@ public void Explod::setPos(&.Char c=)
       `bindid = bc~id;
       `facing *= bc~facing*`relativef;
       `offsetx *= (float)bc~facing;
-      if(`offsetx != .com.FERR) `setX(bc~sysfvar[.fX] + `offsetx);
-      if(`offsety != .com.FERR) `setY(bc~sysfvar[.fY] + `offsety);
+      if(`bindtime == 0) `bindtime = 1;
     }
-    break;
   case 2, 3:
     branch{
     cond (c.facing > 0 && `postype == 2) || (c.facing < 0 && `postype == 3):
