@@ -3275,11 +3275,14 @@ public &Char
         if(lc) .v.setI(52)$`trSelfState(-1, -1);
         `minus = 0;
         `state(::);
-        if(
-          (`stVal.no == 0 || .m.inRange!int?(120, 159, `stVal.no))
-          && `sysivar[.iLIFE] <= 0)
-        {
-          .v.setI(5050)$`trSelfState(-1, -1);
+        branch{
+        cond `stVal.no == 0 || .m.inRange!int?(120, 159, `stVal.no):
+          if(`sysivar[.iLIFE] <= 0) .v.setI(5050)$`trSelfState(-1, -1);
+        cond `stVal.no == 5110:
+          if(`sysivar[.iRECOVERTIME] <= 0){
+            .v.setI(`sysivar[.iLIFE] > 0 ? 5120 : 5150);
+            `trSelfState(-1, -1);
+          }
         }
         if(`isActive()) `stVal.time++;
       }
