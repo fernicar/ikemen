@@ -186,6 +186,7 @@ public &Action
       i++;
     while i < #lines:
     }
+    if(`ani.loopstart >= #`ani.frames) `ani.loopstart = 0;
   }
 }
 

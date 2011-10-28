@@ -148,6 +148,7 @@ public &Action
       i++;
     while i < #lines:
     }
+    if(`loopstart >= #`frames) `loopstart = 0;
   }
 }
 
