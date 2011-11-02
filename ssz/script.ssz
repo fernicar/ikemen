@@ -929,6 +929,11 @@ public &Script
       re = tmp2;
       ret .mac.RetState::OK;
     }
+    *sig_t _len(arg, re=)
+    {
+      re = .s.iToS(#arg);
+      ret .mac.RetState::OK;
+    }
     method sig_t met = dummy;
     branch{
     cond #name >= 1 && name[0] == '=':

@@ -60,12 +60,14 @@ p2Cmd#newCommand
   #`0#=~p1SelOffset
   #`0#=~p1SelX
   #`0#=~p1SelY
+  #`#=~p1Portrait
 
   #`0#=~p2TeamMode
   #`2#=~p2NumTurns
   #`0#=~p2SelOffset
   #`0#=~p2SelX
   #`0#=~p2SelY
+  #`#=~p2Portrait
 
   #`0#=~stageNo
 #]#=init#!
@@ -316,10 +318,7 @@ p1NameTxt#newTextImg
 %| setScale | 0.5 | 0.5
 %#\p1NameTxt#each
 
-#`' p1SelSub '
-#[
-  #p1SelOffset#, + #p1SelX#, + 5*#p1SelY #expr#=_
-  #`| #_#, | 18 | 13 | 1 | 1 #drawPortrait
+#`#[
   #`162#=__
   #`#p1Selected#[#=___
     #`%| setPos | 10 | #__#,
@@ -328,6 +327,13 @@ p1NameTxt#newTextImg
       %#\p1NameTxt#each
     #`7.0+#__#calc#=__
   #]#each
+#]#=p1DrawSelectName
+
+#`' p1SelSub '
+#[
+  #p1SelOffset#, + #p1SelX#, + 5*#p1SelY #expr#=_
+  #`#_#=~p1Portrait
+  #`#p1DrawSelectName#!
   #`!#p1SelEnd #if #{
     #`| getState | u #p1Cmd #if #{
       #`| play | 100 | 0 #sysSnd
@@ -384,10 +390,7 @@ p2NameTxt#newTextImg
 %| setScale | 0.5 | 0.5
 %#\p2NameTxt#each
 
-#`' p2SelSub '
-#[
-  #p2SelOffset#, + #p2SelX#, + 5*#p2SelY #expr#=_
-  #`| #_#, | 302 | 13 | -1 | 1 #drawPortrait
+#`#[
   #`162#=__
   #`#p2Selected#[#=___
     #`%| setPos | 310 | #__#,
@@ -396,6 +399,13 @@ p2NameTxt#newTextImg
       %#\p2NameTxt#each
     #`7.0+#__#calc#=__
   #]#each
+#]#=p2DrawSelectName
+
+#`' p2SelSub '
+#[
+  #p2SelOffset#, + #p2SelX#, + 5*#p2SelY #expr#=_
+  #`#_#=~p2Portrait
+  #`#p2DrawSelectName#!
   #`!#p2SelEnd #if #{
     #`| getState | u #p2Cmd #if #{
       #`| play | 100 | 0 #sysSnd
@@ -455,6 +465,14 @@ SelStageTxt#newTextImg
   #`| getState | r #p1Cmd #if #{
     #`| play | 100 | 0 #sysSnd
     #`|#stageNo#,+1#setStage#=~stageNo
+  #}
+  #`| getState | u #p1Cmd#if #{
+    #`| play | 100 | 0 #sysSnd
+    #`|#stageNo#,-10#setStage#=~stageNo
+  #}
+  #`| getState | d #p1Cmd #if #{
+    #`| play | 100 | 0 #sysSnd
+    #`|#stageNo#,+10#setStage#=~stageNo
   #}
   #`%| setText | Stage #stageNo#,: #{%|;#{|#stageNo#getStageName#}#aenc#}
     %| draw
@@ -528,7 +546,7 @@ selBox2#newAnim
 #`% randSel % a@randSel % b@randSel %
 #[
   #a@randSel#, == #b@randSel #if #{#^#~#}
-  #`| #a@randSel#, | #{|0|2#rand#} | #{|1|4#rand#} #setTeamMode
+  #`| #a@randSel#, | #{|0|1#rand#}*2 | #{|1|4#rand#} #setTeamMode
   #{
     #`#[
       #`| #a@randSel#, | #{|#rand#} | #{|1|12#rand#} #selectChar#, < 2
@@ -600,6 +618,15 @@ connecting#newTextImg
 %| setPos   | 10 | 140
 %#\connecting#each
 
+loading#newTextImg
+#`#;
+%| setFont  | jgFnt
+%| setBank  | 0
+%| setAlign | 1
+%| setText  | Loading...
+%| setPos   | 100 | 210
+%#\loading#each
+
 inputdia#newInputDialog
 
 #`#[
@@ -609,9 +636,11 @@ inputdia#newInputDialog
 
   #`$#=p1Selected
   #`false#=p1SelEnd
+  #`#=~p1Portrait
 
   #`$#=p2Selected
   #`false#=p2SelEnd
+  #`#=~p2Portrait
 
   #`#p1TmSub#=p1Task
   #`#=p2Task
@@ -632,11 +661,40 @@ inputdia#newInputDialog
   #[
     #esc #if #{#^#^#`#modeSel#~#}
     #`#bgSub#!
+    #`#p1Portrait#len#, > 0 #if #{
+      #`| #p1Portrait#, | 18 | 13 | 1 | 1 #drawPortrait
+    #}
+    #`#p2Portrait#len#, > 0 #if #{
+      #`| #p2Portrait#, | 302 | 13 | -1 | 1 #drawPortrait
+    #}
     #`| 10 | 170 | #p1SelOffset #drawFace
     #`| 169 | 170 | #p2SelOffset #drawFace
     #p1SelEnd#, && #p2SelEnd #if #{#SelStageSub#!#}
     #p2Task#!
     #p1Task#!
+  #]
+  #for #!
+  #`$ #[#`0#=_#] $ #[#_#, < 20#] $ #[#_#,+1#expr#=_#] $ $
+  #[
+    #`| draw #selBG
+    #`0#=__
+    #`#p1Selected#[#=___
+      #`10000.0/(10000.0-(#__#,*#_#,))#calc#=_1
+      #`(double)#_#,*#__#,/20#calc#=_2
+      #`| #___#, | 18.0-#_2#, | 13.0+#_2#,/3 | #_1#, | #_1#, #drawPortrait
+      #`48+#__#calc#=__
+    #]#each
+    #`0#=__
+    #`#p2Selected#[#=___
+      #`10000.0/(10000.0-(#__#,*#_#,))#calc#=_1
+      #`(double)#_#,*#__#,/20#calc#=_2
+      #`| #___#, | 302.0+#_2#, | 13.0+#_2#,/3 | -#_1#, | #_1#, #drawPortrait
+      #`48+#__#calc#=__
+    #]#each
+    #`#p1DrawSelectName#!
+    #`#p2DrawSelectName#!
+    #`| draw #loading
+    #refresh
   #]
   #for #!
   #{

@@ -702,62 +702,72 @@ TUserFunc(
 	SDL_FreeSurface(psrc);
 }
 
-double normalize(double sam, const int chs, const int sps)
+struct NormalizeVar
 {
-	const double shitsu = 32.0;
-	static double bairitsu = 1.0, heriritsu = 1.0, herihenka = 0.0;
-	static double fueritsu = 1.0, heikin = 1.0/shitsu;
-	if(bairitsu > 1.0) bairitsu = 1.0;
-	sam *= bairitsu;
+	static const double shitsu;
+	double bai, heri, herihenka, fue, heikin;
+	NormalizeVar() :
+		bai(1.0), heri(1.0), herihenka(0.0), fue(1.0), heikin(1.0/shitsu)
+	{
+	}
+};
+const double NormalizeVar::shitsu = 32.0;
+NormalizeVar g__nvAll, g__nvMusic;
+double normalize(double sam, const int chs, const int sps, NormalizeVar& v)
+{
+	if(v.bai > 8.0) v.bai = 8.0;
+	sam *= v.bai;
 	if(sam < 0.0){
 		if(sam < -1.0){
-			bairitsu *= pow(1.0/-sam, heriritsu);
-			herihenka += shitsu*(1.0 - heriritsu) / ((double)sps+shitsu);
+			v.bai *= pow(1.0/-sam, v.heri);
+			v.herihenka += v.shitsu*(1.0 - v.heri) / ((double)sps+v.shitsu);
 			sam = -1.0;
 		}else{
 			double tmp2 = (1.0 - pow(1.0 - -sam, 64.0)) * pow(0.5 - -sam, 3.0);
-			bairitsu += bairitsu*(
-				heriritsu*(1.0/shitsu - heikin) / fueritsu
-				+ tmp2*fueritsu*(1.0 - heriritsu) / shitsu
+			v.bai += v.bai*(
+				v.heri*(1.0/v.shitsu - v.heikin) / v.fue
+				+ tmp2*v.fue*(1.0 - v.heri) / v.shitsu
 			) / (double)(chs*sps/8+1);
-			herihenka -= (0.5 - heikin)*heriritsu / (double)(chs*sps);
+			v.herihenka -= (0.5 - v.heikin)*v.heri / (double)(chs*sps);
 		}
-		fueritsu +=
-			(shitsu*fueritsu*(1.0/fueritsu - -sam) - fueritsu)
-			/ (shitsu*(double)(chs*sps));
-		heikin += (-sam - heikin) / (double)(chs*sps);
+		v.fue +=
+			(v.shitsu*v.fue*(1.0/v.fue - -sam) - v.fue)
+			/ (v.shitsu*(double)(chs*sps));
+		v.heikin += (-sam - v.heikin) / (double)(chs*sps);
 	}else{
 		if(sam > 1.0){
-			bairitsu *= pow(1.0/sam, heriritsu);
-			herihenka += shitsu*(1.0 - heriritsu) / ((double)sps+shitsu);
+			v.bai *= pow(1.0/sam, v.heri);
+			v.herihenka += v.shitsu*(1.0 - v.heri) / ((double)sps+v.shitsu);
 			sam = 1.0;
 		}else{
 			double tmp2 = (1.0 - pow(1.0 - sam, 64.0)) * pow(0.5 - sam, 3.0);
-			bairitsu += bairitsu*(
-				heriritsu*(1.0/shitsu - heikin) / fueritsu
-				+ tmp2*fueritsu*(1.0 - heriritsu) / shitsu
+			v.bai += v.bai*(
+				v.heri*(1.0/v.shitsu - v.heikin) / v.fue
+				+ tmp2*v.fue*(1.0 - v.heri) / v.shitsu
 			) / (double)(chs*sps/8+1);
-			herihenka -= (0.5 - heikin)*heriritsu / (double)(chs*sps);
+			v.herihenka -= (0.5 - v.heikin)*v.heri / (double)(chs*sps);
 		}
-		fueritsu +=
-			(shitsu*fueritsu*(1.0/fueritsu - sam) - fueritsu)
-			/ (shitsu*(double)(chs*sps));
-		heikin += (sam - heikin) / (double)(chs*sps);
+		v.fue +=
+			(v.shitsu*v.fue*(1.0/v.fue - sam) - v.fue)
+			/ (v.shitsu*(double)(chs*sps));
+		v.heikin += (sam - v.heikin) / (double)(chs*sps);
 	}
-	heriritsu += herihenka;
-	if(heriritsu < 0.0) heriritsu = 0.0;
-	else if(heriritsu > 1.0) heriritsu = 1.0;
+	v.heri += v.herihenka;
+	if(v.heri < 0.0) v.heri = 0.0;
+	else if(v.heri > 1.0) v.heri = 1.0;
 	return sam;
 }
 TUserFunc(bool, SetSndBuf, int32_t *buf)
 {
 	if(g_snddata == g_sndbuf) return false;
-	int i;
+	int i, j;
 	for(i = 0; i < g_samples*2; i++){
 		g_sndbuf[i] =
 			(int32_t)(
 				normalize(
-					(double)(buf[i]+g_omdata[i])/32768.0, 2, 44100)*32767.0)
+					(double)(buf[i]*2+(int)g_omdata[i]*3)/32768.0, 2, 44100,
+					g__nvAll)
+				* 32767.0)
 			* g_volume >> 8;
 	}
 	g_snddata = g_sndbuf;
@@ -832,6 +842,13 @@ TUserFunc(bool, SetSndBuf, int32_t *buf)
 				}
 				didx += addidx;
 				g_obl.head->i = (int)didx*(om_bitspersamp>>3)*om_numchannels;
+			}
+			for(j = om_bufidx; j < i; j++){
+				g_ombuf[j] =
+					(int16_t)(
+						normalize(
+							(double)g_ombuf[j]/32768.0, 2, 44100, g__nvMusic)
+						* 32767.0);
 			}
 			if(i >= g_samples*2){
 				g_omdata = g_ombuf;

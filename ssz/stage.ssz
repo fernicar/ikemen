@@ -78,6 +78,7 @@ public &EnvShake envShake;
 
 public &Stage
 {
+  public ^/char def;
   public ^/char spr;
   public ^/char bgmusic;
   public ^/char name, author;
@@ -242,51 +243,32 @@ public &Stage
       `bgcdef.ctrlbg.new(0);
       `bgcdef.looptime = -1;
       `bgcdef.positionlink = false;
-      loop{index i = 0; while; do:
-        `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
-        i++;
-      while i < #`bg:
-      }
       ^/char data;
-      if(#(data = sc.get("ctrlid")) > 0){
-        ^int ids = .com.csvToAry!ids<>.self?(data);
-        `bgcdef.ctrlbg.new(0);
-        branch{
-        cond #ids == 1 && ids[0] == -1:
+      branch{
+      cond #(data = sc.get("ctrlid")) > 0:
+        {
+          ^int ids = .com.csvToAry!ids<>.self?(data);
+          if(#ids == 1 && ids[0] == -1) break, else;
           loop{index i = 0; while; do:
-            `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
-            i++;
-          while i < #`bg:
-          }
-        else:
-          loop{
-            index i = 0;
-            while;
-          do:
             loop{index j = 0; while; do:
               if(ids[j] == ids[i]) break, continue;
               j++;
-            while j < i:
-            }
+            while j < i:}
             `getBG(`bgcdef.ctrlbg=, ids[i]);
           continue:
             i++;
-          while i < #ids:
-          }
+          while i < #ids:}
         }
+      else:
+        loop{index i = 0; while; do:
+          `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
+          i++;
+        while i < #`bg:}
       }
       if(#(data = sc.get("looptime")) > 0) `bgcdef.looptime = .com.atoi(data);
     }
     public void bgctrl(&.com.Section sc=)
     {
-      if(#`bgctrlList == 0 && #`bgcdef.ctrlbg == 0) loop{
-        index i = 0;
-        while;
-      do:
-        `bgcdef.ctrlbg.new[-1] = `bg[i..i+1];
-        i++;
-      while i < #`bg:
-      }
       `bgctrlList.new[-1].ctrlbg = `bgcdef.ctrlbg;
       `bgctrlList[-1].looptime = `bgcdef.looptime;
       ^/char data;
@@ -362,6 +344,7 @@ public &Stage
         `load:<-bgctrl(sc=);
       }
     }
+    `def = def;
     ^char buf = .file.loadAsciiText(def);
     ^^/char lines = .com.splitLines(buf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);

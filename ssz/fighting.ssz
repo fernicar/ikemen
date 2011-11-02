@@ -146,6 +146,12 @@ void game()
     while i < #.chr.chars:
     }
     loop{index i = 0; while; do:
+      if(#.chr.chars[i] > 0) `put(0.0, y=, .chr.chars[i][0]~def + \n);
+      i++;
+    while i < #.chr.chars:}
+    `put(0.0, y=, .chr.stg~def);
+    `put(0.0, y=, "");
+    loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0){
         loop{index j = 0; while; do:
           `put(0.0, y=, .com.clipboardText[i][j]);
