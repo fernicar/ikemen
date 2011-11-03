@@ -5495,7 +5495,9 @@ public void Explod::modify(&.Char c=, &.ModifyExplod mod=, index i)
   if(mod.alphad != .com.IERR) `alphad = mod.alphad;
   if(mod.supermovetime != .com.IERR) `supermovetime = mod.supermovetime;
   if(mod.pausemovetime != .com.IERR) `pausemovetime = mod.pausemovetime;
-  if(mod.postype >= 0) `setPos(c=);
+  if(mod.postype >= 0 || mod.offsetx != .com.FERR || mod.offsety != .com.FERR){
+    `setPos(c=);
+  }
   if(`ontop != 0) `sprpriority = 0;
 }
 
