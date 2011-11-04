@@ -1868,21 +1868,21 @@ public &StateBuilder
       out .= "$(#.c>0?[._t(_=){";
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
       out .= ";}](:.c<>=:):.v.setSF())";
-    cond .s.equ("root", token) || .s.equ("parent", token):
-      out .= obj .= token[0] == 'r' ? "trRoot()$" : "trParent()$";
+    cond .s.equ("root", token):
+      out .= obj .= "trRoot()$[._t(_=){";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
       }
-      out .= "[._t(_=){";
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
       out .= ";}](:.c<>=:)";
-    cond .s.equ("partner", token):
-      out .= obj .= "trPartner()$(#.c>0?[._t(_=){";
+    cond .s.equ("partner", token) || .s.equ("parent", token):
+      out .= obj .= token[3] == 't' ? "trPartner()$" : "trParent()$";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
       }
+      out .= "(#.c>0?[._t(_=){";
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
       out .= ";}](:.c<>=:):.v.setSF())";
     else:
@@ -3587,13 +3587,15 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::VarSet;
           if(s[0] == 'p'){
             `state.flag = 1;
-            `state.ctrlList[-1].task .= "^`self p=`trParent()$.c;";
+            `state.ctrlList[-1].task .=
+              "^`self p=`trParent()$.c;if(#p==0)ret;";
           }
         cond .s.equ(s, "varadd") || .s.equ(s, "parentvaradd"):
           `state.ctrlList[-1].typ = .CtrlTy::VarAdd;
           if(s[0] == 'p'){
             `state.flag = 1;
-            `state.ctrlList[-1].task .= "^`self p=`trParent()$.c;";
+            `state.ctrlList[-1].task .=
+              "^`self p=`trParent()$.c;if(#p==0)ret;";
           }
         cond .s.equ(s, "varrangeset"):
           `state.ctrlList[-1].typ = .CtrlTy::VarRangeSet;
@@ -3698,9 +3700,10 @@ public &StateBuilder
         cond .s.equ(s, "bindtoparent"):
           `state.ctrlList[-1].typ = .CtrlTy::BindToParent;
           `state.ctrlList[-1].task .=
+            "`trParent();if(#.c==0)ret;"
             "`sysivar[.iBINDTIME]=1;"
             "`sysfvar[.fBINDPOSX]=0.0;`sysfvar[.fBINDPOSY]=0.0;"
-            "`trParent()$`setBindToId(.c<>=);";
+            "`setBindToId(.c<>=);";
         cond .s.equ(s, "bindtoroot"):
           `state.ctrlList[-1].typ = .CtrlTy::BindToRoot;
           `state.ctrlList[-1].task .=

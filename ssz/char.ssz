@@ -3940,7 +3940,7 @@ public &Char
   {
     branch{
     cond `parentindex == .com.IERR:
-      .c = .chars[`playerno][0];
+      .c.new(0);
     else:
       .c = .chars[`playerno][#`parentindex];
     }
