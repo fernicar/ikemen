@@ -3526,7 +3526,7 @@ public &Char
   }
   public void setLife(int l)
   {
-    if(.roundEnd()) ret;
+    if(.ko != .fgt.KOTy::NotYet) ret;
     `sysivar[.iLIFE] = .m.max!int?(0)<, .m.min!int?(`sysivar[.iLIFEMAX])<, l;
   }
   public int getDamage(int damage, bool kill, bool absolute, float atkmul)
@@ -6595,61 +6595,9 @@ public float action(
   else:
     y = 0.0;
   }
-  bool finish()
+  void setWinType(bool p1, bool p2)
   {
-    bool p1 = false, p2 = false;
-    loop{index i = 0; while; do:
-      if(#.chars[i] > 0 && .chars[i][0]~sysivar[.iLIFE] > 0) break;
-      i += 2;
-    while i < #.chars:
-      p1 = true;
-    }
-    loop{index i = 1; while; do:
-      if(#.chars[i] > 0 && .chars[i][0]~sysivar[.iLIFE] > 0) break;
-      i += 2;
-    while i < #.chars:
-      p2 = true;
-    }
     branch{
-    cond .com.time == 0:
-      {
-        .com.intro = -.fight~ro.over_hittime;
-        if(p1 || p2) break;
-        .winty[0] = .winty[1] = .fgt.WinTy::T;
-        float l1 = 0.0, l2 = 0.0;
-        loop{index i = 0; while; do:
-          if(#.chars[i] > 0){
-            l1 +=
-              (.com.tmode[0] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
-              * (float).chars[i][0]~sysivar[.iLIFE]
-              / (float).chars[i][0]~sysivar[.iLIFEMAX];
-          }
-          i += 2;
-        while i < #.chars:
-        }
-        loop{index i = 1; while; do:
-          if(#.chars[i] > 0){
-            l2 +=
-              (.com.tmode[1] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
-              * (float).chars[i][0]~sysivar[.iLIFE]
-              / (float).chars[i][0]~sysivar[.iLIFEMAX];
-          }
-          i += 2;
-        while i < #.chars:
-        }
-        branch{
-        cond l1 > l2:
-          p2 = true;
-        cond l2 > l1:
-          p1 = true;
-        else:
-          p1 = p2 = true;
-        }
-      }
-    cond .gs(.gsNOKO):
-      ret false;
-    }
-    if(.com.intro == -.fight~ro.over_hittime && (p1 || p2)) branch{
     cond
       .com.tmode[0] != (int).com.TeamMode::Turns
       && .com.tmode[1] != (int).com.TeamMode::Turns
@@ -6684,24 +6632,45 @@ public float action(
         .com.p2wins += 1;
       }
     }
-    if(.com.intro == -.fight~ro.over_hittime) branch{
-    cond p1 && p2:
-      .ko =
-        .winty[0] == .fgt.WinTy::T || .winty[0] == .fgt.WinTy::PT
-        ? .fgt.KOTy::TODraw : .fgt.KOTy::DKO;
-      .com.win = -1;
-    cond p1:
-      .ko =
-        .winty[1] == .fgt.WinTy::T || .winty[1] == .fgt.WinTy::PT
-        ? .fgt.KOTy::TO : .fgt.KOTy::KO;
-      .com.win = 1;
-    cond p2:
-      .ko =
-        .winty[0] == .fgt.WinTy::T || .winty[0] == .fgt.WinTy::PT
-        ? .fgt.KOTy::TO : .fgt.KOTy::KO;
-      .com.win = 0;
+  }
+  bool finish()
+  {
+    bool p1 = false, p2 = false;
+    loop{index i = 0; while; do:
+      if(#.chars[i] > 0 && .chars[i][0]~sysivar[.iLIFE] > 0) break;
+      i += 2;
+    while i < #.chars:
+      p1 = true;
     }
-    ret p1 || p2;
+    loop{index i = 1; while; do:
+      if(#.chars[i] > 0 && .chars[i][0]~sysivar[.iLIFE] > 0) break;
+      i += 2;
+    while i < #.chars:
+      p2 = true;
+    }
+    branch{
+    cond .com.time == 0:
+      .com.intro = -.fight~ro.over_hittime;
+      if(p1 || p2) break;
+      .winty[0] = .winty[1] = .fgt.WinTy::T;
+    cond .gs(.gsNOKO):
+      ret false;
+    }
+    if(.com.intro == -.fight~ro.over_hittime && (p1 || p2)){
+      `setWinType(p1, p2);
+      branch{
+      cond p1 && p2:
+        .ko = .fgt.KOTy::DKO;
+        .com.win = -1;
+      cond p1:
+        .ko = .fgt.KOTy::KO;
+        .com.win = 1;
+      cond p2:
+        .ko = .fgt.KOTy::KO;
+        .com.win = 0;
+      }
+    }
+    ret p1 || p2 || .com.time == 0;
   }
   void posreset()
   {
@@ -6784,6 +6753,50 @@ public float action(
         break;
       comm:
         if(.winskipped || !.gs(.gsROUNDNOTOVER) || .com.intro >= rs4t){
+          if(.ko == .fgt.KOTy::NotYet && .com.intro == rs4t){
+            bool p1 = false, p2 = false;
+            float l1 = 0.0, l2 = 0.0;
+            loop{index i = 0; while; do:
+              if(#.chars[i] > 0){
+                l1 +=
+                  (.com.tmode[0] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
+                  * (float).chars[i][0]~sysivar[.iLIFE]
+                  / (float).chars[i][0]~sysivar[.iLIFEMAX];
+              }
+              i += 2;
+            while i < #.chars:
+            }
+            loop{index i = 1; while; do:
+              if(#.chars[i] > 0){
+                l2 +=
+                  (.com.tmode[1] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
+                  * (float).chars[i][0]~sysivar[.iLIFE]
+                  / (float).chars[i][0]~sysivar[.iLIFEMAX];
+              }
+              i += 2;
+            while i < #.chars:
+            }
+            branch{
+            cond l1 > l2:
+              p2 = true;
+            cond l2 > l1:
+              p1 = true;
+            else:
+              p1 = p2 = true;
+            }
+            setWinType(p1, p2);
+            branch{
+            cond p1 && p2:
+              .ko = .fgt.KOTy::TODraw;
+              .com.win = -1;
+            cond p1:
+              .ko = .fgt.KOTy::TO;
+              .com.win = 1;
+            cond p2:
+              .ko = .fgt.KOTy::TO;
+              .com.win = 0;
+            }
+          }
           .com.intro--;
           if(.com.time != 0 && .com.intro == rs4t-1) loop{
             index i = 0;
