@@ -4595,17 +4595,13 @@ public &StateBuilder
               else:
                 `state.ctrlList[-1].task .= "b=f;";
               }
-              `state.ctrlList[-1].task .=
-                ".chars[`playerno]<>~setFEdge(f);"
-                ".chars[`playerno]<>~setBEdge(b);";
+              `state.ctrlList[-1].task .= "`setFEdge(f);`setBEdge(b);";
               if(name[0] == 'v'){
-                `state.ctrlList[-1].task .=
-                  ".chars[`playerno]<>~setFWidth(f);"
-                  ".chars[`playerno]<>~setBWidth(b);";
+                `state.ctrlList[-1].task .= "`setFWidth(f);`setBWidth(b);";
               }
             }
           cond .s.equ(name, "player"):
-            `state.ctrlList[-1].task .= ".chars[`playerno]<>~setFWidth(";
+            `state.ctrlList[-1].task .= "`setFWidth(";
             if(
               !`expression(
                 `state.ctrlList[-1].task=, text=)) ret false;
@@ -4614,8 +4610,7 @@ public &StateBuilder
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, text=,
-                  ".chars[`playerno]<>~setBWidth(",
-                  "$.v.toFloat());")) ret false;
+                  "`setBWidth(", "$.v.toFloat());")) ret false;
             }
           else:
             break, default;
