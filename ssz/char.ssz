@@ -5436,6 +5436,8 @@ public void Explod::setPos(&.Char c=)
     `bindid = c.id;
     `facing = c.facing*`relativef;
     `offsetx *= (float)c.facing;
+    if(`offsetx != .com.FERR) `setX(c.sysfvar[.fX] + `offsetx);
+    if(`offsety != .com.FERR) `setY(c.sysfvar[.fY] + `offsety);
     if(`bindtime == 0) `bindtime = 1;
   case 1:
     {
@@ -5444,6 +5446,8 @@ public void Explod::setPos(&.Char c=)
       `bindid = bc~id;
       `facing *= bc~facing*`relativef;
       `offsetx *= (float)bc~facing;
+      if(`offsetx != .com.FERR) `setX(bc~sysfvar[.fX] + `offsetx);
+      if(`offsety != .com.FERR) `setY(bc~sysfvar[.fY] + `offsety);
       if(`bindtime == 0) `bindtime = 1;
     }
   case 2, 3:
