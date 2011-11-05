@@ -1017,7 +1017,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
           }
         }
       }
-    cond `cur == 2 && ko != .KOTy::NotYet:
+    cond `cur == 2 && (ko != .KOTy::NotYet || .com.time == 0):
       switch(ko){
       case .KOTy::KO:
         if(`swt-- == 0){
@@ -1121,7 +1121,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         `ko.draw((float)`posx, (float)`posy, layerno, `fnt);
       case .KOTy::DKO:
         `dko.draw((float)`posx, (float)`posy, layerno, `fnt);
-      case .KOTy::TO, .KOTy::TODraw:
+      default:
         `to.draw((float)`posx, (float)`posy, layerno, `fnt);
       }
       if(`wt2 < 0) branch{
