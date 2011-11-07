@@ -2823,11 +2823,15 @@ public &Char
         ^`self c = .players.get(`sysivar[.iBINDTOID]);
         if(#c == 0) break;
       cond c~isTarget(`id):
-        `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
-        `setYV(c~sysfvar[.fVY]);
+        if(`sysfvar[.fBINDPOSX] != .com.FERR){
+          `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
+        }
+        if(`sysfvar[.fBINDPOSY] != .com.FERR) `setYV(c~sysfvar[.fVY]);
       cond `isTarget(c~id):
-        c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
-        c~setYV(`sysfvar[.fVY]);
+        if(`sysfvar[.fBINDPOSX] != .com.FERR){
+          c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
+        }
+        if(`sysfvar[.fBINDPOSY] != .com.FERR) c~setYV(`sysfvar[.fVY]);
       }
     }
   }
