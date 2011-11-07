@@ -2869,10 +2869,7 @@ public &Char
         `sysfvar[.fX] =
           .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.maxdistx);
       }
-      if(
-        `stVal.playerno != `playerno
-        || `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A)
-      {
+      if(`stVal.hb.guarded == 0 || `stVal.typ == .StTy::A){
         if(`stVal.hb.mindisty != .com.FERR){
           `sysfvar[.fY] =
             .m.max!float?(`sysfvar[.fY])<,
@@ -2889,7 +2886,9 @@ public &Char
         `sysivar[.iBINDTIME] = `stVal.hb.snapt;
         `sysivar[.iBINDFACING] = `stVal.hb.snapf;
         `sysfvar[.fBINDPOSX] = `stVal.hb.snapx;
-        `sysfvar[.fBINDPOSY] = `stVal.hb.snapy;
+        `sysfvar[.fBINDPOSY] =
+          `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A
+          ? `stVal.hb.snapy : .com.FERR;
         `bind();
       }
     }
