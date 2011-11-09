@@ -5928,7 +5928,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
     comm:
       branch{
-        int op2f = `pyr.facing, byf;
+        int byf;
       cond pro == 0 || hit.p1facing != 0:
         by.setFacing(
           (int)(`pyr.sysfvar[.fX] - by.sysfvar[.fX]) * hit.p1facing);
@@ -5936,17 +5936,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       else:
         byf = pro;
       comm:
-        `pyr.setFacing(byf * -hit.p2facing);
-        if(
-          (hitting > 0 || p2s == 2) && (
-            hit.p2facing != 0 ? (op2f != `pyr.facing) == (hit.p2facing > 0)
-            : (`pyr.facing < 0) == (byf < 0)))
-        {
+        if((`pyr.facing < 0) == (byf < 0)){
           `pyr.stVal.hb.xvel *= -1.0;
           if(`pyr.stVal.hb.fall.xvelocity != .com.FERR){
             `pyr.stVal.hb.fall.xvelocity *= -1.0;
           }
         }
+        `pyr.setFacing(byf * -hit.p2facing);
       }
       if(#hitting == 1 && hit.p1stateno >= 0) branch{
       cond
@@ -6807,7 +6803,10 @@ public float action(
           do:
             if(#.chars[i] > 0) branch{
             cond .chars[i][0]~isWin():
-            cond .chars[i][0]~stVal.no != 5150:
+            cond
+              .chars[i][0]~stVal.no != 5150
+              && .chars[i][0]~sysivar[.iCTRL] == 0
+              :
               if(.chars[i][0]~sysivar[.iWAITWIN]-- > 0) .com.intro = rs4t;
             }
             i++;
