@@ -180,7 +180,7 @@ void game()
     while i < #.chr.chars:
     }
     .chr.nextRound();
-    `x = `newx = (float).chr.stg~cam.startx;
+    `x = `newx = 0.0;
     `y = `newy = 0.0;
     `l = `r = 0.0;
     `scl = `sclmul = 1.0;

@@ -6683,11 +6683,13 @@ public float action(
           .v.setI(0);
           .chars[i][0]~trSelfState(-1, 1);
         }
-        .chars[i][0]~posReset((float).stg~p1.startx, (float).stg~p2.startx);
+        .chars[i][0]~posReset(
+          (float)(.stg~p1.startx - .stg~cam.startx),
+          (float)(.stg~p2.startx - .stg~cam.startx));
       }
       i++;
     while i < #.chars:
-      `x = (float).stg~cam.startx;
+      `x = 0.0;
       `leftest =
         .m.max!float?(
           (float).m.min!int?(.stg~p1.startx, .stg~p2.startx) - `x,
@@ -7011,12 +7013,14 @@ public void nextRound()
   .com.time = .cfg.Time;
   .id = .cfg.HelperMax;
   if(.stg~resetbg) .stg~reset();
-  .gSetNormal(1.0, (float).stg~cam.startx, 0.0);
+  .gSetNormal(1.0, 0.0, 0.0);
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
     .id = .chars[i][0]~id + 1;
     .charClear(i);
-    .chars[i][0]~posReset((float).stg~p1.startx, (float).stg~p2.startx);
+    .chars[i][0]~posReset(
+      (float)(.stg~p1.startx - .stg~cam.startx),
+      (float)(.stg~p2.startx - .stg~cam.startx));
     .chars[i][0]~setCtrl(false);
     .chars[i][0]~stVal.clear();
     .chars[i][0]~clearSpSysVar();
