@@ -3287,7 +3287,7 @@ public &Char
             `trSelfState(-1, -1);
           }
         }
-        if(`isActive()) `stVal.time++;
+        if(!`isHitPaused()) `stVal.time++;
       }
     break:
       `minus = 1;
@@ -4554,8 +4554,16 @@ public &Char
   public void trP2BodyDistY()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    float dist = e~sysfvar[.fY] - `sysfvar[.fY];
-    .v.setF(dist + (dist <= 0.0 ? 0.0 : -e~getHeight()) + `getHeight());
+    float y = `sysfvar[.fY], h = -`getHeight();
+    float ey = e~sysfvar[.fY], eh = -e~getHeight();
+    float dist = ey - y;
+    branch{
+    cond ey < y + h:
+      dist -= h;
+    cond ey + eh > y:
+      dist += eh;
+    }
+    .v.setF(dist);
   }
   public void trRootDistX()
   {
