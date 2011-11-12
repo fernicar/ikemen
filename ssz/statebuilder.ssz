@@ -6716,16 +6716,6 @@ public &StateBuilder
             "void c.Char::" .= fname .= "Init()"\r\n
             "{"\r\n
             \t"`state = `" .= fname .= ";"\r\n;
-          if(
-            `state.typ != .chr.StTy::U
-            && `state.typ != .chr.StTy::A
-            && `state.typ != .chr.StTy::L
-            && `state.phy != .chr.StTy::U
-            && `state.phy != .chr.StTy::N
-            && `state.phy != .chr.StTy::A)
-          {
-            buf .= \t"`ifAlaSetVyZero();"\r\n;
-          }
           switch(`state.typ){
           case .chr.StTy::S:
             buf .= \t"`stVal.typ = .StTy::S;"\r\n;
