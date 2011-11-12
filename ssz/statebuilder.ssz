@@ -1475,11 +1475,11 @@ public &StateBuilder
       cond .s.equ("recovertime", token):
         out .= ".v.setI(" .= obj .= "sysivar[.iRECOVERTIME])";
       cond .s.equ("xoff", token):
-        out .= ".v.setI(0)";//////////////////////////////////////////
+        out .= ".v.setF(" .= obj .= "stVal.hb.snapx)";
       cond .s.equ("yoff", token):
-        out .= ".v.setI(0)";//////////////////////////////////////////
+        out .= ".v.setF(" .= obj .= "stVal.hb.snapy)";
       cond .s.equ("zoff", token):
-        out .= ".v.setI(0)";//////////////////////////////////////////
+        out .= ".v.setF(" .= obj .= "stVal.hb.snapz)";
       cond .s.equ("xvel", token):
         out .= obj .= "trHitXvel(`facing)";
       cond .s.equ("yvel", token):
@@ -2983,11 +2983,11 @@ public &StateBuilder
             `state.ctrlList[-1].task=, text=,
             "", "$.v.toFloat();")) ret false;
         if(.s.equ(",")<, `tokenizer(text=)){
-          `state.ctrlList[-1].task .= obj .= ".snapf=";
+          `state.ctrlList[-1].task .= obj .= ".snapz=";
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, text=,
-              "", "$.v.toInt();")) ret false;
+              "", "$.v.toFloat();")) ret false;
           if(.s.equ(",")<, `tokenizer(text=)){
             `state.ctrlList[-1].task .= obj .= ".snapt=";
             if(

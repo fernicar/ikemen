@@ -759,7 +759,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public float maxdisty;
   public float snapx;
   public float snapy;
-  public int snapf;
+  public float snapz;
   public int snapt;
   public int forcenofall;
   public &.Fall fall;
@@ -862,7 +862,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `maxdisty = .com.FERR;
     `snapx = 0.0;
     `snapy = .com.FERR;
-    `snapf = 0;
+    `snapz = 0.0;
     `snapt = 0;
     `forcenofall = 0;
     `fall.clear();
@@ -911,7 +911,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public float maxdisty;
   public float snapx;
   public float snapy;
-  public int snapf;
+  public float snapz;
   public int snapt;
   public &.Fall fall;
   public void clear()
@@ -952,7 +952,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `maxdisty = .com.FERR;
     `snapx = 0.0;
     `snapy = .com.FERR;
-    `snapf = 0;
+    `snapz = 0.0;
     `snapt = 0;
     `fall.clear();
   }
@@ -1076,7 +1076,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.maxdisty = hit.maxdisty;
     `hb.snapx = hit.snapx;
     `hb.snapy = hit.snapy;
-    `hb.snapf = hit.snapf;
+    `hb.snapz = hit.snapz;
     `hb.snapt = hit.snapt;
     if(hit.forcenofall != 0) fall = 0;
     branch{
@@ -2874,7 +2874,7 @@ public &Char
       if(`stVal.hb.snapt != 0 && c~sysivar[.iBINDTOID] != `id){
         `setBindToId(c<>=);
         `sysivar[.iBINDTIME] = `stVal.hb.snapt;
-        `sysivar[.iBINDFACING] = `stVal.hb.snapf;
+        `sysivar[.iBINDFACING] = 0;
         `sysfvar[.fBINDPOSX] = `stVal.hb.snapx;
         `sysfvar[.fBINDPOSY] =
           `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A
@@ -3700,8 +3700,7 @@ public &Char
     if(h.p2facing == .com.IERR) h.p2facing = 0;
     if(h.p1getp2facing == .com.IERR) h.p1getp2facing = 0;
     if(h.snapx == .com.FERR) h.snapx = 0.0;
-    if(h.snapf == .com.IERR) h.snapf = 0;
-    .m.limRange!int?(h.snapf=, -1, 1);
+    if(h.snapz == .com.FERR) h.snapz = 0.0;
     if(h.snapt == .com.IERR) h.snapt = 0;
     if(h.fall.yvelocity == .com.FERR) h.fall.yvelocity = -4.5;
     if(h.fall.recovertime == .com.IERR) h.fall.recovertime = 4;
