@@ -861,7 +861,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `mindisty = .com.FERR;
     `maxdisty = .com.FERR;
     `snapx = 0.0;
-    `snapy = 0.0;
+    `snapy = .com.FERR;
     `snapf = 0;
     `snapt = 0;
     `forcenofall = 0;
@@ -951,7 +951,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `mindisty = .com.FERR;
     `maxdisty = .com.FERR;
     `snapx = 0.0;
-    `snapy = 0.0;
+    `snapy = .com.FERR;
     `snapf = 0;
     `snapt = 0;
     `fall.clear();
@@ -3700,7 +3700,6 @@ public &Char
     if(h.p2facing == .com.IERR) h.p2facing = 0;
     if(h.p1getp2facing == .com.IERR) h.p1getp2facing = 0;
     if(h.snapx == .com.FERR) h.snapx = 0.0;
-    if(h.snapy == .com.FERR) h.snapy = 0.0;
     if(h.snapf == .com.IERR) h.snapf = 0;
     .m.limRange!int?(h.snapf=, -1, 1);
     if(h.snapt == .com.IERR) h.snapt = 0;
