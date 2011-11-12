@@ -1037,8 +1037,6 @@ public &StateBuilder
           out .= obj .= "trRootDistY()";
         cond p:
           out .= obj .= "trParentDistY()";
-        cond b:
-          out .= obj .= "trP2BodyDistY()";
         else:
           out .= obj .= "trP2DistY()";
         }
