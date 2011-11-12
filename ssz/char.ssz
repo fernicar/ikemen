@@ -1970,6 +1970,7 @@ public &Char
     `sysivar[.iPAUSEMOVETIME] = 0;
     `sysivar[.iSUPERMOVETIME] = 0;
     `sysivar[.iBINDTIME] = 0;
+    `sysivar[.iBINDTOID] = -1;
     `sysivar[.iHITPAUSETIME] = 0;
     `sysfvar[.fANGLE] = 0.0;
     `sysfvar[.fANGLESCALEX] = 1.0;
@@ -2818,22 +2819,7 @@ public &Char
   }
   public void tickBind()
   {
-    if(`sysivar[.iBINDTIME] > 0){
-      if(--`sysivar[.iBINDTIME] == 0) branch{
-        ^`self c = .players.get(`sysivar[.iBINDTOID]);
-        if(#c == 0) break;
-      cond c~isTarget(`id):
-        if(`sysfvar[.fBINDPOSX] != .com.FERR){
-          `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
-        }
-        if(`sysfvar[.fBINDPOSY] != .com.FERR) `setYV(c~sysfvar[.fVY]);
-      cond `isTarget(c~id):
-        if(`sysfvar[.fBINDPOSX] != .com.FERR){
-          c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
-        }
-        if(`sysfvar[.fBINDPOSY] != .com.FERR) c~setYV(`sysfvar[.fVY]);
-      }
-    }
+    if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
   }
   public void tick()
   {
@@ -2885,7 +2871,7 @@ public &Char
             (c~sysfvar[.fY] + `stVal.hb.maxdisty);
         }
       }
-      if(`stVal.hb.snapt != 0){
+      if(`stVal.hb.snapt != 0 && c~sysivar[.iBINDTOID] != `id){
         `setBindToId(c<>=);
         `sysivar[.iBINDTIME] = `stVal.hb.snapt;
         `sysivar[.iBINDFACING] = `stVal.hb.snapf;
@@ -2930,7 +2916,6 @@ public &Char
       }
     }
     `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
-    if(`sysivar[.iBINDTIME] == 0) `sysivar[.iBINDTOID] = -1;
     if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     `enemyn.new(0);
     if(`ls(.lsGETHIT)) branch{
@@ -3118,6 +3103,7 @@ public &Char
         `sysivar[.iLIFE] = 1;
       }
       if(.roundState() == 4) `outTarget();
+      if(`sysivar[.iBINDTIME] == 0) `sysivar[.iBINDTOID] = -1;
     }
   }
   public bool isPaused()
@@ -3316,6 +3302,22 @@ public &Char
       if(`destmp){
         `destroySelf();
         ret;
+      }
+      if(`sysivar[.iBINDTOID] >= 0 && `sysivar[.iBINDTIME] == 0){
+        branch{
+          ^`self c = .players.get(`sysivar[.iBINDTOID]);
+          if(#c == 0) break;
+        cond c~isTarget(`id):
+          if(`sysfvar[.fBINDPOSX] != .com.FERR){
+            `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
+          }
+          if(`sysfvar[.fBINDPOSY] != .com.FERR) `setYV(c~sysfvar[.fVY]);
+        cond `isTarget(c~id):
+          if(`sysfvar[.fBINDPOSX] != .com.FERR){
+            c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
+          }
+          if(`sysfvar[.fBINDPOSY] != .com.FERR) c~setYV(`sysfvar[.fVY]);
+        }
       }
       if(!`ls(.lsPOSFREEZEY) && `ls(.lsGRAVITY)){
         `sysfvar[.fVY] += `sysfvar[.fYACCEL];
@@ -5944,7 +5946,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       else:
         byf = pro;
       comm:
-        if((`pyr.facing < 0) == (byf * (hit.p1facing < 0 ? -1 : 1) < 0)){
+        if(
+          (`pyr.facing < 0)
+          == (byf * ((hit.p1facing < 0) != (hit.p2facing < 0) ? -1 : 1) < 0))
+        {
           `pyr.stVal.hb.xvel *= -1.0;
           if(`pyr.stVal.hb.fall.xvelocity != .com.FERR){
             `pyr.stVal.hb.fall.xvelocity *= -1.0;
