@@ -6609,8 +6609,11 @@ public &StateBuilder
               "if(s<0||s>7)s=0;if(st>=0&&t!=.com.IERR)"
               "{`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
               "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;}";
-          case .CtrlTy::BindToRoot:
-            dbuf .= "`bind();`tickBind();";
+          case .CtrlTy::BindToParent, .CtrlTy::BindToRoot:
+            dbuf .= "if(`sysivar[.iBINDTIME]==0)`sysivar[.iBINDTOID]=-1;";
+            if(`state.ctrlList[-1].typ == .CtrlTy::BindToRoot){
+              dbuf .= "`bind();`tickBind();";
+            }
           case .CtrlTy::BindToTarget:
             dbuf .= "`trBindToTarget(hmf);";
           case .CtrlTy::HitFallSet:

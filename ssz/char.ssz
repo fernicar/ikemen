@@ -2201,7 +2201,7 @@ public &Char
   public void byBindClear()
   {
     if(`stVal.hb.byidMatch(`sysivar[.iBINDTOID])){
-      `sysivar[.iBINDTIME] = 0;
+      `setBindTime(0);
       `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
     }
   }
@@ -2891,7 +2891,7 @@ public &Char
       }
       if(`stVal.hb.snapt != 0 && c~sysivar[.iBINDTOID] != `id){
         `setBindToId(c<>=);
-        `sysivar[.iBINDTIME] = `stVal.hb.snapt;
+        `setBindTime(`stVal.hb.snapt);
         `sysivar[.iBINDFACING] = 0;
         `sysfvar[.fBINDPOSX] = `stVal.hb.snapx;
         `sysfvar[.fBINDPOSY] =
@@ -3373,7 +3373,7 @@ public &Char
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     if(#c == 0 || `destmp || (`isTarget(c~id) && c~ls(.lsBindCancel))){
-      `sysivar[.iBINDTIME] = 0;
+      `setBindTime(0);
       ret;
     }
     if(`sysfvar[.fBINDPOSX] != .com.FERR){
@@ -3811,7 +3811,7 @@ public &Char
   {
     `sysfvar[.fVX] = xv;
     if(xv != 0.0){
-      `sysivar[.iBINDTIME] = 0;
+      `setBindTime(0);
       `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
     }
   }
@@ -3820,7 +3820,7 @@ public &Char
     `sysfvar[.fVY] = yv;
     `sysivar[.iSPECIALFLAG] &= !.lsGRAVITY;
     if(yv != 0.0){
-      `sysivar[.iBINDTIME] = 0;
+      `setBindTime(0);
       `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
     }
   }
@@ -3895,13 +3895,18 @@ public &Char
       dalpha = 255;
     }
   }
+  public void setBindTime(int time)
+  {
+    `sysivar[.iBINDTIME] = time;
+    if(time == 0) `sysivar[.iBINDTOID] = -1;
+  }
   public void setBindToId(`self to=)
   {
     `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
     `sysivar[.iBINDTOID] = to.id;
     if(to.sysivar[.iBINDTOID] == `id){
       to.sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
-      to.sysivar[.iBINDTIME] = 0;
+      to.setBindTime(0);
     }
     `sysivar[.iBINDFACING] = to.facing*2;
   }
@@ -4746,7 +4751,7 @@ public &Char
       c = .players.get(`targets[i]);
       if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
         c~setBindToId(`=);
-        c~sysivar[.iBINDTIME] = time;
+        c~setBindTime(time);
         c~sysivar[.iBINDFACING] = 0;
         c~sysfvar[.fBINDPOSX] = x;
         c~sysfvar[.fBINDPOSY] = y;
@@ -4757,7 +4762,10 @@ public &Char
   }
   public void trBindToTarget(int hmf)
   {
-    if(`sysivar[.iBINDTIME] == 0) ret;
+    if(`sysivar[.iBINDTIME] == 0){
+      `sysivar[.iBINDTOID] = -1;
+      ret;
+    }
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     if(#c == 0) ret;
     switch(hmf){
