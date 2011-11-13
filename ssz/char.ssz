@@ -2833,12 +2833,11 @@ public &Char
       }
       if(`sysfvar[.fBINDPOSY] != .com.FERR) c~setYV(`sysfvar[.fVY]);
     }
+    `sysivar[.iBINDTOID] = -1;
   }
   public void tickBind()
   {
-    if(`sysivar[.iBINDTIME] > 0 && --`sysivar[.iBINDTIME] == 0){
-      `releaseBinding();
-    }
+    if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
   }
   public void tick()
   {
@@ -3122,7 +3121,7 @@ public &Char
         `sysivar[.iLIFE] = 1;
       }
       if(.roundState() == 4) `outTarget();
-      if(`sysivar[.iBINDTIME] == 0) `sysivar[.iBINDTOID] = -1;
+      if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
     }
   }
   public bool isPaused()
