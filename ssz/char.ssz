@@ -2817,18 +2817,27 @@ public &Char
     }
     ret false;
   }
+  public void releaseBinding()
+  {
+    branch{
+      ^`self c = .players.get(`sysivar[.iBINDTOID]);
+      if(#c == 0) break;
+    cond c~isTarget(`id):
+      if(`sysfvar[.fBINDPOSX] != .com.FERR){
+        `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
+      }
+      if(`sysfvar[.fBINDPOSY] != .com.FERR) `setYV(c~sysfvar[.fVY]);
+    cond `isTarget(c~id):
+      if(`sysfvar[.fBINDPOSX] != .com.FERR){
+        c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
+      }
+      if(`sysfvar[.fBINDPOSY] != .com.FERR) c~setYV(`sysfvar[.fVY]);
+    }
+  }
   public void tickBind()
   {
-    if(`sysivar[.iBINDTIME] > 0){
-      if(--`sysivar[.iBINDTIME] == 0) branch{
-        ^`self c = .players.get(`sysivar[.iBINDTOID]);
-        if(#c == 0) break;
-      cond c~isTarget(`id):
-        if(`sysfvar[.fBINDPOSX] != .com.FERR){
-          `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
-        }
-        if(`sysfvar[.fBINDPOSY] != .com.FERR) `setYV(c~sysfvar[.fVY]);
-      }
+    if(`sysivar[.iBINDTIME] > 0 && --`sysivar[.iBINDTIME] == 0){
+      `releaseBinding();
     }
   }
   public void tick()
@@ -3314,15 +3323,7 @@ public &Char
         ret;
       }
       if(`sysivar[.iBINDTOID] >= 0 && `sysivar[.iBINDTIME] == 0){
-        branch{
-          ^`self c = .players.get(`sysivar[.iBINDTOID]);
-          if(#c == 0) break;
-        cond `isTarget(c~id):
-          if(`sysfvar[.fBINDPOSX] != .com.FERR){
-            c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
-          }
-          if(`sysfvar[.fBINDPOSY] != .com.FERR) c~setYV(`sysfvar[.fVY]);
-        }
+        `releaseBinding();
       }
       if(!`ls(.lsPOSFREEZEY) && `ls(.lsGRAVITY)){
         `sysfvar[.fVY] += `sysfvar[.fYACCEL];
