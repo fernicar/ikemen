@@ -55,7 +55,7 @@ const int IERR = (int)FERR;
 
 /int tickCount = 0;
 int oldTickCount = tickCount-1;
-float tickCountF = 0.0;
+float tickCountF = 0.0, lastTick = 0.0;
 float nextAddTime = Speed;
 
 const bool tickFrame()
@@ -68,6 +68,11 @@ const bool tickNextFrame()
   ret (int)(.tickCountF + .nextAddTime) > .tickCount;
 }
 
+const float tickInterpola()
+{
+  ret .tickNextFrame() ? 1.0 : .tickCountF - .lastTick + .nextAddTime;
+}
+
 public bool addFrameTime(float t)
 {
   branch{
@@ -77,6 +82,7 @@ public bool addFrameTime(float t)
     ret false;
   cond (int)(.tickCountF += .nextAddTime) > .tickCount:
     .tickCount++;
+    .lastTick = .tickCountF;
   }
   .nextAddTime = t;
   ret true;

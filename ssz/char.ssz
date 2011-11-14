@@ -1492,6 +1492,8 @@ public &Explod
   public int bindid;
   public int ignorehitpause;
   public int stconno;
+  public float ticOldX, ticNewX;
+  public float ticOldY, ticNewY;
   new()
   {
     `clear();
@@ -1531,6 +1533,8 @@ public &Explod
     `bindid = -1;
     `ignorehitpause = 1;
     `stconno = 0;
+    `ticOldX = `ticNewX = `x;
+    `ticOldY = `ticNewY = `y;
   }
   public void setFacing(int f)
   {
@@ -1542,11 +1546,11 @@ public &Explod
   }
   public void setX(float x)
   {
-    `x = x;
+    `x = `ticOldX = `ticNewX = x;
   }
   public void setY(float y)
   {
-    `y = y;
+    `y = `ticOldY = `ticNewY = y;
   }
 }
 public &Projectile
@@ -1590,6 +1594,8 @@ public &Projectile
   public int timemiss, hitpause, playerno;
   public |.ProjContact pctyp;
   public int pctime;
+  public float ticOldX, ticNewX;
+  public float ticOldY, ticNewY;
   new()
   {
     `clear();
@@ -1637,14 +1643,16 @@ public &Projectile
     `playerno = 0;
     `pctyp = .ProjContact::Hit;
     `pctime = 0;
+    `ticOldX = `ticNewX = `x;
+    `ticOldY = `ticNewY = `y;
   }
   public void setX(float x)
   {
-    `x = x;
+    `x = `ticOldX = `ticNewX = x;
   }
   public void setY(float y)
   {
-    `y = y;
+    `y = `ticOldY = `ticNewY = y;
   }
   public void remvel()
   {
@@ -1658,6 +1666,12 @@ public &Projectile
   }
   public void update()
   {
+    if(.com.tickFrame()){
+      `ticOldX = `x;
+      `ticNewX = `x + `velocityx*(float)`facing;
+      `ticOldY = `y;
+      `ticNewY = `y + `velocityy;
+    }
     branch{
     cond .super > 0:
       if(`supermovetime == 0) ret;
@@ -1665,9 +1679,9 @@ public &Projectile
       if(`pausemovetime == 0) ret;
     }
     if(`hitpause != 0) ret;
-    float sp = .m.min!float?(1.0, .com.turbo);
-    `x += `velocityx*(float)`facing * sp;
-    `y += `velocityy * sp;
+    float sp = .com.tickInterpola();
+    `x = `ticOldX + (`ticNewX - `ticOldX) * sp;
+    `y = `ticOldY + (`ticNewY - `ticOldY) * sp;
     if(.com.tickNextFrame()){
       `velocityx += `accelx;
       `velocityy += `accely;
@@ -1912,7 +1926,7 @@ public &Char
   public float attackmul, defencemul, attackdist;
   public float offsetx, offsety;
   public float veloff;
-  public float oldx;
+  public float oldx, ticOldX, ticNewX, ticOldY, ticNewY;
   public bool destmp, cs1tmp, tmphit, angleset;
   public int atktmp, hittmp, acttmp, minus;
   public %&.RdCacheInfo enemyn;
@@ -1981,7 +1995,8 @@ public &Char
     `sprpriority = 0;
     `getcombo = 0;
     `veloff = 0.0;
-    `oldx = `sysfvar[.fX];
+    `oldx = `ticOldX = `ticNewX = `sysfvar[.fX];
+    `ticOldY = `ticNewY = `sysfvar[.fY];
     `palfx.new(0);
     `aimg.timegap = -1;
     `frontw = `defFW();
@@ -3327,17 +3342,23 @@ public &Char
       if(!`ls(.lsPOSFREEZEY) && `ls(.lsGRAVITY)){
         `sysfvar[.fVY] += `sysfvar[.fYACCEL];
       }
+      `ticOldX = `sysfvar[.fX];
+      `ticNewX = `ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff;
+      `ticOldY = `sysfvar[.fY];
+      `ticNewY = `ticOldY + `sysfvar[.fVY];
     }
     if(`acttmp > 0){
-      float sp = .m.min!float?(1.0, .com.turbo);
+      float sp = .com.tickInterpola();
       if(!`ls(.lsPOSFREEZEX)){
-        `sysfvar[.fX] += (`sysfvar[.fVX]*(float)`facing + `veloff) * sp;
+        `sysfvar[.fX] = `ticOldX + (`ticNewX - `ticOldX) * sp;
         if(.com.tickNextFrame()){
           `veloff *= `sysfvar[.fSTAND_FRICTION] * `sysfvar[.fSTAND_FRICTION];
           if(#`veloff < 1.0) `veloff = 0.0;
         }
       }
-      if(!`ls(.lsPOSFREEZEY)) `sysfvar[.fY] += `sysfvar[.fVY] * sp;
+      if(!`ls(.lsPOSFREEZEY)){
+        `sysfvar[.fY] = `ticOldY + (`ticNewY - `ticOldY) * sp;
+      }
       if(.com.tickNextFrame()) switch(`stVal.phy){
       case .StTy::S:
         if(!`ls(.lsPOSFREEZEX)) `sysfvar[.fVX] *= `sysfvar[.fSTAND_FRICTION];
@@ -3791,7 +3812,7 @@ public &Char
   }
   public void setX(float x)
   {
-    `sysfvar[.fX] = `oldx = x;
+    `sysfvar[.fX] = `oldx = `ticOldX = `ticNewX = x;
     `enemyn.new(0);
     if(`player) loop{index i = (`playerno+1) & 1; while; do:
       loop{index j = 0; while; do:
@@ -3805,7 +3826,7 @@ public &Char
   }
   public void setY(float y)
   {
-    `sysfvar[.fY] = y;
+    `sysfvar[.fY] = `ticOldY = `ticNewY = y;
   }
   public void setXV(float xv)
   {
@@ -5363,9 +5384,15 @@ public void Explod::update()
     act = #c == 0 || c~acttmp%2 != -1;
   }
   if(act && `bindtime == 0){
-    float sp = .m.min!float?(1.0, .com.turbo);
-    `x += `velocityx*(float)(`facing*`relativef) * sp;
-    `y += `velocityy * sp;
+    if(.com.tickFrame()){
+      `ticOldX = `x;
+      `ticNewX = `x + `velocityx*(float)(`facing*`relativef);
+      `ticOldY = `y;
+      `ticNewY = `y + `velocityy;
+    }
+    float sp = .com.tickInterpola();
+    `x = `ticOldX + (`ticNewX - `ticOldX) * sp;
+    `y = `ticOldY + (`ticNewY - `ticOldY) * sp;
     if(.com.tickNextFrame()){
       `velocityx += `accelx;
       `velocityy += `accely;
@@ -6896,8 +6923,7 @@ public void draw(float x, float y, float scl)
       winner.new[-1] = .chars[.com.win+2][0]~displayname;
     }
   }
-  ^^/char names;
-  names.new(4);
+  ^^/char names.new(4);
   names[0] = .chars[0][0]~displayname;
   names[1] = .chars[1][0]~displayname;
   if(#.chars[2] > 0) names[2] = .chars[2][0]~displayname;
@@ -7012,6 +7038,7 @@ public void nextRound()
   .resetGbl();
   .com.intro = .fight~ro.start_waittime + .fight~ro.ctrl_time+1;
   .com.time = .cfg.Time;
+  .fight~ro.act(.syssnd=, .ko);
   .id = .cfg.HelperMax;
   if(.stg~resetbg) .stg~reset();
   .gSetNormal(1.0, 0.0, 0.0);
