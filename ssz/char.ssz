@@ -5818,7 +5818,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if(hitting > 0){
             if(#hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0){
               rtn = damageable = false;
-              if(pro != 0) break, break;
+              if(pro != 0) break, break, break, break;
             }
             if(!`pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno)){
               rtn = damageable = true;
