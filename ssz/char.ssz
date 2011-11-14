@@ -5816,17 +5816,16 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0)
         {
           if(hitting > 0){
+            if(#hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0){
+              rtn = damageable = false;
+              if(pro != 0) break, break;
+            }
             if(!`pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno)){
+              rtn = damageable = true;
               break, break;
             }
             if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
             `pyr.setCtrl(false);
-            branch{
-            cond #hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0:
-              rtn = damageable = false;
-            else:
-              rtn = true;
-            }
           }
           if(`pyr.stVal.mov != .MovTy::H) damageable = false;
           ho = true;
