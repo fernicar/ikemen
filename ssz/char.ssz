@@ -3039,7 +3039,7 @@ public &Char
       }
     comm:
       if(
-        .m.inRange!int?(120, 159, `stVal.no) || (
+        (`sysivar[.iLIFE] > 0 && .m.inRange!int?(120, 159, `stVal.no)) || (
           `keyctrl && `ctrl() && `cmd.buffer~B > 0 && (
             (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
             || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
@@ -3299,13 +3299,13 @@ public &Char
         `minus = 0;
         `state(::);
         if(`player) branch{
-        cond `stVal.no == 0 || .m.inRange!int?(120, 159, `stVal.no):
-          if(`sysivar[.iLIFE] <= 0) .v.setI(5050)$`trSelfState(-1, -1);
         cond `stVal.no == 5110:
           if(`sysivar[.iRECOVERTIME] <= 0){
             .v.setI(`sysivar[.iLIFE] > 0 ? 5120 : 5150);
             `trSelfState(-1, -1);
           }
+        cond `sysivar[.iLIFE] <= 0 && `stVal.mov != .MovTy::H:
+          .v.setI(5050)$`trSelfState(-1, -1);
         }
         if(!`isHitPaused()) `stVal.time++;
       }
