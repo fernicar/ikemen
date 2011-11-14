@@ -7038,7 +7038,6 @@ public void nextRound()
   .resetGbl();
   .com.intro = .fight~ro.start_waittime + .fight~ro.ctrl_time+1;
   .com.time = .cfg.Time;
-  .fight~ro.act(.syssnd=, .ko);
   .id = .cfg.HelperMax;
   if(.stg~resetbg) .stg~reset();
   .gSetNormal(1.0, 0.0, 0.0);
