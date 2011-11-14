@@ -1089,7 +1089,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.groundanimtype = (int)hit.animtype;
     if(guard && ((int)`typ&hit.guardflag) != 0){
       `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
-      `hb.hittime = hit.guard_hittime;
+      `hb.hittime = .m.max!int?(1, hit.guard_hittime);
       `hb.slidetime = hit.guard_slidetime;
       `hb.guarded = 1;
       branch{
@@ -1134,6 +1134,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
       `hb.yvel = hit.ground_velocityy;
       `hb.fallf = hit.ground_fall;
     }
+    if(`hb.hittime <= 0) `hb.hittime = 1;
     `hb.absdamage = hit.hitdamage;
     `hb.hitcount = cmb ? hc+1 : 1;
     `hb.fallcount = fc;
