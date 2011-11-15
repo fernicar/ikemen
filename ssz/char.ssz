@@ -1316,7 +1316,6 @@ const int sfWIN     = 0b00000000000000000000000000000010;
 public ^%^&Char chars;
 ^%&Projectile projs;
 ^%&Explod explods;
-&snd.Sound syssnd;
 chars.new(4);
 projs.new(4);
 explods.new(4);
@@ -3304,6 +3303,7 @@ public &Char
             .v.setI(`sysivar[.iLIFE] > 0 ? 5120 : 5150);
             `trSelfState(-1, -1);
           }
+        cond `stVal.no == 171:
         cond `sysivar[.iLIFE] <= 0 && `stVal.mov != .MovTy::H:
           .v.setI(5050)$`trSelfState(-1, -1);
         }
@@ -6280,60 +6280,39 @@ public void PlayerList!&Char?::tick()
   }
 }
 
-
-
-^int sndbuf;
-sndbuf.new(.sdl.SNDBUFLEN);
-
-void sndbufClear()
-{
-  loop{index i = 0; do:
-    .sndbuf[i++] = 0;
-  while  i < .sdl.SNDBUFLEN:
-  }
-}
-sndbufClear();
-
 void playSound()
 {
-  if(.sdl.setSndBuf(.sndbuf)){
-    .sndbufClear();
-    .syssnd.mix(
-      .sndbuf, .com.xmin - .com.screenleft, .com.xmax + .com.screenright);
+  if(.sdl.setSndBuf(.snd.sndbuf)){
+    .snd.sndbufClear();
+    .snd.mixSounds();
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
         if(#.chars[i][j] > 0) loop{index k = 0; while; do:
           .chars[i][j]~sounds[k].mix(
-            .sndbuf,
+            .snd.sndbuf,
             .com.xmin - .com.screenleft, .com.xmax + .com.screenright);
           k++;
-        while k < #.chars[i][j]~sounds:
-        }
+        while k < #.chars[i][j]~sounds:}
         j++;
-      while j < #.chars[i]:
-      }
+      while j < #.chars[i]:}
       i++;
-    while i < #.chars:
-    }
+    while i < #.chars:}
   }
 }
 void stopAllSound()
 {
-  if(.sdl.setSndBuf(.sndbuf)){
-    .sndbufClear();
+  if(.sdl.setSndBuf(.snd.sndbuf)){
+    .snd.sndbufClear();
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
         if(#.chars[i][j] > 0) loop{index k = 0; while; do:
           .chars[i][j]~sounds[k].sound.new(0);
           k++;
-        while k < #.chars[i][j]~sounds:
-        }
+        while k < #.chars[i][j]~sounds:}
         j++;
-      while j < #.chars[i]:
-      }
+      while j < #.chars[i]:}
       i++;
-    while i < #.chars:
-    }
+    while i < #.chars:}
   }
 }
 
@@ -6562,7 +6541,7 @@ public float action(
     i++;
   while i < #.chars:
   }
-  .fight~step(.com.tmode, .getLifePower(), hbuf, cb, .syssnd=);
+  .fight~step(.com.tmode, .getLifePower(), hbuf, cb);
   void sprite()
   {
     if(#.superanim > 0){
@@ -6730,7 +6709,7 @@ public float action(
   }
   int slowfade = .fight~ro.slow_time * 2 / 5;
   branch{
-  cond .shuttertime > 0 ? .com.tickNextFrame() : .fight~ro.act(.syssnd=, .ko):
+  cond .shuttertime > 0 ? .com.tickNextFrame() : .fight~ro.act(.ko):
     branch{
     cond .com.intro > .fight~ro.ctrl_time:
       .com.intro--;

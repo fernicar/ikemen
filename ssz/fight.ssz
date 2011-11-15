@@ -344,7 +344,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       .com.readPair!int?(`level_snd[2].x=, `level_snd[2].y=, data);
     }
   }
-  public void step(float power, int level, &.snd.Sound snd=)
+  public void step(float power, int level)
   {
     `midpower -= 1.0 / 144.0;
     branch{
@@ -356,8 +356,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     }
     if(`midpower < `midpowerlim) `midpower = `midpowerlim;
     if(level > `prevlevel){
-      snd.sound = `sn~getSound(`level_snd[level-1].x, `level_snd[level-1].y);
-      snd.setDefaultParameter();
+      .snd.addWave(`sn~getSound(`level_snd[level-1].x, `level_snd[level-1].y));
     }
     `prevlevel = level;
     `bg0.action();
@@ -958,7 +957,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     `win2.read("win2.", sc=, `al=);
     `drawn.read("draw.", sc=, `al=);
   }
-  public bool act(&.snd.Sound snd=, |.KOTy ko)
+  public bool act(|.KOTy ko)
   {
     branch{
     cond .com.intro > `ctrl_time:
@@ -972,12 +971,11 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       case 0:
         if(`swt-- == 0) branch{
         cond .com.round <= #`round:
-          snd.sound =
-            `sn~getSound(`round[.com.round-1].sndg, `round[.com.round-1].sndi);
-          snd.setDefaultParameter();
+          .snd.addWave(
+            `sn~getSound(
+              `round[.com.round-1].sndg, `round[.com.round-1].sndi));
         else:
-          snd.sound = `sn~getSound(`round_default.sndg, `round_default.sndi);
-          snd.setDefaultParameter();
+          .snd.addWave(`sn~getSound(`round_default.sndg, `round_default.sndi));
         }
         if(`wt-- <= 0) branch{
           `dt++;
@@ -995,10 +993,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         }
         ret false;
       case 1:
-        if(`swt-- == 0){
-          snd.sound = `sn~getSound(`fight.sndg, `fight.sndi);
-          snd.setDefaultParameter();
-        }
+        if(`swt-- == 0) .snd.addWave(`sn~getSound(`fight.sndg, `fight.sndi));
         if(`wt-- <= 0){
           `dt++;
           `fight.action();
@@ -1016,30 +1011,21 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     cond `cur == 2 && (ko != .KOTy::NotYet || .com.time == 0):
       switch(ko){
       case .KOTy::KO:
-        if(`swt-- == 0){
-          snd.sound = `sn~getSound(`ko.sndg, `ko.sndi);
-          snd.setDefaultParameter();
-        }
+        if(`swt-- == 0) .snd.addWave(`sn~getSound(`ko.sndg, `ko.sndi));
         if(`ko.end(`dt)) `wt = 2;
         if(`wt-- <= 0){
           `dt++;
           `ko.action();
         }
       case .KOTy::DKO:
-        if(`swt-- == 0){
-          snd.sound = `sn~getSound(`dko.sndg, `dko.sndi);
-          snd.setDefaultParameter();
-        }
+        if(`swt-- == 0) .snd.addWave(`sn~getSound(`dko.sndg, `dko.sndi));
         if(`dko.end(`dt)) `wt = 2;
         if(`wt-- <= 0){
           `dt++;
           `dko.action();
         }
       default:
-        if(`swt-- == 0){
-          snd.sound = `sn~getSound(`to.sndg, `to.sndi);
-          snd.setDefaultParameter();
-        }
+        if(`swt-- == 0) .snd.addWave(`sn~getSound(`to.sndg, `to.sndi));
         if(`to.end(`dt)) `wt = 2;
         if(`wt-- <= 0){
           `dt++;
@@ -1050,8 +1036,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         branch{
         cond ko == .KOTy::DKO || ko == .KOTy::TODraw:
           if(`swt2-- == 0){
-            snd.sound = `sn~getSound(`drawn.sndg, `drawn.sndi);
-            snd.setDefaultParameter();
+            .snd.addWave(`sn~getSound(`drawn.sndg, `drawn.sndi));
           }
           if(`drawn.end(`dt2)) `wt2 = 2;
           if(`wt2-- <= 0){
@@ -1061,20 +1046,14 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         cond
           .com.win >= 0 && .com.tmode[.com.win] == (int).com.TeamMode::Simul
           :
-          if(`swt2-- == 0){
-            snd.sound = `sn~getSound(`win2.sndg, `win2.sndi);
-            snd.setDefaultParameter();
-          }
+          if(`swt2-- == 0) .snd.addWave(`sn~getSound(`win2.sndg, `win2.sndi));
           if(`win2.end(`dt2)) `wt2 = 2;
           if(`wt2-- <= 0){
             `dt2++;
             `win2.action();
           }
         else:
-          if(`swt2-- == 0){
-            snd.sound = `sn~getSound(`win.sndg, `win.sndi);
-            snd.setDefaultParameter();
-          }
+          if(`swt2-- == 0) .snd.addWave(`sn~getSound(`win.sndg, `win.sndi));
           if(`win.end(`dt2)) `wt2 = 2;
           if(`wt2-- <= 0){
             `dt2++;
@@ -1833,8 +1812,7 @@ public &Fight
     `ro.setup(`sf, `fnt, `sn);
     ret true;
   }
-  public void step(
-    ^/int tm, ^/&.LifePower life, ^/bool hit, ^/int combo, &.snd.Sound syssnd=)
+  public void step(^/int tm, ^/&.LifePower life, ^/bool hit, ^/int combo)
   {
     loop{index i = 0; while; do:
       `lb[tm[0]][i].step(life[i].l, hit[i]);
@@ -1846,8 +1824,8 @@ public &Fight
       i += 2;
     while i < #`lb[tm[1]]:
     }
-    `pb[0].step(life[0].p, life[tm[0] != 1 ? 0 : 2].lv, syssnd=);
-    `pb[1].step(life[1].p, life[tm[1] != 1 ? 1 : 3].lv, syssnd=);
+    `pb[0].step(life[0].p, life[tm[0] != 1 ? 0 : 2].lv);
+    `pb[1].step(life[1].p, life[tm[1] != 1 ? 1 : 3].lv);
     loop{index i = 0; while; do:
       `fa[tm[0]][i].step();
       i += 2;

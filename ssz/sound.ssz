@@ -6,6 +6,7 @@ lib tbl = <table.ssz>;
 lib mat = <math.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
 lib com = "common.ssz";
+lib m = <math.ssz>;
 
 public &SndNnm
 {
@@ -324,6 +325,55 @@ public &Sound
         `mix_m8(buf, fidxadd, lv, rv);
       }
     }
+  }
+}
+
+
+public ^int sndbuf.new(.sdl.SNDBUFLEN);
+/^&Sound sounds.new(16);
+
+public void sndbufClear()
+{
+  loop{index i = 0; do:
+    .sndbuf[i++] = 0;
+  while  i < .sdl.SNDBUFLEN:}
+}
+sndbufClear();
+
+public ^&Sound getChannel(int ch)
+{
+  index c = .m.min!int?(15, ch);
+  if(c >= 0) ret .sounds[c..c+1];
+  loop{index i = 15; do:
+    if(#.sounds[i].sound == 0){
+      .sounds[i].setDefaultParameter();
+      ret .sounds[i..i+1];
+    }
+  while --i >= 0:}
+  ret .consts.null!&.Sound?();
+}
+
+public void mixSounds()
+{
+  loop{index i = 0; while; do:
+    .sounds[i].mix(.sndbuf, -160.0, 160.0);
+    i++;
+  while i < #.sounds:}
+}
+
+public bool addWave(^&.Wave wav)
+{
+  if(#wav == 0) ret false;
+  ^&.Sound c = .getChannel(-1);
+  if(#c == 0) ret false;
+  c~sound = wav;
+  ret true;
+}
+public void playSound()
+{
+  if(.sdl.setSndBuf(.sndbuf)){
+    .sndbufClear();
+    .mixSounds();
   }
 }
 

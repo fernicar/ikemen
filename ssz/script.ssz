@@ -22,18 +22,6 @@ lib chr = "char.ssz";
 
 ^/char listenPort = "7500";
 
-^int sndbuf;
-sndbuf.new(.sdl.SNDBUFLEN);
-void sndbufClear()
-{
-  loop{index i = 0; do:
-    .sndbuf[i++] = 0;
-  while  i < .sdl.SNDBUFLEN:
-  }
-}
-sndbufClear();
-^&snd.Sound sounds;
-sounds.new(16);
 |.mac.RetState dummyf(^char arg, ^char re=, &.Function fn=)
 {
   ret .mac.RetState::ERROR;
@@ -444,7 +432,7 @@ public &Snd
   public bool play(int g, int n)
   {
     if(#`snd == 0) ret false;
-    ^&.snd.Sound c = .getChannel(-1);
+    ^&.snd.Sound c = .snd.getChannel(-1);
     if(#c == 0) ret false;
     c~sound = `snd~getSound(g, n);
     ret #c~sound > 0;
@@ -1064,31 +1052,5 @@ public ^^/char splitArgs(^char arg)
     spl.new(1);
   }
   ret spl;
-}
-
-
-^&.snd.Sound getChannel(int ch)
-{
-  index c = .m.min!int?(15, ch);
-  if(c >= 0) ret .sounds[c..c+1];
-  loop{index i = 15; do:
-    if(#.sounds[i].sound == 0){
-      .sounds[i].setDefaultParameter();
-      ret .sounds[i..i+1];
-    }
-  while --i >= 0:
-  }
-  ret .consts.null!&.snd.Sound?();
-}
-public void playSound()
-{
-  if(.sdl.setSndBuf(.sndbuf)){
-    .sndbufClear();
-    loop{index i = 0; while; do:
-      .sounds[i].mix(.sndbuf, -160.0, 160.0);
-      i++;
-    while i < #.sounds:
-    }
-  }
 }
 

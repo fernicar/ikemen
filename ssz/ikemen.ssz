@@ -17,6 +17,7 @@ lib sha = "share.ssz";
 lib sff = "sff.ssz";
 lib sc = "script.ssz";
 lib cmd = "command.ssz";
+lib snd = "sound.ssz";
 
 
 ^&sc.Script script = sc.newRoot();
@@ -340,7 +341,7 @@ void addFunc(^/char name, func .sc.fsig_t f)
     .com.screenFill(0x00000000);
   /*?*/
   }
-  .sc.playSound();
+  .snd.playSound();
   if(!.cmd.update()) .se.end = true;
   re.new(0);
   ret .se.end ? .mac.RetState::END : .mac.RetState::OK;
