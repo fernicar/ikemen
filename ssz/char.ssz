@@ -3303,9 +3303,12 @@ public &Char
             .v.setI(`sysivar[.iLIFE] > 0 ? 5120 : 5150);
             `trSelfState(-1, -1);
           }
+        cond `stVal.no == 5150:
         cond `stVal.no == 171:
         cond `sysivar[.iLIFE] <= 0 && `stVal.mov != .MovTy::H:
-          .v.setI(5050)$`trSelfState(-1, -1);
+          if(.m.inRange!int?(2, 3, .roundState())){
+            .v.setI(5050)$`trSelfState(-1, -1);
+          }
         }
         if(!`isHitPaused()) `stVal.time++;
       }
