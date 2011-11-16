@@ -3561,7 +3561,6 @@ public &Char
   }
   public void setLife(int l)
   {
-    if(.ko != .fgt.KOTy::NotYet) ret;
     `sysivar[.iLIFE] = .m.max!int?(0)<, .m.min!int?(`sysivar[.iLIFEMAX])<, l;
   }
   public int getDamage(int damage, bool kill, bool absolute, float atkmul)
