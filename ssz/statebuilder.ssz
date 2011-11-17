@@ -1479,7 +1479,7 @@ public &StateBuilder
       cond .s.equ("zoff", token):
         out .= ".v.setF(" .= obj .= "stVal.hb.snapz)";
       cond .s.equ("xvel", token):
-        out .= obj .= "trHitXvel(`facing)";
+        out .= obj .= "trHitXvel()";
       cond .s.equ("yvel", token):
         out .= ".v.setF(" .= obj .= "stVal.hb.yvel)";
       cond .s.equ("yaccel", token):
@@ -1495,7 +1495,7 @@ public &StateBuilder
       cond .s.equ("fall.damage", token):
         out .= ".v.setI(" .= obj .= "stVal.hb.fall.damage)";
       cond .s.equ("fall.xvel", token):
-        out .= obj .= "trFallXvel(`facing)";
+        out .= obj .= "trFallXvel()";
       cond .s.equ("fall.yvel", token):
         out .= ".v.setF(" .= obj .= "stVal.hb.fall.yvelocity)";
       cond .s.equ("fall.recover", token):
