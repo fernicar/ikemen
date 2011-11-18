@@ -315,12 +315,20 @@ void game()
   do:
     if(.com.keyDown(.com.KeyEvent::CtrlC)) .com.clsndraw!!;
     if(.com.keyDown(.com.KeyEvent::CtrlD)) .com.debugdraw!!;
-    if(.com.keyDown(.com.KeyEvent::Pause)) .com.pause!!;
-    if(#.cmd.net == 0 && #.cmd.replay == 0){
-      if(.com.win < 0 && .com.keyDown(.com.KeyEvent::F4)) reset();
-      if(.com.keyDown(.com.KeyEvent::ShiftF4)){
-        .mes.SetSharedString(:"reload":);
-        ret;
+    if(#.cmd.net == 0){
+      if(.com.keyDown(.com.KeyEvent::Pause)) .com.pause!!;
+      if(.com.keyDown(.com.KeyEvent::CtrlS)) branch{
+      cond .com.accel >= 4.0:
+        .com.accel = 0.25;
+      else:
+        .com.accel *= 2.0;
+      }
+      if(#.cmd.replay == 0){
+        if(.com.win < 0 && .com.keyDown(.com.KeyEvent::F4)) reset();
+        if(.com.keyDown(.com.KeyEvent::ShiftF4)){
+          .mes.SetSharedString(:"reload":);
+          ret;
+        }
       }
     }
     if(.chr.roundOver()) branch{
@@ -440,7 +448,10 @@ void game()
     newx = x;
     newy = y;
     sclmul = .chr.action(newx=, newy=, l=, r=, scl);
-    if(!.com.addFrameTime(.com.turbo)) do;
+    if(!.com.addFrameTime(.com.turbo)){
+      if(!.se.eventUpdate()) break, while;
+      break, do;
+    }
     if(.se.fskip) while;
     .chr.draw(x, y, scl);
     drawDebug();

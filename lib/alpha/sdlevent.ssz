@@ -29,32 +29,13 @@ public &Key
 
 public %&Key eventKeys;
 
-public bool event()
+public bool eventUpdate()
 {
   .esc = false;
   loop{index i = 0; while; do:
     .eventKeys[i].reset();
     i++;
   while i < #.eventKeys:
-  }
-  branch{
-    uint now = .sdl.GetTicks(::);
-    uint dif = .nexttime - now;
-    if(++.timerIndex > 0d2) .timerIndex = 0d0;
-    .nexttime += (.timerIndex == 0d0 ? 0d16 : 0d17);
-  cond dif < 0d18:
-    .sdl.Delay(:dif:);
-  cond now - .lastdraw > 0d1000:
-  cond dif+0d17 < 0d17:
-  else:
-    if(-dif > 0d600){
-      .nexttime = now + (.timerIndex == 0d0 ? 0d16 : 0d17);
-    }
-    .fskip = true;
-    break;
-  comm:
-    .lastdraw = now;
-    .fskip = false;
   }
   loop{
     while;
@@ -98,5 +79,29 @@ public bool event()
   while .sdl.PollEvent(:.sdle=:):
   }
   ret !.end;
+}
+
+public bool event()
+{
+  branch{
+    uint now = .sdl.GetTicks(::);
+    uint dif = .nexttime - now;
+    if(++.timerIndex > 0d2) .timerIndex = 0d0;
+    .nexttime += (.timerIndex == 0d0 ? 0d16 : 0d17);
+  cond dif < 0d18:
+    .sdl.Delay(:dif:);
+  cond now - .lastdraw > 0d1000:
+  cond dif+0d17 < 0d17:
+  else:
+    if(-dif > 0d600){
+      .nexttime = now + (.timerIndex == 0d0 ? 0d16 : 0d17);
+    }
+    .fskip = true;
+    break;
+  comm:
+    .lastdraw = now;
+    .fskip = false;
+  }
+  ret .eventUpdate();
 }
 

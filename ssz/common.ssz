@@ -27,13 +27,10 @@ public bool debugdraw = false;
 
 public ^%%char clipboardText.new(4);
 
-public ^int com.new(4);
-com[0] = 4;
-com[1] = 4;
-com[2] = 4;
-com[3] = 4;
+public ^int com = com + (int)[4, 4, 4, 4];
 
 public bool pause = false;
+public float accel = 1.0;
 
 public bool autolevel = false;
 
@@ -132,7 +129,7 @@ public int win = -1;
 
 |KeyEvent
 {
-  CtrlC, CtrlD, Pause, Scroll, F4, ShiftF4,
+  CtrlC, CtrlD, CtrlS, Pause, Scroll, F4, ShiftF4,
 
   NumEvents
 }
@@ -142,6 +139,8 @@ se.eventKeys[(int)KeyEvent::CtrlC].key = .sdl.SDLKey::c;
 se.eventKeys[(int)KeyEvent::CtrlC].ctrl = true;
 se.eventKeys[(int)KeyEvent::CtrlD].key = .sdl.SDLKey::d;
 se.eventKeys[(int)KeyEvent::CtrlD].ctrl = true;
+se.eventKeys[(int)KeyEvent::CtrlS].key = .sdl.SDLKey::s;
+se.eventKeys[(int)KeyEvent::CtrlS].ctrl = true;
 se.eventKeys[(int)KeyEvent::Pause].key = .sdl.SDLKey::PAUSE;
 se.eventKeys[(int)KeyEvent::Scroll].key = .sdl.SDLKey::SCROLLOCK;
 se.eventKeys[(int)KeyEvent::F4].key = .sdl.SDLKey::F4;

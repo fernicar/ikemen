@@ -6837,8 +6837,8 @@ public float action(
   }
   if(.com.turbo == 0.0 || .com.tickNextFrame()) branch{
     float spd =
-      #.cmd.net == 0 && .com.pause && !.com.keyDown(.com.KeyEvent::Scroll)
-      ? 0.0 : .com.Speed;
+      .com.pause && !.com.keyDown(.com.KeyEvent::Scroll)
+      ? 0.0 : .com.Speed*.com.accel;
   cond
     !.gs(.gsNOKOSLOW) && .com.time != 0
     && .m.inRange!int?(.slowt, -.fight~ro.over_hittime-1, .com.intro)
