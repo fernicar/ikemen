@@ -3515,13 +3515,28 @@ public &Char
     `bind();
     `xScreenBound();
     float cvx = 0.0;
-    if(`ls(.lsSCREENBOUNDX)){
-      if(tension > 0.0 && !`isFreezeX()) branch{
-      cond
-        `sysfvar[.fX] < .com.xmin - .com.screenleft + tension
-        || `sysfvar[.fX] > .com.xmax + .com.screenright - tension
-        :
-        cvx += `sysfvar[.fX] - `oldx;
+    if(`ls(.lsSCREENBOUNDX) && tension > 0.0 && !`isFreezeX()){
+      float l = .com.xmin - .com.screenleft + tension;
+      float r = .com.xmax + .com.screenright - tension;
+      branch{
+      cond `sysfvar[.fX] < l:
+        if(`oldx < l){
+          cvx += `sysfvar[.fX] - `oldx;
+          break, break, break;
+        }
+        cvx += `sysfvar[.fX] - l;
+      cond `sysfvar[.fX] > r:
+        if(`oldx > r){
+          cvx += `sysfvar[.fX] - `oldx;
+          break, break, break;
+        }
+        cvx += `sysfvar[.fX] - r;
+      }
+      branch{
+      cond `oldx < l:
+        cvx += (`sysfvar[.fX] < l ? `sysfvar[.fX] : l) - `oldx;
+      cond `oldx > r:
+        cvx += (`sysfvar[.fX] > r ? `sysfvar[.fX] : r) - `oldx;
       }
     }
     `oldx = `sysfvar[.fX];
