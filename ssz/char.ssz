@@ -3172,19 +3172,9 @@ public &Char
       ^`self by;
       while;
     do:
-      if(
-        `sysivar[.iBINDTOID] == `stVal.hb.byid[i]
-        && `sysivar[.iBINDTIME] != 0)
-      {
-        ret true;
-      }
+      if(`sysivar[.iBINDTOID] == `stVal.hb.byid[i]) ret true;
       by = .players.get(`stVal.hb.byid[i]);
-      if(
-        #by > 0 && by~sysivar[.iBINDTOID] == `id
-        && by~sysivar[.iBINDTIME] != 0)
-      {
-        ret true;
-      }
+      if(#by > 0 && by~sysivar[.iBINDTOID] == `id) ret true;
       i++;
     while i < #`stVal.hb.byid:
     }
