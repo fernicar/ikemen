@@ -26,7 +26,7 @@ void c.Char::s##_@@PInit()
   `sprpriority = 0;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -56,7 +56,7 @@ void c.Char::s##_@@PInit()
   `trChangeAnim(10);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -83,7 +83,7 @@ void c.Char::s##_@@PInit()
   `sprpriority = 0;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -112,7 +112,7 @@ void c.Char::s##_@@PInit()
   `trChangeAnim(12);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -157,7 +157,7 @@ void c.Char::s##_@@PInit()
   `sprpriority = 0;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -200,7 +200,7 @@ void c.Char::s##_@@PInit()
   `sprpriority = 1;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -245,7 +245,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -283,7 +283,7 @@ void c.Char::s##_@@PInit()
   `stVal.ps[0].p = 0;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -305,7 +305,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::A;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -342,7 +342,7 @@ void c.Char::s##_@@PInit()
   `trChangeAnim(47);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -374,7 +374,7 @@ void c.Char::s##_@@PInit()
   `sprpriority = 1;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -412,7 +412,7 @@ void c.Char::s##_@@PInit()
   `sprpriority = 1;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -448,7 +448,7 @@ void c.Char::s##_@@PInit()
   `trChangeAnim(47);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -483,7 +483,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -518,7 +518,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -574,7 +574,7 @@ void c.Char::s##_@@PInit()
   `state = `s##_@@P;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -607,7 +607,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::S;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -640,7 +640,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::C;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -681,7 +681,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -728,7 +728,7 @@ void c.Char::s##_@@PInit()
   `setCtrl(true);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -774,7 +774,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -820,7 +820,7 @@ void c.Char::s##_@@PInit()
   `trChangeAnim(150);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -867,7 +867,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -913,7 +913,7 @@ void c.Char::s##_@@PInit()
   `trChangeAnim(151);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -946,7 +946,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -988,7 +988,7 @@ void c.Char::s##_@@PInit()
   `trChangeAnim(152);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1018,7 +1018,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1054,7 +1054,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1086,7 +1086,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1115,7 +1115,7 @@ void c.Char::s##_@@PInit()
   `setCtrl(false);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1191,7 +1191,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1227,7 +1227,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::S;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1302,7 +1302,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1335,7 +1335,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::C;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1403,7 +1403,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1450,7 +1450,7 @@ void c.Char::s##_@@PInit()
   `setCtrl(false);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1496,7 +1496,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1539,7 +1539,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1607,7 +1607,7 @@ void c.Char::s##_@@PInit()
   `stVal.ps[0].p = 0;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1641,7 +1641,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1677,7 +1677,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1725,7 +1725,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1758,7 +1758,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::C;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1843,7 +1843,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -1891,7 +1891,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -2002,7 +2002,7 @@ void c.Char::s##_@@PInit()
   }
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -2049,7 +2049,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -2115,7 +2115,7 @@ void c.Char::s##_@@PInit()
   `sprpriority = -3;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -2148,7 +2148,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -2206,7 +2206,7 @@ void c.Char::s##_@@PInit()
   `trChangeAnim(5200);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -2276,7 +2276,7 @@ void c.Char::s##_@@PInit()
   `setCtrl(false);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -2305,7 +2305,7 @@ void c.Char::s##_@@PInit()
   `setYV(0.0);
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()
@@ -2337,7 +2337,7 @@ void c.Char::s##_@@PInit()
   `stVal.phy = .StTy::N;
   `clearHitCount();
   `clearHitDef();
-  `stVal.mctime = 0;
+  `clearMoveHit();
   `stVal.juggle = 0;
 }
 void c.Char::s##_@@PSet()

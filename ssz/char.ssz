@@ -1837,7 +1837,7 @@ public &Projectile
       else:
         `ani.new(0);
       comm:
-        if(`hitpause == 0 && `removetime <= 0) `id = -1;
+        if(`id >= 0 && `hitpause == 0 && `removetime <= 0) `id = !`id;
       }
     }
     branch{
@@ -2041,6 +2041,20 @@ public &Char
   void clearMoveHit()
   {
     `stVal.mctime = 0;
+    if(`helperindex == 0) loop{
+      index i = 0;
+      *.projs<>.self pj = .projs[`playerno];
+      while;
+    do:
+      branch{
+      cond pj[i].id < 0:
+        pj[i].id = .com.IERR;
+      cond pj[i].hits <= 0:
+        pj[i].pctime = 0;
+      }
+      i++;
+    while i < #pj:
+    }
     `sysivar[.iHITPAUSETIME] = 0;
   }
   void clearHitCount()
@@ -5073,8 +5087,11 @@ public &Char
     else:
       .v.i = -1;
       loop{index i = 0; while; do:
-        if(.projs[`playerno][i].id >= 0
-          && (id == 0 || .projs[`playerno][i].id == id)
+        if(
+          .projs[`playerno][i].id != .com.IERR
+          && (
+            id == 0 
+            || .projs[`playerno][i].id == id || !.projs[`playerno][i].id == id)
           && .projs[`playerno][i].pctyp == pct
           && .projs[`playerno][i].pctime != 0
           && (.v.i <= 0 || .v.i > #.projs[`playerno][i].pctime))
@@ -5100,8 +5117,11 @@ public &Char
     else:
       .v.i = -1;
       loop{index i = 0; while; do:
-        if(.projs[`playerno][i].id >= 0
-          && (id == 0 || .projs[`playerno][i].id == id)
+        if(
+          .projs[`playerno][i].id != .com.IERR
+          && (
+            id == 0
+            || .projs[`playerno][i].id == id || !.projs[`playerno][i].id == id)
           && .projs[`playerno][i].pctime != 0
           && (.v.i <= 0 || .v.i > #.projs[`playerno][i].pctime))
         {
@@ -6454,7 +6474,7 @@ void rootAction()
     .players.getHit();
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
-        if(.projs[i][j].id >= 0) .projs[i][j].tick();
+        if(.projs[i][j].id != .com.IERR) .projs[i][j].tick();
         j++;
       while j < #.projs[i]:
       }
