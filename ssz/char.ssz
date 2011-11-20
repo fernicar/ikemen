@@ -3306,7 +3306,13 @@ public &Char
         cond `stVal.no == 5150:
         cond `stVal.no == 171:
         cond `sysivar[.iLIFE] <= 0 && `stVal.mov != .MovTy::H:
-          if(.m.inRange!int?(2, 3, .roundState())){
+          if(
+            .m.inRange!int?(
+              -(
+                .fight~ro.over_hittime
+                + .fight~ro.over_waittime + .fight~ro.over_wintime - 1),
+              0, .com.intro))
+          {
             .v.setI(5050)$`trSelfState(-1, -1);
           }
         }
