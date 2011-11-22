@@ -1816,7 +1816,7 @@ void c.Char::s##_@@P()
           e~ontop = (int)(`sysivar[1] > 14);
           e~setPos(`=);
           e~player=`id;
-          `insertExplod(idx, 0);
+          `insertExplod(idx);
         }
         `playSound(
           true, false, false, 7,
@@ -1950,7 +1950,7 @@ void c.Char::s##_@@P()
           e~ontop = (int)(`sysivar[1] > 14);
           e~setPos(`=);
           e~player=`id;
-          `insertExplod(idx, 0);
+          `insertExplod(idx);
         }
       }
       `setYV(0.0);
@@ -2190,7 +2190,7 @@ void c.Char::s##_@@P()
           e~ontop = 0;
           e~setPos(`=);
           e~player=`id;
-          `insertExplod(idx, 0);
+          `insertExplod(idx);
         }
       }
     }

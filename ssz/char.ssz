@@ -1490,7 +1490,6 @@ public &Explod
   public int player;
   public int bindid;
   public int ignorehitpause;
-  public int stconno;
   public float ticOldX, ticNewX;
   public float ticOldY, ticNewY;
   new()
@@ -1531,7 +1530,6 @@ public &Explod
     `player = -1;
     `bindid = -1;
     `ignorehitpause = 1;
-    `stconno = 0;
     `ticOldX = `ticNewX = `x;
     `ticOldY = `ticNewY = `y;
   }
@@ -2152,9 +2150,8 @@ public &Char
     idx = -1;
     ret .consts.null!&.Explod?();
   }
-  public void insertExplod(index i, int scn)
+  public void insertExplod(index i)
   {
-    .explods[`playerno][i].stconno = scn;
     if(#.explods[`playerno][i].ani > 0){
       .explods[`playerno][i].ani~ani.updateSprite();
     }
@@ -3963,7 +3960,7 @@ public &Char
     e~offsetx = x;
     e~offsety = y;
     e~setPos(`=);
-    `insertExplod(i, 0);
+    `insertExplod(i);
   }
   public void trPlayerID()
   {
@@ -5816,7 +5813,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       e~ownpal = 1;
       e~supermovetime = e~pausemovetime = -1;
       p1.setPos!e<>.self?(e<>=, e~postype, e~offsetx, e~offsety, e~relativef);
-      `by.insertExplod(tmp, 0);
+      `by.insertExplod(tmp);
       ret e;
     }
     ^&.snd.Sound sou;

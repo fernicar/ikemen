@@ -344,7 +344,6 @@ public &StateBuilder
   public ^/char lasterror;
   public &.Const c;
   public int playerno = 0;
-  public int stconcnt = 0;
   *.s.ptn_t pt1, pt2, pt3;
   new()
   {
@@ -3861,8 +3860,6 @@ public &StateBuilder
             ret false;
           }
           break;
-        comm:
-          `stconcnt++;
         }
       cond .s.equ(name, "triggerall"):
         if(#`state.ctrlList[-1].triggerall > 0){
@@ -6651,7 +6648,7 @@ public &StateBuilder
               "if(e~offsetx!=.com.FERR)e~offsetx+=.m.randF(-rx,rx);"
               "if(e~offsety!=.com.FERR)e~offsety+=.m.randF(-ry,ry);"
               "e~setPos(`=);`setAlpha(t,e~alphas=,e~alphad=);"
-              "`insertExplod(i," .= .s.iToS(`stconcnt) .= ");";
+              "`insertExplod(i);";
             if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
               dbuf .= "e~ignorehitpause=ih;if(e~ontop != 0)e~sprpriority=0;";
             }
