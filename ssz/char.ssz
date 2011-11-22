@@ -1321,8 +1321,7 @@ projs.new(4);
 explods.new(4);
 
 
-^%index expdrawlist;
-expdrawlist.new(4);
+^%index expdrawlist.new(4), topexpdrawlist.new(4);
 
 void delIL(%index l=, index i)
 {
@@ -2159,23 +2158,34 @@ public &Char
     if(#.explods[`playerno][i].ani > 0){
       .explods[`playerno][i].ani~ani.updateSprite();
     }
-    loop{
-      index ii = 0;
-      int p;
-      while;
-    do:
-      p = .explods[`playerno][.expdrawlist[`playerno][ii]].player;
-      if(
-        p >= `id && (
-          p > `id || .explods[`playerno][i].ontop == 0
-          || .explods[`playerno][.expdrawlist[`playerno][ii]].stconno > scn))
-      {
-        .insIL(.expdrawlist[`playerno]=, ii, i);
-        break, break;
+    branch{
+    cond .explods[`playerno][i].ontop != 0:
+      loop{
+        index ii = 0;
+       while;
+      do:
+        if(.topexpdrawlist[`playerno][ii] < 0){
+          .topexpdrawlist[`playerno][ii] = i;
+          break, break;
+        }
+        ii++;
+      while ii < #.topexpdrawlist[`playerno]:
+        .topexpdrawlist[`playerno] .= i;
       }
-      ii++;
-    while ii < #.expdrawlist[`playerno]:
-      .expdrawlist[`playerno] .= i;
+    else:
+      loop{
+        index ii = 0;
+        int p;
+        while;
+      do:
+        p = .explods[`playerno][.expdrawlist[`playerno][ii]].player;
+        if(p >= `id){
+          .insIL(.expdrawlist[`playerno]=, ii, i);
+          break, break;
+        }
+      while ii < #.expdrawlist[`playerno]:
+        .expdrawlist[`playerno] .= i;
+      }
     }
   }
   public ^&.Projectile newProj()
@@ -2999,11 +3009,6 @@ public &Char
       `sysivar[.iAIRJUMP_CNT] = 0;
       `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
     }
-    if(`stVal.no == 140 && `trAnimTime()$.v.toInt() == 0){
-      .v.setI(
-        (int)(`stVal.typ == .StTy::C)*11 + (int)(`stVal.typ == .StTy::A)*51);
-      `trSelfState(-1, -1);
-    }
     if(`isActive()) branch{
     cond `ctrl():
       branch{
@@ -3318,6 +3323,13 @@ public &Char
               0, .com.intro))
           {
             .v.setI(5050)$`trSelfState(-1, -1);
+          }
+        cond `stVal.no == 140:
+          if(`trAnimTime()$.v.toInt() == 0){
+            .v.setI(
+              (int)(`stVal.typ == .StTy::C)*11
+              + (int)(`stVal.typ == .StTy::A)*51);
+            `trSelfState(-1, -1);
           }
         }
         if(!`isHitPaused()) `stVal.time++;
@@ -4447,7 +4459,7 @@ public &Char
     .v.setF(`fvar[i] = v.toFloat());
   }
   public bool changeState1(int p, int n)
-  {
+  {:<-
     if(.changeStateNest >= 2500){
       %char buf .=
         "2500 loops: " .= `name .= ", " .= .s.iToS(`stVal.prevno) .= " -> "
@@ -4459,22 +4471,36 @@ public &Char
     %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PSet";
     if(!<consteval>(`state=, buf)) ret false;
     if(!`cs1tmp) `stVal.prevno = `stVal.no;
-    if(`stVal.playerno != `playerno && p != `stVal.playerno) loop{
-      index i = #.expdrawlist[`stVal.playerno]-1;
-      while;
-    do:
-      if(
-        .explods[`stVal.playerno][.expdrawlist[`stVal.playerno][i]].bindtime
-        != 0
-        && .explods[`stVal.playerno][.expdrawlist[`stVal.playerno][i]].bindid
-        == `id)
-      {
-        .explods[`stVal.playerno][.expdrawlist[`stVal.playerno][i]].id =
-          .com.IERR;
-        .delIL(.expdrawlist[`stVal.playerno]=, i);
+    void enemyExpRemove(^%index drawlist=, bool delI)
+    {
+      loop{
+        index i = #drawlist[`stVal.playerno]-1;
+        while;
+      do:
+        if(drawlist[`stVal.playerno][i] < 0) continue;
+        if(
+          .explods[`stVal.playerno][drawlist[`stVal.playerno][i]].bindtime
+          != 0
+          && .explods[`stVal.playerno][drawlist[`stVal.playerno][i]].bindid
+          == `id)
+        {
+          .explods[`stVal.playerno][drawlist[`stVal.playerno][i]].id =
+            .com.IERR;
+          branch{
+          cond delI:
+            .delIL(drawlist[`stVal.playerno]=, i);
+          else:
+            drawlist[`stVal.playerno][i] = -1;
+          }
+        }
+      continue:
+        i--;
+      while i >= 0:
       }
-      i--;
-    while i >= 0:
+    }
+    if(`stVal.playerno != `playerno && p != `stVal.playerno){
+      enemyExpRemove(.expdrawlist=, true);
+      enemyExpRemove(.topexpdrawlist=, false);
     }
     `stVal.no = n;
     `stVal.playerno = p;
@@ -5143,16 +5169,28 @@ public &Char
     }
   }
   public void trRemoveExplod(int id)
-  {
+  {:<-
     if(id == .com.IERR) ret;
-    loop{index i = #.expdrawlist[`playerno]-1; while; do:
-      if(`matchExplodId(.expdrawlist[`playerno][i], id)){
-        .explods[`playerno][.expdrawlist[`playerno][i]].id = .com.IERR;
-        .delIL(.expdrawlist[`playerno]=, i);
+    void expRemove(int id, ^%index drawlist=, bool delI)
+    {
+      loop{index i = #drawlist[`playerno]-1; while; do:
+        if(drawlist[`playerno][i] < 0) continue;
+        if(`matchExplodId(drawlist[`playerno][i], id)){
+          .explods[`playerno][drawlist[`playerno][i]].id = .com.IERR;
+          branch{
+          cond delI:
+            .delIL(drawlist[`playerno]=, i);
+          else:
+            drawlist[`playerno][i] = -1;
+          }
+        }
+      continue:
+        i--;
+      while i >= 0:
       }
-      i--;
-    while i >= 0:
     }
+    expRemove(id, .expdrawlist=, true);
+    expRemove(id, .topexpdrawlist=, false);
   }
   public void trNumExplod()
   {
@@ -5366,6 +5404,7 @@ public &Char
 
 public void Explod::update()
 {
+  if(`id == .com.IERR) ret;
   ^&.Char c;
   if(.com.tickNextFrame()){
     if(`removeongethit != 0){
@@ -6564,20 +6603,28 @@ public float action(
       if(.superanim~ani.loopend) .superanim.new(0);
     }
     .anim();
-    loop{index i = 0; while; do:
-      loop{index j = #.expdrawlist[i]-1; while; do:
-        if(.explods[i][.expdrawlist[i][j]].id != .com.IERR){
-          .explods[i][.expdrawlist[i][j]].update();
+    void expUpdate(^%index drawlist=, bool delI)
+    {
+      loop{index i = 0; while; do:
+        loop{index j = #drawlist[i]-1; while; do:
+          if(drawlist[i][j] < 0) continue;
+          .explods[i][drawlist[i][j]].update();
+          if(.explods[i][drawlist[i][j]].id == .com.IERR) branch{
+          cond delI:
+            .delIL(drawlist[i]=, j);
+          else:
+            drawlist[i][j] = -1;
+          }
+        continue:
+          j--;
+        while j >= 0:
         }
-        if(.explods[i][.expdrawlist[i][j]].id == .com.IERR){
-          .delIL(.expdrawlist[i]=, j);
-        }
-        j--;
-      while j >= 0:
+        i++;
+      while i < #.explods:
       }
-      i++;
-    while i < #.explods:
     }
+    expUpdate(.expdrawlist=, true);
+    expUpdate(.topexpdrawlist=, false);
   }
   leftest -= x;
   rightest -= x;
@@ -7021,6 +7068,7 @@ void charClear(int pn)
   .projs[pn].new(0);
   .explods[pn].new(0);
   .expdrawlist[pn].new(0);
+  .topexpdrawlist[pn].new(0);
   .chars[pn][0]~children.new(0);
   .chars[pn][0]~targets.new(0);
   .chars[pn][0]~sounds.new(0);
