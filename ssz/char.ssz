@@ -2183,6 +2183,7 @@ public &Char
           .insIL(.expdrawlist[`playerno]=, ii, i);
           break, break;
         }
+        ii++;
       while ii < #.expdrawlist[`playerno]:
         .expdrawlist[`playerno] .= i;
       }
