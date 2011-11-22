@@ -703,10 +703,22 @@ public &StateBuilder
       branch{
         ^/char oldin = in;
         ^/char token = `tokenizer(in=);
-        bool not = false, kakko = false;
+        bool not = false;
       cond .s.equ("=", token):
       cond .s.equ("(", token):
-        kakko = true;
+        if(!.cfg.IgnoreMostErrors) else;
+        out .= ".v.setI(1)";
+        loop{
+        do:
+          oldin = in;
+          token = `tokenizer(in=);
+        while
+          #token > 0 && !.s.equ(",", token)
+          && !.s.equ("||", token) && !.s.equ("&&", token)
+          :
+          in = oldin;
+        }
+        break;
       cond .s.equ("!=", token):
         not = true;
       else:
@@ -719,9 +731,7 @@ public &StateBuilder
       comm:
         {
           int re = proc(::);
-          if(re < 0) ret re;
-          if(kakko && !`kakkotojiru(in=)) ret -1;
-          if(re == 0) ret re;
+          if(re <= 0) ret re;
         }
         if(not) out .= "$`trBoolNot()";
       }
