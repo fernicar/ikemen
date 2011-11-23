@@ -1324,7 +1324,7 @@ public &StateBuilder
       if(!var(obj, "FVar", out=, in=)) ret false;
     cond .s.equ("animexist", token):
       if(!`expValue(out=, in=)) ret false;
-      out .= '$' .= obj .= "trAnimExist(" .= .s.iToS(`playerno) .= ')';
+      out .= '$' .= obj .= "trAnimExist(`id)";
     cond .s.equ("selfanimexist", token):
       if(!`expValue(out=, in=)) ret false;
       out .= '$' .= obj .= "trSelfAnimExist()";

@@ -4369,10 +4369,13 @@ public &Char
     `ani~ani.sff = `sf;
     `ani~ani.updateSprite();
   }
-  public void trAnimExist(int pno)
+  public void trAnimExist(int pid)
   {
     if(.v.isSF()) ret;
-    .v.setB(#.chars[pno][0]~getAction(.v.toInt()) > 0);
+    .v.setB(
+      #.chars[`id == pid ? `stVal.playerno : `playerno][0]~getAction(
+        .v.toInt())
+      > 0);
   }
   public void trSelfAnimExist()
   {

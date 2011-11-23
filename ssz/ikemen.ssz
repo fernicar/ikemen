@@ -412,6 +412,7 @@ int match()
   ldend<> = 0;
 /?/*.cfg.OpenGL:
   .loadStage(stag, ldend);
+  if(ldend<> <= 0) ret -1;
 /*true:
   thread!.loadStage? lstage;
   lstage..(stag, ldend);
@@ -452,6 +453,7 @@ int game()
       `ldend<> = 0;
     /?/*.cfg.OpenGL:
       .loadCharacter(p, cha, `ldend);
+      if(`ldend<> <= 0) ret false;
     /*true:
       thread!.loadCharacter? lcha..(p, cha, `ldend);
       loop{do:
