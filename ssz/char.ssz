@@ -898,7 +898,6 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public float yvel;
   public float yaccel;
   public int hitid;
-  public int chainid;
   public int nochainid1;
   public int nochainid2;
   public int guarded;
@@ -939,7 +938,6 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `yvel = 0.0;
     `yaccel = .com.FERR;
     `hitid = -1;
-    `chainid = -1;
     `nochainid1 = -1;
     `nochainid2 = -1;
     `guarded = 0;
@@ -1064,7 +1062,6 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.juggle = jgl;
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
-    `hb.chainid = hit.chainid;
     `hb.nochainid1 = hit.nochainid1;
     `hb.nochainid2 = hit.nochainid2;
     `hb.fall = hit.fall;
