@@ -3597,7 +3597,6 @@ public &Char
       `sysivar[.iLIFE]=, kill || !foo ? 0 : 1, `sysivar[.iLIFEMAX]);
     if(`helperindex == 0 && `sysivar[.iLIFE] == 0){
       `stVal.hb.fallf = 1;
-      `stVal.hb.fall.recover = 0;
       if(!foo) break;
       branch{
       cond `stVal.mov == .MovTy::H || `stVal.playerno != `playerno:

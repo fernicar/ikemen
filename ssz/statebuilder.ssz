@@ -975,15 +975,15 @@ public &StateBuilder
     cond .s.equ("alive", token):
       out .= ".v.setB(" .= obj .= "sysivar[.iLIFE]>0)";
     cond .s.equ("win", token):
-      out .=  obj .= "trWin()";
+      out .= obj .= "trWin()";
     cond .s.equ("winko", token):
-      out .=  obj .= "trWinKO()";
+      out .= obj .= "trWinKO()";
     cond .s.equ("wintime", token):
-      out .=  obj .= "trWinTime()";
+      out .= obj .= "trWinTime()";
     cond .s.equ("winperfect", token):
-      out .=  obj .= "trWinPerfect()";
+      out .= obj .= "trWinPerfect()";
     cond .s.equ("lose", token):
-      out .=  obj .= "trLose()";
+      out .= obj .= "trLose()";
     cond .s.equ("loseko", token):
       out .= obj .= "trLoseKO()";
     cond .s.equ("losetime", token):
@@ -6036,6 +6036,8 @@ public &StateBuilder
                 `state.ctrlList[-1].task=, text=,
                 "color=.m.max!float?(0.0,.m.min!float?(1.0,",
                 "$.v.toFloat()/256.0));")) ret false;
+          else:
+            break, default;
           }
         case .CtrlTy::EnvShake:
           branch{
