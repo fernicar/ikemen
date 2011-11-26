@@ -3061,7 +3061,19 @@ public &Char
         `sysivar[.iSPECIALFLAG] |= .lsGUARD;
       }
     }
-    if(`player) `state_i1(::);
+    if(`player){
+      `state_i1(::);
+      if(
+        `sysivar[.iRECOVERTIME] > 0 && `isActive() && (
+          `cmd.buffer~Bb == 1 || `cmd.buffer~Db == 1
+          || `cmd.buffer~Fb == 1 || `cmd.buffer~Ub == 1
+          || `cmd.buffer~ab == 1 || `cmd.buffer~bb == 1
+          || `cmd.buffer~cb == 1 || `cmd.buffer~xb == 1
+          || `cmd.buffer~yb == 1 || `cmd.buffer~zb == 1))
+      {
+        `sysivar[.iRECOVERTIME]--;
+      }
+    }
     `minus = 2;
   }
   public void drawAnim()
