@@ -167,7 +167,7 @@ void game()
   float x = 0.0, y = 0.0, l = 0.0, r = 0.0;
   float scl = 1.0, sclmul = 1.0;
   float newx = x, newy = y;
-  int oldp1wins = .com.p1wins, oldp2wins = .com.p2wins, olddraws = .com.draws;
+  int oldp1wins, oldp2wins, olddraws;
   ^int lif.new(4), pow.new(4);
   void reset()
   {
@@ -300,6 +300,9 @@ void game()
       i++;
     while i < #.chr.chars:
     }
+    oldp1wins = .com.p1wins;
+    oldp2wins = .com.p2wins;
+    olddraws = .com.draws;
     .chr.stg~reset();//bgctrlの都合(循環参照可能な型を操作する)でここでreset
     loop{int i = 0; while; do:
       .chr.stg~action();
