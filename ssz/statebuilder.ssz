@@ -6536,13 +6536,6 @@ public &StateBuilder
             }
           case .CtrlTy::ScreenBound:
             branch{
-            cond #`state.value > 0:
-              dbuf .=
-                "branch{cond " .= `state.value
-                .= ".isTrue():`sysivar[.iSPECIALFLAG]|="
-                ".lsSCREENBOUNDX|.lsSCREENBOUNDY;"
-                "else:`sysivar[.iSPECIALFLAG]&="
-                "!(.lsSCREENBOUNDX|.lsSCREENBOUNDY);}";
             cond #`state.v > 0 || #`state.fv > 0:
               if(#`state.v > 0){
                 dbuf .=
@@ -6556,6 +6549,13 @@ public &StateBuilder
                   .= ".isTrue():`sysivar[.iSPECIALFLAG]|=.lsSCREENBOUNDY;"
                   "else:`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUNDY;}";
               }
+            cond #`state.value > 0:
+              dbuf .=
+                "branch{cond " .= `state.value
+                .= ".isTrue():`sysivar[.iSPECIALFLAG]|="
+                ".lsSCREENBOUNDX|.lsSCREENBOUNDY;"
+                "else:`sysivar[.iSPECIALFLAG]&="
+                "!(.lsSCREENBOUNDX|.lsSCREENBOUNDY);}";
             else:
               dbuf .=
                 "`sysivar[.iSPECIALFLAG]&=!(.lsSCREENBOUNDX|.lsSCREENBOUNDY);";
