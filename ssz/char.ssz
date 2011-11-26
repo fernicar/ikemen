@@ -3307,16 +3307,16 @@ public &Char
             .v.setI(`sysivar[.iLIFE] > 0 ? 5120 : 5150);
             `trSelfState(-1, -1);
           }
-        cond `stVal.no == 5150:
-        cond `stVal.no == 171:
         cond `sysivar[.iLIFE] <= 0 && `stVal.mov != .MovTy::H:
           if(
             .m.inRange!int?(
               -(
                 .fight~ro.over_hittime
                 + .fight~ro.over_waittime + .fight~ro.over_wintime - 1),
-              0, .com.intro))
+              0, .com.intro)
+            && (`sysivar[.iSYSFLAG] & .sfWIN) != 0)
           {
+            `sysivar[.iSYSFLAG] &= !.sfWIN;
             .v.setI(5050)$`trSelfState(-1, -1);
           }
         cond `stVal.no == 140:

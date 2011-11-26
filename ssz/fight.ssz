@@ -1218,7 +1218,7 @@ public void setPerfect(|.WinTy wt=)
   public ^&.sff.Anim!&.bg.Frame? icon;
   public ^&.com.Layout icon_lay;
   public &.ActionList al;
-  public %|.WinTy wins;
+  public ^|.WinTy wins;
   new()
   {
     `icon.new((index).WinTy::NumTypes);
@@ -1336,8 +1336,9 @@ public void setPerfect(|.WinTy wt=)
     }
     if(#(data = sc.get("useiconupto")) > 0) `useiconupto = .com.atoi(data);
   }
-  public void step()
+  public void step(int numwin)
   {
+    `wins = `wins[0..numwin];
     loop{index i = 0; do: `icon[i].action(); while ++i < #`icon:}
   }
   public void draw(int layerno, ^&.fnt.Font f)
@@ -1376,7 +1377,7 @@ public void setPerfect(|.WinTy wt=)
   }
   public void add(|.WinTy wt)
   {
-    `wins .= wt;
+    `wins = `wins + ?wt;
   }
   public void setup(^&.sff.Sff sf)
   {
@@ -1855,8 +1856,8 @@ public &Fight
       i += 2;
     while i < #`nm[tm[1]]:
     }
-    `wi[0].step();
-    `wi[1].step();
+    `wi[0].step(.com.p1wins);
+    `wi[1].step(.com.p2wins);
     `ti.step();
     `co.step(combo);
   }

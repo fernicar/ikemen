@@ -167,9 +167,13 @@ void game()
   float x = 0.0, y = 0.0, l = 0.0, r = 0.0;
   float scl = 1.0, sclmul = 1.0;
   float newx = x, newy = y;
+  int oldp1wins = .com.p1wins, oldp2wins = .com.p2wins, olddraws = .com.draws;
   ^int lif.new(4), pow.new(4);
   void reset()
   {
+    .com.p1wins = `oldp1wins;
+    .com.p2wins = `oldp2wins;
+    .com.draws = `olddraws;
     loop{index i = 0; do:
       if(#.chr.chars[i] > 0){
         .chr.chars[i][0]~sysivar[.chr.iLIFE] = `lif[i];
@@ -324,7 +328,7 @@ void game()
         .com.accel *= 2.0;
       }
       if(#.cmd.replay == 0){
-        if(.com.win < 0 && .com.keyDown(.com.KeyEvent::F4)) reset();
+        if(.com.keyDown(.com.KeyEvent::F4)) reset();
         if(.com.keyDown(.com.KeyEvent::ShiftF4)){
           .mes.SetSharedString(:"reload":);
           ret;
@@ -382,6 +386,9 @@ void game()
         i++;
       while i < #.com.tmode:
       }
+      oldp1wins = .com.p1wins;
+      oldp2wins = .com.p2wins;
+      olddraws = .com.draws;
       reset();
     else:
       loop{index i = 0; while; do:
