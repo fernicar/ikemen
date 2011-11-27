@@ -3347,7 +3347,6 @@ public &Char
       branch{
       cond #`ani > 0:
         `curFrame = `ani~ani.currentFrame();
-        `ani~ani.updateSprite();
       else:
         `curFrame.new(0);
       }
