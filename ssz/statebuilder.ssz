@@ -712,8 +712,8 @@ public &StateBuilder
           oldin = in;
           token = `tokenizer(in=);
         while
-          #token > 0 && !.s.equ(",", token)
-          && !.s.equ("||", token) && !.s.equ("&&", token)
+          #token > 0 && !.s.equ(",", token) && !.s.equ("||", token)
+          && !.s.equ("^^", token) && !.s.equ("&&", token)
           :
           in = oldin;
         }
@@ -1896,6 +1896,11 @@ public &StateBuilder
         branch{
         cond .s.equ("", token):
           out .= ".v.setI(0)";
+        cond
+          .s.equ(")", token) || .s.equ("||", token)
+          || .s.equ("^^", token) || .s.equ("&&", token):
+          out .= ".v.setI(0)";
+          in = token + in;
         else:
           out .= ".v.setSF()";
         }
