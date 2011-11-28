@@ -6644,8 +6644,8 @@ public &StateBuilder
               break;
             comm:
               dbuf .=
-                "if(pr~remanim<0)pr~remanim=pr~hitanim;"
-                "if(pr~cancelanim<0)pr~cancelanim=pr~remanim;"
+                "if(pr~remanim==.com.IERR)pr~remanim=pr~hitanim;"
+                "if(pr~cancelanim==.com.IERR)pr~cancelanim=pr~remanim;"
                 "`trProjInit(pr<>=,pt,x,y);";
             }
           case .CtrlTy::Explod, .CtrlTy::GameMakeAnim:

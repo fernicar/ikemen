@@ -1600,8 +1600,8 @@ public &Projectile
     `id = .com.IERR;
     `anim = 0;
     `hitanim = -1;
-    `remanim = -1;
-    `cancelanim = -1;
+    `remanim = .com.IERR;
+    `cancelanim = .com.IERR;
     `scalex = 1.0;
     `scaley = 1.0;
     `remove = 1;
