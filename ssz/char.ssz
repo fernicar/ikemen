@@ -1311,8 +1311,8 @@ const int sfWIN     = 0b00000000000000000000000000000010;
 }
 
 public ^%^&Char chars;
-^%&Projectile projs;
-^%&Explod explods;
+/^%&Projectile projs;
+/^%&Explod explods;
 chars.new(4);
 projs.new(4);
 explods.new(4);
@@ -3796,7 +3796,7 @@ public &Char
     `sysivar[.iCTRL] = (int)c;
   }
   public void destroySelf()
-  {
+  {:<-
     if(`helperindex <= 0) ret;
     loop{
       index i = 0;
@@ -3829,6 +3829,29 @@ public &Char
       i++;
     while i < #`children:
     }
+    void expRemove(^%index drawlist=, bool delI)
+    {
+      loop{
+        index i = #drawlist[`playerno]-1;
+        while;
+      do:
+        if(drawlist[`playerno][i] < 0) continue;
+        if(`matchExplodId(drawlist[`playerno][i], 0)){
+          .explods[`playerno][drawlist[`playerno][i]].id = .com.IERR;
+          branch{
+          cond delI:
+            .delIL(drawlist[`playerno]=, i);
+          else:
+            drawlist[`playerno][i] = -1;
+          }
+        }
+      continue:
+        i--;
+      while i >= 0:
+      }
+    }
+    expRemove(.expdrawlist=, true);
+    expRemove(.topexpdrawlist=, false);
     ^&.com.PalFX fx = `getPalfx();
     if(fx~player == `id) fx~time = 0;
     .players.destroy(`id);
