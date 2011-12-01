@@ -5746,7 +5746,7 @@ public &StateBuilder
             "`trRemoveExplod(", "$.v.toInt());")) ret false;
         ret true;
       }])) ret false;
-      if(!id) "`trRemoveExplod(0);";
+      if(!id) `state.ctrlList[-1].task .= "`trRemoveExplod(0);";
       ret true;
     }]);
   }

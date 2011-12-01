@@ -3829,29 +3829,6 @@ public &Char
       i++;
     while i < #`children:
     }
-    void expRemove(^%index drawlist=, bool delI)
-    {
-      loop{
-        index i = #drawlist[`playerno]-1;
-        while;
-      do:
-        if(drawlist[`playerno][i] < 0) continue;
-        if(`matchExplodId(drawlist[`playerno][i], 0)){
-          .explods[`playerno][drawlist[`playerno][i]].id = .com.IERR;
-          branch{
-          cond delI:
-            .delIL(drawlist[`playerno]=, i);
-          else:
-            drawlist[`playerno][i] = -1;
-          }
-        }
-      continue:
-        i--;
-      while i >= 0:
-      }
-    }
-    expRemove(.expdrawlist=, true);
-    expRemove(.topexpdrawlist=, false);
     ^&.com.PalFX fx = `getPalfx();
     if(fx~player == `id) fx~time = 0;
     .players.destroy(`id);
