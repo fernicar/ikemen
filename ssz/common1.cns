@@ -13,7 +13,7 @@ void c.Char::s##_@@P()
     if(`stVal.time == 0) `setYV(0.0);
     if(#`sysfvar[.fVX] < 2.0 || `stVal.time == 4) `setXV(0.0);
     if(`sysivar[.iLIFE] <= 0){
-      .v.setI(5050)$`trChangeState(-1, -1);
+      `trChangeState(5050, -1, -1);
       ret;
     }
   }
@@ -43,7 +43,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     if(`stVal.time == 0) .v.setF(0.75)$`trVelMulX();
     if(`trAnimTime()$.v.toInt() == 0){
-      .v.setI(11)$`trChangeState(-1, -1);
+      `trChangeState(11, -1, -1);
       ret;
     }
   }
@@ -99,7 +99,7 @@ void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
     if(`trAnimTime()$.v.toInt() == 0){
-      .v.setI(0)$`trChangeState(-1, -1);
+      `trChangeState(0, -1, -1);
       ret;
     }
   }
@@ -185,7 +185,7 @@ void c.Char::s##_@@P()
             `sysivar[1] == 1 ? `sysfvar[.fJUMP_FWD] : `sysfvar[.fJUMP_BACK]));
       }
       `setYV(`sysfvar[.fJUMP_NEUY]);
-      .v.setI(50)$`trChangeState(-1, 1);
+      `trChangeState(50, -1, 1);
       ret;
     }
   }
@@ -230,7 +230,7 @@ void c.Char::s##_@@P()
           `sysivar[1] == 1
           ? `sysfvar[.fAIRJUMP_FWD] : `sysfvar[.fAIRJUMP_BACK]));
       `setYV(`sysfvar[.fAIRJUMP_NEUY]);
-      .v.setI(50)$`trChangeState(-1, 1);
+      `trChangeState(50, -1, 1);
       ret;
     }
   }
@@ -328,7 +328,7 @@ void c.Char::s##_@@P()
       `setCtrl(true);
     }
     if(`trAnimTime()$.v.toInt() == 0){
-      .v.setI(0)$`trChangeState(-1, 1);
+      `trChangeState(0, -1, 1);
       ret;
     }
   }
@@ -360,7 +360,7 @@ void c.Char::s##_@@P()
     `setXV(`sysfvar[.fRUN_FWDX]);
     `sysivar[.iSPECIALFLAG] |= .lsNOWALK | .lsNOAUTOTURN;
     if(`trCommand("holdfwd")$!.v.isTrue()){
-      .v.setI(0)$`trChangeState(-1, -1);
+      `trChangeState(0, -1, -1);
       ret;
     }
   }
@@ -397,7 +397,7 @@ void c.Char::s##_@@P()
       `setCtrl(true);
     }
     if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0){
-      .v.setI(106)$`trChangeState(-1, -1);
+      `trChangeState(106, -1, -1);
       ret;
     }
   }
@@ -434,7 +434,7 @@ void c.Char::s##_@@P()
     case 2:
       `makeDust(-5.0, -2.0);
     case 7:
-      .v.setI(0)$`trChangeState(-1, 1);
+      `trChangeState(0, -1, 1);
       ret;
     }
   }
@@ -471,7 +471,7 @@ void c.Char::s##_@@P()
       `setXV(0.0);
     }
     if(`trAnimTime()$.v.toInt() == 0){
-      .v.setI(0)$`trChangeState(-1, 1);
+      `trChangeState(0, -1, 1);
       ret;
     }
   }
@@ -506,7 +506,7 @@ void c.Char::s##_@@P()
       `setXV(0.0);
     }
     if(`trAnimTime()$.v.toInt() == 0){
-      .v.setI(0)$`trChangeState(-1, 1);
+      `trChangeState(0, -1, 1);
       ret;
     }
   }
@@ -558,13 +558,13 @@ void c.Char::s##_@@P()
       }
     }
     if(`trAnimTime()$.v.toInt() == 0){
-      .v.setI(
-        130 + (int)(`stVal.typ == .StTy::C) + (int)(`stVal.typ == .StTy::A)*2);
-      `trChangeState(-1, -1);
+      `trChangeState(
+        130 + (int)(`stVal.typ == .StTy::C) + (int)(`stVal.typ == .StTy::A)*2,
+        -1, -1);
       ret;
     }
     if(`trCommand("holdback")$!.v.isTrue() || !`inguarddist){
-      .v.setI(140)$`trChangeState(-1, -1);
+      `trChangeState(140, -1, -1);
       ret;
     }
   }
@@ -591,11 +591,11 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     if(`animno != 130) `trChangeAnim(130);
     if(`trCommand("holddown")$.v.isTrue()){
-      .v.setI(131)$`trChangeState(-1, -1);
+      `trChangeState(131, -1, -1);
       ret;
     }
     if(`trCommand("holdback")$!.v.isTrue() || !`inguarddist){
-      .v.setI(140)$`trChangeState(-1, -1);
+      `trChangeState(140, -1, -1);
       ret;
     }
   }
@@ -624,11 +624,11 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     if(`animno != 131) `trChangeAnim(131);
     if(`trCommand("holddown")$!.v.isTrue()){
-      .v.setI(130)$`trChangeState(-1, -1);
+      `trChangeState(130, -1, -1);
       ret;
     }
     if(`trCommand("holdback")$!.v.isTrue() || !`inguarddist){
-      .v.setI(140)$`trChangeState(-1, -1);
+      `trChangeState(140, -1, -1);
       ret;
     }
   }
@@ -662,14 +662,14 @@ void c.Char::s##_@@P()
       `setYV(0.0);
       .v.setF(0.0)$`trSetY();
       if(`trCommand("holdback")$.v.isTrue() && `inguarddist){
-        .v.setI(130)$`trChangeState(-1, -1);
+        `trChangeState(130, -1, -1);
         ret;
       }
-      .v.setI(52)$`trChangeState(-1, -1);
+      `trChangeState(52, -1, -1);
       ret;
     }
     if(`trCommand("holdback")$!.v.isTrue() || !`inguarddist){
-      .v.setI(140)$`trChangeState(-1, -1);
+      `trChangeState(140, -1, -1);
       ret;
     }
   }
@@ -744,8 +744,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     `trChangeAnim(150);
     if(`trHitShakeOver()$.v.isTrue()){
-      .v.setI(151 + `trCommand("holddown")$(.v.toInt()*2));
-      `trChangeState(-1, -1);
+      `trChangeState(151 + `trCommand("holddown")$(.v.toInt()*2), -1, -1);
       ret;
     }
     switch(`stVal.typ){
@@ -807,7 +806,7 @@ void c.Char::s##_@@P()
       }
     }
     if(`stVal.hb.hittime <= 0){
-      .v.setI(130)$`trChangeState(-1, 1);
+      `trChangeState(130, -1, 1);
       ret;
     }
   }
@@ -837,8 +836,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     `trChangeAnim(151);
     if(`trHitShakeOver()$.v.isTrue()){
-      .v.setI(151 + `trCommand("holddown")$(.v.toInt()*2));
-      `trChangeState(-1, -1);
+      `trChangeState(151 + `trCommand("holddown")$(.v.toInt()*2), -1, -1);
       ret;
     }
     switch(`stVal.typ){
@@ -900,7 +898,7 @@ void c.Char::s##_@@P()
       }
     }
     if(`stVal.hb.hittime <= 0){
-      .v.setI(131)$`trChangeState(-1, 1);
+      `trChangeState(131, -1, 1);
       ret;
     }
   }
@@ -929,7 +927,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     `trChangeAnim(152);
     if(`trHitShakeOver()$.v.isTrue()){
-      .v.setI(155)$`trChangeState(-1, -1);
+      `trChangeState(155, -1, -1);
       ret;
     }
     if(`stVal.time == 0){
@@ -972,10 +970,10 @@ void c.Char::s##_@@P()
       `setYV(0.0);
       .v.setF(0.0)$`trSetY();
       if(`trCommand("holdback")$.v.isTrue() && `inguarddist){
-        .v.setI(130)$`trChangeState(-1, -1);
+        `trChangeState(130, -1, -1);
         ret;
       }
-      .v.setI(52)$`trChangeState(-1, -1);
+      `trChangeState(52, -1, -1);
       ret;
     }
   }
@@ -1035,7 +1033,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     if(`stVal.time == 0){
       if(#`getAction(175) == 0){
-        .v.setI(170)$`trChangeState(-1, -1);
+        `trChangeState(170, -1, -1);
         ret;
       }
       `trChangeAnim(175);
@@ -1071,7 +1069,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     if(#`getAction(190) > 0) `trChangeAnim(190);
     if(`stVal.time == 0){
-      .v.setI(191)$`trChangeState(-1, -1);
+      `trChangeState(191, -1, -1);
       ret;
     }
   }
@@ -1102,7 +1100,7 @@ void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
     if(`stVal.time == 0){
-      .v.setI(0)$`trChangeState(-1, -1);
+      `trChangeState(0, -1, -1);
       ret;
     }
   }
@@ -1155,10 +1153,10 @@ void c.Char::s##_@@P()
     }
     if(`trHitShakeOver()$.v.isTrue()){
       if(`stVal.hb.yvel == 0.0 && `stVal.hb.fallf == 0){
-        .v.setI(5001)$`trChangeState(-1, -1);
+        `trChangeState(5001, -1, -1);
         ret;
       }
-      .v.setI(5030)$`trChangeState(-1, -1);
+      `trChangeState(5030, -1, -1);
       ret;
     }
     switch(`animno){
@@ -1215,7 +1213,7 @@ void c.Char::s##_@@P()
     if(`stVal.hb.hittime <= 0){
       `setXV(0.0);
       `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
-      .v.setI(0)$`trChangeState(-1, 1);
+      `trChangeState(0, -1, 1);
       ret;
     }
   }
@@ -1266,10 +1264,10 @@ void c.Char::s##_@@P()
     }
     if(`trHitShakeOver()$.v.isTrue()){
       if(`stVal.hb.yvel == 0.0 && `stVal.hb.fallf == 0){
-        .v.setI(5011)$`trChangeState(-1, -1);
+        `trChangeState(5011, -1, -1);
         ret;
       }
-      .v.setI(5030)$`trChangeState(-1, -1);
+      `trChangeState(5030, -1, -1);
       ret;
     }
     switch(`animno){
@@ -1323,7 +1321,7 @@ void c.Char::s##_@@P()
     if(`stVal.hb.hittime <= 0){
       `setXV(0.0);
       `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
-      .v.setI(11)$`trChangeState(-1, 1);
+      `trChangeState(11, -1, 1);
       ret;
     }
   }
@@ -1368,7 +1366,7 @@ void c.Char::s##_@@P()
       `trChangeAnim(`animno);
     }
     if(`trHitShakeOver()$.v.isTrue()){
-      .v.setI(5030)$`trChangeState(-1, -1);
+      `trChangeState(5030, -1, -1);
       ret;
     }
     switch(`animno){
@@ -1430,14 +1428,14 @@ void c.Char::s##_@@P()
     {
       branch{
       cond `stVal.hb.fallf == 0:
-        .v.setI(5040)$`trChangeState(-1, -1);
+        `trChangeState(5040, -1, -1);
       else:
-        .v.setI(5050)$`trChangeState(-1, -1);
+        `trChangeState(5050, -1, -1);
       }
       ret;
     }
     if(`trAnimTime()$.v.toInt() == 0){
-      .v.setI(5035)$`trChangeState(-1, -1);
+      `trChangeState(5035, -1, -1);
       ret;
     }
   }
@@ -1481,9 +1479,9 @@ void c.Char::s##_@@P()
     {
       branch{
       cond `stVal.hb.fallf == 0:
-        .v.setI(5040)$`trChangeState(-1, -1);
+        `trChangeState(5040, -1, -1);
       else:
-        .v.setI(5050)$`trChangeState(-1, -1);
+        `trChangeState(5050, -1, -1);
       }
       ret;
     }
@@ -1512,7 +1510,7 @@ void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
     if(`sysivar[.iLIFE] <= 0){
-      .v.setI(5050)$`trChangeState(-1, -1);
+      `trChangeState(5050, -1, -1);
       ret;
     }
     if(
@@ -1527,7 +1525,7 @@ void c.Char::s##_@@P()
     }
     .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
     if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0){
-      .v.setI(52)$`trChangeState(-1, -1);
+      `trChangeState(52, -1, -1);
       ret;
     }
   }
@@ -1581,10 +1579,10 @@ void c.Char::s##_@@P()
         && `sysfvar[.fY]
         >= `sysfvar[.fAIR_GETHIT_GROUNDRECOVER_GROUND_THRESHOLD]
         :
-        .v.setI(5200)$`trChangeState(-1, -1);
+        `trChangeState(5200, -1, -1);
         ret;
       cond `sysfvar[.fVY] > `sysfvar[.fAIR_GETHIT_AIRRECOVER_THRESHOLD]:
-        .v.setI(5210)$`trChangeState(-1, -1);
+        `trChangeState(5210, -1, -1);
         ret;
       }
     }
@@ -1593,7 +1591,7 @@ void c.Char::s##_@@P()
           .m.inRange!int?(`animno, 5051, 5059)
           || .m.inRange!int?(`animno, 5061, 5069) ? 0.0 : 25.0))
     {
-      .v.setI(5100)$`trChangeState(-1, -1);
+      `trChangeState(5100, -1, -1);
       ret;
     }
   }
@@ -1624,7 +1622,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     `trChangeAnim(5070);
     if(`trHitShakeOver()$.v.isTrue()){
-      .v.setI(5071)$`trChangeState(-1, -1);
+      `trChangeState(5071, -1, -1);
       ret;
     }
     if(`stVal.time == 0){
@@ -1665,7 +1663,7 @@ void c.Char::s##_@@P()
       `sysfvar[.fVY] > 0.0
       && `sysfvar[.fY] >= `sysfvar[.fAIR_GETHIT_TRIP_GROUNDLEVEL])
     {
-      .v.setI(5110)$`trChangeState(-1, -1);
+      `trChangeState(5110, -1, -1);
       ret;
     }
   }
@@ -1708,9 +1706,9 @@ void c.Char::s##_@@P()
     if(`trHitShakeOver()$.v.isTrue()){
       branch{
       cond `stVal.hb.yvel == 0.0:
-        .v.setI(5081)$`trChangeState(-1, -1);
+        `trChangeState(5081, -1, -1);
       else:
-        .v.setI(5030)$`trChangeState(-1, -1);
+        `trChangeState(5030, -1, -1);
       }
       ret;
     }
@@ -1746,7 +1744,7 @@ void c.Char::s##_@@P()
     }
     if(`stVal.hb.hittime <= 0){
       `setXV(0.0);
-      .v.setI(5110)$`trChangeState(-1, -1);
+      `trChangeState(5110, -1, -1);
       ret;
     }
   }
@@ -1798,7 +1796,7 @@ void c.Char::s##_@@P()
       `setYV(0.0);
       .v.setF(0.75)$`trVelMulX();
       if(`stVal.hb.fall.yvelocity == 0.0){
-        .v.setI(5110)$`trChangeState(-1, -1);
+        `trChangeState(5110, -1, -1);
         ret;
       }
     case 1:
@@ -1828,7 +1826,7 @@ void c.Char::s##_@@P()
     }
     `sysivar[.iSPECIALFLAG] |= .lsPOSFREEZEX | .lsPOSFREEZEY;
     if(`trAnimTime()$.v.toInt() == 0){
-      .v.setI(5101)$`trChangeState(-1, -1);
+      `trChangeState(5101, -1, -1);
       ret;
     }
     if(`stVal.time == 0){
@@ -1879,7 +1877,7 @@ void c.Char::s##_@@P()
       `sysfvar[.fVY] > 0.0
       && `sysfvar[.fY] >= `sysfvar[.fDOWN_BOUNCE_GROUNDLEVEL])
     {
-      .v.setI(5110)$`trChangeState(-1, -1);
+      `trChangeState(5110, -1, -1);
       ret;
     }
   }
@@ -1975,7 +1973,7 @@ void c.Char::s##_@@P()
         `trAnimTime()$.v.toInt() == 0 || `sysivar[0] != 0
         || .m.inRange!int?(`animno, 5110, 5119)))
     {
-      .v.setI(5150)$`trChangeState(-1, -1);
+      `trChangeState(5150, -1, -1);
       ret;
     }
     if(`stVal.time == 0){
@@ -2037,7 +2035,7 @@ void c.Char::s##_@@P()
       `stVal.hb.hitt1 = 12;
       `stVal.hb.hitf2 = -8;
       `stVal.hb.hitt2 = 3;
-      .v.setI(0)$`trChangeState(-1, 1);
+      `trChangeState(0, -1, 1);
       ret;
     }
   }
@@ -2136,7 +2134,7 @@ void c.Char::s##_@@P()
       `sysfvar[.fVY] > 0.0
       && `sysfvar[.fY] >= `sysfvar[.fAIR_GETHIT_GROUNDRECOVER_GROUNDLEVEL])
     {
-      .v.setI(5201)$`trSelfState(-1, -1);
+      `trSelfState(5201, -1, -1);
       ret;
     }
   }
@@ -2262,7 +2260,7 @@ void c.Char::s##_@@P()
       .v.setF(`sysfvar[.fAIR_GETHIT_AIRRECOVER_YACCEL])$`trVelAddY();
     }
     if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0){
-      .v.setI(52)$`trChangeState(-1, 1);
+      `trChangeState(52, -1, 1);
       ret;
     }
   }
@@ -2325,7 +2323,7 @@ void c.Char::s##_@@P()
       `rangeSetFVar(0, 39, 0.0);
     }
     if(.com.round == 1){
-      .v.setI(190)$`trChangeState(-1, -1);
+      `trChangeState(190, -1, -1);
       ret;
     }
   }

@@ -53,7 +53,7 @@ value = 5110
 [State -I1, Turn Cond]
 type = VarSet
 trigger1 = 1
-sysvar(59) = ctrl && (statetype=s||statetype=c) && !noautoturn && p2dist x < -5;SYSTEMP
+sysvar(59) = ctrl && (statetype=s||statetype=c) && !noautoturn && p2dist x <= -1;SYSTEMP
 
 [State -I1, Turn1]
 type = ChangeAnim

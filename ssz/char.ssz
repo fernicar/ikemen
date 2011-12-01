@@ -2293,24 +2293,29 @@ public &Char
     }
     public void files(&.com.Section sc=)
     {
-      type _t = .com.readFileName;
+      ^/char f(^/char str)
+      {
+        ^/char s = .com.readFileName(str);
+        s = s[0...s.cFind(" "\t, s)];
+        ret s;
+      }
       ^/char data;
-      if(#(data = sc.get("cmd")) > 0) `command = _t(data);
-      if(#(data = sc.get("sprite")) > 0) `sprite = _t(data);
-      if(#(data = sc.get("anim")) > 0) `anim = _t(data);
-      if(#(data = sc.get("sound")) > 0) `sound = _t(data);
-      if(#(data = sc.get("pal1")) > 0) `pal[0] = _t(data);
-      if(#(data = sc.get("pal2")) > 0) `pal[1] = _t(data);
-      if(#(data = sc.get("pal3")) > 0) `pal[2] = _t(data);
-      if(#(data = sc.get("pal4")) > 0) `pal[3] = _t(data);
-      if(#(data = sc.get("pal5")) > 0) `pal[4] = _t(data);
-      if(#(data = sc.get("pal6")) > 0) `pal[5] = _t(data);
-      if(#(data = sc.get("pal7")) > 0) `pal[6] = _t(data);
-      if(#(data = sc.get("pal8")) > 0) `pal[7] = _t(data);
-      if(#(data = sc.get("pal9")) > 0) `pal[8] = _t(data);
-      if(#(data = sc.get("pal10")) > 0) `pal[9] = _t(data);
-      if(#(data = sc.get("pal11")) > 0) `pal[10] = _t(data);
-      if(#(data = sc.get("pal12")) > 0) `pal[11] = _t(data);
+      if(#(data = sc.get("cmd")) > 0) `command = f(data);
+      if(#(data = sc.get("sprite")) > 0) `sprite = f(data);
+      if(#(data = sc.get("anim")) > 0) `anim = f(data);
+      if(#(data = sc.get("sound")) > 0) `sound = f(data);
+      if(#(data = sc.get("pal1")) > 0) `pal[0] = f(data);
+      if(#(data = sc.get("pal2")) > 0) `pal[1] = f(data);
+      if(#(data = sc.get("pal3")) > 0) `pal[2] = f(data);
+      if(#(data = sc.get("pal4")) > 0) `pal[3] = f(data);
+      if(#(data = sc.get("pal5")) > 0) `pal[4] = f(data);
+      if(#(data = sc.get("pal6")) > 0) `pal[5] = f(data);
+      if(#(data = sc.get("pal7")) > 0) `pal[6] = f(data);
+      if(#(data = sc.get("pal8")) > 0) `pal[7] = f(data);
+      if(#(data = sc.get("pal9")) > 0) `pal[8] = f(data);
+      if(#(data = sc.get("pal10")) > 0) `pal[9] = f(data);
+      if(#(data = sc.get("pal11")) > 0) `pal[10] = f(data);
+      if(#(data = sc.get("pal12")) > 0) `pal[11] = f(data);
     }
     public void keymap(&.com.Section sc=)
     {:<-
@@ -2967,29 +2972,29 @@ public &Char
     `enemyn.new(0);
     if(`ls(.lsGETHIT)) branch{
     cond `stVal.typ == .StTy::L:
-      .v.setI(5080)$`trSelfState(-1, 0);
+      `trSelfState(5080, -1, 0);
     cond `stVal.hb.guarded != 0:
       switch(`stVal.typ){
       case .StTy::S:
-        .v.setI(150)$`trSelfState(-1, 0);
+        `trSelfState(150, -1, 0);
       case .StTy::C:
-        .v.setI(152)$`trSelfState(-1, 0);
+        `trSelfState(152, -1, 0);
       case .StTy::A:
-        .v.setI(154)$`trSelfState(-1, 0);
+        `trSelfState(154, -1, 0);
       }
     cond `stVal.hb.typ == 3:
-      .v.setI(5070)$`trSelfState(-1, 0);
+      `trSelfState(5070, -1, 0);
     else:
       if(`stVal.hb.yvel != 0.0 || `stVal.hb.fallf != 0){
         `stVal.typ = .StTy::A;
       }
       switch(`stVal.typ){
       case .StTy::S:
-        .v.setI(5000)$`trSelfState(-1, 0);
+        `trSelfState(5000, -1, 0);
       case .StTy::C:
-        .v.setI(5010)$`trSelfState(-1, 0);
+        `trSelfState(5010, -1, 0);
       case .StTy::A:
-        .v.setI(5020)$`trSelfState(-1, 0);
+        `trSelfState(5020, -1, 0);
       }
     }
     branch{
@@ -3003,11 +3008,11 @@ public &Char
     cond `ctrl():
       branch{
       cond `stVal.typ == .StTy::S && `cmd.buffer~D > 0:
-        if(`stVal.no != 10) .v.setI(10)$`trSelfState(-1, -1);
+        if(`stVal.no != 10) `trSelfState(10, -1, -1);
       cond `stVal.typ == .StTy::C && `cmd.buffer~D < 0:
-        if(`stVal.no != 12) .v.setI(12)$`trSelfState(-1, -1);
+        if(`stVal.no != 12) `trSelfState(12, -1, -1);
       cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd.buffer~U > 0:
-        if(`stVal.no != 40) .v.setI(40)$`trSelfState(-1, -1);
+        if(`stVal.no != 40) `trSelfState(40, -1, -1);
       cond
         `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
         && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
@@ -3017,7 +3022,7 @@ public &Char
         if(`stVal.no != 45){
           `sysivar[.iAIRJUMP_CNT]++;
           `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-          .v.setI(45)$`trSelfState(-1, -1);
+          `trSelfState(45, -1, -1);
         }
       cond
         !`ls(.lsNOWALK) && `stVal.typ == .StTy::S
@@ -3025,9 +3030,9 @@ public &Char
           `cmd.buffer~F > 0 || (
             (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd.buffer~B > 0))
         :
-        if(`stVal.no != 20) .v.setI(20)$`trSelfState(-1, -1);
+        if(`stVal.no != 20) `trSelfState(20, -1, -1);
       cond `stVal.no == 20 && (`cmd.buffer~F < 0 && `cmd.buffer~B < 0):
-        .v.setI(0)$`trSelfState(-1, -1);
+        `trSelfState(0, -1, -1);
       }
       if(
         `ctrl() && `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
@@ -3036,14 +3041,14 @@ public &Char
           || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
         && `cmd.buffer~B > 0)
       {
-        .v.setI(120)$`trSelfState(-1, -1);
+        `trSelfState(120, -1, -1);
       }
     cond `sysivar[.iCTRL] != 0 || .roundState() == 4:
       switch(`stVal.no){
       case 11:
-        .v.setI(12)$`trSelfState(-1, 1);
+        `trSelfState(12, -1, 1);
       case 20:
-        .v.setI(0)$`trSelfState(-1, 1);
+        `trSelfState(0, -1, 1);
       }
     comm:
       if(
@@ -3250,7 +3255,7 @@ public &Char
           `destmp && c~stVal.playerno != c~playerno
           && c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id)
         {
-          .v.setI(5050)$c~trSelfState(-1, -1);
+          c~trSelfState(5050, -1, -1);
         }
       }
       i++;
@@ -3305,33 +3310,32 @@ public &Char
         if(!`isHitPaused()) `changeState2();
       }
       if(!`cs1tmp){
-        if(lc) .v.setI(52)$`trSelfState(-1, -1);
+        if(lc) `trSelfState(52, -1, -1);
         `minus = 0;
         `state(::);
         if(`player) branch{
         cond `stVal.no == 5110:
           if(`sysivar[.iRECOVERTIME] <= 0){
-            .v.setI(`sysivar[.iLIFE] > 0 ? 5120 : 5150);
-            `trSelfState(-1, -1);
+            `trSelfState(
+            `sysivar[.iLIFE] > 0 && (`helperid == 0 || !`isLose())
+            ? 5120 : 5150, -1, -1);
           }
-        cond `sysivar[.iLIFE] <= 0 && `stVal.mov != .MovTy::H:
-          if(
-            .m.inRange!int?(
-              -(
-                .fight~ro.over_hittime
-                + .fight~ro.over_waittime + .fight~ro.over_wintime - 1),
-              0, .com.intro)
-            && (`sysivar[.iSYSFLAG] & .sfWIN) != 0)
-          {
-            `sysivar[.iSYSFLAG] &= !.sfWIN;
-            .v.setI(5050)$`trSelfState(-1, -1);
-          }
+        cond
+          `helperid == 0 && `sysivar[.iLIFE] <= 0 && `stVal.mov != .MovTy::H
+          && ((`sysivar[.iSYSFLAG] & .sfWIN) != 0)
+          && .m.inRange!int?(
+            -(
+              .fight~ro.over_hittime
+              + .fight~ro.over_waittime + .fight~ro.over_wintime - 1),
+            0, .com.intro)
+          :
+          `sysivar[.iSYSFLAG] &= !.sfWIN;
+          `trSelfState(5050, -1, -1);
         cond `stVal.no == 140:
           if(`trAnimTime()$.v.toInt() == 0){
-            .v.setI(
+            `trSelfState(
               (int)(`stVal.typ == .StTy::C)*11
-              + (int)(`stVal.typ == .StTy::A)*51);
-            `trSelfState(-1, -1);
+              + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
           }
         }
         if(!`isHitPaused()) `stVal.time++;
@@ -4359,16 +4363,16 @@ public &Char
     `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
     `ani~ani.updateSprite();
   }
-  public void trChangeAnim2(int pno, int no)
+  public void trChangeAnim2(int no)
   {
     if(no == .com.IERR) ret;
-    *`ani.self tmp = .chars[pno][0]~getAction(no);
+    *`ani.self tmp = .chars[`stVal.playerno][0]~getAction(no);
     if(#tmp == 0) ret;
     `ani = tmp;
     `animno = no;
-    `animpno = pno;
-    `sysfvar[.fCLSNXSCALE] = .chars[pno][0]~sysfvar[.fXSCALE];
-    `sysfvar[.fCLSNYSCALE] = .chars[pno][0]~sysfvar[.fYSCALE];
+    `animpno = `stVal.playerno;
+    `sysfvar[.fCLSNXSCALE] = .chars[`stVal.playerno][0]~sysfvar[.fXSCALE];
+    `sysfvar[.fCLSNYSCALE] = .chars[`stVal.playerno][0]~sysfvar[.fYSCALE];
     `ani~ani.sff = `sf;
     `ani~ani.updateSprite();
   }
@@ -4542,9 +4546,8 @@ public &Char
       `cs1tmp = false;
     }
   }
-  public void trChangeState2(int p, int anim, int ctrl)
+  public void trChangeState2(int n, int p, int anim, int ctrl)
   {
-    int n = .v.toInt();
     if(n == .com.IERR) ret;
     if(anim >= 0) `trChangeAnim(anim);
     if(ctrl >= 0) `setCtrl(ctrl != 0);
@@ -4559,13 +4562,13 @@ public &Char
       }
     }
   }
-  public void trChangeState(int anim, int ctrl)
+  public void trChangeState(int no, int anim, int ctrl)
   {
-    `trChangeState2(`stVal.playerno, anim, ctrl);
+    `trChangeState2(no, `stVal.playerno, anim, ctrl);
   }
-  public void trSelfState(int anim, int ctrl)
+  public void trSelfState(int no, int anim, int ctrl)
   {
-    `trChangeState2(`playerno, anim, ctrl);
+    `trChangeState2(no, `playerno, anim, ctrl);
   }
   public void trSetPersistent(int p=)
   {
@@ -4775,8 +4778,7 @@ public &Char
     h.sysfvar[.fVX] = 0.0;
     h.sysfvar[.fVY] = 0.0;
     if(ownpal != 0) h.palfx.new(1);
-    .v.setI(st);
-    h.trChangeState2(`stVal.playerno, -1, -1);
+    h.trChangeState2(st, `stVal.playerno, -1, -1);
   }
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
   {
@@ -4800,13 +4802,26 @@ public &Char
     if(`helperindex <= 0) ret;
     `destmp = true;
   }
-  public void trTargetBind(int time, int id, float x, float y)
+  public %int getTarget(int id)
   {
-    if(time == .com.IERR || id == .com.IERR) ret;
+    if(id < 0) ret `targets;
+    %int tar;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)) tar .= `targets[i];
+      i++;
+    while i < #`targets:
+    }
+    ret tar;
+  }
+  public void trTargetBind(^/int tar, int time, float x, float y)
+  {
+    if(time == .com.IERR) ret;
+    ^`self c;
+    loop{index i = 0; while; do:
+      c = .players.get(tar[i]);
+      if(#c > 0){
         c~setBindToId(`=);
         c~setBindTime(time);
         c~sysivar[.iBINDFACING] = 0;
@@ -4814,7 +4829,7 @@ public &Char
         c~sysfvar[.fBINDPOSY] = y;
       }
       i++;
-    while i < #`targets:
+    while i < #tar:
     }
   }
   public void trBindToTarget(int hmf)
@@ -4880,92 +4895,83 @@ public &Char
       `targets = tmp;
     }
   }
-  public void trTargetFacing(int fasing, int id)
+  public void trTargetFacing(^/int tar, int fasing)
   {
     if(fasing == 0) ret;
     int f = `facing;
     if(fasing < 0) f *= -1;
     ^`self c;
     loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)) c~setFacing(f);
+      c = .players.get(tar[i]);
+      if(#c > 0) c~setFacing(f);
       i++;
-    while i < #`targets:
+    while i < #tar:
     }
   }
-  public void trTargetState(int pno, int state, int id)
+  public void trTargetState(int pno, ^/int tar, int state)
   {
-    if(state < 0 || id == .com.IERR) ret;
+    if(state < 0) ret;
     ^`self c;
     loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
+      c = .players.get(tar[i]);
+      if(#c > 0){
         c~setCtrl(false);
         c~changeState1kai(pno, state);
       }
       i++;
-    while i < #`targets:
+    while i < #tar:
     }
   }
-  public void trTargetVelSetX(int id, float vx)
+  public void trTargetVelSetX(^/int tar, float vx)
   {
-    if(vx == .com.FERR || id == .com.IERR) ret;
+    if(vx == .com.FERR) ret;
     ^`self c;
     loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
-        c~setXV(vx);
-      }
+      c = .players.get(tar[i]);
+      if(#c > 0) c~setXV(vx);
       i++;
-    while i < #`targets:
+    while i < #tar:
     }
   }
-  public void trTargetVelSetY(int id, float vy)
+  public void trTargetVelSetY(^/int tar, float vy)
   {
-    if(vy == .com.FERR || id == .com.IERR) ret;
+    if(vy == .com.FERR) ret;
     ^`self c;
     loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
-        c~setYV(vy);
-      }
+      c = .players.get(tar[i]);
+      if(#c > 0) c~setYV(vy);
       i++;
-    while i < #`targets:
+    while i < #tar:
     }
   }
-  public void trTargetVelAddX(int id, float vx)
+  public void trTargetVelAddX(^/int tar, float vx)
   {
-    if(vx == .com.FERR || id == .com.IERR) ret;
+    if(vx == .com.FERR) ret;
     ^`self c;
     loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
-        c~sysfvar[.fVX] += vx;
-      }
+      c = .players.get(tar[i]);
+      if(#c > 0) c~sysfvar[.fVX] += vx;
       i++;
-    while i < #`targets:
+    while i < #tar:
     }
   }
-  public void trTargetVelAddY(int id, float vy)
+  public void trTargetVelAddY(^/int tar, float vy)
   {
-    if(vy == .com.FERR || id == .com.IERR) ret;
+    if(vy == .com.FERR) ret;
     ^`self c;
     loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
-        c~sysfvar[.fVY] += vy;
-      }
+      c = .players.get(tar[i]);
+      if(#c > 0) c~sysfvar[.fVY] += vy;
       i++;
-    while i < #`targets:
+    while i < #tar:
     }
   }
-  public void trTargetLifeAdd(int va, int id, bool kill, bool absolute)
+  public void trTargetLifeAdd(^/int tar, int va, bool kill, bool absolute)
   {
-    if(va == .com.IERR || id == .com.IERR) ret;
+    if(va == .com.IERR) ret;
     ^`self c;
     loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)){
+      if(#(c = .players.get(tar[i])) > 0){
         if(
           c~addLife(
             -c~getDamage(-va, kill, absolute, `attackmul), true, true)) branch
@@ -4982,18 +4988,18 @@ public &Char
         }
       }
       i++;
-    while i < #`targets:
+    while i < #tar:
     }
   }
-  public void trTargetPowerAdd(int pw, int id)
+  public void trTargetPowerAdd(^/int tar, int pw)
   {
-    if(pw == .com.IERR || id == .com.IERR) ret;
+    if(pw == .com.IERR) ret;
     ^`self c;
     loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)) c~addPower(pw);
+      c = .players.get(tar[i]);
+      if(#c > 0) c~addPower(pw);
       i++;
-    while i < #`targets:
+    while i < #tar:
     }
   }
   public void trHitAdd(int h)
@@ -5315,10 +5321,6 @@ public &Char
     if(`stVal.mctyp == .MoveContact::Guarded){
       .v.i = #`stVal.mctime;
     }
-  }
-  public void trMoveHitReset()
-  {
-    `stVal.mctime = 0;
   }
   public void trPalNo()
   {
@@ -6217,8 +6219,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           .projs[i][j].hit.affectteam != 0 && ((pyr.playerno&1) != (i&1))
           != (.projs[i][j].hit.affectteam > 0))) continue;
       if(
-        (float).chars[i][0]~sysivar[.iPROJ_ATTACK_DIST]
-        >= #(pyr.sysfvar[.fX] - .projs[i][j].x))
+        .m.inRange!float?(
+          0.0, (float).chars[i][0]~sysivar[.iPROJ_ATTACK_DIST],
+          (pyr.sysfvar[.fX] - .projs[i][j].x) * (float).projs[i][j].facing))
       {
         pyr.inguarddist = true;
       }
@@ -6747,8 +6750,7 @@ public float action(
       if(#.chars[i] > 0){
         if(.gs(.gsINTRO)){
           .charClear(i);
-          .v.setI(0);
-          .chars[i][0]~trSelfState(-1, 1);
+          .chars[i][0]~trSelfState(0, -1, 1);
         }
         .chars[i][0]~posReset(
           (float)(.stg~p1.startx - .stg~cam.startx),
@@ -6796,8 +6798,7 @@ public float action(
           cond .chars[i][0]~stVal.no == 0:
             .chars[i][0]~sysivar[.iCTRL] = 1;
           else:
-            .v.setI(0);
-            .chars[i][0]~trSelfState(-1, 1);
+            .chars[i][0]~trSelfState(0, -1, 1);
           }
           i++;
         while i < #.chars:}
@@ -7103,11 +7104,7 @@ public void nextRound()
     index i = 0;
     while;
   do:
-    if(#.chars[i] > 0){
-      .chars[i][0]~trChangeAnim(0);
-      .v.setI(5900);
-      .chars[i][0]~trSelfState(-1, -1);
-    }
+    if(#.chars[i] > 0) .chars[i][0]~trSelfState(5900, 0, -1);
     i++;
   while i < #.chars:
   }
