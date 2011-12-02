@@ -5874,7 +5874,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
       }
     }
-    if(rtn) branch{
+    if(rtn || ho) branch{
       `pyr.stVal.setHb(
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
       if(pro == 0) by.sprpriority = hit.p1sprpriority;
