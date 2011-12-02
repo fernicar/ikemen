@@ -7043,134 +7043,130 @@ public &StateBuilder
           .errmes(fn, lines[i], i, `errorexp+\r\n+`lasterror);
           ret false;
         }
-        {
-          buf .= \t"if(";
+        buf .= \t"if(";
+        branch{
+        cond #`state.ignorehitpause > 0:
           branch{
-          cond #`state.ignorehitpause > 0:
-            branch{
-            cond<ex> `state.ctrlList[-1].typ == .CtrlTy::Explod:
-              buf .= "((ih=(int)(";
-            else:
-              buf .= "(nh||";
-            comm:
-              buf .= `state.ignorehitpause .= ".isTrue()";
-            diff<ex>:
-              buf .= "))!=0||nh";
-            }
-            buf .= ")&&";
+          cond<ex> `state.ctrlList[-1].typ == .CtrlTy::Explod:
+            buf .= "((ih=(int)(";
           else:
-            if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
-              buf .= "(ih=-1)$";
-            }
-            buf .= "nh&&";
+            buf .= "(nh||";
+          comm:
+            buf .= `state.ignorehitpause .= ".isTrue()";
+          diff<ex>:
+            buf .= "))!=0||nh";
           }
-          if(#`state.persist > 0){
-            buf .=
-              "--`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p<=0&&";
+          buf .= ")&&";
+        else:
+          if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
+            buf .= "(ih=-1)$";
           }
+          buf .= "nh&&";
+        }
+        if(#`state.persist > 0){
+          buf .= "--`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p<=0&&";
+        }
+        branch{
+        cond
+          #`state.ctrlList[-1].trigger > 0
+          && #`state.ctrlList[-1].trigger[0] > 0
+          :
           branch{
-          cond
-            #`state.ctrlList[-1].trigger > 0
-            && #`state.ctrlList[-1].trigger[0] > 0
-            :
+          cond #`state.ctrlList[-1].triggerall > 0:
             branch{
-            cond #`state.ctrlList[-1].triggerall > 0:
+            cond #`state.ctrlList[-1].triggerall > 384:
+              item.new(0);
+            else:
+              item = tbl.get(`state.ctrlList[-1].triggerall);
+            }
+            if(#item == 0){
+              %char tmp;
+              tmp .= fname .= 'c' .= .s.iToS(#`state.ctrlList-1) .= "ta";
+              item.new(1);
+              item<> = tmp;
+              tbl.set(`state.ctrlList[-1].triggerall, item);
+              cbuf .=
+                "bool c.Char::" .= item<> .= "()"\r\n
+                "{"\r\n
+                \t"ret "
+                .= `okikae(`state.ctrlList[-1].triggerall) .= ";"\r\n
+                "}"\r\n;
+            }
+            buf .= '`' .= item<> .= "()&&(";
+          else:
+            buf .= '(';
+          comm:
+            loop{index m = 0;while; do:
+              if(#`state.ctrlList[-1].trigger[m] == 0) break;
+              if(m != 0) buf .= "||";
               branch{
-              cond #`state.ctrlList[-1].triggerall > 384:
+              cond #`state.ctrlList[-1].trigger[m] > 384:
                 item.new(0);
               else:
-                item = tbl.get(`state.ctrlList[-1].triggerall);
+                item = tbl.get(`state.ctrlList[-1].trigger[m]);
               }
               if(#item == 0){
                 %char tmp;
                 tmp .=
-                  fname .= 'c' .= .s.iToS(#`state.ctrlList-1) .= "ta";
+                  fname .= 'c' .= .s.iToS(#`state.ctrlList-1)
+                  .= 't' .= .s.iToS(m+1);
                 item.new(1);
                 item<> = tmp;
-                tbl.set(`state.ctrlList[-1].triggerall, item);
+                tbl.set(`state.ctrlList[-1].trigger[m], item);
                 cbuf .=
                   "bool c.Char::" .= item<> .= "()"\r\n
                   "{"\r\n
                   \t"ret "
-                  .= `okikae(`state.ctrlList[-1].triggerall) .= ";"\r\n
+                  .= `okikae(`state.ctrlList[-1].trigger[m]) .= ";"\r\n
                   "}"\r\n;
               }
-              buf .= '`' .= item<> .= "()&&(";
-            else:
-              buf .= '(';
-            comm:
-              loop{index m = 0;while; do:
-                if(#`state.ctrlList[-1].trigger[m] == 0) break;
-                if(m != 0) buf .= "||";
-                branch{
-                cond #`state.ctrlList[-1].trigger[m] > 384:
-                  item.new(0);
-                else:
-                  item = tbl.get(`state.ctrlList[-1].trigger[m]);
-                }
-                if(#item == 0){
-                  %char tmp;
-                  tmp .=
-                    fname .= 'c' .= .s.iToS(#`state.ctrlList-1)
-                    .= 't' .= .s.iToS(m+1);
-                  item.new(1);
-                  item<> = tmp;
-                  tbl.set(`state.ctrlList[-1].trigger[m], item);
-                  cbuf .=
-                    "bool c.Char::" .= item<> .= "()"\r\n
-                    "{"\r\n
-                    \t"ret "
-                    .= `okikae(`state.ctrlList[-1].trigger[m]) .= ";"\r\n
-                    "}"\r\n;
-                }
-                buf .= '`' .= item<> .= "()";
-                m++;
-              while m < #`state.ctrlList[-1].trigger:
-              }
+              buf .= '`' .= item<> .= "()";
+              m++;
+            while m < #`state.ctrlList[-1].trigger:
             }
-          else:
-            buf .= "(false";
           }
-          buf .= "))";
-          dbuf.new(0);
-          if(#`state.persist > 0) dbuf .= `state.persist .= ';';
-          dbuf .= `state.ctrlList[-1].task;
-          switch(`state.ctrlList[-1].typ){
-          case .CtrlTy::RemapPal:
-            dbuf .= "`trRemapPal(sg,sn,dg,dn);";
-          }
-          branch{
-          cond #dbuf > 64:
-            item.new(0);
-          else:
-            item = tbl.get(dbuf);
-          }
-          if(#item == 0){
-            %char tmp .= fname .= 'c' .= .s.iToS(#`state.ctrlList-1);
-            item.new(1);
-            item<> = tmp;
-            tbl.set(dbuf, item);
-            cbuf .=
-              "void c.Char::" .= item<> .= (
-                `state.ctrlList[-1].typ == .CtrlTy::Explod
-                ? "(int ih)" :  "()")
-              .= \r\n"{"\r\n\t .= `okikae(dbuf) .= \r\n"}"\r\n;
-          }
-          branch{
-          cond<cs>
-            `state.ctrlList[-1].typ == .CtrlTy::ChangeState
-            || `state.ctrlList[-1].typ == .CtrlTy::SelfState
-            :
-            buf .= '{';
-          comm:
-            buf .=
-              '`' .= item<> .= (
-                `state.ctrlList[-1].typ == .CtrlTy::Explod ? "(ih);" : "();");
-          diff<cs>:
-             buf .= "ret;}";
-          comm:
-             buf .= \r\n;
-          }
+        else:
+          buf .= "(false";
+        }
+        buf .= "))";
+        dbuf.new(0);
+        if(#`state.persist > 0) dbuf .= `state.persist .= ';';
+        dbuf .= `state.ctrlList[-1].task;
+        switch(`state.ctrlList[-1].typ){
+        case .CtrlTy::RemapPal:
+          dbuf .= "`trRemapPal(sg,sn,dg,dn);";
+        }
+        branch{
+        cond #dbuf > 64:
+          item.new(0);
+        else:
+          item = tbl.get(dbuf);
+        }
+        if(#item == 0){
+          %char tmp .= fname .= 'c' .= .s.iToS(#`state.ctrlList-1);
+          item.new(1);
+          item<> = tmp;
+          tbl.set(dbuf, item);
+          cbuf .=
+            "void c.Char::" .= item<> .= (
+              `state.ctrlList[-1].typ == .CtrlTy::Explod
+              ? "(int ih)" :  "()")
+            .= \r\n"{"\r\n\t .= `okikae(dbuf) .= \r\n"}"\r\n;
+        }
+        branch{
+        cond<cs>
+          `state.ctrlList[-1].typ == .CtrlTy::ChangeState
+          || `state.ctrlList[-1].typ == .CtrlTy::SelfState
+          :
+          buf .= '{';
+        comm:
+          buf .=
+            '`' .= item<> .= (
+              `state.ctrlList[-1].typ == .CtrlTy::Explod ? "(ih);" : "();");
+        diff<cs>:
+           buf .= "ret;}";
+        comm:
+           buf .= \r\n;
         }
       while
         i+1 < #lines && #lines[i+1] > 0 && lines[i+1][0] == '['

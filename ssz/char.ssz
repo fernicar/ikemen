@@ -2055,7 +2055,6 @@ public &Char
       i++;
     while i < #pj:
     }
-    `sysivar[.iHITPAUSETIME] = 0;
   }
   void clearHitCount()
   {
@@ -4521,6 +4520,7 @@ public &Char
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
+    `sysivar[.iHITPAUSETIME] = 0;
     if(p == `playerno) switch(n){
     case 0:
       if(`minus == -1) `setCtrl(true);
