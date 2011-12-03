@@ -851,23 +851,22 @@ public &StateBuilder
     cond .s.equ("animelem", token):
       {
         ^/char oldin0, oldin;
-        %char buf;
         bool eq = false;
         oldin0 = in;
         branch{
           token = `tokenizer(in=);
         cond #token > 0 && token[-1] == '=':
-          if(!`expAdsb(buf=, in=)) ret false;
+          if(!`expAdsb(out=, in=)) ret false;
           eq = true;
         cond .s.equ("(", token):
           in = oldin0;
-          if(!`expValue(buf=, in=)) ret false;
+          if(!`expValue(out=, in=)) ret false;
           eq = true;
         else:
           in = oldin0;
-          buf .= ".v.setI(1)";
+          out .= ".v.setI(1)";
         }
-        buf .= '$' .= obj .= "trAnimElemTime()$(.v.isSF()?.v.setSF():";
+        out .= '$' .= obj .= "trAnimElemTime()$(.v.isSF()?.v.setSF():";
         branch{
           oldin = in;
           token = `tokenizer(in=);
@@ -884,31 +883,31 @@ public &StateBuilder
           }
           branch{
           cond .s.equ("=", token):
-            if(!`expEquSub(buf=, in=, false)) ret false;
+            if(!`expEquSub(out=, in=, false)) ret false;
             break;
           cond .s.equ("!=", token):
-            if(!`expEquSub(buf=, in=, true)) ret false;
+            if(!`expEquSub(out=, in=, true)) ret false;
             break;
           cond .s.equ("<", token):
-            buf .= "`trLs(.v,";
+            out .= "`trLs(.v,";
           cond .s.equ(">", token):
-            buf .= "`trGr(.v,";
+            out .= "`trGr(.v,";
           cond .s.equ("<=", token):
-            buf .= "`trLsE(.v,";
+            out .= "`trLsE(.v,";
           cond .s.equ(">=", token):
-            buf .= "`trGrE(.v,";
+            out .= "`trGrE(.v,";
           else:
             in = oldin;
-            if(!`expEquSub(buf=, in=, false)) ret false;
+            if(!`expEquSub(out=, in=, false)) ret false;
             break;
           comm:
-            if(!`expAdsb(buf=, in=)) ret false;
-            buf .= "$.v)";
+            if(!`expAdsb(out=, in=)) ret false;
+            out .= "$.v)";
           }
-          out .= buf .= ')';
+          out .= ')';
         else:
           in = oldin;
-          out .= buf .= "`trEqu(.v,.v.setI(0)$.v))";
+          out .= "`trEqu(.v,.v.setI(0)$.v))";
         }
       }
     cond .s.equ("animelemtime", token):
@@ -922,7 +921,6 @@ public &StateBuilder
         ^/char oldin = in;
         token = `tokenizer(in=);
         branch{
-          %char buf;
           bool not;
         cond .s.equ("<", token):
           out .= "`trLs(";
@@ -940,9 +938,9 @@ public &StateBuilder
             if(!.s.equ("=", token)) in = oldin;
             not = false;
           }
-          buf .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
-          if(!`expBoolOr(buf=, in=)) ret false;
-          buf .= "$.v)";
+          out .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
+          if(!`expBoolOr(out=, in=)) ret false;
+          out .= "$.v)";
           if(!.s.equ(",", `tokenizer(in=))){
             %char buf;
             `lasterror = ",がありません";
@@ -950,9 +948,8 @@ public &StateBuilder
           }
           oldin = in;
           if(!.s.equ("=", `tokenizer(in=))) in = oldin;
-          buf .= '$';
-          if(!`expEquSub(buf=, in=, not)) ret false;
-          out .= buf;
+          out .= '$';
+          if(!`expEquSub(out=, in=, not)) ret false;
           break;
         comm:
           out .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
@@ -1604,86 +1601,81 @@ public &StateBuilder
       || .s.equ("projcontact", token[0..11])
       :
       {
-        %char buf, buf2;
         bool h = token[4] == 'h', g = token[4] == 'g';
         ^/char ptime =
           h ? "trProjTime(.ProjContact::Hit)"
           : (g ? "trProjTime(.ProjContact::Guarded)" : "trProjContactTime()");
-        ^/char oldin = in;
+        ^/char oldin0, oldin;
+        %char buf0, buf;
+        oldin = in;
         branch{
         cond (h && #token == 7) || (!h && #token == 11):
-          branch{
-          cond .s.equ("(", `tokenizer(in=)):
-            in = oldin;
-            if(!`expValue(buf=, in=)) ret false;
-          else:
-            in = oldin;
-            buf .= ".v.setI(0)";
-          }
+          in = oldin;
+          buf0 .= ".v.setI(0)";
         else:
           token = token[(h?7:11)..-1];
-          if(!`expValue(buf=, token=)) ret false;
+          if(!`expValue(buf0=, token=)) ret false;
         }
-        oldin = in;
-        bool foo = false;
+        bool eq = false;
+        oldin0 = in;
         branch{
           token = `tokenizer(in=);
         cond #token > 0 && token[-1] == '=':
-          if(!`expEqu(buf2=, in=)) ret false;
+          if(!`expAdsb(buf=, in=)) ret false;
+          eq = true;
+        cond .s.equ("(", token):
+          in = oldin0;
+          if(!`expValue(buf=, in=)) ret false;
+          eq = true;
         else:
-          in = oldin;
-          buf2 .= ".v.setI(1)";
-          foo = true;
+          in = oldin0;
+          buf .= ".v.setI(1)";
         }
-        oldin = in;
-        %char buf3;
-        buf3 .=
-          ".v.setB(" .= buf2 .= "$!.v.isTrue()^";
+        out .=
+          ".v.setB(" .= buf .= "$!.v.isTrue()^"
+          .= buf0 .= '$' .= obj .= ptime .= '$';
         branch{
-          bool not;
-        cond foo || .s.equ(",", `tokenizer(in=)):
           oldin = in;
           token = `tokenizer(in=);
+        cond
+          .s.equ(",", token) || (
+            eq && (
+              .s.equ("=", token) || .s.equ("!=", token)
+              || .s.equ("<", token) || .s.equ(">", token)
+              || .s.equ("<=", token) || .s.equ(">=", token)))
+          :
+          if(.s.equ(",", token)){
+            oldin = in;
+            token = `tokenizer(in=);
+          }
           branch{
-          cond<l> .s.equ("<", token):
-            buf3 .= "(`trLs(";
-          cond<g> .s.equ(">", token):
-            buf3 .= "`trGr(";
-          cond<le> .s.equ("<=", token):
-            buf3 .= "(`trLsE(";
-          cond<ge> .s.equ(">=", token):
-            buf3 .= "`trGrE(";
+          cond .s.equ("=", token):
+            if(!`expEquSub(out=, in=, false)) ret false;
+            break;
+          cond .s.equ("!=", token):
+            if(!`expEquSub(out=, in=, true)) ret false;
+            break;
+          cond .s.equ("<", token):
+            out .= "`trLs(.v,";
+          cond .s.equ(">", token):
+            out .= "`trGr(.v,";
+          cond .s.equ("<=", token):
+            out .= "`trLsE(.v,";
+          cond .s.equ(">=", token):
+            out .= "`trGrE(.v,";
           else:
-            branch{
-            cond .s.equ("!=", token):
-              not = true;
-            else:
-              if(!.s.equ("=", token)) in = oldin;
-              not = false;
-            }
-            buf2.new(0);
-            buf2 .=  buf .= '$' .= obj .= ptime .= '$';
-            if(!`expEquSub(buf2=, in=, not)) ret false;
-            buf3 .= buf2 .= "$.v.isTrue()";
-            break, break;
+            in = oldin;
+            if(!`expEquSub(out=, in=, false)) ret false;
+            break;
           comm:
-            buf3 .= buf .= '$' .= obj .= ptime  .= "$.v,";
-            if(!`expAdsb(buf3=, in=)) ret false;
-            buf3 .= "$.v)$.v.isTrue()";
-          diff<l>: else;
-          diff<le>: else;
-          else:
-            buf3 .=
-              "&&`trGrE(" .= buf .= '$' .= obj .= ptime
-              .= "$.v,.v.setI(0)$.v)$.v.isTrue())";
+            if(!`expAdsb(out=, in=)) ret false;
+            out .= "$.v)";
           }
         else:
           in = oldin;
-          buf3 .=
-            "`trEqu(" .= buf .= '$' .= obj .= ptime
-            .= "$.v,.v.setI(1)$.v)$.v.isTrue()";
+          out .= "`trEqu(.v,.v.setI(1)$.v)";
         }
-        out .= buf3 .= ")";
+        out .= "$.v.isTrue())";
       }
     cond .s.equ("numproj", token):
       out .= obj .= "trNumProj()";
