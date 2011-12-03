@@ -3328,7 +3328,8 @@ public &Char
             ? 5120 : 5150, -1, -1);
           }
         cond
-          `helperid == 0 && `sysivar[.iLIFE] <= 0 && `stVal.mov != .MovTy::H
+          `helperid == 0 && `sysivar[.iLIFE] <= 0
+          && (`stVal.mov != .MovTy::H && `stVal.typ != .StTy::L)
           && ((`sysivar[.iSYSFLAG] & .sfWIN) != 0)
           && .m.inRange!int?(
             -(
@@ -4521,12 +4522,17 @@ public &Char
     `stVal.playerno = p;
     `stVal.time = 0;
     `sysivar[.iHITPAUSETIME] = 0;
-    if(p == `playerno) switch(n){
-    case 0:
+    if(p == `playerno) branch{
+    cond  n == 0:
       if(`minus == -1) `setCtrl(true);
-    case 180:
+      break;
+    cond n >= 170 && n < 180:
+    cond n >= 180 && n < 190:
+      if((`sysivar[.iSYSFLAG] & .sfWIN) != 0) `sysivar[.iWAITWIN] = 180;
+    else:
+      break;
+    comm:
       `sysivar[.iSYSFLAG] &= !.sfWIN;
-      `sysivar[.iWAITWIN] = 180;
     }
     `state(::);
     `cs1tmp = true;
