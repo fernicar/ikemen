@@ -6888,7 +6888,7 @@ public float action(
             if(#.chars[i] > 0) branch{
             cond .chars[i][0]~isWin():
             cond
-              .chars[i][0]~stVal.no != 5150
+              !.m.inRange!int?(5150, 5159, .chars[i][0]~stVal.no)
               && .chars[i][0]~sysivar[.iCTRL] == 0
               :
               if(.chars[i][0]~sysivar[.iWAITWIN]-- > 0) .com.intro = rs4t;
