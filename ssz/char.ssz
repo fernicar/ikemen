@@ -4525,13 +4525,8 @@ public &Char
     if(p == `playerno) branch{
     cond  n == 0:
       if(`minus == -1) `setCtrl(true);
-      break;
-    cond n >= 170 && n < 180:
-    cond n >= 180 && n < 190:
-      if((`sysivar[.iSYSFLAG] & .sfWIN) != 0) `sysivar[.iWAITWIN] = 180;
-    else:
-      break;
-    comm:
+    cond n >= 170 && n < 190:
+      if(`sysivar[.iWAITWIN] > 180) `sysivar[.iWAITWIN] = 180;
       `sysivar[.iSYSFLAG] &= !.sfWIN;
     }
     `state(::);
