@@ -1302,6 +1302,7 @@ public bool gs(uint mask)
 
 const int sfAIRJUMP = 0b00000000000000000000000000000001;
 const int sfWIN     = 0b00000000000000000000000000000010;
+const int sfKO      = 0b00000000000000000000000000000100;
 
 &PlayerList<_t>
 {
@@ -3059,11 +3060,12 @@ public &Char
       }
     comm:
       if(
-        (`sysivar[.iLIFE] > 0 && .m.inRange!int?(120, 159, `stVal.no)) || (
-          `keyctrl && `ctrl() && `cmd.buffer~B > 0 && (
-            (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-            || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-            || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))))
+        !`isKO() && (
+          .m.inRange!int?(120, 159, `stVal.no) || (
+            `keyctrl && `ctrl() && `cmd.buffer~B > 0 && (
+              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
       {
         `sysivar[.iSPECIALFLAG] |= .lsGUARD;
       }
@@ -3172,6 +3174,10 @@ public &Char
       if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
     }
   }
+  public bool isKO()
+  {
+    ret (`sysivar[.iSYSFLAG] & .sfKO) != 0;
+  }
   public bool isPaused()
   {
     ret `acttmp <= -2;
@@ -3223,7 +3229,7 @@ public &Char
     `sysivar[.iSPECIALFLAG] &=
       .lsGUARD | (`isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0);
     `sysivar[.iSPECIALFLAG] |=
-      `player && (`sysivar[.iLIFE] > 0 || `sysivar[.iRECOVERTIME] > 0)
+      `player && (!`isKO() || `sysivar[.iRECOVERTIME] > 0)
       ? .lsSCREENBOUNDX | .lsSCREENBOUNDY | .lsPLAYERPUSH : 0;
     `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
     `attackdist = (float)`sysivar[.iATTACK_DIST];
@@ -3324,11 +3330,11 @@ public &Char
         cond `stVal.no == 5110:
           if(`sysivar[.iRECOVERTIME] <= 0){
             `trSelfState(
-            `sysivar[.iLIFE] > 0 && (`helperid == 0 || !`isLose())
-            ? 5120 : 5150, -1, -1);
+              !`isKO() && (`helperid == 0 || !`isLose())
+              ? 5120 : 5150, -1, -1);
           }
         cond
-          `helperid == 0 && `sysivar[.iLIFE] <= 0
+          `helperid == 0 && `isKO()
           && (`stVal.mov != .MovTy::H && `stVal.typ != .StTy::L)
           && ((`sysivar[.iSYSFLAG] & .sfWIN) != 0)
           && .m.inRange!int?(
@@ -3542,8 +3548,7 @@ public &Char
       if(
         `stVal.playerno == `playerno && (
           `hittmp <= 0 || (
-            .roundState() == 2
-            && `sysivar[.iLIFE] <= 0 && `sysivar[.iRECOVERTIME] <= 0)))
+            .roundState() == 2 && `isKO() && `sysivar[.iRECOVERTIME] <= 0)))
       {
         `outTarget();
       }
@@ -3608,8 +3613,8 @@ public &Char
   }
   public bool addLife(int l, bool kill, bool absolute)
   {
-    if(.com.intro > 0 || .roundEnd()) ret false;
-    bool foo = `sysivar[.iLIFE] != 0;
+    if(.roundState() == 3) ret false;
+    bool foo = `sysivar[.iLIFE] > 0;
     `sysivar[.iLIFE] +=
       (int).m.floor((float)l / (absolute ? 1.0 : `defencemul));
     .m.limRange!int?(
@@ -3795,9 +3800,7 @@ public &Char
   }
   public bool ctrl()
   {
-    ret
-      `sysivar[.iCTRL] != 0 && `sysivar[.iLIFE] > 0
-      && .com.intro <= 0 && !`ctrlOver();
+    ret `sysivar[.iCTRL] != 0 && !`isKO() && .com.intro <= 0 && !`ctrlOver();
   }
   public void setCtrl(bool c)
   {
@@ -4522,10 +4525,7 @@ public &Char
     `stVal.playerno = p;
     `stVal.time = 0;
     `sysivar[.iHITPAUSETIME] = 0;
-    if(p == `playerno) branch{
-    cond  n == 0:
-      if(`minus == -1) `setCtrl(true);
-    cond n >= 170 && n < 190:
+    if(p == `playerno &&  n >= 170 && n < 190){
       if(`sysivar[.iWAITWIN] > 180) `sysivar[.iWAITWIN] = 180;
       `sysivar[.iSYSFLAG] &= !.sfWIN;
     }
@@ -5654,15 +5654,11 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
         ret;
       }
       if(
-        (e~sysivar[.iLIFE] > 0 && `en[i]~sysivar[.iLIFE] <= 0)
-        || (
-          e~sysivar[.iLIFE] > 0
-          ? `en[i]~sysivar[.iLIFE] > 0
-          && foo!float?(
+        (!e~isKO() && `en[i]~isKO()) || (
+          !e~isKO() ? foo!float?(
             #(e~sysfvar[.fX] - `pyr.sysfvar[.fX]),
             #(`en[i]~sysfvar[.fX] - `pyr.sysfvar[.fX]), e~id, `en[i]~id)
-          : `en[i]~sysivar[.iLIFE] <= 0
-          && foo!int?(
+          : `en[i]~isKO() && foo!int?(
             `en[i]~sysivar[.iRECOVERTIME], e~sysivar[.iRECOVERTIME],
             e~id, `en[i]~id)))
       {
@@ -6715,13 +6711,13 @@ public float action(
   {
     bool p1 = false, p2 = false;
     loop{index i = 0; while; do:
-      if(#.chars[i] > 0 && .chars[i][0]~sysivar[.iLIFE] > 0) break;
+      if(#.chars[i] > 0 && !.chars[i][0]~isKO()) break;
       i += 2;
     while i < #.chars:
       p1 = true;
     }
     loop{index i = 1; while; do:
-      if(#.chars[i] > 0 && .chars[i][0]~sysivar[.iLIFE] > 0) break;
+      if(#.chars[i] > 0 && !.chars[i][0]~isKO()) break;
       i += 2;
     while i < #.chars:
       p2 = true;

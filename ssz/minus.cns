@@ -10,19 +10,28 @@
 
 [Statedef -I1]
 
-[State -I1, kosnd1]
+[State -I1, KO Cond]
+type = VarSet
+trigger1 = 1
+sysvar(59) = !Alive && !IsHelper;SYSTEMP
+
+[State -I1, KO1]
 type = PlaySnd
-triggerall = !NoKosnd
-triggerall = !Alive
-triggerall = !IsHelper
-trigger1 = sysvar(58) & 4;SYSFLAG
+triggerall = sysvar(59);SYSTEMP
+triggerall = !nokosnd
+trigger1 = !(sysvar(58) & 4);SYSFLAG,KO
 value = 11, 0
 channel = 0
 
-[State -I1, kosnd2]
+[State -I1, KO2]
 type = VarSet
-trigger1 = 1
-sysvar(58) = (sysvar(58)&~4) | 4*Alive;SYSFLAG
+trigger1 = sysvar(59);SYSTEMP
+sysvar(58) = sysvar(58) | 4;SYSFLAG,KO
+
+[State -I1, KO3]
+type = VarSet
+trigger1 = roundstate < 2
+sysvar(58) = sysvar(58) & ~4;SYSFLAG,KO
 
 [State -I1, Getup1]
 type = VarSet
