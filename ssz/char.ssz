@@ -4525,7 +4525,7 @@ public &Char
     `stVal.playerno = p;
     `stVal.time = 0;
     `sysivar[.iHITPAUSETIME] = 0;
-    if(p == `playerno &&  n >= 170 && n < 190){
+    if(p == `playerno && n >= 170 && n < 190){
       if(`sysivar[.iWAITWIN] > 180) `sysivar[.iWAITWIN] = 180;
       `sysivar[.iSYSFLAG] &= !.sfWIN;
     }
