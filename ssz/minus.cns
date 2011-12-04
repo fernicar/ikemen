@@ -52,13 +52,6 @@ trigger2 = !gethitvar(isbound)
 trigger2 = abs(vel x)+abs(vel y) < 0.01
 sysvar(55) = -1;RECOVERTIME
 
-[State -I1, NoKO]
-type = SelfState
-triggerall = active
-triggerall = alive
-trigger1 = stateno = 5150
-value = 5110
-
 [State -I1, Turn Cond]
 type = VarSet
 trigger1 = 1
