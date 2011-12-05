@@ -19,6 +19,7 @@ sysvar(59) = !Alive && !IsHelper;SYSTEMP
 type = PlaySnd
 triggerall = sysvar(59);SYSTEMP
 triggerall = !nokosnd
+trigger1 = roundstate >= 2
 trigger1 = !(sysvar(58) & 4);SYSFLAG,KO
 value = 11, 0
 channel = 0

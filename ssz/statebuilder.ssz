@@ -436,7 +436,6 @@ public &StateBuilder
       }
     case '!':
       text = text[1..-1];
-      skipBlank();
       branch{
       cond #text >= 1 && text[0] == '=':
         text = text[1..-1];
@@ -668,12 +667,37 @@ public &StateBuilder
     ^/char oldin = in;
     ^/char token = `tokenizer(in=);
     if(.s.equ(")", token)) ret true;
-    if(.cfg.IgnoreMostErrors && #token > 0 && token[-1] == '='){
-      in = oldin;
-      ret true;
-    }
     `lasterror = ")がありません";
     ret false;
+  }
+  int kyuushiki(bool not=, %char out=, ^/char in=)
+  {
+    not = false;
+    loop{
+      ^/char oldin, token;
+    do:
+      oldin = in;
+      token = `tokenizer(in=);
+      branch{
+      cond .s.equ("!=", token):
+        not = true;
+        break, break;
+      cond token[-1] == '=':
+        break, break;
+      }
+    while
+      #token > 0 && !.s.equ(",", token) && !.s.equ("||", token)
+      && !.s.equ("^^", token) && !.s.equ("&&", token)
+      :
+      if(!.cfg.IgnoreMostErrors){
+        `lasterror = "=か!=がありません";
+        ret -1;
+      }
+      in = oldin;
+      out .= ".v.setI(1)";
+      ret 1;
+    }
+    ret 0;
   }
   bool expRedirectable(^/char obj, ^/char name, %char out=, ^/char in=)
   {:<-
@@ -695,41 +719,12 @@ public &StateBuilder
     }
     int eqneq(%char out=, ^/char in=, ~$int() proc)
     {
-      branch{
-        ^/char oldin = in;
-        ^/char token = `tokenizer(in=);
-        bool not = false;
-      cond .s.equ("=", token):
-      cond .s.equ("(", token):
-        if(!.cfg.IgnoreMostErrors) else;
-        out .= ".v.setI(1)";
-        loop{
-        do:
-          oldin = in;
-          token = `tokenizer(in=);
-        while
-          #token > 0 && !.s.equ(",", token) && !.s.equ("||", token)
-          && !.s.equ("^^", token) && !.s.equ("&&", token)
-          :
-          in = oldin;
-        }
-        break;
-      cond .s.equ("!=", token):
-        not = true;
-      else:
-        if(!.cfg.IgnoreMostErrors){
-          `lasterror = "=か!=がありません";
-          ret -1;
-        }
-        in = oldin;
-        ret 0;
-      comm:
-        {
-          int re = proc(::);
-          if(re <= 0) ret re;
-        }
-        if(not) out .= "$`trBoolNot()";
-      }
+      bool not;
+      int re = `kyuushiki(not=, out=, in=);
+      if(re != 0) ret re;
+      re = proc(::);
+      if(re <= 0) ret re;
+      if(not) out .= "$`trBoolNot()";
       ret 1;
     }
     ^/char num = `number(name);
@@ -850,32 +845,18 @@ public &StateBuilder
       out .= ".v.setI(" .= obj .= "stVal.time)";
     cond .s.equ("animelem", token):
       {
-        ^/char oldin0, oldin;
-        bool eq = false;
-        oldin0 = in;
-        branch{
-          token = `tokenizer(in=);
-        cond #token > 0 && token[-1] == '=':
-          if(!`expAdsb(out=, in=)) ret false;
-          eq = true;
-        cond .s.equ("(", token):
-          in = oldin0;
-          if(!`expValue(out=, in=)) ret false;
-          eq = true;
-        else:
-          in = oldin0;
-          out .= ".v.setI(1)";
-        }
+        bool not;
+        int re = `kyuushiki(not=, out=, in=);
+        if(re != 0) ret re > 0;
+        if(!`expAdsb(out=, in=)) ret false;
         out .= '$' .= obj .= "trAnimElemTime()$(.v.isSF()?.v.setSF():";
         branch{
-          oldin = in;
+          ^/char oldin = in;
           token = `tokenizer(in=);
         cond
-          .s.equ(",", token) || (
-            eq && (
-              .s.equ("=", token) || .s.equ("!=", token)
-              || .s.equ("<", token) || .s.equ(">", token)
-              || .s.equ("<=", token) || .s.equ(">=", token)))
+          .s.equ(",", token) || .s.equ("=", token) || .s.equ("!=", token)
+          || .s.equ("<", token) || .s.equ(">", token)
+          || .s.equ("<=", token) || .s.equ(">=", token)
           :
           if(.s.equ(",", token)){
             oldin = in;
@@ -918,18 +899,24 @@ public &StateBuilder
       out .= '$' .= obj .= "trAnimElemNo()";
     cond .s.equ("timemod", token):
       {
-        ^/char oldin = in;
-        token = `tokenizer(in=);
+        bool not;
+        int re = `kyuushiki(not=, out=, in=);
+        if(re != 0) ret re > 0;
+        out .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
+        if(!`expAdsb(out=, in=)) ret false;
+        out .= "$.v)$";
         branch{
+          ^/char oldin = in;
+          token = `tokenizer(in=);
           bool not;
         cond .s.equ("<", token):
-          out .= "`trLs(";
+          out .= "`trLs(.v,";
         cond .s.equ(">", token):
-          out .= "`trGr(";
+          out .= "`trGr(.v,";
         cond .s.equ("<=", token):
-          out .= "`trLsE(";
+          out .= "`trLsE(.v,";
         cond .s.equ(">=", token):
-          out .= "`trGrE(";
+          out .= "`trGrE(.v,";
         else:
           branch{
           cond .s.equ("!=", token):
@@ -938,30 +925,12 @@ public &StateBuilder
             if(!.s.equ("=", token)) in = oldin;
             not = false;
           }
-          out .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
-          if(!`expBoolOr(out=, in=)) ret false;
-          out .= "$.v)";
-          if(!.s.equ(",", `tokenizer(in=))){
-            %char buf;
-            `lasterror = ",がありません";
-            ret false;
-          }
           oldin = in;
-          if(!.s.equ("=", `tokenizer(in=))) in = oldin;
-          out .= '$';
+          if(!.s.equ(",", `tokenizer(in=))) in = oldin;
           if(!`expEquSub(out=, in=, not)) ret false;
           break;
         comm:
-          out .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
-          if(!`expBoolOr(out=, in=)) ret false;
-          out .= "$.v)$.v,";
-          if(!.s.equ(",", `tokenizer(in=))){
-            `lasterror = ",がありません";
-            ret false;
-          }
-          oldin = in;
-          if(!.s.equ("=", `tokenizer(in=))) in = oldin;
-          if(!`expBoolOr(out=, in=)) ret false;
+          if(!`expAdsb(out=, in=)) ret false;
           out .= "$.v)";
         }
       }
@@ -1605,32 +1574,27 @@ public &StateBuilder
         ^/char ptime =
           h ? "trProjTime(.ProjContact::Hit)"
           : (g ? "trProjTime(.ProjContact::Guarded)" : "trProjContactTime()");
-        ^/char oldin0, oldin;
         %char buf0, buf;
-        oldin = in;
+        ^/char oldin;
         branch{
         cond (h && #token == 7) || (!h && #token == 11):
+          oldin = in;
+          token = `tokenizer(in=);
           in = oldin;
-          buf0 .= ".v.setI(0)";
+          branch{
+          cond .s.equ("(", token) || .s.equ("[", token):
+            if(!`expValue(buf0=, in=)) ret false;
+          else:
+            buf0 .= ".v.setI(0)";
+          }
         else:
           token = token[(h?7:11)..-1];
           if(!`expValue(buf0=, token=)) ret false;
         }
-        bool eq = false;
-        oldin0 = in;
-        branch{
-          token = `tokenizer(in=);
-        cond #token > 0 && token[-1] == '=':
-          if(!`expAdsb(buf=, in=)) ret false;
-          eq = true;
-        cond .s.equ("(", token):
-          in = oldin0;
-          if(!`expValue(buf=, in=)) ret false;
-          eq = true;
-        else:
-          in = oldin0;
-          buf .= ".v.setI(1)";
-        }
+        bool not;
+        int re = `kyuushiki(not=, out=, in=);
+        if(re != 0) ret re > 0;
+        if(!`expAdsb(buf=, in=)) ret false;
         out .=
           ".v.setB(" .= buf .= "$!.v.isTrue()^"
           .= buf0 .= '$' .= obj .= ptime .= '$';
@@ -1638,11 +1602,9 @@ public &StateBuilder
           oldin = in;
           token = `tokenizer(in=);
         cond
-          .s.equ(",", token) || (
-            eq && (
-              .s.equ("=", token) || .s.equ("!=", token)
-              || .s.equ("<", token) || .s.equ(">", token)
-              || .s.equ("<=", token) || .s.equ(">=", token)))
+          .s.equ(",", token) ||.s.equ("=", token) || .s.equ("!=", token)
+          || .s.equ("<", token) || .s.equ(">", token)
+          || .s.equ("<=", token) || .s.equ(">=", token)
           :
           if(.s.equ(",", token)){
             oldin = in;
