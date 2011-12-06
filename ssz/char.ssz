@@ -5429,8 +5429,8 @@ public void Explod::update()
       }
     }
     if(
-      `removetime == 0
-      || (`removetime <= -2 && (#`ani == 0 || `ani~ani.loopend)))
+      `removetime == 0 || #`ani == 0
+      || (`removetime <= -2 && `ani~ani.loopend))
     {
       `id = .com.IERR;
       ret;
@@ -5448,21 +5448,6 @@ public void Explod::update()
   if(!p && !act){
     if(#c == 0) c = .players.get(`player);
     act = #c == 0 || c~acttmp%2 != -1;
-  }
-  if(act && `bindtime == 0){
-    if(.com.tickFrame()){
-      `ticOldX = `x;
-      `ticNewX = `x + `velocityx*(float)(`facing*`relativef);
-      `ticOldY = `y;
-      `ticNewY = `y + `velocityy;
-    }
-    float sp = .com.tickInterpola();
-    `x = `ticOldX + (`ticNewX - `ticOldX) * sp;
-    `y = `ticOldY + (`ticNewY - `ticOldY) * sp;
-    if(.com.tickNextFrame()){
-      `velocityx += `accelx;
-      `velocityy += `accely;
-    }
   }
   if(`bindtime != 0) branch{
   cond `postype >= 4:
@@ -5482,7 +5467,25 @@ public void Explod::update()
       if(`offsety != .com.FERR) `setY(bc~sysfvar[.fY] + `offsety);
     }
   }
-  if(.com.tickFrame() && #`ani > 0) `ani~ani.updateSprite();
+  if(.com.tickFrame()){
+    if(#`ani > 0) `ani~ani.updateSprite();
+    if(`bindtime > 0) `bindtime--;
+    if(act && `bindtime == 0){
+      `ticOldX = `x;
+      `ticNewX = `x + `velocityx*(float)(`facing*`relativef);
+      `ticOldY = `y;
+      `ticNewY = `y + `velocityy;
+    }
+  }
+  if(act && `bindtime == 0){
+    float sp = .com.tickInterpola();
+    `x = `ticOldX + (`ticNewX - `ticOldX) * sp;
+    `y = `ticOldY + (`ticNewY - `ticOldY) * sp;
+    if(.com.tickNextFrame()){
+      `velocityx += `accelx;
+      `velocityy += `accely;
+    }
+  }
   if(.com.tickNextFrame()){
     if(#`ani > 0 && act) `ani~ani.action();
     if(p) break;
@@ -5494,7 +5497,6 @@ public void Explod::update()
     }
     if(!act) break;
     if(`removetime > 0) `removetime--;
-    if(`bindtime > 0) `bindtime--;
   }
   branch{
     type _t = $void(.anims.self=);
