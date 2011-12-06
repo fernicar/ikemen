@@ -2464,13 +2464,13 @@ public &StateBuilder
         name = .s.toLower()<, name[0.. .s.cFind(" "\t, name)];
         index nr = -1;
         branch{
-        cond .s.equ(name[0..3], "var"):
+        cond .s.equ(name[0..4], "var("):
           nr = 3;
-        cond .s.equ(name[0..4], "fvar"):
+        cond .s.equ(name[0..5], "fvar("):
           nr = 4;
-        cond .s.equ(name[0..6], "sysvar"):
+        cond .s.equ(name[0..7], "sysvar("):
           nr = 6;
-        cond .s.equ(name[0..7], "sysfvar"):
+        cond .s.equ(name[0..8], "sysfvar("):
           nr = 7;
         else:
           break;
