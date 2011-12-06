@@ -2465,13 +2465,13 @@ public &StateBuilder
         index nr = -1;
         branch{
         cond .s.equ(name[0..4], "var("):
-          nr = 3;
-        cond .s.equ(name[0..5], "fvar("):
           nr = 4;
+        cond .s.equ(name[0..5], "fvar("):
+          nr = 5;
         cond .s.equ(name[0..7], "sysvar("):
-          nr = 6;
-        cond .s.equ(name[0..8], "sysfvar("):
           nr = 7;
+        cond .s.equ(name[0..8], "sysfvar("):
+          nr = 8;
         else:
           break;
         comm:
@@ -2913,23 +2913,23 @@ public &StateBuilder
         `state.ctrlList[-1].task.= "$.v);";
         ret true;
       }];
-      if(!value && !`stateParam(param=, "var", [`paraF_t(data=){
+      if(!value && !`stateParam(param=, "var(", [`paraF_t(data=){
         value = true;
         v = true;
         ret set(:data=:);
       }])) ret false;
-      if(!value && !`stateParam(param=, "fvar", [`paraF_t(data=){
+      if(!value && !`stateParam(param=, "fvar(", [`paraF_t(data=){
         value = true;
         fv = true;
         ret set(:data=:);
       }])) ret false;
-      if(!value && !`stateParam(param=, "sysvar", [`paraF_t(data=){
+      if(!value && !`stateParam(param=, "sysvar(", [`paraF_t(data=){
         value = true;
         v = true;
         sys = true;
         ret set(:data=:);
       }])) ret false;
-      if(!value && !`stateParam(param=, "sysfvar", [`paraF_t(data=){
+      if(!value && !`stateParam(param=, "sysfvar(", [`paraF_t(data=){
         value = true;
         fv = true;
         sys = true;
