@@ -4883,7 +4883,7 @@ public &Char
     while i < #`targets:
     }
     branch{
-    cond keepone:
+    cond keepone && #tmp > 0:
       `targets.new(0);
       loop{
         index i = 0, r = .m.rand(0, #tmp-1);
