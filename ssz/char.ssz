@@ -4865,7 +4865,7 @@ public &Char
     if(f == .com.IERR || f== 0) ret;
     `sysivar[.iBINDFACING] = f < 0 ? -1 : 1;
   }
-  public void trTargetDrop(int id, int keepone)
+  public void trTargetDrop(int id, bool keepone)
   {
     if(id == .com.IERR) ret;
     %int tmp;
@@ -4883,7 +4883,7 @@ public &Char
     while i < #`targets:
     }
     branch{
-    cond keepone != 0 && #tmp > 0:
+    cond keepone:
       `targets.new(0);
       loop{
         index i = 0, r = .m.rand(0, #tmp-1);
@@ -4900,6 +4900,8 @@ public &Char
         i++;
       while i < #tmp:
       }
+    cond id < 0:
+      `targets.new(0);
     else:
       `targets = tmp;
     }

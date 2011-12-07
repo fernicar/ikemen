@@ -4788,7 +4788,8 @@ public &StateBuilder
   bool targetDrop(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
-      `state.ctrlList[-1].task .= "if(#`getTarget(-1)==0)ret;int ex=-1,one=1;";
+      `state.ctrlList[-1].task .=
+        "if(#`getTarget(-1)==0)ret;int ex=-1;bool one=true;";
       if(!`stateParam(param=, "excludeid", [`paraF_t(data=){
         if(
           !`fullExpression(
@@ -4800,7 +4801,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "one=(int)(", "$.v.isTrue());")) ret false;
+            "one=", "$.v.isTrue();")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= "`trTargetDrop(ex,one);";
