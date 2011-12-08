@@ -13,7 +13,7 @@
 [State -I1, KO Cond]
 type = VarSet
 trigger1 = 1
-sysvar(59) = !Alive && !IsHelper;SYSTEMP
+sysvar(59) = !noko && life <= 0 && !IsHelper;SYSTEMP
 
 [State -I1, KO1]
 type = PlaySnd

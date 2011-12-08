@@ -935,7 +935,7 @@ public &StateBuilder
         }
       }
     cond .s.equ("alive", token):
-      out .= ".v.setB(" .= obj .= "sysivar[.iLIFE]>0)";
+      out .= ".v.setB(" .= obj .= "isAlive())";
     cond .s.equ("win", token):
       out .= obj .= "trWin()";
     cond .s.equ("winko", token):
@@ -1545,8 +1545,8 @@ public &StateBuilder
           }
         }
       }
-    cond .s.equ("isplayer", token):
-      out .= obj .= "trIsPlayer()";
+    cond .s.equ("noko", token):
+      out .= ".v.setB(.gs(.gsNOKO))";
     cond .s.equ("active", token):
       out .= obj .= "trActive()";
     cond .s.equ("numenemy", token):

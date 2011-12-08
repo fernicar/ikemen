@@ -3071,11 +3071,6 @@ public &Char
       }
     }
     if(`player){
-      if(
-        !`isKO() && .gs(.gsNOKO) && `helperindex == 0 && `sysivar[.iLIFE] <= 0)
-      {
-        `sysivar[.iLIFE] = 1;
-      }
       `state_i1(::);
       if(
         `sysivar[.iRECOVERTIME] > 0 && `isActive() && (
@@ -3176,6 +3171,10 @@ public &Char
   public bool isKO()
   {
     ret (`sysivar[.iSYSFLAG] & .sfKO) != 0;
+  }
+  public bool isAlive()
+  {
+    ret !.chars[`playerno][0]~isKO();
   }
   public bool isPaused()
   {
@@ -3617,8 +3616,7 @@ public &Char
     `sysivar[.iLIFE] +=
       (int).m.floor((float)l / (absolute ? 1.0 : `defencemul));
     .m.limRange!int?(
-      `sysivar[.iLIFE]=,
-      (kill && !.gs(.gsNOKO)) || !foo ? 0 : 1, `sysivar[.iLIFEMAX]);
+      `sysivar[.iLIFE]=, kill || !foo ? 0 : 1, `sysivar[.iLIFEMAX]);
     if(`helperindex == 0 && `sysivar[.iLIFE] == 0){
       `stVal.hb.fallf = 1;
       if(!foo) break;
@@ -4730,10 +4728,6 @@ public &Char
       ret;
     }
     .v.setB(`helperindex != 0 && (id <= 0 || `helperid == id));
-  }
-  public void trIsPlayer()
-  {
-    .v.setB(`player);
   }
   public void trActive()
   {

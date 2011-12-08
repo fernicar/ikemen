@@ -12,7 +12,7 @@ void c.Char::s##_@@P()
     }
     if(`stVal.time == 0) `setYV(0.0);
     if(#`sysfvar[.fVX] < 2.0 || `stVal.time == 4) `setXV(0.0);
-    if(`sysivar[.iLIFE] <= 0){
+    if(!`isAlive()){
       `trChangeState(5050, -1, -1);
       ret;
     }
@@ -1509,7 +1509,7 @@ SSZ_CODE:
 void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
-    if(`sysivar[.iLIFE] <= 0){
+    if(!`isAlive()){
       `trChangeState(5050, -1, -1);
       ret;
     }
@@ -1570,7 +1570,7 @@ void c.Char::s##_@@P()
     }
     .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
     if(
-      `sysivar[.iLIFE] > 0 && `trCanRecover()$.v.isTrue()
+      `isAlive() && `trCanRecover()$.v.isTrue()
       && `trCommand("recovery")$.v.isTrue())
     {
       branch{
@@ -1969,7 +1969,7 @@ void c.Char::s##_@@P()
       `trChangeAnim(5110);
     }
     if(
-      `sysivar[.iLIFE] <= 0 && (
+      !`isAlive() && (
         `trAnimTime()$.v.toInt() == 0 || `sysivar[0] != 0
         || .m.inRange!int?(`animno, 5110, 5119)))
     {
@@ -1979,7 +1979,7 @@ void c.Char::s##_@@P()
     if(`stVal.time == 0){
       `sysivar[0] = 0;
       branch{
-      cond `sysivar[.iLIFE] > 0:
+      cond `isAlive():
         //ForceFeedback
       else:
         //ForceFeedback
