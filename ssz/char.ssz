@@ -3071,6 +3071,12 @@ public &Char
       }
     }
     if(`player){
+      if(
+        !.roundEnd() && .gs(.gsNOKO)
+        && `helperindex == 0 && `sysivar[.iLIFE] <= 0)
+      {
+        `sysivar[.iLIFE] = 1;
+      }
       `state_i1(::);
       if(
         `sysivar[.iRECOVERTIME] > 0 && `isActive() && (
@@ -3163,12 +3169,6 @@ public &Char
         if((`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H){
           `defencemul *= .superp2defmul;
         }
-      }
-      if(
-        !.roundEnd() && .gs(.gsNOKO)
-        && `helperindex == 0 && `sysivar[.iLIFE] <= 0)
-      {
-        `sysivar[.iLIFE] = 1;
       }
       if(.roundState() == 4) `outTarget();
       if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
