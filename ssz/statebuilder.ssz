@@ -1597,7 +1597,7 @@ public &StateBuilder
         if(!`expAdsb(buf=, in=)) ret false;
         out .=
           ".v.setB(" .= buf .= "$!.v.isTrue()^("
-          .= buf0 .= '$' .= obj .= ptime .= "$!.v.isSF()&&.v.toInt()>0&&";
+          .= buf0 .= '$' .= obj .= ptime .= "$.v.toInt()>0&&";
         branch{
           oldin = in;
           token = `tokenizer(in=);
