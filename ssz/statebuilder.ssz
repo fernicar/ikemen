@@ -1596,8 +1596,8 @@ public &StateBuilder
         if(re != 0) ret re > 0;
         if(!`expAdsb(buf=, in=)) ret false;
         out .=
-          ".v.setB(" .= buf .= "$!.v.isTrue()^"
-          .= buf0 .= '$' .= obj .= ptime .= '$';
+          ".v.setB(" .= buf .= "$!.v.isTrue()^("
+          .= buf0 .= '$' .= obj .= ptime .= "$!.v.isSF()&&.v.toInt()>0&&";
         branch{
           oldin = in;
           token = `tokenizer(in=);
@@ -1637,7 +1637,7 @@ public &StateBuilder
           in = oldin;
           out .= "`trEqu(.v,.v.setI(1)$.v)";
         }
-        out .= "$.v.isTrue())";
+        out .= "$.v.isTrue()))";
       }
     cond .s.equ("numproj", token):
       out .= obj .= "trNumProj()";
