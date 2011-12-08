@@ -3072,8 +3072,7 @@ public &Char
     }
     if(`player){
       if(
-        !.roundEnd() && .gs(.gsNOKO)
-        && `helperindex == 0 && `sysivar[.iLIFE] <= 0)
+        !.isKO() && .gs(.gsNOKO) && `helperindex == 0 && `sysivar[.iLIFE] <= 0)
       {
         `sysivar[.iLIFE] = 1;
       }
