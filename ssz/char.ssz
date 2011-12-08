@@ -3618,7 +3618,8 @@ public &Char
     `sysivar[.iLIFE] +=
       (int).m.floor((float)l / (absolute ? 1.0 : `defencemul));
     .m.limRange!int?(
-      `sysivar[.iLIFE]=, kill || !foo ? 0 : 1, `sysivar[.iLIFEMAX]);
+      `sysivar[.iLIFE]=,
+      (kill && !.gs(.gsNOKO)) || !foo ? 0 : 1, `sysivar[.iLIFEMAX]);
     if(`helperindex == 0 && `sysivar[.iLIFE] == 0){
       `stVal.hb.fallf = 1;
       if(!foo) break;
