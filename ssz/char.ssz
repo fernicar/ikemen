@@ -1907,7 +1907,7 @@ public &Char
   public ^&.act.Action ani;
   public ^int ivar, sysivar;
   public ^float fvar, sysfvar;
-  public &.cmd.CommandList cmd;
+  public ^&.cmd.CommandList cmd;
   public &.StateVal stVal;
   public &.AfterImage aimg;
   public int key;
@@ -1934,6 +1934,7 @@ public &Char
   public ^&.act.Frame curFrame;
   public %&.snd.Sound sounds;
   public short mver0 = 0, mver1 = 0;
+  public index cpucmd = -1;
   void dummy(){}
   public method$void() state = dummy, state_1 = dummy,
     state_2 = dummy, state_3 = dummy, state_i1 = dummy;
@@ -1955,11 +1956,7 @@ public &Char
     `sn = c.sn;
     `actionList = c.actionList;
     `key = c.key;
-    `cmd.copy(c.cmd=);
-    if(`key < 0){
-      `cmd.buffer.new(1);
-      `cmd.cTable.new(1);
-    }
+    `cmd = c.cmd;
     `palno = c.palno;
     `drawpalno = c.drawpalno;
     `state_1 = c.state_1;
@@ -1993,6 +1990,7 @@ public &Char
     `sysivar[.iALPHAS] = 255;
     `sysivar[.iALPHAD] = 0;
     `sysivar[.iRECOVERTIME] = 0;
+    `sysivar[.iSYSFLAG] = 0;
     `sprpriority = 0;
     `getcombo = 0;
     `veloff = 0.0;
@@ -2443,28 +2441,28 @@ public &Char
     {
       ^/char data;
       if(#(data = sc.get("command.time")) > 0){
-        `cmd.defaultTime = .com.atoi(data);
+        `cmd~defaultTime = .com.atoi(data);
       }
       if(#(data = sc.get("command.buffer.time")) > 0){
-        `cmd.defaultBufferTime = .m.max!int?(1)<, .com.atoi(data);
+        `cmd~defaultBufferTime = .m.max!int?(1)<, .com.atoi(data);
       }
     }
     public void command(&.com.Section sc=)
     {
-      `cmd.ctmp.new(1);
-      `cmd.ctmp~time = `cmd.defaultTime;
-      `cmd.ctmp~buffertime = `cmd.defaultBufferTime;
+      `cmd~ctmp.new(1);
+      `cmd~ctmp~time = `cmd~defaultTime;
+      `cmd~ctmp~buffertime = `cmd~defaultBufferTime;
       ^/char data;
-      if(#(data = sc.get("name")) > 0) `cmd.ctmp~name = data;
-      if(#(data = sc.get("time")) > 0) `cmd.ctmp~time = .com.atoi(data);
+      if(#(data = sc.get("name")) > 0) `cmd~ctmp~name = data;
+      if(#(data = sc.get("time")) > 0) `cmd~ctmp~time = .com.atoi(data);
       if(#(data = sc.get("buffer.time")) > 0){
-        `cmd.ctmp~buffertime = .m.max!int?(1)<, .com.atoi(data);
+        `cmd~ctmp~buffertime = .m.max!int?(1)<, .com.atoi(data);
       }
-      if(#(data = sc.get("command")) > 0) `cmd.ctmp~readCmd(data);
-      if(#`cmd.ctmp~cmd == 1 && `cmd.ctmp~cmd~slash){
-        `cmd.ctmp~buffertime = 1;
+      if(#(data = sc.get("command")) > 0) `cmd~ctmp~readCmd(data);
+      if(#`cmd~ctmp~cmd == 1 && `cmd~ctmp~cmd~slash){
+        `cmd~ctmp~buffertime = 1;
       }
-      `cmd.add(`cmd.ctmp<>=);
+      `cmd~add(`cmd~ctmp<>=);
     }
     void commandlist(^^/char lines, index i=)
     {
@@ -2525,8 +2523,8 @@ public &Char
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     .cmd.resetReadKeymap();
-    `cmd.clear();
-    `cmd.buffer.new(1);
+    `cmd.new(1);
+    `cmd~buffer.new(1);
     loop{index i = 0; while; do:
       commandlist(lines, i=);
       i++;
@@ -3007,7 +3005,7 @@ public &Char
     }
     branch{
     cond `stVal.typ == .StTy::A:
-      if(`cmd.buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
+      if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
     else:
       `sysivar[.iAIRJUMP_CNT] = 0;
       `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
@@ -3015,17 +3013,17 @@ public &Char
     if(`isActive()) branch{
     cond `ctrl():
       branch{
-      cond `stVal.typ == .StTy::S && `cmd.buffer~D > 0:
+      cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
         if(`stVal.no != 10) `trSelfState(10, -1, -1);
-      cond `stVal.typ == .StTy::C && `cmd.buffer~D < 0:
+      cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
         if(`stVal.no != 12) `trSelfState(12, -1, -1);
-      cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd.buffer~U > 0:
+      cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
         if(`stVal.no != 40) `trSelfState(40, -1, -1);
       cond
         `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
         && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
         && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
-        && `cmd.buffer~U > 0
+        && `cmd~buffer~U > 0
         :
         if(`stVal.no != 45){
           `sysivar[.iAIRJUMP_CNT]++;
@@ -3035,11 +3033,11 @@ public &Char
       cond
         !`ls(.lsNOWALK) && `stVal.typ == .StTy::S
         && (
-          `cmd.buffer~F > 0 || (
-            (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd.buffer~B > 0))
+          `cmd~buffer~F > 0 || (
+            (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
         :
         if(`stVal.no != 20) `trSelfState(20, -1, -1);
-      cond `stVal.no == 20 && (`cmd.buffer~F < 0 && `cmd.buffer~B < 0):
+      cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
         `trSelfState(0, -1, -1);
       }
       if(
@@ -3047,9 +3045,16 @@ public &Char
           (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
           || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
           || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-        && `cmd.buffer~B > 0)
+        && `cmd~buffer~B > 0)
       {
         `trSelfState(120, -1, -1);
+      }
+      if(
+        `player && `stVal.typ != .StTy::A && !`ls(.lsNOAUTOTURN)
+        && `trP2DistX()$.v.toFloat() <= -1.0)
+      {
+        `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
+        `setFacing(-`facing);
       }
     cond `sysivar[.iCTRL] != 0 || .roundState() == 4:
       switch(`stVal.no){
@@ -3062,7 +3067,7 @@ public &Char
       if(
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
-            `keyctrl && `ctrl() && `cmd.buffer~B > 0 && (
+            `keyctrl && `ctrl() && `cmd~buffer~B > 0 && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
               || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
               || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
@@ -3070,18 +3075,16 @@ public &Char
         `sysivar[.iSPECIALFLAG] |= .lsGUARD;
       }
     }
-    if(`player){
-      `state_i1(::);
-      if(
-        `sysivar[.iRECOVERTIME] > 0 && `isActive() && (
-          `cmd.buffer~Bb == 1 || `cmd.buffer~Db == 1
-          || `cmd.buffer~Fb == 1 || `cmd.buffer~Ub == 1
-          || `cmd.buffer~ab == 1 || `cmd.buffer~bb == 1
-          || `cmd.buffer~cb == 1 || `cmd.buffer~xb == 1
-          || `cmd.buffer~yb == 1 || `cmd.buffer~zb == 1))
-      {
-        `sysivar[.iRECOVERTIME]--;
-      }
+    `state_i1(::);
+    if(
+      `sysivar[.iRECOVERTIME] > 0 && `isActive() && (
+        `cmd~buffer~Bb == 1 || `cmd~buffer~Db == 1
+        || `cmd~buffer~Fb == 1 || `cmd~buffer~Ub == 1
+        || `cmd~buffer~ab == 1 || `cmd~buffer~bb == 1
+        || `cmd~buffer~cb == 1 || `cmd~buffer~xb == 1
+        || `cmd~buffer~yb == 1 || `cmd~buffer~zb == 1))
+    {
+      `sysivar[.iRECOVERTIME]--;
     }
     `minus = 2;
   }
@@ -3174,7 +3177,7 @@ public &Char
   }
   public bool isAlive()
   {
-    ret !.chars[`playerno][0]~isKO();
+    ret !`isKO() && !.chars[`playerno][0]~isKO();
   }
   public bool isPaused()
   {
@@ -3324,7 +3327,7 @@ public &Char
         if(lc) `trSelfState(52, -1, -1);
         `minus = 0;
         `state(::);
-        if(`player) branch{
+        branch{
         cond `stVal.no == 5110:
           if(`sysivar[.iRECOVERTIME] <= 0){
             `trSelfState(
@@ -3495,7 +3498,7 @@ public &Char
           * ((int)`isFall() + 1) + 1;
         if(
           `isActive() && `sysfvar[.fY] == 0.0 && #`sysfvar[.fVX] >= 1.0
-          && `stVal.time % 3 == 0)
+          && `stVal.time % 3 == 2)
         {
           `makeDust(0.0, 0.0);
         }
@@ -4523,7 +4526,7 @@ public &Char
     `stVal.playerno = p;
     `stVal.time = 0;
     `sysivar[.iHITPAUSETIME] = 0;
-    if(p == `playerno && n >= 170 && n < 190){
+    if(p == `playerno && ((n >= 170 && n < 190) || (n >= 5150 && n < 5160))){
       if(`sysivar[.iWAITWIN] > 180) `sysivar[.iWAITWIN] = 180;
       `sysivar[.iSYSFLAG] &= !.sfWIN;
     }
@@ -4587,8 +4590,13 @@ public &Char
   public void trCommand(^/char name)
   {
     .v.typ = .VarTy::Int;
+    if(`key < 0){
+      if(.s.equ(name[0..4], "hold")) break;
+      .v.i = `cpucmd < 0 ? 0 : (int).s.equ(name, `cmd~commands[`cpucmd]);
+      ret;
+    }
     .v.i = 1;
-    ^&.cmd.Command cl = `cmd.get(name);
+    ^&.cmd.Command cl = `cmd~get(name);
     loop{index i = 0; while; do:
       if(cl[i].curbuftime > 0) break;
       i++;
@@ -6463,9 +6471,19 @@ void commandUpdate()
 {
   loop{index i = 0; while; do:
     if(#.chars[i] > 0){
-      .chars[i][0]~cmd.step(
+      .chars[i][0]~cmd~step(
         .chars[i][0]~key, .chars[i][0]~facing,
         .chars[i][0]~key < 0, .chars[i][0]~isHitPaused());
+      if(.chars[i][0]~key < 0) loop{
+        index j = 0;
+        while;
+      do:
+        .chars[i][j]~cpucmd =
+          .com.intro >= 0 && .m.rand(0, .com.com[i]+16) > 16
+          ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
+        j++;
+      while j < #.chars[i]:
+      }
     }
     i++;
   while i < #.chars:

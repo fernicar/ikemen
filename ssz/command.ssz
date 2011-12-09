@@ -1029,6 +1029,7 @@ public &CommandList
 {
   public ^&.Buffer buffer;
   public ^&.tbl.NameTable!%&.Command? cTable;
+  public %^/char commands;
   public int defaultTime;
   public int defaultBufferTime;
   public ^&.Command ctmp;
@@ -1042,13 +1043,6 @@ public &CommandList
     `defaultTime = 15;
     `defaultBufferTime = 1;
     `ctmp.new(0);
-  }
-  public void copy(`self cl=)
-  {
-    `buffer = cl.buffer;
-    `cTable = cl.cTable;
-    `defaultTime = cl.defaultTime;
-    `defaultBufferTime = cl.defaultBufferTime;
   }
   void input(int input, int facing)
   {
@@ -1134,6 +1128,7 @@ public &CommandList
     branch{
     cond<n> #cl == 0:
       cl.new(1);
+      `commands .= c.name;
     comm:
       cl~new[-1].copy(c=);
     diff<n>:

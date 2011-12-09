@@ -1647,12 +1647,8 @@ public &StateBuilder
       out .= ".v.setB(" .= obj .= "ctrl())";
     cond .s.equ("teamside", token):
       out .= ".v.setI((" .= obj .= "playerno&1)+1)";
-    cond .s.equ("noautoturn", token):
-      out .= ".v.setB(" .= obj .= "ls(.lsNOAUTOTURN))";
     cond .s.equ("nokosnd", token):
       out .= ".v.setB(.gs(.gsNOKOSND))";
-    cond .s.equ("gethit", token):
-      out .= ".v.setB(" .= obj .= "ls(.lsGETHIT))";
     cond .s.equ("frontedgedist", token):
       out .= obj .= "trFrontEdgeDist()";
     cond .s.equ("frontedgebodydist", token):
@@ -7594,7 +7590,7 @@ public &StateBuilder
       \t"`state_3 = `s_3_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`state_i1 = `s_I1_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`clearSpSysVar();"\r\n
-      \t"`cmd.bufReset(`key);"\r\n
+      \t"`cmd~bufReset(`key);"\r\n
       "}"\r\n;
     {
       &.file.File f;

@@ -13,7 +13,7 @@
 [State -I1, KO Cond]
 type = VarSet
 trigger1 = 1
-sysvar(59) = !noko && life <= 0 && !IsHelper;SYSTEMP
+sysvar(59) = !noko && life <= 0;SYSTEMP
 
 [State -I1, KO1]
 type = PlaySnd
@@ -52,20 +52,6 @@ trigger2 = HitOver
 trigger2 = !gethitvar(isbound)
 trigger2 = abs(vel x)+abs(vel y) < 0.01
 sysvar(55) = -1;RECOVERTIME
-
-[State -I1, Turn Cond]
-type = VarSet
-trigger1 = 1
-sysvar(59) = ctrl && (statetype=s||statetype=c) && !noautoturn && p2dist x <= -1;SYSTEMP
-
-[State -I1, Turn1]
-type = ChangeAnim
-trigger1 = sysvar(59);SYSTEMP
-value = ifelse(statetype = S, 5, 6)
-
-[State -I1, Turn2]
-type = Turn
-trigger1 = sysvar(59);SYSTEMP
 
 [State -I1, Win or Lose1]
 type = VarSet
