@@ -407,19 +407,19 @@ public &StateBuilder
     }
     ret false;
   }
+  void skipBlank(^/char text=)
+  {
+    index i = 0;
+    loop{while; do:
+      if(!.s.cMatch!char?(.s.blank, text[i])) break;
+      i++;
+    while i < #text:
+    }
+    text = text[i..-1];
+  }
   ^/char tokenizer(^/char text=)
   {
-    void skipBlank()
-    {
-      index i = 0;
-      loop{while; do:
-        if(!.s.cMatch!char?(.s.blank, `text[i])) break;
-        i++;
-      while i < #`text:
-      }
-      `text = `text[i..-1];
-    }
-    skipBlank();
+    `skipBlank(text=);
     if(#text == 0) ret "";
     switch(text<>){
     case '=':
@@ -445,7 +445,6 @@ public &StateBuilder
       }
     case '>':
       text = text[1..-1];
-      skipBlank();
       branch{
       cond #text >= 1 && text[0] == '=':
         text = text[1..-1];
@@ -455,7 +454,6 @@ public &StateBuilder
       }
     case '<':
       text = text[1..-1];
-      skipBlank();
       branch{
       cond #text >= 1 && text[0] == '=':
         text = text[1..-1];
@@ -1275,7 +1273,12 @@ public &StateBuilder
           break, break, else;
         }
       }
-      if(!`kakkotojiru(in=)) ret false;
+      `skipBlank(in=);
+      if(!.cfg.IgnoreMostErrors && (#in == 0 || in[0] != '(')){
+        `lasterror = ")がありません";
+        ret false;
+      }
+      in = in[1..-1];
     cond .s.equ("sysvar", token):
       if(!var(obj, "SysIVar", out=, in=)) ret false;
     cond .s.equ("sysfvar", token):
