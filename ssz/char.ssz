@@ -3386,7 +3386,7 @@ public &Char
       if(`sysivar[.iBINDTOID] >= 0 && `sysivar[.iBINDTIME] == 0){
         `releaseBinding();
       }
-      if(!`ls(.lsPOSFREEZEY) && `ls(.lsGRAVITY)){
+      if(!`ls(.lsPOSFREEZEY) && `ls(.lsGRAVITY) && `sysfvar[.fY] < -5.0){
         `sysfvar[.fVY] += `sysfvar[.fYACCEL];
       }
       `ticOldX = `sysfvar[.fX];
@@ -3875,7 +3875,6 @@ public &Char
   public void setYV(float yv)
   {
     `sysfvar[.fVY] = yv;
-    `sysivar[.iSPECIALFLAG] &= !.lsGRAVITY;
     if(yv != 0.0){
       `setBindTime(0);
       `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
