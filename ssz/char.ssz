@@ -1269,19 +1269,18 @@ const int lsNOWALK        = 0b00000000000000000000000010000000;
 const int lsUNGUARDABLE   = 0b00000000000000000000000100000000;
 const int lsPOSFREEZEX    = 0b00000000000000000000001000000000;
 const int lsPOSFREEZEY    = 0b00000000000000000000010000000000;
-const int lsGRAVITY       = 0b00000000000000000000100000000000;
-const int lsPLAYERPUSH    = 0b00000000000000000001000000000000;
-const int lsSCREENBOUNDX  = 0b00000000000000000010000000000000;
-const int lsSCREENBOUNDY  = 0b00000000000000000100000000000000;
-const int lsGETHIT        = 0b00000000000000001000000000000000;
-const int lsANGLEDRAW     = 0b00000000000000010000000000000000;
-const int lsTRANS         = 0b00000000000000100000000000000000;
-const int lsFRONTWCHANGE  = 0b00000000000001000000000000000000;
-const int lsBACKWCHANGE   = 0b00000000000010000000000000000000;
-const int lsFEDGECHANGE   = 0b00000000000100000000000000000000;
-const int lsBEDGECHANGE   = 0b00000000001000000000000000000000;
-const int lsGUARD         = 0b00000000010000000000000000000000;
-const int lsBindCancel    = 0b00000000100000000000000000000000;
+const int lsPLAYERPUSH    = 0b00000000000000000000100000000000;
+const int lsSCREENBOUNDX  = 0b00000000000000000001000000000000;
+const int lsSCREENBOUNDY  = 0b00000000000000000010000000000000;
+const int lsGETHIT        = 0b00000000000000000100000000000000;
+const int lsANGLEDRAW     = 0b00000000000000001000000000000000;
+const int lsTRANS         = 0b00000000000000010000000000000000;
+const int lsFRONTWCHANGE  = 0b00000000000000100000000000000000;
+const int lsBACKWCHANGE   = 0b00000000000001000000000000000000;
+const int lsFEDGECHANGE   = 0b00000000000010000000000000000000;
+const int lsBEDGECHANGE   = 0b00000000000100000000000000000000;
+const int lsGUARD         = 0b00000000001000000000000000000000;
+const int lsBindCancel    = 0b00000000010000000000000000000000;
 
 public uint specialFlag;
 const uint gsINTRO          = 0b00000000000000000000000000000001;
@@ -3374,6 +3373,10 @@ public &Char
       `targetAction();
     }
   }
+  public void gravity()
+  {
+    if(!`ls(.lsPOSFREEZEY)) `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+  }
   public void move(
     float highest=, float lowest=, float leftest=, float rightest=)
   {
@@ -3385,9 +3388,6 @@ public &Char
       }
       if(`sysivar[.iBINDTOID] >= 0 && `sysivar[.iBINDTIME] == 0){
         `releaseBinding();
-      }
-      if(!`ls(.lsPOSFREEZEY) && `ls(.lsGRAVITY) && `sysfvar[.fY] < -5.0){
-        `sysfvar[.fVY] += `sysfvar[.fYACCEL];
       }
       `ticOldX = `sysfvar[.fX];
       `ticNewX = `ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff;
@@ -3412,11 +3412,8 @@ public &Char
         if(#`sysfvar[.fVX] < 1.0) `sysfvar[.fVX] = 0.0;
       case .StTy::C:
         if(!`ls(.lsPOSFREEZEX)) `sysfvar[.fVX] *= `sysfvar[.fCROUCH_FRICTION];
-      default:<-
-        if(!`ls(.lsPOSFREEZEY)){
-          `sysfvar[.fVY] +=
-            `sysfvar[.fYACCEL] * (float)(`stVal.phy == .StTy::A);
-        }
+      case .StTy::A:
+        `gravity();
       }
     }
     if(`ls(.lsSCREENBOUNDX)){

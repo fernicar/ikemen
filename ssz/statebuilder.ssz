@@ -697,6 +697,22 @@ public &StateBuilder
     }
     ret 0;
   }
+  void kyuushiki2(bool range, ^/char in=)
+  {
+    index i = 0;
+    loop{while; do:
+      switch(in[i]){
+      case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+        break, break;
+      case '(', '[':
+        if(range) break, break;
+      case '|', '^', '&':
+        if(in[i] == in[i+1]) break, break;
+      }
+      i++;
+    while i < #in:}
+    in = in[i..-1];
+  }
   bool expRedirectable(^/char obj, ^/char name, %char out=, ^/char in=)
   {:<-
     bool var(^/char obj, ^/char v, %char out=, ^/char in=)
@@ -859,12 +875,6 @@ public &StateBuilder
             token = `tokenizer(in=);
           }
           branch{
-          cond .s.equ("=", token):
-            if(!`expEquSub(out=, in=, false)) ret false;
-            break;
-          cond .s.equ("!=", token):
-            if(!`expEquSub(out=, in=, true)) ret false;
-            break;
           cond .s.equ("<", token):
             out .= "`trLs(.v,";
           cond .s.equ(">", token):
@@ -874,10 +884,18 @@ public &StateBuilder
           cond .s.equ(">=", token):
             out .= "`trGrE(.v,";
           else:
-            in = oldin;
+            branch{
+            cond .s.equ("!=", token):
+              not = true;
+            else:
+              if(!.s.equ("=", token)) in = oldin;
+              not = false;
+            }
+            `kyuushiki2(true, in=);
             if(!`expEquSub(out=, in=, false)) ret false;
             break;
           comm:
+            `kyuushiki2(false, in=);
             if(!`expAdsb(out=, in=)) ret false;
             out .= "$.v)";
           }
@@ -901,8 +919,11 @@ public &StateBuilder
         out .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
         if(!`expAdsb(out=, in=)) ret false;
         out .= "$.v)$";
-        ^/char oldin = in;
-        if(!.s.equ(",", `tokenizer(in=))) in = oldin;
+        ^/char oldin;
+        if(!.s.equ(",", `tokenizer(in=))){
+          oldin = in;
+          in = oldin;
+        }
         branch{
           oldin = in;
           token = `tokenizer(in=);
@@ -924,9 +945,11 @@ public &StateBuilder
             not = false;
           }
           oldin = in;
+          `kyuushiki2(true, in=);
           if(!`expEquSub(out=, in=, not)) ret false;
           break;
         comm:
+          `kyuushiki2(false, in=);
           if(!`expAdsb(out=, in=)) ret false;
           out .= "$.v)";
         }
@@ -1603,12 +1626,6 @@ public &StateBuilder
             token = `tokenizer(in=);
           }
           branch{
-          cond .s.equ("=", token):
-            if(!`expEquSub(out=, in=, false)) ret false;
-            break;
-          cond .s.equ("!=", token):
-            if(!`expEquSub(out=, in=, true)) ret false;
-            break;
           cond .s.equ("<", token):
             out .= "`trLs(.v,";
           cond .s.equ(">", token):
@@ -1618,10 +1635,18 @@ public &StateBuilder
           cond .s.equ(">=", token):
             out .= "`trGrE(.v,";
           else:
-            in = oldin;
+            branch{
+            cond .s.equ("!=", token):
+              not = true;
+            else:
+              if(!.s.equ("=", token)) in = oldin;
+              not = false;
+            }
+            `kyuushiki2(true, in=);
             if(!`expEquSub(out=, in=, false)) ret false;
             break;
           comm:
+            `kyuushiki2(false, in=);
             if(!`expAdsb(out=, in=)) ret false;
             out .= "$.v)";
           }
@@ -5012,7 +5037,7 @@ public &StateBuilder
   bool gravity(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
-      `state.ctrlList[-1].task .= "`sysivar[.iSPECIALFLAG]|=.lsGRAVITY;";
+      `state.ctrlList[-1].task .= "`gravity();";
       ret true;
     }]);
   }
