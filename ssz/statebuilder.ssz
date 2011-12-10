@@ -2907,6 +2907,7 @@ public &StateBuilder
       v = fv = false;
       bool sys = false;
       ~$bool(^/char=) set = [bool(^/char data=){
+        data = "(" + data;
         if(!`expValue(`state.ctrlList[-1].task=, data=)) ret false;
         index f = .s.find("=", data);
         if(f < 0){
