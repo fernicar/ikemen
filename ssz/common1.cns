@@ -269,7 +269,7 @@ void c.Char::s##_@@P()
       --`stVal.ps[0].p <= 0
       && `sysfvar[.fVY] > -2.0 && #`getAction(`animno + 3) > 0)
     {
-      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `stVal.ps[0].p = .consts.int_t::MAX;
       `trChangeAnim(`animno + 3);
     }
   }
@@ -1162,15 +1162,15 @@ void c.Char::s##_@@P()
     switch(`animno){
     case 5000, 5010:
       if(--`stVal.ps[0].p > 0) break;
-      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `stVal.ps[0].p = .consts.int_t::MAX;
       //ForceFeedback
     case 5001, 5011:
       if(--`stVal.ps[1].p > 0) break;
-      .v.setI(0)$`trSetPersistent(`stVal.ps[1].p=);
+      `stVal.ps[1].p = .consts.int_t::MAX;
       //ForceFeedback
     case 5012, 5002, 5030:
       if(--`stVal.ps[2].p > 0) break;
-      .v.setI(0)$`trSetPersistent(`stVal.ps[2].p=);
+      `stVal.ps[2].p = .consts.int_t::MAX;
       //ForceFeedback
     }
   }
@@ -1273,15 +1273,15 @@ void c.Char::s##_@@P()
     switch(`animno){
     case 5020:
       if(--`stVal.ps[0].p > 0) break;
-      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `stVal.ps[0].p = .consts.int_t::MAX;
       //ForceFeedback
     case 5021:
       if(--`stVal.ps[1].p > 0) break;
-      .v.setI(0)$`trSetPersistent(`stVal.ps[1].p=);
+      `stVal.ps[1].p = .consts.int_t::MAX;
       //ForceFeedback
     case 5022:
       if(--`stVal.ps[2].p > 0) break;
-      .v.setI(0)$`trSetPersistent(`stVal.ps[2].p=);
+      `stVal.ps[2].p = .consts.int_t::MAX;
       //ForceFeedback
     }
   }
@@ -1372,17 +1372,17 @@ void c.Char::s##_@@P()
     switch(`animno){
     case 5000, 5010:
       if(--`stVal.ps[0].p > 0) break;
-      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `stVal.ps[0].p = .consts.int_t::MAX;
       //ForceFeedback
     case 5001, 5011:
       if(--`stVal.ps[1].p > 0) break;
-      .v.setI(0)$`trSetPersistent(`stVal.ps[1].p=);
+      `stVal.ps[1].p = .consts.int_t::MAX;
       //ForceFeedback
     case
       5012, 5002, 5030, 5051, 5052, 5053, 5054, 5055, 5056, 5057, 5058, 5059
       :
       if(--`stVal.ps[2].p > 0) break;
-      .v.setI(0)$`trSetPersistent(`stVal.ps[2].p=);
+      `stVal.ps[2].p = .consts.int_t::MAX;
       //ForceFeedback
     }
   }
@@ -1565,7 +1565,7 @@ void c.Char::s##_@@P()
       && `sysfvar[.fVY] >= (`animno == 5050 ? 1.0 : -2.0)
       && #`getAction(`animno + 10) > 0)
     {
-      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `stVal.ps[0].p = .consts.int_t::MAX;
       `trChangeAnim(`animno + 10);
     }
     .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
@@ -1908,7 +1908,7 @@ void c.Char::s##_@@P()
       --`stVal.ps[0].p <= 0 && #`getAction(5110 + `animno%10) > 0
       && .m.inRange!int?(`animno, 5081, 5089))
     {
-      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `stVal.ps[0].p = .consts.int_t::MAX;
       `trChangeAnim(5110 + `animno%10);
     }
     if(`stVal.time == 0){
@@ -1958,14 +1958,14 @@ void c.Char::s##_@@P()
       && #`getAction(5110 + `animno%10) > 0 && (
         `trAnimTime()$.v.toInt() == 0 || `sysivar[0] != 0))
     {
-      .v.setI(0)$`trSetPersistent(`stVal.ps[1].p=);
+      `stVal.ps[1].p = .consts.int_t::MAX;
       `trChangeAnim(5110 + `animno%10);
     }
     if(
       --`stVal.ps[2].p <= 0 && !.m.inRange!int?(`animno, 5111, 5119) && (
         `trAnimTime()$.v.toInt() == 0 || `sysivar[0] != 0))
     {
-      .v.setI(0)$`trSetPersistent(`stVal.ps[2].p=);
+      `stVal.ps[2].p = .consts.int_t::MAX;
       `trChangeAnim(5110);
     }
     if(
@@ -2085,7 +2085,7 @@ void c.Char::s##_@@P()
       --`stVal.ps[0].p <= 0 && `trMatchOver()$.v.isTrue()
       && .m.inRange!int?(`animno, 5140, 5149) && #`getAction(`animno + 10) > 0)
     {
-      .v.setI(0)$`trSetPersistent(`stVal.ps[0].p=);
+      `stVal.ps[0].p = .consts.int_t::MAX;
       `trChangeAnim(`animno + 10);
     }
     .v.setF(0.85)$`trVelMulX();
@@ -2093,7 +2093,7 @@ void c.Char::s##_@@P()
       --`stVal.ps[1].p <= 0
       && `sysfvar[.fVX] < `sysfvar[.fDOWN_FRICTION_THRESHOLD])
     {
-      .v.setI(0)$`trSetPersistent(`stVal.ps[1].p=);
+      `stVal.ps[1].p = .consts.int_t::MAX;
       `setXV(0.0);
     }
     `stVal.hb.hitf1 = -8;

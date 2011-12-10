@@ -731,8 +731,6 @@ public &StateBuilder
       ^/char token = name;
     cond .s.equ("(", token) || .s.equ("[", token):
       if(!`expBoolOr(out=, in=) || !`tojikakko(in=)) ret false;
-    cond .s.equ("+", token):
-      if(!`expPostNot(out=, in=)) ret false;
     cond .s.equ("-", token):
       if(!`expPostNot(out=, in=)) ret false;
       out .= "$`trMinus()";
