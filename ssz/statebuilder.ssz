@@ -69,7 +69,6 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
 {
   public %&.StateCtrl ctrlList;
   public %char deftask;
-  public ^/char ignorehitpause;
   public |.chr.StTy typ;
   public |.chr.StTy phy;
   public |.chr.MovTy mov;
@@ -77,7 +76,8 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   public int hitdefpersist;
   public int movehitpersist;
   public int juggle;
-  public ^/char persist;
+  public int ignorehitpause;
+  public int persistent;
   public int no;
   public bool i;
   new()
@@ -98,8 +98,8 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   }
   public void tmpreset()
   {
-    `ignorehitpause = "";
-    `persist = "";
+    `ignorehitpause = -1;
+    `persistent = 1;
   }
 }
 
@@ -1487,7 +1487,11 @@ public &StateBuilder
       cond .s.equ("isbound", token):
         out .= ".v.setB(" .= obj .= "isBound())";
       else:
-        break, else;
+        {
+          %char buf;
+          `lasterror = (buf .= token .= "が不正です");
+          ret false;
+        }
       }
       if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("hitdefattr", token):
@@ -1851,7 +1855,7 @@ public &StateBuilder
           out .= ".v.setI(0)";
           in = token + in;
         else:
-          out .= ".v.setSF()";
+          break, else;
         }
       else:
         {
@@ -6838,19 +6842,12 @@ public &StateBuilder
         }
       cond .s.equ(name, "persistent"):
         if(`state.no >= 0 && !`state.i){
-          %char buf;
-          if(
-            !`fullExpression(
-              buf=, text=, "", "$`trSetPersistent(`stVal.ps[")) ret false;
-          buf .= .s.iToS(#`state.ctrlList-1) .= "].p=)";
-          `state.persist = buf;
+          `state.persistent = .com.atoi(text);
+          if(`state.persistent > 128) `state.persistent = 1;
         }
       cond .s.equ(name, "ignorehitpause"):
-        {
-          %char buf;
-          if(!`fullExpression(buf=, text=,"", "$.v")) ret false;
-          `state.ignorehitpause = buf;
-        }
+        `state.ignorehitpause = .com.atoi(text);
+        if(`state.ignorehitpause < 0) `state.ignorehitpause = 1;
       else:
         if(`state.ctrlList[-1].typ == .CtrlTy::Unknown){
           if(.cfg.IgnoreMostErrors) break, break;
@@ -6999,25 +6996,20 @@ public &StateBuilder
         }
         buf .= \t"if(";
         branch{
-        cond #`state.ignorehitpause > 0:
+        cond `state.ignorehitpause >= 0:
           branch{
           cond<ex> `state.ctrlList[-1].typ == .CtrlTy::Explod:
-            buf .= "((ih=(int)(";
-          else:
-            buf .= "(nh||";
+            buf .= "(ih=(int)" .= .s.iToS(`state.ignorehitpause) .= ")$";
           comm:
-            buf .= `state.ignorehitpause .= ".isTrue()";
-          diff<ex>:
-            buf .= "))!=0||nh";
+            if(`state.ignorehitpause == 0) buf .= "nh&&";
           }
-          buf .= ")&&";
         else:
           if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
             buf .= "(ih=-1)$";
           }
           buf .= "nh&&";
         }
-        if(#`state.persist > 0){
+        if(`state.persistent != 1){
           buf .= "--`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p<=0&&";
         }
         branch{
@@ -7084,7 +7076,12 @@ public &StateBuilder
         }
         buf .= "))";
         dbuf.new(0);
-        if(#`state.persist > 0) dbuf .= `state.persist .= ';';
+        if(`state.persistent != 1){
+          if(`state.persistent <= 0) `state.persistent = .consts.int_t::MAX;
+          dbuf .=
+            "`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p="
+            .= .s.iToS(.m.max!int?(0, `state.persistent)) .= ';';
+        }
         dbuf .= `state.ctrlList[-1].task;
         switch(`state.ctrlList[-1].typ){
         case .CtrlTy::RemapPal:

@@ -4580,13 +4580,6 @@ public &Char
   {
     `trChangeState2(no, `playerno, anim, ctrl);
   }
-  public void trSetPersistent(int p=)
-  {
-    if(.v.isSF()) ret;
-    p = .m.min!int?(99, .v.toInt());
-    if(p <= 0) p = .consts.int_t::MAX;
-    p = .m.max!int?(0, p);
-  }
   public void trCommand(^/char name)
   {
     .v.typ = .VarTy::Int;
