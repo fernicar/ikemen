@@ -901,8 +901,10 @@ public &StateBuilder
         out .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
         if(!`expAdsb(out=, in=)) ret false;
         out .= "$.v)$";
+        ^/char oldin = in;
+        if(!.s.equ(",", `tokenizer(in=))) in = oldin;
         branch{
-          ^/char oldin = in;
+          oldin = in;
           token = `tokenizer(in=);
           bool not;
         cond .s.equ("<", token):
@@ -922,7 +924,6 @@ public &StateBuilder
             not = false;
           }
           oldin = in;
-          if(!.s.equ(",", `tokenizer(in=))) in = oldin;
           if(!`expEquSub(out=, in=, not)) ret false;
           break;
         comm:
