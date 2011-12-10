@@ -6472,7 +6472,7 @@ void commandUpdate()
         while;
       do:
         .chars[i][j]~cpucmd =
-          .com.intro >= 0 && .m.rand(0, .com.com[i]+16) > 16
+          .roundState() == 2 && .m.rand(0, .com.com[i]+16) > 16
           ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
         j++;
       while j < #.chars[i]:
