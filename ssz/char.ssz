@@ -3067,7 +3067,7 @@ public &Char
       if(
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
-            `keyctrl && `ctrl() && `cmd~buffer~B > 0 && (
+            `ctrl() && `cmd~buffer~B > 0 && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
               || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
               || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
