@@ -3010,7 +3010,7 @@ public &Char
       `sysivar[.iAIRJUMP_CNT] = 0;
       `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
     }
-    if(`isActive()) branch{
+    if(`player && `isActive()) branch{
     cond `ctrl():
       branch{
       cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
@@ -3041,7 +3041,7 @@ public &Char
         `trSelfState(0, -1, -1);
       }
       if(
-        `ctrl() && `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
+        `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
           (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
           || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
           || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
@@ -3050,7 +3050,7 @@ public &Char
         `trSelfState(120, -1, -1);
       }
       if(
-        `player && `stVal.typ != .StTy::A && !`ls(.lsNOAUTOTURN)
+        `stVal.typ != .StTy::A && !`ls(.lsNOAUTOTURN)
         && `trP2DistX()$.v.toFloat() <= -1.0)
       {
         `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
