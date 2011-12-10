@@ -1579,30 +1579,16 @@ public &StateBuilder
         ^/char ptime =
           h ? "trProjTime(.ProjContact::Hit)"
           : (g ? "trProjTime(.ProjContact::Guarded)" : "trProjContactTime()");
-        %char buf0, buf;
         ^/char oldin;
-        branch{
-        cond (h && #token == 7) || (!h && #token == 11):
-          oldin = in;
-          token = `tokenizer(in=);
-          in = oldin;
-          branch{
-          cond .s.equ("(", token) || .s.equ("[", token):
-            if(!`expValue(buf0=, in=)) ret false;
-          else:
-            buf0 .= ".v.setI(0)";
-          }
-        else:
-          token = token[(h?7:11)..-1];
-          if(!`expValue(buf0=, token=)) ret false;
-        }
+        int id = .com.atoi(token[(h?7:11)..-1]);
         bool not;
         int re = `kyuushiki(not=, out=, in=);
         if(re != 0) ret re > 0;
-        if(!`expAdsb(buf=, in=)) ret false;
+        out .= ".v.setB(";
+        if(!`expAdsb(out=, in=)) ret false;
         out .=
-          ".v.setB(" .= buf .= "$!.v.isTrue()^("
-          .= buf0 .= '$' .= obj .= ptime .= "$.v.toInt()>0&&";
+           "$!.v.isTrue()^(.v.setI(" .= .s.iToS(id) .= ")$"
+           .= obj .= ptime .= "$.v.toInt()>0&&";
         branch{
           oldin = in;
           token = `tokenizer(in=);
@@ -1841,6 +1827,34 @@ public &StateBuilder
       out .= "(#.c>0?[._t(_=){";
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
       out .= ";}](:.c<>=:):.v.setSF())";
+    cond
+      .s.equ("=", token) || .s.equ("!=", token)
+      || .s.equ(">", token) || .s.equ(">=", token)
+      || .s.equ("<", token) || .s.equ("<=", token)
+      || .s.equ("&", token) || .s.equ("&&", token)
+      || .s.equ("^", token) || .s.equ("^^", token)
+      || .s.equ("|", token) || .s.equ("||", token)
+      || .s.equ("+", token)
+      || .s.equ("*", token) || .s.equ("**", token)
+      || .s.equ("/", token) || .s.equ("%", token)
+      :
+      if(!.cfg.IgnoreMostErrors) else;
+      token = `tokenizer(in=);
+      {
+        ^/char old = token;
+        index i = 0;
+        loop{while; do:
+          if((token[i] < '0' || token[i] > '9') && token[i] != '.') break;
+          i++;
+        while i < #token:}
+        num = `number(token[0..i]);
+        if(#num == 0 || i >= #token){
+          `lasterror = old + "が不正です";
+          ret false;
+        }
+        out .= num;
+        in = old + token[i..-1] + in;
+      }
     else:
       branch{
       cond .cfg.IgnoreMostErrors:
@@ -7078,7 +7092,7 @@ public &StateBuilder
           if(`state.persistent <= 0) `state.persistent = .consts.int_t::MAX;
           dbuf .=
             "`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p="
-            .= .s.iToS(.m.max!int?(0, `state.persistent)) .= ';';
+            .= .s.iToS(`state.persistent) .= ';';
         }
         dbuf .= `state.ctrlList[-1].task;
         switch(`state.ctrlList[-1].typ){
