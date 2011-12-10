@@ -585,7 +585,7 @@ public &FileInput
     sub(`ab=);sub(`bb=);sub(`cb=);sub(`xb=);sub(`yb=);sub(`zb=);
     osu = 3600;
     sub(`sb=);
-    if(.com.intro != 0) `st = `bb = `cb = `xb = `yb = `zb = `sb = 0;
+    if(.com.intro != 0) `st = `ab = `bb = `cb = `xb = `yb = `zb = `sb = 0;
   }
   /bool l()
   {
