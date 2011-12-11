@@ -3770,7 +3770,6 @@ public &StateBuilder
         int flg = -1;
         branch{
           if(#data == 0) else;
-        cond data[0] == 'F' || data[0] == 'f':
         cond data[0] == 'S' || data[0] == 's':
           flg = 0;
         else:
@@ -5660,16 +5659,22 @@ public &StateBuilder
           anim = true;
           branch{
             if(#data == 0) else;
-          cond data[0] == 'F' || data[0] == 'f':
-            `state.ctrlList[-1].task .= exp .= ".ani=.fight~";
-          cond data[0] == 'S' || data[0] == 's':
-            `state.ctrlList[-1].task .= exp .= ".ani=`";
           cond `state.ctrlList[-1].typ == .CtrlTy::GameMakeAnim:
-            `state.ctrlList[-1].task .= exp .= ".ani=.fight~";
-            break;
+            branch{
+            cond data[0] == 'S' || data[0] == 's':
+              `state.ctrlList[-1].task .= exp .= ".ani=`";
+            else:
+              `state.ctrlList[-1].task .= exp .= ".ani=.fight~";
+              break, break;
+            }
           else:
-            `state.ctrlList[-1].task .= exp .= ".ani=`";
-            break;
+            branch{
+            cond data[0] == 'F' || data[0] == 'f':
+              `state.ctrlList[-1].task .= exp .= ".ani=.fight~";
+            else:
+              `state.ctrlList[-1].task .= exp .= ".ani=`";
+              break, break;
+            }
           comm:
             data = data[1..-1];
           }
