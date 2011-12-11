@@ -17,7 +17,7 @@ lib mes = <alpha/mesdialog.ssz>;
 
 
 int changeStateNest = 0;
-float oldx = 0.0, tickx = 0.0;
+float oldx = 0.0;
 int slowt = 0, shuttertime = 0;
 bool winskipped = false;
 
@@ -3420,10 +3420,9 @@ public &Char
       cvx = `sysfvar[.fX] - `oldx;
     }
     if(`ls(.lsSCREENBOUNDX)){
-      float ofs = .tickx - .com.camerax;
       .m.limRange!float?(
-        `sysfvar[.fX]=, .com.xmin+ofs+(`facing > 0 ? `bedge : `fedge),
-        .com.xmax+ofs-(`facing > 0 ? `fedge : `bedge));
+        `sysfvar[.fX]=, .com.xmin+(`facing > 0 ? `bedge : `fedge),
+        .com.xmax-(`facing > 0 ? `fedge : `bedge));
     }
     ret cvx;
   }
@@ -3460,8 +3459,8 @@ public &Char
       else:
         l = `fedge; r = `bedge;
       }
-      float oldx = `sysfvar[.fX], ofs = .tickx - .com.camerax;
-      .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+ofs+l, .com.xmax+ofs-r);
+      float oldx = `sysfvar[.fX];
+      .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+l, .com.xmax-r);
       if(oldx != `sysfvar[.fX] && `sysivar[.iBINDTIME] != 0){
         ^`self c = .players.get(`sysivar[.iBINDTOID]);
         if(#c == 0) break;
@@ -6411,11 +6410,6 @@ void gSetNormal(float scl, float x, float y)
   .com.cameray = y;
   .com.screenleft = (float).stg~screenleft;
   .com.screenright = (float).stg~screenright;
-  .com.xmin = .com.screenx + .com.screenleft;
-  .com.xmax = .com.screenx + (320.0 / .com.scale) - .com.screenright;
-  if(.com.xmin > .com.xmax){
-    .com.xmin = .com.xmax = (.com.xmin + .com.xmax) * 0.5;
-  }
 }
 
 ^&.fgt.LifePower getLifePower()
@@ -6547,7 +6541,11 @@ public float action(
   }
   branch{
   cond .com.tickFrame():
-    .tickx = x;
+    .com.xmin = .com.screenx + .com.screenleft;
+    .com.xmax = .com.screenx + (320.0 / .com.scale) - .com.screenright;
+    if(.com.xmin > .com.xmax){
+      .com.xmin = .com.xmax = (.com.xmin + .com.xmax) * 0.5;
+    }
     .com.allPalFX~step();
     .stage.bgPalFX~step();
     .stage.envShake.next();
