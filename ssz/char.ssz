@@ -4860,10 +4860,17 @@ public &Char
     if(id == .com.IERR) ret;
     %int tmp;
     ^`self c;
-    loop{index i = 0; while; do:
+    loop{
+      if(id < 0){
+        tmp = `targets;
+        break, break;
+      }
+      index i = 0;
+      while;
+    do:
       c = .players.get(`targets[i]);
       if(#c > 0) branch{
-      cond id < 0 || c~stVal.hb.hitid == id:
+      cond c~stVal.hb.hitid == id:
         tmp .= `targets[i];
       else:
         c~byBindClear();
@@ -4873,14 +4880,14 @@ public &Char
     while i < #`targets:
     }
     branch{
-    cond keepone && #tmp > 0:
+    cond (keepone || id < 0) && #tmp > 0:
       `targets.new(0);
       loop{
-        index i = 0, r = .m.rand(0, #tmp-1);
+        index i = 0, r = keepone ? .m.rand(0, #tmp-1) : -1;
         while;
       do:
         branch{
-        cond i == r:
+        cond  i == r:
           `targets .= tmp[i];
         else:
           c = .players.get(tmp[i]);
@@ -4890,8 +4897,6 @@ public &Char
         i++;
       while i < #tmp:
       }
-    cond id < 0:
-      `targets.new(0);
     else:
       `targets = tmp;
     }
