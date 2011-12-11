@@ -3420,9 +3420,10 @@ public &Char
       cvx = `sysfvar[.fX] - `oldx;
     }
     if(`ls(.lsSCREENBOUNDX)){
+      float ofs = .tickx - .com.camerax;
       .m.limRange!float?(
-        `sysfvar[.fX]=, .com.xmin+(`facing > 0 ? `bedge : `fedge),
-        .com.xmax-(`facing > 0 ? `fedge : `bedge));
+        `sysfvar[.fX]=, .com.xmin+ofs+(`facing > 0 ? `bedge : `fedge),
+        .com.xmax+ofs-(`facing > 0 ? `fedge : `bedge));
     }
     ret cvx;
   }
@@ -3459,8 +3460,8 @@ public &Char
       else:
         l = `fedge; r = `bedge;
       }
-      float oldx = `sysfvar[.fX];
-      .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+l, .com.xmax-r);
+      float oldx = `sysfvar[.fX], ofs = .tickx - .com.camerax;
+      .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+ofs+l, .com.xmax+ofs-r);
       if(oldx != `sysfvar[.fX] && `sysivar[.iBINDTIME] != 0){
         ^`self c = .players.get(`sysivar[.iBINDTOID]);
         if(#c == 0) break;
@@ -6659,11 +6660,9 @@ public float action(
   cond cvx < 0.0:
     tmp = .m.max!float?(leftest - (-160.0/.com.scale + tension), tmp);
     if(cvx < tmp) cvx = .m.min!float?(0.0, tmp);
-    cvx = .m.max!float?(-(tension-.com.screenleft) - (x-.tickx), cvx);
   else:
     tmp = .m.min!float?(rightest - (160.0/.com.scale - tension), tmp);
     if(cvx > tmp) cvx = .m.max!float?(0.0, tmp);
-    cvx = .m.min!float?((tension-.com.screenright) - (x-.tickx), cvx);
   }
   if(.com.turbo > 0.0) .oldx = x;
   x += cvx;
