@@ -6657,13 +6657,13 @@ public float action(
   branch{
     float tmp = leftest + rightest;
   cond cvx < 0.0:
-    tmp = .m.max!float?(
-      leftest - (-160.0/.com.scale + tension + (x-.tickx)), tmp);
+    tmp = .m.max!float?(leftest - (-160.0/.com.scale + tension), tmp);
     if(cvx < tmp) cvx = .m.min!float?(0.0, tmp);
+    cvx = .m.max!float?(-(tension-.com.screenleft) - (x-.tickx), cvx);
   else:
-    tmp = .m.min!float?(
-      rightest - (160.0/.com.scale - tension + (x-.tickx)), tmp);
+    tmp = .m.min!float?(rightest - (160.0/.com.scale - tension), tmp);
     if(cvx > tmp) cvx = .m.max!float?(0.0, tmp);
+    cvx = .m.min!float?((tension-.com.screenright) - (x-.tickx), cvx);
   }
   if(.com.turbo > 0.0) .oldx = x;
   x += cvx;
