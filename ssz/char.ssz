@@ -3377,14 +3377,13 @@ public &Char
   {
     if(!`ls(.lsPOSFREEZEY)) `sysfvar[.fVY] += `sysfvar[.fYACCEL];
   }
-  public void move(
-    float highest=, float lowest=, float leftest=, float rightest=)
+  public float move()
   {
     if(.com.tickFrame()){
       `action();//TargetDropされたとき
       if(`destmp){
         `destroySelf();
-        ret;
+        ret 0.0;
       }
       if(`sysivar[.iBINDTOID] >= 0 && `sysivar[.iBINDTIME] == 0){
         `releaseBinding();
@@ -3416,22 +3415,16 @@ public &Char
         `gravity();
       }
     }
+    float cvx = 0.0;
+    if(`ls(.lsSCREENBOUNDX) && `sysivar[.iBINDTIME] == 0 && !`isFreezeX()){
+      cvx = `sysfvar[.fX] - `oldx;
+    }
     if(`ls(.lsSCREENBOUNDX)){
-      float l, r;
-      branch{
-      cond `facing > 0:
-        l = `bedge; r = `fedge;
-      else:
-        l = `fedge; r = `bedge;
-      }
-      .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+l, .com.xmax-r);
-      leftest = .m.min!float?(`sysfvar[.fX]-l, leftest);
-      rightest = .m.max!float?(`sysfvar[.fX]+r, rightest);
+      .m.limRange!float?(
+        `sysfvar[.fX]=, .com.xmin+(`facing > 0 ? `bedge : `fedge),
+        .com.xmax-(`facing > 0 ? `fedge : `bedge));
     }
-    if(`ls(.lsSCREENBOUNDY)){
-      highest = .m.min!float?(`sysfvar[.fY], highest);
-      lowest = .m.min!float?(0.0)<, .m.max!float?(`sysfvar[.fY], lowest);
-    }
+    ret cvx;
   }
   public void bind()
   {
@@ -3480,7 +3473,8 @@ public &Char
       }
     }
   }
-  public float update(float tension)
+  public void update(
+    float highest=, float lowest=, float leftest=, float rightest=)
   {
     if(.com.tickFrame()){
       `atktmp =
@@ -3553,12 +3547,17 @@ public &Char
     }
     `bind();
     `xScreenBound();
-    float cvx = 0.0;
-    if(`ls(.lsSCREENBOUNDX) && tension > 0.0 && !`isFreezeX()){
-      cvx = `sysfvar[.fX] - `oldx;
+    if(`ls(.lsSCREENBOUNDX)){
+      leftest = .m.min!float?(
+        `sysfvar[.fX]-(`facing > 0 ? `bedge : `fedge), leftest);
+      rightest = .m.max!float?(
+        `sysfvar[.fX]+(`facing > 0 ? `fedge : `bedge), rightest);
+    }
+    if(`ls(.lsSCREENBOUNDY)){
+      highest = .m.min!float?(`sysfvar[.fY], highest);
+      lowest = .m.min!float?(0.0)<, .m.max!float?(`sysfvar[.fY], lowest);
     }
     `oldx = `sysfvar[.fX];
-    ret cvx;
   }
   public void posReset(float p1x, float p2x)
   {
@@ -5729,7 +5728,7 @@ public void PlayerList!&Char?::destroy(int id)
   }
 }
 public void PlayerList!&Char?::action(
-  float x, float tension, float cvx=,
+  float x, float cvx=,
   float highest=, float lowest=, float leftest=, float rightest=)
 {
   bool foo = true;
@@ -5755,11 +5754,24 @@ public void PlayerList!&Char?::action(
   while #p > 0:
   }
   if(foo) .commandUpdate();
-  .update(tension, cvx=, highest=, lowest=, leftest=, rightest=);
+  .update(cvx=, highest=, lowest=, leftest=, rightest=);
   .com.gametime++;
   .rootAction();
 }
-public void PlayerList!&Char?::move(
+public void PlayerList!&Char?::move(float cvx=)
+{
+  loop{
+    *`top.self p = `top;
+    while;
+  do:
+    if(p~c~id < 0) continue;
+    cvx += p~c~move();
+  continue:
+    p = p~next;
+  while #p > 0:
+  }
+}
+public void PlayerList!&Char?::update(
   float highest=, float lowest=, float leftest=, float rightest=)
 {
   loop{
@@ -5767,20 +5779,7 @@ public void PlayerList!&Char?::move(
     while;
   do:
     if(p~c~id < 0) continue;
-    p~c~move(highest=, lowest=, leftest=, rightest=);
-  continue:
-    p = p~next;
-  while #p > 0:
-  }
-}
-public void PlayerList!&Char?::update(float tension, float cvx=)
-{
-  loop{
-    *`top.self p = `top;
-    while;
-  do:
-    if(p~c~id < 0) continue;
-    cvx += p~c~update(tension);
+    p~c~update(highest=, lowest=, leftest=, rightest=);
   continue:
     p = p~next;
   while #p > 0:
@@ -6440,11 +6439,10 @@ void gSetNormal(float scl, float x, float y)
 }
 
 void update(
-  float tension, float cvx=,
-  float highest=, float lowest=, float leftest=, float rightest=)
+  float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
 {
-  .players.move(highest=, lowest=, leftest=, rightest=);
-  .players.update(tension, cvx=);
+  .players.move(cvx=);
+  .players.update(highest=, lowest=, leftest=, rightest=);
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
       if(.projs[i][j].id >= 0) .projs[i][j].update();
@@ -6573,9 +6571,9 @@ public float action(
       .specialFlag &= !.gsROUNDNOTOVER;
     }
     if(#.superanim > 0) .superanim~ani.action();
-    .players.action(x, tension, cvx=, highest=, lowest=, leftest=, rightest=);
+    .players.action(x, cvx=, highest=, lowest=, leftest=, rightest=);
   else:
-    .update(tension, cvx=, highest=, lowest=, leftest=, rightest=);
+    .update(cvx=, highest=, lowest=, leftest=, rightest=);
     .rootAction();
   }
   %bool hbuf;
