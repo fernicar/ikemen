@@ -17,7 +17,7 @@ lib mes = <alpha/mesdialog.ssz>;
 
 
 int changeStateNest = 0;
-float oldx = 0.0;
+float oldx = 0.0, tickx = 0.0;
 int slowt = 0, shuttertime = 0;
 bool winskipped = false;
 
@@ -1682,8 +1682,8 @@ public &Projectile
     }
     if(`hitpause != 0) ret;
     float sp = .com.tickInterpola();
-    `x = `ticOldX + (`ticNewX - `ticOldX) * sp;
-    `y = `ticOldY + (`ticNewY - `ticOldY) * sp;
+    `x = `ticNewX - (`ticNewX - `ticOldX) * (1.0 - sp);
+    `y = `ticNewY - (`ticNewY - `ticOldY) * (1.0 - sp);
     if(.com.tickNextFrame()){
       `velocityx += `accelx;
       `velocityy += `accely;
@@ -3396,14 +3396,14 @@ public &Char
     if(`acttmp > 0){
       float sp = .com.tickInterpola();
       if(!`ls(.lsPOSFREEZEX)){
-        `sysfvar[.fX] = `ticOldX + (`ticNewX - `ticOldX) * sp;
+        `sysfvar[.fX] = `ticNewX - (`ticNewX - `ticOldX) * (1.0 - sp);
         if(.com.tickNextFrame()){
           `veloff *= `sysfvar[.fSTAND_FRICTION] * `sysfvar[.fSTAND_FRICTION];
           if(#`veloff < 1.0) `veloff = 0.0;
         }
       }
       if(!`ls(.lsPOSFREEZEY)){
-        `sysfvar[.fY] = `ticOldY + (`ticNewY - `ticOldY) * sp;
+        `sysfvar[.fY] = `ticNewY - (`ticNewY - `ticOldY) * (1.0 - sp);
       }
       if(.com.tickNextFrame()) switch(`stVal.phy){
       case .StTy::S:
@@ -5471,8 +5471,8 @@ public void Explod::update()
   }
   if(act && `bindtime == 0){
     float sp = .com.tickInterpola();
-    `x = `ticOldX + (`ticNewX - `ticOldX) * sp;
-    `y = `ticOldY + (`ticNewY - `ticOldY) * sp;
+    `x = `ticNewX - (`ticNewX - `ticOldX) * (1.0 - sp);
+    `y = `ticNewY - (`ticNewY - `ticOldY) * (1.0 - sp);
     if(.com.tickNextFrame()){
       `velocityx += `accelx;
       `velocityy += `accely;
@@ -6546,6 +6546,7 @@ public float action(
   }
   branch{
   cond .com.tickFrame():
+    .tickx = x;
     .com.allPalFX~step();
     .stage.bgPalFX~step();
     .stage.envShake.next();
@@ -6656,10 +6657,12 @@ public float action(
   branch{
     float tmp = leftest + rightest;
   cond cvx < 0.0:
-    tmp = .m.max!float?(leftest - (-160.0/.com.scale + tension), tmp);
+    tmp = .m.max!float?(
+      leftest - (-160.0/.com.scale + tension + (x-.tickx)), tmp);
     if(cvx < tmp) cvx = .m.min!float?(0.0, tmp);
   else:
-    tmp = .m.min!float?(rightest - (160.0/.com.scale - tension), tmp);
+    tmp = .m.min!float?(
+      rightest - (160.0/.com.scale - tension + (x-.tickx)), tmp);
     if(cvx > tmp) cvx = .m.max!float?(0.0, tmp);
   }
   if(.com.turbo > 0.0) .oldx = x;
