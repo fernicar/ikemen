@@ -668,7 +668,7 @@ public &StateBuilder
     `lasterror = ")がありません";
     ret false;
   }
-  int kyuushiki(bool comma, bool not=, %char out=, ^/char in=)
+  int kyuushiki(bool not=, %char out=, ^/char in=)
   {
     not = false;
     loop{
@@ -684,7 +684,7 @@ public &StateBuilder
         break, break;
       }
     while
-      #token > 0 && (!comma || !.s.equ(",", token)) && !.s.equ("||", token)
+      #token > 0 && !.s.equ("||", token)
       && !.s.equ("^^", token) && !.s.equ("&&", token)
       :
       if(!.cfg.IgnoreMostErrors){
@@ -734,7 +734,7 @@ public &StateBuilder
     int eqneq(%char out=, ^/char in=, ~$int() proc)
     {
       bool not;
-      int re = `kyuushiki(false, not=, out=, in=);
+      int re = `kyuushiki(not=, out=, in=);
       if(re != 0) ret re;
       re = proc(::);
       if(re <= 0) ret re;
@@ -858,7 +858,7 @@ public &StateBuilder
     cond .s.equ("animelem", token):
       {
         bool not;
-        int re = `kyuushiki(true, not=, out=, in=);
+        int re = `kyuushiki(not=, out=, in=);
         if(re != 0) ret re > 0;
         if(!`expAdsb(out=, in=)) ret false;
         out .= '$' .= obj .= "trAnimElemTime()$(.v.isSF()?.v.setSF():";
@@ -914,7 +914,7 @@ public &StateBuilder
     cond .s.equ("timemod", token):
       {
         bool not;
-        int re = `kyuushiki(true, not=, out=, in=);
+        int re = `kyuushiki(not=, out=, in=);
         if(re != 0) ret re > 0;
         out .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
         if(!`expAdsb(out=, in=)) ret false;
@@ -1606,7 +1606,7 @@ public &StateBuilder
         ^/char oldin;
         int id = .com.atoi(token[(h?7:11)..-1]);
         bool not;
-        int re = `kyuushiki(true, not=, out=, in=);
+        int re = `kyuushiki(not=, out=, in=);
         if(re != 0) ret re > 0;
         out .= ".v.setB(";
         if(!`expAdsb(out=, in=)) ret false;
