@@ -4891,8 +4891,10 @@ public &Char
           `targets .= tmp[i];
         else:
           c = .players.get(tmp[i]);
-          c~byBindClear();
-          c~stVal.hb.dropByid(`id);
+          if(#c > 0){
+            c~byBindClear();
+            c~stVal.hb.dropByid(`id);
+          }
         }
         i++;
       while i < #tmp:
