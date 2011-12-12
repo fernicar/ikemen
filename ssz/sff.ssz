@@ -717,6 +717,7 @@ public &FrameMethods<_t>
       while true:
       }
     }
+    if(ani.totaltime == 0 || ani.totaltime < -1) ani.sumtime = 0;
     ani.sumtime++;
     if(ani.totaltime > 0){
       if(ani.sumtime >= ani.totaltime){
