@@ -402,7 +402,7 @@ public &Stage
         ^&.bg.Action act = `getAction((int)bgc.x);
         if(#act > 0) bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
           bg.actionno = (int)bgc.x;
-          bg.anim.setFrames(act~frames, act~loopstart, act~nrepeat);
+          bg.anim.setFrames(act~frames, act~loopstart);
           bg.anim.current = 0;
         }];
       }

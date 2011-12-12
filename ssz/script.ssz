@@ -142,7 +142,7 @@ public &Anim
     &.bg.Action act;
     act.read(lines, i=);
     `ani~reset();
-    `ani~setFrames(act.frames, act.loopstart, act.nrepeat);
+    `ani~setFrames(act.frames, act.loopstart);
     ret #act.frames > 0;
   }
   public int animTime()

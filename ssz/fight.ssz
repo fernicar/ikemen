@@ -100,7 +100,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   int ary = .com.atoi(data);
   ^&.bg.Action act = al.getAction(ary);
   if(#act == 0) ret;
-  a.setFrames(act~frames, act~loopstart, act~nrepeat);
+  a.setFrames(act~frames, act~loopstart);
   a.mask = 0;
 }
 

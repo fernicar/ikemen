@@ -580,46 +580,6 @@ public ^/char sectionName(^/char sec=)
   ret secname;
 }
 
-public &FrameActionMethod<_t>
-{
-  public void _t::action(`anim_t ani=)
-  {
-    ani.time++;
-    if(`time >= 0 && ani.time >= `time){
-      ani.time = 0;
-      ani.newframe = true;
-      loop{do:
-        ani.current++;
-      while ani.frames[ani.current].time == 0 && ani.current < #ani.frames:
-      }
-      if(ani.current >= #ani.frames) branch{
-        ani.repeatcnt++;
-      cond ani.nrepeat >= 0 && ani.repeatcnt >= ani.nrepeat:
-        ani.current = 0;
-        ani.repeatcnt = 0;
-      else:
-        loop{
-          bool foo = true;
-          continue;
-        do:
-          loop{while; do:
-            ani.current++;
-          while ani.frames[ani.current].time == 0 && ani.current < #ani.frames:
-          }
-          if(ani.current < #ani.frames) break;
-        continue:
-          ani.current =
-            @m.max!index?(0)<, @m.min!index?(#ani.frames-1)<, ani.loopstart;
-        while foo!!:
-        }
-      comm:
-        ani.loopend = true;
-      }
-    }
-  }
-}
-
-
 
 public &SuperDangerousRef
 {

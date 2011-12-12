@@ -685,6 +685,110 @@ public &Sff
   }
 }
 
+public &FrameMethods<_t>
+{
+  public void _t::action(`anim_t ani=)
+  {
+    ani.time++;
+    if(ani.time >= `time){
+      if(ani.totaltime == -1 && ani.current == #ani.frames-1) break;
+      ani.time = 0;
+      ani.newframe = true;
+      loop{do:
+        ani.current++;
+        if(ani.totaltime == -1 && ani.current == #ani.frames-1) break;
+      while ani.frames[ani.current].time <= 0 && ani.current < #ani.frames:
+      }
+      if(ani.current >= #ani.frames) loop{
+        bool foo = true;
+        continue;
+      do:
+        loop{while; do:
+          ani.current++;
+        while ani.frames[ani.current].time <= 0 && ani.current < #ani.frames:
+        }
+        if(ani.current < #ani.frames) break;
+        if(!!foo){
+          ani.current = #ani.frames-1;
+          break, break;
+        }
+      continue:
+        ani.current = @m.max!index?(0, ani.loopstart);
+      while true:
+      }
+    }
+    ani.sumtime++;
+    if(ani.totaltime > 0){
+      if(ani.sumtime >= ani.totaltime){
+        ani.loopend = true;
+        ani.sumtime = ani.totaltime - ani.looptime;
+        ani.time = 0;
+        ani.newframe = true;
+        @m.limRange!index?((ani.current = ani.loopstart)=, 0, #ani.frames-1);
+      }
+      if(
+        ani.sumtime >= ani.totaltime + ani.nazotime
+        && ani.sumtime < ani.totaltime)
+      {
+        ani.time = 0;
+        ani.newframe = true;
+        ani.current = 0;
+      }
+    }
+  }
+  public void _t::readData(^/int ary, ^/char line)
+  {
+    `group = ary[0];
+    `number = ary[1];
+    `x = ary[2];
+    `y = ary[3];
+    `time = ary[4];
+    ^^/char spl = @s.split(",", line);
+    if(#spl < 6) ret;
+    loop{index i = 0; while; do:
+      switch(spl[5][i]){
+      case 'H', 'h':
+        `h = -1;
+      case 'V', 'v':
+        `v = -1;
+      }
+      i++;
+    while i < #spl[5]:
+    }
+    if(`h < 0) `x *= -1;
+    if(`v < 0) `y *= -1;
+    if(#spl < 7) ret;
+    ^/char a;
+    loop{index i = 6; while; do:
+      if(#(a = @s.trim(spl[i])) > 0) break;
+      i++;
+    while i < #spl:
+    }
+    a = @s.toLower(a);
+    branch{
+    cond @s.equ(a, "a1"):
+      `salpha = 0d255;
+      `dalpha = 0d128;
+    cond @s.equ(a[0..1], "s"):
+      `salpha = 0d1;
+      `dalpha = 0d255;
+    cond @s.equ(a[0..2], "as"):
+      {
+        index di = @s.find("d", a);
+        if(di < 0) break;
+        ushort tmp = (ushort).com.atoi(a[2..di]);
+        `salpha = (tmp > 0d255 ? 0d255 : tmp);
+        tmp = (ushort).com.atoi(a[di+1..-1]);
+        `dalpha = (tmp > 0d255 ? 0d255 : tmp);
+        if(`salpha == 0d1 && `dalpha == 0d255) `salpha = 0d0;
+      }
+    cond @s.equ(a[0..1], "a"):
+      `salpha = 0d255;
+      `dalpha = 0d255;
+    }
+  }
+}
+
 public &Anim<frame_t>
 {
   public ^&.Sff sff;
@@ -692,9 +796,11 @@ public &Anim<frame_t>
   public %frame_t frames;
   public &.sdl.Rect tile;
   public index loopstart = 0, current = 0, drawidx = 0;
-  public int nrepeat = -1;
   public int time = 0;
-  public int repeatcnt = 0;
+  public int sumtime = 0;
+  public int totaltime = 0;
+  public int looptime = 0;
+  public int nazotime = 0;
   public int mask = -1;
   public short salpha = -1, dalpha = 0;
   public byte h = 1, v = 1;
@@ -708,7 +814,7 @@ public &Anim<frame_t>
     `current = 0;
     `drawidx = 0;
     `time = 0;
-    `repeatcnt = 0;
+    `sumtime = 0;
     `newframe = true;
     `loopend = false;
   }
@@ -721,9 +827,11 @@ public &Anim<frame_t>
     `loopstart = a.loopstart;
     `current = a.current;
     `drawidx = a.drawidx;
-    `nrepeat = a.nrepeat;
     `time = a.time;
-    `repeatcnt = a.repeatcnt;
+    `sumtime = a.sumtime;
+    `totaltime = a.totaltime;
+    `looptime = a.looptime;
+    `nazotime = a.nazotime;
     `mask = a.mask;
     `salpha = a.salpha;
     `dalpha = a.dalpha;
@@ -732,11 +840,37 @@ public &Anim<frame_t>
     `newframe = a.newframe;
     `loopend = a.loopend;
   }
-  public void setFrames(%`frame_t f, index l, int r)
+  public void setFrames(%`frame_t f, index l)
   {
+    `totaltime = `looptime = `nazotime = 0;
+    loop{
+      if(f[-1].time == -1){
+        `totaltime = -1;
+        break, break;
+      }
+      index i = 0;
+      int tmp = `totaltime;
+      bool minus1 = false;
+      while;
+    do:
+      branch{
+      cond !minus1 && i != l && f[i].time == -1:
+        minus1 = true;
+        `looptime = -tmp - (int)(i >= l);
+        `totaltime = -1;
+        if(i < l) `nazotime = -1;
+      else:
+        `totaltime += f[i].time;
+        if(i >= l) `looptime += f[i].time;
+        if(minus1 && i < l) `nazotime += f[i].time;
+      }
+      if(!minus1 && i < l) tmp = `totaltime;
+      i++;
+    while i < #f:
+      if(`totaltime == -1) `nazotime = 0;
+    }
     `frames = f;
     `loopstart = l;
-    `nrepeat = r;
   }
   public ^frame_t currentFrame()
   {
@@ -744,36 +878,10 @@ public &Anim<frame_t>
   }
   public int animTime()
   {
-    if(#`frames == 0) ret 0;
-    if(`loopend && `time == 0) loop{
-      index i = `loopstart;
-    do:
-      if(i == `current) ret 0;
-      if(`frames[i].time != 0) break;
-      i++;
-    while i < #`frames:
-    }
-    int at = `time;
-    branch{
-    cond `frames[-1].time < 0:
-      at++;
-      loop{index j = 0; while; do:
-        at += `frames[j].time;
-        j++;
-      while j < `current:
-      }
-    else:
-      loop{
-        index i = `current;
-        if(`frames[i].time == 0) at--;
-        while;
-      do:
-        at -= `frames[i].time;
-        i++;
-      while i < #`frames:
-      }
-    }
-    ret at;
+    if(
+      #`frames == 0 || (
+        `loopend && `sumtime == `totaltime - `looptime))  ret 0;
+     ret `sumtime - `totaltime;
   }
   public int animElemTime(int elem)
   {
@@ -783,26 +891,19 @@ public &Anim<frame_t>
       ret t > 0 ? 0 : t;
     }
     int e = elem - 1;
-    if(`loopend && `time == 0 && `current == `loopstart){
+    if(`loopend && `sumtime == `totaltime - `looptime){
       t = 0;
       loop{index i = e; while; do:
-        t += `frames[i].time;
+        t += .m.max!int?(0, `frames[i].time);
         i++;
-      while i < #`frames && `frames[i].time >= 0:
-      }
+      while i < #`frames:}
       ret t;
     }
-    t = `time;
-    loop{index i = e; while; do:
-      t += `frames[i].time;
+    t = `sumtime;
+    loop{index i = 0; while; do:
+      t -= .m.max!int?(0, `frames[i].time);
       i++;
-    while i < `current && `frames[i].time >= 0:
-    }
-    loop{index i = `current; while; do:
-      t -= `frames[i].time;
-      i++;
-    while i < e && `frames[i].time >= 0:
-    }
+    while i < e:}
     ret t;
   }
   public int animElemNo(int time)
@@ -818,7 +919,7 @@ public &Anim<frame_t>
       do:
         t += `frames[i].time;
       continue:
-        if(lp && `frames[i].time < 0){
+        if(lp && (i == #`frames-1 && `frames[i].time == -1)){
           ret i + 1;
         }
         if(t >= 0){
@@ -841,7 +942,7 @@ public &Anim<frame_t>
       do:
         t -= `frames[i].time;
       continue:
-        if(t <= 0 || `frames[i].time < 0){
+        if(t <= 0 || (i == #`frames-1 && `frames[i].time == -1)){
           if(t == 0 && `loopend && i == `loopstart) ret #`frames;
           ret i + 1;
         }
@@ -854,7 +955,7 @@ public &Anim<frame_t>
       while true:
       }
     }
-    ret 1;
+    ret #`frames-1;
   }
   public void setAnimElem(int e)
   {
@@ -867,6 +968,8 @@ public &Anim<frame_t>
     `newframe = true;
     `updateSprite();
     `loopend = false;
+    `sumtime = 0;//animElemTime内で使用
+    `sumtime = -`animElemTime(`current);
   }
   public void updateSprite()
   {
