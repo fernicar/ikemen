@@ -974,7 +974,7 @@ public &Anim<frame_t>
     `updateSprite();
     `loopend = false;
     `sumtime = 0;//animElemTime内で使用
-    `sumtime = -`animElemTime(`current);
+    `sumtime = -`animElemTime(`current+1);
   }
   public void updateSprite()
   {
