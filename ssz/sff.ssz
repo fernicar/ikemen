@@ -727,8 +727,12 @@ public &FrameMethods<_t>
         @m.limRange!index?((ani.current = ani.loopstart)=, 0, #ani.frames-1);
       }
       if(
-        ani.sumtime >= ani.totaltime + ani.nazotime
-        && ani.sumtime < ani.totaltime)
+        (
+          ani.sumtime >= ani.totaltime + ani.nazotime
+          && ani.sumtime >= ani.totaltime - ani.looptime)
+        && (
+          ani.sumtime == ani.totaltime + ani.nazotime
+          || ani.sumtime == ani.totaltime - ani.looptime))
       {
         ani.time = 0;
         ani.newframe = true;
@@ -843,7 +847,7 @@ public &Anim<frame_t>
   public void setFrames(%`frame_t f, index l)
   {
     `totaltime = `looptime = `nazotime = 0;
-    loop{
+    if(#f > 0) loop{
       if(f[-1].time == -1){
         `totaltime = -1;
         break, break;
