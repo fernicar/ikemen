@@ -3360,7 +3360,6 @@ public &Char
       branch{
       cond #`ani > 0:
         `curFrame = `ani~ani.currentFrame();
-        `ani~ani.updateSprite();
       else:
         `curFrame.new(0);
       }
@@ -3477,6 +3476,7 @@ public &Char
     float highest=, float lowest=, float leftest=, float rightest=)
   {
     if(.com.tickFrame()){
+      if(#`ani > 0) `ani~ani.updateSprite();
       `atktmp =
         (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
         && `isActive() ? `stVal.no : -1;
