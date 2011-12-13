@@ -902,7 +902,7 @@ public &StateBuilder
               not = false;
             }
             `kyuushiki2(true, in=);
-            if(!`expEquSub(out=, in=, false)) ret false;
+            if(!`expEquSub(out=, in=, not)) ret false;
             break;
           comm:
             `kyuushiki2(false, in=);
@@ -1654,7 +1654,7 @@ public &StateBuilder
               not = false;
             }
             `kyuushiki2(true, in=);
-            if(!`expEquSub(out=, in=, false)) ret false;
+            if(!`expEquSub(out=, in=, not)) ret false;
             break;
           comm:
             `kyuushiki2(false, in=);
