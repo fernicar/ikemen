@@ -340,6 +340,7 @@ public &StateBuilder
   public &.Const c;
   public int playerno = 0;
   *.s.ptn_t pt1, pt2, pt3;
+  int kakko = 0;
   type paraF_t = $bool(^/char=);
   new()
   {
@@ -658,13 +659,17 @@ public &StateBuilder
       token = `tokenizer(in=);
     while #token > 0 && !.s.equ(")", token) && !.s.equ("]", token):
     }
+    `kakko--;
     ret true;
   }
   bool kakkotojiru(^/char in=)
   {
     ^/char oldin = in;
     ^/char token = `tokenizer(in=);
-    if(.s.equ(")", token)) ret true;
+    if(.s.equ(")", token)){
+      `kakko--;
+      ret true;
+    }
     `lasterror = ")がありません";
     ret false;
   }
@@ -706,6 +711,8 @@ public &StateBuilder
         break, break;
       case '(', '[':
         if(range) break, break;
+      case ')', ']':
+        if(`kakko > 0) break, break;
       case '|', '^', '&':
         if(in[i] == in[i+1]) break, break;
       }
@@ -746,6 +753,7 @@ public &StateBuilder
     if(#num == 0) branch{
       ^/char token = name;
     cond .s.equ("(", token) || .s.equ("[", token):
+      `kakko++;
       if(!`expBoolOr(out=, in=) || !`tojikakko(in=)) ret false;
     cond .s.equ("-", token):
       if(!`expPostNot(out=, in=)) ret false;
@@ -796,6 +804,7 @@ public &StateBuilder
         `lasterror = (buf .= token .= "の次に(がありません");
         ret false;
       }
+      `kakko++;
       out .= "`trLog(";
       if(!`expBoolOr(out=, in=)) ret false;
       out .= "$.v,";
@@ -817,6 +826,7 @@ public &StateBuilder
         `lasterror = (buf .= token .= "の次に(がありません");
         ret false;
       }
+      `kakko++;
       if(!`expBoolOr(out=, in=)) ret false;
       out .= "$.v,";
       if(!.s.equ(",", `tokenizer(in=))){
@@ -1438,6 +1448,7 @@ public &StateBuilder
         `lasterror = (buf .= token .= "の次に(がありません");
         ret false;
       }
+      `kakko++;
       token = `tokenizer(in=);
       branch{
       cond .s.equ("xveladd", token):
@@ -1721,6 +1732,7 @@ public &StateBuilder
         `lasterror = (buf .= token .= "の次に(がありません");
         ret false;
       }
+      `kakko++;
       if(!`expBoolOr(out=, in=)) ret false;
       out .= "$.v.isTrue()?";
       if(!.s.equ(",", `tokenizer(in=))){
@@ -1744,6 +1756,7 @@ public &StateBuilder
         `lasterror = (buf .= token .= "の次に(がありません");
         ret false;
       }
+      `kakko++;
       token = `tokenizer(in=);
       if(!`kakkotojiru(in=)) ret false;
       branch{
@@ -1805,6 +1818,7 @@ public &StateBuilder
         bool n = token[5] == 'n';
         token = `tokenizer(in=);
       cond .s.equ("(", token):
+        `kakko++;
         if(!`expBoolOr(out=, in=)) ret false;
         branch{
         cond h:
@@ -2071,6 +2085,7 @@ public &StateBuilder
         `lasterror = "]か)がありません";
         ret false;
       }
+      `kakko--;
     else:
       in = oldin;
       if(!`tojikakko(in=)) ret false;
@@ -2109,6 +2124,7 @@ public &StateBuilder
       buf .= "$.v)";
       break;
     comm:
+      `kakko++;
       if(!`expRange(buf=, in=, oldin, openkaku, not)) ret false;
     }
     ret true;
@@ -2311,6 +2327,7 @@ public &StateBuilder
   }
   bool expression(%char out=, ^/char in=)
   {
+    `kakko = 0;
     if(!`expBoolOr(out=, in=)) ret false;
     ^/char oldin = in;
     ^/char token = `tokenizer(in=);
@@ -2933,6 +2950,7 @@ public &StateBuilder
       bool sys = false;
       ~$bool(^/char=) set = [bool(^/char data=){
         data = "(" + data;
+        `kakko = 0;
         if(!`expValue(`state.ctrlList[-1].task=, data=)) ret false;
         index f = .s.find("=", data);
         if(f < 0){
