@@ -579,6 +579,10 @@ public &StateBuilder
         flg |= (int).chr.StTy::C;
       case 'A', 'a':
         flg |= (int).chr.StTy::A;
+      case ' ', '\t':
+      default:
+        `lasterror = hit[0] + "が無効な値です";
+        ret false;
       }
       i++;
     while i < #hit[0]:
@@ -632,8 +636,7 @@ public &StateBuilder
         flg |= (int).chr.AtTy::HP;
       else:
         if(!.cfg.IgnoreMostErrors){
-          %char buf;
-          `lasterror = (buf .= hit[i] .= "が無効な値です");
+          `lasterror = hit[i] + "が無効な値です";
           ret false;
         }
       }
@@ -738,15 +741,14 @@ public &StateBuilder
       }
       ret true;
     }
-    int eqneq(%char out=, ^/char in=, ~$int() proc)
+    bool eqneq(%char out=, ^/char in=, ~$bool() proc)
     {
       bool not;
       int re = `kyuushiki(not=, out=, in=);
-      if(re != 0) ret re;
-      re = proc(::);
-      if(re <= 0) ret re;
+      if(re != 0) ret re > 0;
+      if(!proc(::)) ret false;
       if(not) out .= "$`trBoolNot()";
-      ret 1;
+      ret true;
     }
     ^/char num = `number(name);
     out .= num;
@@ -1077,54 +1079,44 @@ public &StateBuilder
         break, else;
       }
     cond .s.equ("command", token):
-      {
-        int re = eqneq(out=, in=)<, [int(){
-          if(!.s.equ(\", `tokenizer(in=))){
-            `lasterror = "コマンド名が"\""で囲まれていません";
-            ret -1;
-          }
-          {
-            index fnd = .s.find(\", in);
-            token = in[0..fnd];
-            in = in[fnd+1..-1];
-          }
-          out .= obj .= "trCommand("\" .= token .= \"")";
-          ret 1;
-        }];
-        if(re < 0) ret false;
-        if(re == 0) break, else;
-      }
+      if(!eqneq(out=, in=)<, [bool(){
+        if(!.s.equ(\", `tokenizer(in=))){
+          `lasterror = "コマンド名が"\""で囲まれていません";
+          ret false;
+        }
+        index fnd = .s.find(\", in);
+        token = in[0..fnd];
+        in = in[fnd+1..-1];
+        out .= obj .= "trCommand("\" .= token .= \"")";
+        ret true;
+      }]) ret false;
     cond
       .s.equ("name", token) || .s.equ("p1name", token)
       || .s.equ("p2name", token)
       || .s.equ("p3name", token) || .s.equ("p4name", token)
       || .s.equ("authorname", token)
       :
-      {
+      if(!eqneq(out=, in=)<, [bool(){
         bool a = token[0] =='a';
         bool p = token[0] =='p';
         int pn = token[0] =='n' ? 1 : (int)(token[1]-'0');
-        int re = eqneq(out=, in=)<, [int(){
-          if(!.s.equ(\", `tokenizer(in=))){
-            `lasterror = "名前が"\""で囲まれていません";
-            ret -1;
-          }
-          index fnd = .s.find(\", in);
-          token = in[0..fnd];
-          in = in[fnd+1..-1];
-          branch{
-          cond a:
-            out .=
-              ".v.setB(.s.equ(.s.toLower(" .= obj .= "author)"
-              .= ","\" .= .s.toLower(token) .= \""))";
-          else:
-            out .= obj .= "trPName(" .= .s.iToS(pn) .= ","\" .= token .= \"")";
-          }
-          ret 1;
-        }];
-        if(re < 0) ret false;
-        if(re == 0) break, else;
-      }
+        if(!.s.equ(\", `tokenizer(in=))){
+          `lasterror = "名前が"\""で囲まれていません";
+          ret false;
+        }
+        index fnd = .s.find(\", in);
+        token = in[0..fnd];
+        in = in[fnd+1..-1];
+        branch{
+        cond a:
+          out .=
+            ".v.setB(.s.equ(.s.toLower(" .= obj .= "author)"
+            .= ","\" .= .s.toLower(token) .= \""))";
+        else:
+          out .= obj .= "trPName(" .= .s.iToS(pn) .= ","\" .= token .= \"")";
+        }
+        ret true;
+      }]) ret false;
     cond .s.equ("const", token):
       if(!.s.equ("(", `tokenizer(in=))){
         %char buf;
@@ -1332,11 +1324,12 @@ public &StateBuilder
     cond .s.equ("prevstateno", token):
       out .= ".v.setI(" .= obj .= "stVal.prevno)";
     cond .s.equ("statetype", token) || .s.equ("p2statetype", token):
-      {
+      if(!eqneq(out=, in=)<, [bool(){
         bool p2 = token[0] == 'p';
         ^/char sty;
-        int re = eqneq(out=, in=)<, [int(){
-          token = `tokenizer(in=);
+        token = `tokenizer(in=);
+        branch{
+        cond #token > 0:
           switch(token[0]){
           case 's':
             sty = ".StTy::S";
@@ -1347,25 +1340,26 @@ public &StateBuilder
           case 'l':
             sty = ".StTy::L";
           default:
-            if(.cfg.IgnoreMostErrors) ret 0;
-            {
-              %char buf;
-              `lasterror = (buf .= token .= "が無効な値です");
-              ret -1;
-            }
+            break, else;
           }
-          out .= obj .= (p2 ? "trP2StateType(" : "trStateType(") .= sty .= ")";
-          ret 1;
-        }];
-        if(re < 0) ret false;
-        if(re == 0) break, else;
-      }
+        else:
+          if(!.cfg.IgnoreMostErrors){
+            `lasterror = token + "が無効な値です";
+            ret false;
+          }
+          out .= ".v.setI(0)";
+          ret true;
+        }
+        out .= obj .= (p2 ? "trP2StateType(" : "trStateType(") .= sty .= ")";
+        ret true;
+      }]) ret false;
     cond .s.equ("movetype", token) || .s.equ("p2movetype", token):
-      {
+      if(!eqneq(out=, in=)<, [bool(){
         bool p2 = token[0] == 'p';
         ^/char tmp;
-        int re = eqneq(out=, in=)<, [int(){
-          token = `tokenizer(in=);
+        token = `tokenizer(in=);
+        branch{
+        cond #token > 0:
           switch(token[0]){
           case 'i':
             tmp = ".MovTy::I";
@@ -1374,24 +1368,26 @@ public &StateBuilder
           case 'h':
             tmp = ".MovTy::H";
           default:
-            if(.cfg.IgnoreMostErrors) ret 0;
-            {
-              %char buf;
-              `lasterror = (buf .= token .= "が無効な値です");
-              ret -1;
-            }
+            break, else;
           }
-          out .= obj .= (p2 ? "trP2MoveType(" : "trMoveType(") .= tmp .= ")";
-          ret 1;
-        }];
-        if(re < 0) ret false;
-        if(re == 0) break, else;
-      }
+        else:
+          if(!.cfg.IgnoreMostErrors){
+            %char buf;
+            `lasterror = (buf .= token .= "が無効な値です");
+            ret false;
+          }
+          out .= ".v.setI(0)";
+          ret true;
+        }
+        out .= obj .= (p2 ? "trP2MoveType(" : "trMoveType(") .= tmp .= ")";
+        ret true;
+      }]) ret false;
     cond .s.equ("physics", token):
-      {
+      if(!eqneq(out=, in=)<, [bool(){
         ^/char pty;
-        int re = eqneq(out=, in=)<, [int(){
-          token = `tokenizer(in=);
+        token = `tokenizer(in=);
+        branch{
+        cond #token > 0:
           switch(token[0]){
           case 's':
             pty = ".StTy::S";
@@ -1402,46 +1398,39 @@ public &StateBuilder
           case 'n':
             pty = ".StTy::N";
           default:
-            if(.cfg.IgnoreMostErrors) ret 0;
-            {
-              %char buf;
-              `lasterror = (buf .= token .= "が無効な値です");
-              ret -1;
-            }
+            break, else;
           }
-          out .=
-            ".v.setB(" .= obj .= "stVal.phy==" .= pty .= ")";
-          ret 1;
-        }];
-        if(re < 0) ret false;
-        if(re == 0) break, else;
-      }
+        else:
+          if(!.cfg.IgnoreMostErrors){
+            %char buf;
+            `lasterror = (buf .= token .= "が無効な値です");
+            ret false;
+          }
+          out .= ".v.setI(0)";
+          ret true;
+        }
+        out .=
+          ".v.setB(" .= obj .= "stVal.phy==" .= pty .= ")";
+        ret true;
+      }]) ret false;
     cond .s.equ("teammode", token):
-      {
+      if(!eqneq(out=, in=)<, [bool(){
         ^/char pty;
-        int re = eqneq(out=, in=)<, [int(){
-          token = `tokenizer(in=);
-          branch{
-          cond .s.equ("single", token):
-            pty = ".com.TeamMode::Single";
-          cond .s.equ("simul", token):
-            pty = ".com.TeamMode::Simul";
-          cond .s.equ("turns", token):
-            pty = ".com.TeamMode::Turns";
-          else:
-            if(.cfg.IgnoreMostErrors) ret 0;
-            {
-              %char buf;
-              `lasterror = (buf .= token .= "が無効な値です");
-              ret -1;
-            }
-          }
-          out .= obj .= "trTeamMode(" .= pty .= ")";
-          ret 1;
-        }];
-        if(re < 0) ret false;
-        if(re == 0) break, else;
-      }
+        token = `tokenizer(in=);
+        branch{
+        cond .s.equ("single", token):
+          pty = ".com.TeamMode::Single";
+        cond .s.equ("simul", token):
+          pty = ".com.TeamMode::Simul";
+        cond .s.equ("turns", token):
+          pty = ".com.TeamMode::Turns";
+        else:
+          `lasterror = token + "が無効な値です";
+          ret false;
+        }
+        out .= obj .= "trTeamMode(" .= pty .= ")";
+        ret true;
+      }]) ret false;
     cond .s.equ("gethitvar", token):
       if(!.s.equ("(", `tokenizer(in=))){
         %char buf;
@@ -1528,19 +1517,14 @@ public &StateBuilder
       }
       if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("hitdefattr", token):
-      {
+      if(!eqneq(out=, in=)<, [bool(){
         int flg;
-        index fi;
-        int re = eqneq(out=, in=)<, [int(){
-          fi = .s.cFind(")&|^", in);
-          if(!`attr(flg=, in[0..fi])) ret -1;
-          in = in[fi..-1];
-          out .= obj .= "trHitDefAttr(" .= .s.iToS(flg) .= ")";
-          ret 1;
-        }];
-        if(re < 0) ret false;
-        if(re == 0) break, else;
-      }
+        index fi = .s.cFind(")]&|^", in);
+        if(!`attr(flg=, in[0..fi])) ret false;
+        in = in[fi..-1];
+        out .= obj .= "trHitDefAttr(" .= .s.iToS(flg) .= ")";
+        ret true;
+      }]) ret false;
     cond
       .s.equ("numhelper", token) || .s.equ("numexplod", token)
       || .s.equ("numtarget", token) || .s.equ("numprojid", token)
@@ -1761,41 +1745,33 @@ public &StateBuilder
       if(!`kakkotojiru(in=)) ret false;
       branch{
       cond .s.equ("info.name", token):
-        {
-          int re = eqneq(out=, in=)<, [int(){
-            if(!.s.equ(\", `tokenizer(in=))){
-              `lasterror = "名前が"\""で囲まれていません";
-              ret -1;
-            }
-            index fnd = .s.find(\", in);
-            token = in[0..fnd];
-            in = in[fnd+1..-1];
-            out .=
-              ".v.setB(.s.equ(.s.toLower(.stg~name)"
-              .= ","\" .= .s.toLower(token) .= \""))";
-            ret 1;
-          }];
-          if(re < 0) ret false;
-          if(re == 0) break, else;
-        }
+        if(!eqneq(out=, in=)<, [bool(){
+          if(!.s.equ(\", `tokenizer(in=))){
+            `lasterror = "名前が"\""で囲まれていません";
+            ret false;
+          }
+          index fnd = .s.find(\", in);
+          token = in[0..fnd];
+          in = in[fnd+1..-1];
+          out .=
+            ".v.setB(.s.equ(.s.toLower(.stg~name)"
+            .= ","\" .= .s.toLower(token) .= \""))";
+          ret true;
+        }]) ret false;
       cond .s.equ("info.author", token):
-        {
-          int re = eqneq(out=, in=)<, [int(){
-            if(!.s.equ(\", `tokenizer(in=))){
-              `lasterror = "名前が"\""で囲まれていません";
-              ret -1;
-            }
-            index fnd = .s.find(\", in);
-            token = in[0..fnd];
-            in = in[fnd+1..-1];
-            out .=
-              ".v.setB(.s.equ(.s.toLower(.stg~author)"
-              .= ","\" .= .s.toLower(token) .= \""))";
-            ret 1;
-          }];
-          if(re < 0) ret false;
-          if(re == 0) break, else;
-        }
+        if(!eqneq(out=, in=)<, [bool(){
+          if(!.s.equ(\", `tokenizer(in=))){
+            `lasterror = "名前が"\""で囲まれていません";
+            ret false;
+          }
+          index fnd = .s.find(\", in);
+          token = in[0..fnd];
+          in = in[fnd+1..-1];
+          out .=
+            ".v.setB(.s.equ(.s.toLower(.stg~author)"
+            .= ","\" .= .s.toLower(token) .= \""))";
+          ret true;
+        }]) ret false;
       else:
         break, else;
       }
