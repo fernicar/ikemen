@@ -685,7 +685,7 @@ public &StateBuilder
       cond .s.equ("!=", token):
         not = true;
         break, break;
-      cond token[-1] == '=':
+      cond #token > 0 && token[-1] == '=':
         break, break;
       }
     while
