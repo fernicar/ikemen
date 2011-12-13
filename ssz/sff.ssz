@@ -836,20 +836,20 @@ public &Anim<frame_t>
         break, break;
       }
       index i = 0;
-      int tmp = `totaltime;
+      int tmp = 0;
       while;
     do:
       branch{
       cond f[i].time == -1:
-        `looptime = -tmp - (int)(i >= l);
         `totaltime = -1;
+        `looptime = -tmp - (int)(i >= l);
         `nazotime = -(int)(i < l);
       else:
         `totaltime += f[i].time;
         if(i >= l) `looptime += f[i].time;
         if(i < l) `nazotime += f[i].time;
       }
-      if(i < l) tmp = `totaltime;
+      if(i < l) tmp += f[i].time;
       i++;
     while i < #f:
       if(`totaltime == -1) `nazotime = 0;
