@@ -581,8 +581,10 @@ public &StateBuilder
         flg |= (int).chr.StTy::A;
       case ' ', '\t':
       default:
-        `lasterror = hit[0] + "が無効な値です";
-        ret false;
+        if(!.cfg.IgnoreMostErrors){
+          `lasterror = hit[0] + "が無効な値です";
+          ret false;
+        }
       }
       i++;
     while i < #hit[0]:
