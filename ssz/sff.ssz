@@ -947,7 +947,8 @@ public &Anim<frame_t>
         .m.limRange!index?((`current = `loopstart)=, 0, #`frames-1);
       }
       if(
-        (
+        `nazotime < 0
+        && (
           `sumtime >= `totaltime + `nazotime
           && `sumtime >= `totaltime - `looptime)
         && (
