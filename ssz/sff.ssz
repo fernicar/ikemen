@@ -970,7 +970,9 @@ public &Anim<frame_t>
   {
     if(#`frames == 0) ret;
     `updateSprite();
-    if(`sumtime >= `totaltime) `sumtime = `totaltime - `looptime;
+    if(`totaltime != -1 && `sumtime >= `totaltime){
+      `sumtime = `totaltime - `looptime;
+    }
     `frames[`current].action(`=);
   }
   int alphaFoo()
