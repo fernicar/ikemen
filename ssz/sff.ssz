@@ -717,7 +717,9 @@ public &FrameMethods<_t>
       while true:
       }
     }
-    if(ani.totaltime == 0 || ani.totaltime < -1) ani.sumtime = 0;
+    if(ani.totaltime != -1 && ani.sumtime >= ani.totaltime){
+      ani.sumtime = ani.totaltime - ani.looptime;
+    }
     ani.sumtime++;
     if(ani.totaltime != -1 && ani.sumtime >= ani.totaltime) ani.loopend = true;
   }
@@ -835,21 +837,19 @@ public &Anim<frame_t>
       }
       index i = 0;
       int tmp = `totaltime;
-      bool minus1 = false;
       while;
     do:
       branch{
-      cond !minus1 && i != l && f[i].time == -1:
-        minus1 = true;
+      cond f[i].time == -1:
         `looptime = -tmp - (int)(i >= l);
         `totaltime = -1;
-        if(i < l) `nazotime = -1;
+        `nazotime = -(int)(i < l);
       else:
         `totaltime += f[i].time;
         if(i >= l) `looptime += f[i].time;
-        if(minus1 && i < l) `nazotime += f[i].time;
+        if(i < l) `nazotime += f[i].time;
       }
-      if(!minus1 && i < l) tmp = `totaltime;
+      if(i < l) tmp = `totaltime;
       i++;
     while i < #f:
       if(`totaltime == -1) `nazotime = 0;
@@ -970,9 +970,6 @@ public &Anim<frame_t>
   {
     if(#`frames == 0) ret;
     `updateSprite();
-    if(`totaltime != -1 && `sumtime >= `totaltime){
-      `sumtime = `totaltime - `looptime;
-    }
     `frames[`current].action(`=);
   }
   int alphaFoo()
