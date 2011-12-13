@@ -719,7 +719,7 @@ public &FrameMethods<_t>
     }
     if(ani.totaltime == 0 || ani.totaltime < -1) ani.sumtime = 0;
     ani.sumtime++;
-    if(ani.sumtime >= ani.totaltime) ani.loopend = true;
+    if(ani.totaltime != -1 && ani.sumtime >= ani.totaltime) ani.loopend = true;
   }
   public void _t::readData(^/int ary, ^/char line)
   {
