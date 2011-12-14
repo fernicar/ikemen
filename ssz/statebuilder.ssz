@@ -1857,9 +1857,10 @@ public &StateBuilder
       || .s.equ("/", token) || .s.equ("%", token)
       :
       if(!.cfg.IgnoreMostErrors) else;
-      token = `tokenizer(in=);
       {
+        ^/char oldin = in;
         ^/char old = token;
+        token = `tokenizer(in=);
         index i = 0;
         loop{while; do:
           if((token[i] < '0' || token[i] > '9') && token[i] != '.') break;
@@ -1867,6 +1868,11 @@ public &StateBuilder
         while i < #token:}
         num = `number(token[0..i]);
         if(#num == 0 || i >= #token){
+          if(.s.equ("&&", old) || .s.equ("^^", old) || .s.equ("||", old)){
+            token = old;
+            in = oldin;
+            break, break, break, else;
+          }
           `lasterror = old + "が不正です";
           ret false;
         }
@@ -1881,7 +1887,8 @@ public &StateBuilder
           out .= ".v.setI(0)";
         cond
           .s.equ(")", token) || .s.equ("||", token)
-          || .s.equ("^^", token) || .s.equ("&&", token):
+          || .s.equ("^^", token) || .s.equ("&&", token)
+          :
           out .= ".v.setI(0)";
           in = token + in;
         else:

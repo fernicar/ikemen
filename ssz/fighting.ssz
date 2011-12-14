@@ -188,6 +188,11 @@ void game()
     `y = `newy = 0.0;
     `l = `r = 0.0;
     `scl = `sclmul = 1.0;
+    .com.scale = .chr.stg~ztopscale;
+    .com.screenleft = (float).chr.stg~screenleft;
+    .com.screenright = (float).chr.stg~screenright;
+    .com.xmin = -160.0/.com.scale + .com.screenleft;
+    .com.xmax = 160.0/.com.scale - .com.screenright;
   }
   loop{
     int stagetime;
