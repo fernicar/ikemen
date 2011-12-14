@@ -707,15 +707,20 @@ public &StateBuilder
     }
     ret 0;
   }
-  void kyuushiki2(bool range, ^/char in=)
+  bool kyuushiki2(bool range, ^/char in=)
   {
     index i = 0;
+    bool re = false;
     loop{while; do:
       switch(in[i]){
       case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+        re = true;
         break, break;
       case '(', '[':
-        if(range) break, break;
+        if(range){
+          re = true;
+          break, break, break;
+        }
       case ')', ']':
         if(`kakko > 0) break, break;
       case '|', '^', '&':
@@ -724,6 +729,7 @@ public &StateBuilder
       i++;
     while i < #in:}
     in = in[i..-1];
+    ret re;
   }
   bool expRedirectable(^/char obj, ^/char name, %char out=, ^/char in=)
   {:<-
@@ -905,12 +911,20 @@ public &StateBuilder
               if(!.s.equ("=", token)) in = oldin;
               not = false;
             }
-            `kyuushiki2(true, in=);
-            if(!`expEquSub(out=, in=, not)) ret false;
+            branch{
+            cond `kyuushiki2(true, in=):
+              if(!`expEquSub(out=, in=, not)) ret false;
+            else:
+              out .= "`trEqu(.v,.v.setI(0)$.v)";
+            }
             break;
           comm:
-            `kyuushiki2(false, in=);
-            if(!`expAdsb(out=, in=)) ret false;
+            branch{
+            cond `kyuushiki2(false, in=):
+              if(!`expAdsb(out=, in=)) ret false;
+            else:
+              out .= ".v.setI(0)";
+            }
             out .= "$.v)";
           }
           out .= ')';
@@ -959,12 +973,20 @@ public &StateBuilder
             not = false;
           }
           oldin = in;
-          `kyuushiki2(true, in=);
-          if(!`expEquSub(out=, in=, not)) ret false;
-          break;
-        comm:
-          `kyuushiki2(false, in=);
-          if(!`expAdsb(out=, in=)) ret false;
+            branch{
+            cond `kyuushiki2(true, in=):
+              if(!`expEquSub(out=, in=, not)) ret false;
+            else:
+              out .= "`trEqu(.v,.v.setI(0)$.v)";
+            }
+            break;
+          comm:
+            branch{
+            cond `kyuushiki2(false, in=):
+              if(!`expAdsb(out=, in=)) ret false;
+            else:
+              out .= ".v.setI(0)";
+            }
           out .= "$.v)";
         }
       }
@@ -1639,12 +1661,20 @@ public &StateBuilder
               if(!.s.equ("=", token)) in = oldin;
               not = false;
             }
-            `kyuushiki2(true, in=);
-            if(!`expEquSub(out=, in=, not)) ret false;
+            branch{
+            cond `kyuushiki2(true, in=):
+              if(!`expEquSub(out=, in=, not)) ret false;
+            else:
+              out .= "`trEqu(.v,.v.setI(1)$.v)";
+            }
             break;
           comm:
-            `kyuushiki2(false, in=);
-            if(!`expAdsb(out=, in=)) ret false;
+            branch{
+            cond `kyuushiki2(false, in=):
+              if(!`expAdsb(out=, in=)) ret false;
+            else:
+              out .= ".v.setI(1)";
+            }
             out .= "$.v)";
           }
         else:
@@ -1868,11 +1898,6 @@ public &StateBuilder
         while i < #token:}
         num = `number(token[0..i]);
         if(#num == 0 || i >= #token){
-          if(.s.equ("&&", old) || .s.equ("^^", old) || .s.equ("||", old)){
-            token = old;
-            in = oldin;
-            break, break, break, else;
-          }
           `lasterror = old + "が不正です";
           ret false;
         }
@@ -1885,12 +1910,6 @@ public &StateBuilder
         branch{
         cond .s.equ("", token):
           out .= ".v.setI(0)";
-        cond
-          .s.equ(")", token) || .s.equ("||", token)
-          || .s.equ("^^", token) || .s.equ("&&", token)
-          :
-          out .= ".v.setI(0)";
-          in = token + in;
         else:
           break, else;
         }
