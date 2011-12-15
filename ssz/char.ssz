@@ -5304,31 +5304,22 @@ public &Char
   public void trMoveContact()
   {
     .v.typ = .VarTy::Int;
-    .v.i = #`stVal.mctime;
+    .v.i = `stVal.mctyp != .MoveContact::Reversed ? #`stVal.mctime : 0;
   }
   public void trMoveReversed()
   {
     .v.typ = .VarTy::Int;
-    .v.i = 0;
-    if(`stVal.mctyp == .MoveContact::Reversed){
-      .v.i = #`stVal.mctime;
-    }
+    .v.i = `stVal.mctyp == .MoveContact::Reversed ? #`stVal.mctime : 0;
   }
   public void trMoveHit()
   {
     .v.typ = .VarTy::Int;
-    .v.i = 0;
-    if(`stVal.mctyp == .MoveContact::Hit){
-      .v.i = #`stVal.mctime;
-    }
+    .v.i = `stVal.mctyp == .MoveContact::Hit ? #`stVal.mctime : 0;
   }
   public void trMoveGuarded()
   {
     .v.typ = .VarTy::Int;
-    .v.i = 0;
-    if(`stVal.mctyp == .MoveContact::Guarded){
-      .v.i = #`stVal.mctime;
-    }
+    .v.i = `stVal.mctyp == .MoveContact::Guarded ? #`stVal.mctime : 0;
   }
   public void trPalNo()
   {
