@@ -907,24 +907,26 @@ public &StateBuilder
             branch{
             cond .s.equ("!=", token):
               not = true;
-            else:
-              if(!.s.equ("=", token)) in = oldin;
+            cond .s.equ("=", token):
               not = false;
-            }
-            branch{
-            cond `kyuushiki2(true, in=):
-              if(!`expEquSub(out=, in=, not)) ret false;
             else:
-              out .= "`trEqu(.v,.v.setI(0)$.v)";
+              not = false;
+              in = oldin;
+              branch{
+              cond `kyuushiki2(true, in=):
+                if(!`expEquSub(out=, in=, not)) ret false;
+              else:
+                out .= "`trEqu(.v,.v.setI(0)$.v)";
+              }
+              break;
+            comm:
+              `kyuushiki2(true, in=);
+              if(!`expEquSub(out=, in=, not)) ret false;
             }
             break;
           comm:
-            branch{
-            cond `kyuushiki2(false, in=):
-              if(!`expAdsb(out=, in=)) ret false;
-            else:
-              out .= ".v.setI(0)";
-            }
+            `kyuushiki2(false, in=);
+            if(!`expAdsb(out=, in=)) ret false;
             out .= "$.v)";
           }
           out .= ')';
@@ -972,21 +974,12 @@ public &StateBuilder
             if(!.s.equ("=", token)) in = oldin;
             not = false;
           }
-          oldin = in;
-            branch{
-            cond `kyuushiki2(true, in=):
-              if(!`expEquSub(out=, in=, not)) ret false;
-            else:
-              out .= "`trEqu(.v,.v.setI(0)$.v)";
-            }
-            break;
-          comm:
-            branch{
-            cond `kyuushiki2(false, in=):
-              if(!`expAdsb(out=, in=)) ret false;
-            else:
-              out .= ".v.setI(0)";
-            }
+          `kyuushiki2(true, in=);
+          if(!`expEquSub(out=, in=, not)) ret false;
+          break;
+        comm:
+          `kyuushiki2(false, in=);
+          if(!`expAdsb(out=, in=)) ret false;
           out .= "$.v)";
         }
       }
@@ -1657,24 +1650,26 @@ public &StateBuilder
             branch{
             cond .s.equ("!=", token):
               not = true;
-            else:
-              if(!.s.equ("=", token)) in = oldin;
+            cond .s.equ("=", token):
               not = false;
-            }
-            branch{
-            cond `kyuushiki2(true, in=):
-              if(!`expEquSub(out=, in=, not)) ret false;
             else:
-              out .= "`trEqu(.v,.v.setI(1)$.v)";
+              not = false;
+              in = oldin;
+              branch{
+              cond `kyuushiki2(true, in=):
+                if(!`expEquSub(out=, in=, not)) ret false;
+              else:
+                out .= "`trEqu(.v,.v.setI(1)$.v)";
+              }
+              break;
+            comm:
+              `kyuushiki2(true, in=);
+              if(!`expEquSub(out=, in=, not)) ret false;
             }
             break;
           comm:
-            branch{
-            cond `kyuushiki2(false, in=):
-              if(!`expAdsb(out=, in=)) ret false;
-            else:
-              out .= ".v.setI(1)";
-            }
+            `kyuushiki2(false, in=);
+            if(!`expAdsb(out=, in=)) ret false;
             out .= "$.v)";
           }
         else:
@@ -6898,13 +6893,25 @@ public &StateBuilder
             ret false;
           }
           idx--;
+          %char buf;
           if(#`state.ctrlList[-1].trigger.new[idx] > 0){
-            `state.ctrlList[-1].trigger[idx] .= "&&";
+            buf .= "&&";
           }
-          if(
-            !`fullExpression(
-              `state.ctrlList[-1].trigger[idx]=, text=,
-              "", "$.v.isTrue()")) ret false;
+          if(!`fullExpression(buf=, text=, "", "$.v.isTrue()")){
+            if(
+              !.cfg.IgnoreMostErrors || #`state.ctrlList[-1].trigger[idx] == 0)
+            {
+              ret false;
+            }
+            loop{index i = 0; while; do:
+              if(#`state.ctrlList[-1].trigger[i] == 0) break;
+              i++;
+            while i < idx:
+              ret false;
+            }
+            break, break;
+          }
+          `state.ctrlList[-1].trigger[idx] .= buf;
         }
       cond .s.equ(name, "persistent"):
         if(`state.no >= 0 && !`state.i){

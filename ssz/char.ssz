@@ -3597,25 +3597,21 @@ public &Char
   }
   public int getDamage(int damage, bool kill, bool absolute, float atkmul)
   {
-    int d = damage;
-    if(!absolute){
-      d = (int).m.ceil((float)d*atkmul / `defencemul);
-    }
-    if(`player){
-      .m.limRange!int?(
-        d=, `sysivar[.iLIFE]-`sysivar[.iLIFEMAX],
-        .m.max!int?(0, `sysivar[.iLIFE]-(int)!kill));
-    }
-    ret d;
+    if(damage == 0 || (!absolute && atkmul == 0.0)) ret 0;
+    ret
+      (int).m.min!double?((double)(`sysivar[.iLIFE]-(int)!kill))<,
+      .m.max!float?((double)(`sysivar[.iLIFE]-`sysivar[.iLIFEMAX]))<,
+      .m.ceil((double)damage*(absolute ? 1.0 : atkmul/`defencemul));
   }
   public bool addLife(int l, bool kill, bool absolute)
   {
-    if(.roundState() == 3) ret false;
+    if(l == 0 || .roundState() == 3) ret false;
     bool foo = `sysivar[.iLIFE] > 0;
     `sysivar[.iLIFE] +=
-      (int).m.floor((float)l / (absolute ? 1.0 : `defencemul));
-    .m.limRange!int?(
-      `sysivar[.iLIFE]=, kill || !foo ? 0 : 1, `sysivar[.iLIFEMAX]);
+      (int).m.max!float?((double)-`sysivar[.iLIFE])<,
+      .m.min!double?((double)(`sysivar[.iLIFEMAX]-`sysivar[.iLIFE]))<,
+      .m.floor((double)l / (absolute ? 1.0 : `defencemul));
+    if(!kill && foo && `sysivar[.iLIFE] <= 0) `sysivar[.iLIFE] = 1;
     if(`helperindex == 0 && `sysivar[.iLIFE] == 0){
       `stVal.hb.fallf = 1;
       if(!foo) break;
