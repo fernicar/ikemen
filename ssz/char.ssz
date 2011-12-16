@@ -3598,17 +3598,18 @@ public &Char
   public int getDamage(int damage, bool kill, bool absolute, float atkmul)
   {
     if(damage == 0 || (!absolute && atkmul == 0.0)) ret 0;
+    type _t = double;
     ret
-      (int).m.min!double?((double)(`sysivar[.iLIFE]-(int)!kill))<,
-      .m.max!float?((double)(`sysivar[.iLIFE]-`sysivar[.iLIFEMAX]))<,
-      .m.ceil((double)damage*(absolute ? 1.0 : atkmul/`defencemul));
+      (int).m.min!_t?((_t)(.m.max!int?(0, `sysivar[.iLIFE]-(int)!kill)))<,
+      .m.max!_t?((_t)(`sysivar[.iLIFE]-`sysivar[.iLIFEMAX]))<,
+      .m.ceil((_t)damage*(absolute ? 1.0 : atkmul/`defencemul));
   }
   public bool addLife(int l, bool kill, bool absolute)
   {
     if(l == 0 || .roundState() == 3) ret false;
     bool foo = `sysivar[.iLIFE] > 0;
     `sysivar[.iLIFE] +=
-      (int).m.max!float?((double)-`sysivar[.iLIFE])<,
+      (int).m.max!double?((double)-`sysivar[.iLIFE])<,
       .m.min!double?((double)(`sysivar[.iLIFEMAX]-`sysivar[.iLIFE]))<,
       .m.floor((double)l / (absolute ? 1.0 : `defencemul));
     if(!kill && foo && `sysivar[.iLIFE] <= 0) `sysivar[.iLIFE] = 1;
