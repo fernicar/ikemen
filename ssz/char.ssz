@@ -1831,16 +1831,10 @@ public &Projectile
       }
     else:
       branch{
-      cond #`ani == 0:
-      cond !`ani~ani.loopend:
-        {
-          ^&.act.Frame frm = `ani~ani.currentFrame();
-          if(#frm > 0 && frm~time >= 0) break, break;
-        }
-      else:
+      cond #`ani > 0 && `ani~ani.loopend:
         `ani.new(0);
-      comm:
-        if(`id >= 0 && `hitpause == 0 && `removetime <= 0) `id = !`id;
+      cond `id >= 0 && `hitpause == 0 && `removetime <= 0:
+        `id = !`id;
       }
     }
     branch{

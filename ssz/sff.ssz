@@ -968,7 +968,10 @@ public &Anim<frame_t>
   }
   public void action()
   {
-    if(#`frames == 0) ret;
+    if(#`frames == 0){
+      `loopend = true;
+      ret;
+    }
     `updateSprite();
     `frames[`current].action(`=);
   }

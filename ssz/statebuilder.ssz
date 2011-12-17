@@ -1082,6 +1082,8 @@ public &StateBuilder
         out .= ".v.setI(.fVX)$" .= obj .= "trSysFVar()";
       cond .s.equ("y", token):
         out .= ".v.setI(.fVY)$" .= obj .= "trSysFVar()";
+      cond .s.equ("z", token):
+        out .= ".v.setF(0.0)";
       else:
         break, else;
       }
@@ -1901,19 +1903,11 @@ public &StateBuilder
       }
     else:
       branch{
-      cond .cfg.IgnoreMostErrors:
-        branch{
-        cond .s.equ("", token):
-          out .= ".v.setI(0)";
-        else:
-          break, else;
-        }
+      cond .cfg.IgnoreMostErrors && .s.equ("", token):
+        out .= ".v.setI(0)";
       else:
-        {
-          %char buf;
-          `lasterror = (buf .= token .= "が不正です");
-          ret false;
-        }
+        `lasterror = token + "が不正です";
+        ret false;
       }
     }
     ret true;
