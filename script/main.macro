@@ -29,6 +29,8 @@ p1Cmd#newCommand
 %| addCommand | z | z
 %| addCommand | s | s
 %| addCommand | holds | /s
+%| addCommand | su | /s, U
+%| addCommand | sd | /s, D
 %#\p1Cmd#each
 
 p2Cmd#newCommand
@@ -45,6 +47,8 @@ p2Cmd#newCommand
 %| addCommand | z | z
 %| addCommand | s | s
 %| addCommand | holds | /s
+%| addCommand | su | /s, U
+%| addCommand | sd | /s, D
 %#\p2Cmd#each
 
 ############################################################
@@ -345,6 +349,12 @@ p1NameTxt#newTextImg
       #p1SelY#,>=1 #if #{#^ #p1SelOffset#,+5#expr#=~p1SelOffset #`#~#}
       #p1SelY#,+1#expr#=~p1SelY
     #}
+    #`| getState | su #p1Cmd #if #{
+      #p1SelOffset#,-100#expr#=~p1SelOffset
+    #}
+    #`| getState | sd #p1Cmd #if #{
+      #p1SelOffset#,+100#expr#=~p1SelOffset
+    #}
     #`| getState | l #p1Cmd #if #{
       #`| play | 100 | 0 #sysSnd
       #p1SelX#,-1<0?4:#p1SelX#,-1#expr#=~p1SelX
@@ -416,6 +426,12 @@ p2NameTxt#newTextImg
       #`| play | 100 | 0 #sysSnd
       #p2SelY#,>=1 #if #{#^ #p2SelOffset#,+5#expr#=~p2SelOffset #`#~#}
       #p2SelY#,+1#expr#=~p2SelY
+    #}
+    #`| getState | su #p2Cmd #if #{
+      #p2SelOffset#,-100#expr#=~p2SelOffset
+    #}
+    #`| getState | sd #p2Cmd #if #{
+      #p2SelOffset#,+100#expr#=~p2SelOffset
     #}
     #`| getState | l #p2Cmd #if #{
       #`| play | 100 | 0 #sysSnd

@@ -487,12 +487,13 @@ public &Command
     }
     ret false;
   }
-  public void addCommand(^/char name, ^/char com)
+  public void addCommand(^/char name, ^/char com, int time)
   {
     &.cmd.Command c;
     c.name = name;
     .cmd.resetReadKeymap();
     c.readCmd(com);
+    c.time = time;
     `cmd~add(c=);
   }
   public void cmdBufReset(int pn)
@@ -523,7 +524,7 @@ public &Command
     }
   cond .s.equ(mess[0], "addCommand"):
     if(#mess < 3) else;
-    cm~addCommand(mess[1], mess[2]);
+    cm~addCommand(mess[1], mess[2], #mess >= 4 ? .s.sToN!int?(mess[3]) : 1);
     re.new(0);
   cond .s.equ(mess[0], "cmdBufReset"):
     {
