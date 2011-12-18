@@ -36,7 +36,6 @@ sysvar(58) = sysvar(58) & ~4;SYSFLAG,KO
 
 [State -I1, Getup1]
 type = VarSet
-trigger1 = Alive
 trigger1 = movetype != H
 sysvar(55) = const(data.liedown.time);RECOVERTIME
 
