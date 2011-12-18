@@ -3323,22 +3323,18 @@ public &Char
         `state(::);
         branch{
         cond `stVal.no == 5110:
-          if(`sysivar[.iRECOVERTIME] <= 0){
-            `trSelfState(
-              !`isKO() && (`helperid == 0 || !`isLose())
-              ? 5120 : 5150, -1, -1);
+          if(`sysivar[.iRECOVERTIME] <= 0 && !`isKO()){
+            `trSelfState(5120, -1, -1);
           }
         cond
-          `helperid == 0 && `isKO()
-          && (`stVal.mov != .MovTy::H && `stVal.typ != .StTy::L)
-          && ((`sysivar[.iSYSFLAG] & .sfWIN) != 0)
+          `helperid == 0 && !`isKO() && `sysivar[.iLIFE] == 0
+          && `stVal.mov != .MovTy::H
           && .m.inRange!int?(
             -(
               .fight~ro.over_hittime
               + .fight~ro.over_waittime + .fight~ro.over_wintime - 1),
             0, .com.intro)
           :
-          `sysivar[.iSYSFLAG] &= !.sfWIN;
           `trSelfState(5050, -1, -1);
         cond `stVal.no == 140:
           if(`trAnimTime()$.v.toInt() == 0){
@@ -3609,7 +3605,6 @@ public &Char
       .m.floor((double)l / (absolute ? 1.0 : `defencemul));
     if(!kill && foo && `sysivar[.iLIFE] <= 0) `sysivar[.iLIFE] = 1;
     if(`helperindex == 0 && `sysivar[.iLIFE] == 0){
-      `stVal.hb.fallf = 1;
       if(!foo) break;
       branch{
       cond `stVal.mov == .MovTy::H || `stVal.playerno != `playerno:
@@ -5868,7 +5863,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       `pyr.stVal.hb.damage +=
         `pyr.getDamage(
           `pyr.stVal.hb.absdamage*hits, kill, false, by.attackmul);
-      if(live && !kill && `pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]){
+      if(live && `pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
+      cond kill && !.gs(.gsNOKO):
+        `pyr.stVal.hb.fallf = 1;
+        if((int)`pyr.stVal.hb.fall.animtype < (int).AnimTy::Back){
+          `pyr.stVal.hb.fall.animtype = .AnimTy::Back;
+        }
+        `pyr.stVal.hb.yvel -= 6.0;
+      else:
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
       }
     cond #hitting == 1:
@@ -6720,8 +6722,6 @@ public float action(
       .com.intro = -.fight~ro.over_hittime;
       if(p1 || p2) break;
       .winty[0] = .winty[1] = .fgt.WinTy::T;
-    cond .gs(.gsNOKO):
-      ret false;
     }
     if(.com.intro == -.fight~ro.over_hittime && (p1 || p2)){
       `setWinType(p1, p2);
