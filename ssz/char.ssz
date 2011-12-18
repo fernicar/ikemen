@@ -510,7 +510,7 @@ public &Var
   }
   public void setF(float f)
   {
-    if(f == .com.FERR){
+    if(!.m.isfinite(f)){
       `setSF();
       ret;
     }
@@ -536,16 +536,22 @@ public &Var
   {
     ret `typ == .VarTy::SFalse;
   }
-  const int toInt()
+  /int toInt()
   {
     if(`isSF()) ret .com.IERR;
-    if(`typ == .VarTy::Int) ret `i;
-    ret (int)`f;
+    if(`typ == .VarTy::Float){
+      if(!.m.isfinite(`f)) ret .com.IERR;
+      ret (int)`f;
+    }
+    ret `i;
   }
   const float toFloat()
   {
-    if(`isSF()) ret .com.FERR;
-    if(`typ == .VarTy::Int) ret (float)`i;
+    if(`isSF()) ret 0.0/0.0;
+    if(`typ == .VarTy::Int){
+      if(`i == .com.IERR) ret 0.0/0.0;
+      ret (float)`i;
+    }
     ret `f;
   }
 }
@@ -648,7 +654,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public void clear()
   {
     `animtype = .AnimTy::Unknown;
-    `xvelocity = .com.FERR;
+    `xvelocity = 0.0/0.0;
     `yvelocity = -4.5;
     `recover = 1;
     `recovertime = 4;
@@ -657,7 +663,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `envshake_time = 0;
     `envshake_freq = 60.0;
     `envshake_ampl = -4.0;
-    `envshake_phase = .com.FERR;
+    `envshake_phase = 0.0/0.0;
   }
 }
 &Hitdef
@@ -798,19 +804,19 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `guard_ctrltime = -1;
     `airguard_ctrltime = -1;
     `guard_dist = -1;
-    `yaccel = .com.FERR;
+    `yaccel = 0.0/0.0;
     `ground_velocityx = 0.0;
     `ground_velocityy = 0.0;
-    `guard_velocity = .com.FERR;
+    `guard_velocity = 0.0/0.0;
     `air_velocityx = 0.0;
     `air_velocityy = 0.0;
-    `airguard_velocityx = .com.FERR;
-    `airguard_velocityy = .com.FERR;
-    `ground_cornerpush_veloff = .com.FERR;
-    `air_cornerpush_veloff = .com.FERR;
-    `down_cornerpush_veloff = .com.FERR;
-    `guard_cornerpush_veloff = .com.FERR;
-    `airguard_cornerpush_veloff = .com.FERR;
+    `airguard_velocityx = 0.0/0.0;
+    `airguard_velocityy = 0.0/0.0;
+    `ground_cornerpush_veloff = 0.0/0.0;
+    `air_cornerpush_veloff = 0.0/0.0;
+    `down_cornerpush_veloff = 0.0/0.0;
+    `guard_cornerpush_veloff = 0.0/0.0;
+    `airguard_cornerpush_veloff = 0.0/0.0;
     `air_juggle = 0;
     `p1sprpriority = 1;
     `p2sprpriority = 0;
@@ -823,8 +829,8 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `forcestand = .com.IERR;
     `ground_fall = 0;
     `air_fall = .com.IERR;
-    `down_velocityx = .com.FERR;
-    `down_velocityy = .com.FERR;
+    `down_velocityx = 0.0/0.0;
+    `down_velocityy = 0.0/0.0;
     `down_hittime = 0;
     `down_bounce = 0;
     `id = 0;
@@ -855,13 +861,13 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `envshake_time = 0;
     `envshake_freq = 60.0;
     `envshake_ampl = -4.0;
-    `envshake_phase = .com.FERR;
-    `mindistx = .com.FERR;
-    `maxdistx = .com.FERR;
-    `mindisty = .com.FERR;
-    `maxdisty = .com.FERR;
+    `envshake_phase = 0.0/0.0;
+    `mindistx = 0.0/0.0;
+    `maxdistx = 0.0/0.0;
+    `mindisty = 0.0/0.0;
+    `maxdisty = 0.0/0.0;
     `snapx = 0.0;
-    `snapy = .com.FERR;
+    `snapy = 0.0/0.0;
     `snapz = 0.0;
     `snapt = 0;
     `forcenofall = 0;
@@ -936,7 +942,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `ctrltime = 0;
     `xvel = 0.0;
     `yvel = 0.0;
-    `yaccel = .com.FERR;
+    `yaccel = 0.0/0.0;
     `hitid = -1;
     `nochainid1 = -1;
     `nochainid2 = -1;
@@ -944,19 +950,19 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `fallf = 0;
     `juggle = 0;
     `p1getp2facing = 0;
-    `mindistx = .com.FERR;
-    `maxdistx = .com.FERR;
-    `mindisty = .com.FERR;
-    `maxdisty = .com.FERR;
+    `mindistx = 0.0/0.0;
+    `maxdistx = 0.0/0.0;
+    `mindisty = 0.0/0.0;
+    `maxdisty = 0.0/0.0;
     `snapx = 0.0;
-    `snapy = .com.FERR;
+    `snapy = 0.0/0.0;
     `snapz = 0.0;
     `snapt = 0;
     `fall.clear();
   }
   /float getYaccel()
   {
-    ret `yaccel == .com.FERR ? 0.35 : `yaccel;
+    ret !.m.isfinite(`yaccel) ? 0.35 : `yaccel;
   }
   /bool byidMatch(int id)
   {
@@ -1128,7 +1134,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
       cond hit.down_velocityy != 0.0 || hit.down_bounce == 0:
         `hb.yvel = hit.down_velocityy;
       else:
-        if(hit.fall.xvelocity != .com.FERR) `hb.xvel = hit.fall.xvelocity;
+        if(.m.isfinite(hit.fall.xvelocity)) `hb.xvel = hit.fall.xvelocity;
         `hb.yvel = hit.fall.yvelocity;
       }
       `hb.fallf = 1;
@@ -1426,21 +1432,21 @@ int envcol_b = 255;
   {
     `id = -1;
     `bindtime = .com.IERR;
-    `scalex = .com.FERR;
-    `scaley = .com.FERR;
+    `scalex = 0.0/0.0;
+    `scaley = 0.0/0.0;
     `removeongethit = .com.IERR;
     `removetime = .com.IERR;
-    `velocityx = .com.FERR;
-    `velocityy = .com.FERR;
-    `accelx = .com.FERR;
-    `accely = .com.FERR;
+    `velocityx = 0.0/0.0;
+    `velocityy = 0.0/0.0;
+    `accelx = 0.0/0.0;
+    `accely = 0.0/0.0;
     `sprpriority = .com.IERR;
     `postype = .com.IERR;
-    `offsetx = .com.FERR;
-    `offsety = .com.FERR;
+    `offsetx = 0.0/0.0;
+    `offsety = 0.0/0.0;
     `relativef = .com.IERR;
-    `x = .com.FERR;
-    `y = .com.FERR;
+    `x = 0.0/0.0;
+    `y = 0.0/0.0;
     `facing = .com.IERR;
     `vfacing = .com.IERR;
     `shadowr = .com.IERR;
@@ -2857,15 +2863,15 @@ public &Char
       ^`self c = .players.get(`sysivar[.iBINDTOID]);
       if(#c == 0) break;
     cond c~isTarget(`id):
-      if(`sysfvar[.fBINDPOSX] != .com.FERR){
+      if(.m.isfinite(`sysfvar[.fBINDPOSX])){
         `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
       }
-      if(`sysfvar[.fBINDPOSY] != .com.FERR) `setYV(c~sysfvar[.fVY]);
+      if(.m.isfinite(`sysfvar[.fBINDPOSY])) `setYV(c~sysfvar[.fVY]);
     cond `isTarget(c~id):
-      if(`sysfvar[.fBINDPOSX] != .com.FERR){
+      if(.m.isfinite(`sysfvar[.fBINDPOSX])){
         c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
       }
-      if(`sysfvar[.fBINDPOSY] != .com.FERR) c~setYV(`sysfvar[.fVY]);
+      if(.m.isfinite(`sysfvar[.fBINDPOSY])) c~setYV(`sysfvar[.fVY]);
     }
     `sysivar[.iBINDTOID] = -1;
   }
@@ -2895,7 +2901,7 @@ public &Char
       if(`stVal.hb.p1getp2facing != 0){
         c~setFacing(`facing*`stVal.hb.p1getp2facing);
       }
-      if(`stVal.hb.mindistx != .com.FERR) branch{
+      if(.m.isfinite(`stVal.hb.mindistx)) branch{
       cond c~facing < 0:
         `sysfvar[.fX] =
           .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] - `stVal.hb.mindistx);
@@ -2903,7 +2909,7 @@ public &Char
         `sysfvar[.fX] =
           .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.mindistx);
       }
-      if(`stVal.hb.maxdistx != .com.FERR) branch{
+      if(.m.isfinite(`stVal.hb.maxdistx)) branch{
       cond c~facing < 0:
         `sysfvar[.fX] =
           .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] - `stVal.hb.maxdistx);
@@ -2912,12 +2918,12 @@ public &Char
           .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.maxdistx);
       }
       if(`stVal.hb.guarded == 0 || `stVal.typ == .StTy::A){
-        if(`stVal.hb.mindisty != .com.FERR){
+        if(.m.isfinite(`stVal.hb.mindisty)){
           `sysfvar[.fY] =
             .m.max!float?(`sysfvar[.fY])<,
             (c~sysfvar[.fY] + `stVal.hb.mindisty);
         }
-        if(`stVal.hb.maxdisty != .com.FERR){
+        if(.m.isfinite(`stVal.hb.maxdisty)){
           `sysfvar[.fY] =
             .m.min!float?(`sysfvar[.fY])<,
             (c~sysfvar[.fY] + `stVal.hb.maxdisty);
@@ -2930,7 +2936,7 @@ public &Char
         `sysfvar[.fBINDPOSX] = `stVal.hb.snapx;
         `sysfvar[.fBINDPOSY] =
           `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A
-          ? `stVal.hb.snapy : .com.FERR;
+          ? `stVal.hb.snapy : 0.0/0.0;
         `bind();
       }
     }
@@ -3423,14 +3429,14 @@ public &Char
       `setBindTime(0);
       ret;
     }
-    if(`sysfvar[.fBINDPOSX] != .com.FERR){
+    if(.m.isfinite(`sysfvar[.fBINDPOSX])){
       float f =
         (float)(
           #`sysivar[.iBINDFACING] == 2
           ? `sysivar[.iBINDFACING]/2 : c~facing);
       `setX(c~sysfvar[.fX] + f*`sysfvar[.fBINDPOSX]);
     }
-    if(`sysfvar[.fBINDPOSY] != .com.FERR){
+    if(.m.isfinite(`sysfvar[.fBINDPOSY])){
       `sysfvar[.fY] = c~sysfvar[.fY] + `sysfvar[.fBINDPOSY];
     }
     if(#`sysivar[.iBINDFACING] == 1) branch{
@@ -3636,35 +3642,35 @@ public &Char
       `facing *= -1;
       `sysfvar[.fVX] *= -1.0;
       `stVal.hb.xvel *= -1.0;
-      if(`stVal.hb.fall.xvelocity != .com.FERR){
+      if(.m.isfinite(`stVal.hb.fall.xvelocity)){
         `stVal.hb.fall.xvelocity *= -1.0;
       }
     }
   }
   void setFWidth(float f)
   {
-    if(f != .com.FERR){
+    if(.m.isfinite(f)){
       `frontw = `defFW() + f;
       `sysivar[.iSPECIALFLAG] |= .lsFRONTWCHANGE;
     }
   }
   void setBWidth(float b)
   {
-    if(b != .com.FERR){
+    if(.m.isfinite(b)){
       `backw = `defBW() + b;
       `sysivar[.iSPECIALFLAG] |= .lsBACKWCHANGE;
     }
   }
   void setFEdge(float f)
   {
-    if(f != .com.FERR){
+    if(.m.isfinite(f)){
       `fedge = f;
       `sysivar[.iSPECIALFLAG] |= .lsFEDGECHANGE;
     }
   }
   void setBEdge(float b)
   {
-    if(b != .com.FERR){
+    if(.m.isfinite(b)){
       `bedge = b;
       `sysivar[.iSPECIALFLAG] |= .lsBEDGECHANGE;
     }
@@ -3683,20 +3689,20 @@ public &Char
     if(h.guard_hittime < 0) h.guard_hittime = h.ground_hittime;
     if(h.guard_slidetime < 0) h.guard_slidetime = h.guard_hittime;
     if(h.guard_ctrltime < 0) h.guard_ctrltime = h.guard_slidetime;
-    if(h.ground_velocityx == .com.FERR) h.ground_velocityx = 0.0;
-    if(h.ground_velocityy == .com.FERR) h.ground_velocityy = 0.0;
-    if(h.air_velocityx == .com.FERR) h.air_velocityx = 0.0;
-    if(h.air_velocityy == .com.FERR) h.air_velocityy = 0.0;
-    if(h.guard_velocity == .com.FERR) h.guard_velocity = h.ground_velocityx;
+    if(!.m.isfinite(h.ground_velocityx)) h.ground_velocityx = 0.0;
+    if(!.m.isfinite(h.ground_velocityy)) h.ground_velocityy = 0.0;
+    if(!.m.isfinite(h.air_velocityx)) h.air_velocityx = 0.0;
+    if(!.m.isfinite(h.air_velocityy)) h.air_velocityy = 0.0;
+    if(!.m.isfinite(h.guard_velocity)) h.guard_velocity = h.ground_velocityx;
     if(h.airguard_ctrltime < 0) h.airguard_ctrltime = h.guard_ctrltime;
-    if(h.airguard_velocityx == .com.FERR){
+    if(!.m.isfinite(h.airguard_velocityx)){
       h.airguard_velocityx = h.air_velocityx*1.5;
     }
-    if(h.airguard_velocityy == .com.FERR){
+    if(!.m.isfinite(h.airguard_velocityy)){
       h.airguard_velocityy = h.air_velocityy*0.5;
     }
-    if(h.down_velocityx == .com.FERR) h.down_velocityx = h.air_velocityx;
-    if(h.down_velocityy == .com.FERR) h.down_velocityy = h.air_velocityy;
+    if(!.m.isfinite(h.down_velocityx)) h.down_velocityx = h.air_velocityx;
+    if(!.m.isfinite(h.down_velocityy)) h.down_velocityy = h.air_velocityy;
     if(h.air_fall == .com.IERR) h.air_fall = h.ground_fall;
     if(h.fall.animtype == .AnimTy::Unknown) branch{
     cond h.air_animtype != .AnimTy::Unknown:
@@ -3711,20 +3717,20 @@ public &Char
     if(h.forcestand == .com.IERR){
       h.forcestand = (int)(h.ground_velocityy != 0.0);
     }
-    if(h.ground_cornerpush_veloff == .com.FERR){
+    if(!.m.isfinite(h.ground_cornerpush_veloff)){
       h.ground_cornerpush_veloff =
         (h.attr & (int).StTy::A) != 0 ? 0.0 : h.guard_velocity*1.3;
     }
-    if(h.air_cornerpush_veloff == .com.FERR){
+    if(!.m.isfinite(h.air_cornerpush_veloff)){
       h.air_cornerpush_veloff = h.ground_cornerpush_veloff;
     }
-    if(h.down_cornerpush_veloff == .com.FERR){
+    if(!.m.isfinite(h.down_cornerpush_veloff)){
       h.down_cornerpush_veloff = h.ground_cornerpush_veloff;
     }
-    if(h.guard_cornerpush_veloff == .com.FERR){
+    if(!.m.isfinite(h.guard_cornerpush_veloff)){
       h.guard_cornerpush_veloff = h.ground_cornerpush_veloff;
     }
-    if(h.airguard_cornerpush_veloff == .com.FERR){
+    if(!.m.isfinite(h.airguard_cornerpush_veloff)){
       h.airguard_cornerpush_veloff = h.ground_cornerpush_veloff;
     }
     if(h.hitgetpower == .com.IERR){
@@ -3746,10 +3752,10 @@ public &Char
     if(h.p1facing == .com.IERR) h.p1facing = 0;
     if(h.p2facing == .com.IERR) h.p2facing = 0;
     if(h.p1getp2facing == .com.IERR) h.p1getp2facing = 0;
-    if(h.snapx == .com.FERR) h.snapx = 0.0;
-    if(h.snapz == .com.FERR) h.snapz = 0.0;
+    if(!.m.isfinite(h.snapx)) h.snapx = 0.0;
+    if(!.m.isfinite(h.snapz)) h.snapz = 0.0;
     if(h.snapt == .com.IERR) h.snapt = 0;
-    if(h.fall.yvelocity == .com.FERR) h.fall.yvelocity = -4.5;
+    if(!.m.isfinite(h.fall.yvelocity)) h.fall.yvelocity = -4.5;
     if(h.fall.recovertime == .com.IERR) h.fall.recovertime = 4;
     if(h.fall.damage == .com.IERR) h.fall.damage = 0;
   }
@@ -3878,32 +3884,32 @@ public &Char
     }
     switch(pt){
     case 0://p1
-      if(x != .com.FERR) o.setX(`sysfvar[.fX] + (float)`facing*x);
-      if(y != .com.FERR) o.setY(`sysfvar[.fY] + y);
+      if(.m.isfinite(x)) o.setX(`sysfvar[.fX] + (float)`facing*x);
+      if(.m.isfinite(y)) o.setY(`sysfvar[.fY] + y);
       o.facing *= `facing;
     case 1://p2
       {
         ^`self c = .players.enemyNear(`=, 0);
         if(#c == 0) break;
-        if(x != .com.FERR) o.setX(c~sysfvar[.fX] + (float)c~facing*x);
-        if(y != .com.FERR) o.setY(c~sysfvar[.fY] + y);
+        if(.m.isfinite(x)) o.setX(c~sysfvar[.fX] + (float)c~facing*x);
+        if(.m.isfinite(y)) o.setY(c~sysfvar[.fY] + y);
         o.facing *= c~facing;
       }
     case 2, 3://front, back
-      if(x != .com.FERR) branch{
+      if(.m.isfinite(x)) branch{
       cond (`facing > 0 && pt == 2) || (`facing < 0 && pt == 3):
         o.setX(.com.screenx + (320.0 - x*(pt == 2 ? -1.0 : 1.0))/.com.scale);
       else:
         o.setX(.com.screenx + x*(pt == 2 ? -1.0 : 1.0)/.com.scale);
       }
-      if(y != .com.FERR) o.setY(.com.screeny + y/.com.scale);
+      if(.m.isfinite(y)) o.setY(.com.screeny + y/.com.scale);
       o.facing *= `facing;
     case 4://left
-      if(x != .com.FERR) o.setX(.com.screenx + x/.com.scale);
-      if(y != .com.FERR) o.setY(.com.screeny + y/.com.scale);
+      if(.m.isfinite(x)) o.setX(.com.screenx + x/.com.scale);
+      if(.m.isfinite(y)) o.setY(.com.screeny + y/.com.scale);
     case 5://right
-      if(x != .com.FERR) o.setX(.com.screenx + (320.0 + x)/.com.scale);
-      if(y != .com.FERR) o.setY(.com.screeny + y/.com.scale);
+      if(.m.isfinite(x)) o.setX(.com.screenx + (320.0 + x)/.com.scale);
+      if(.m.isfinite(y)) o.setY(.com.screeny + y/.com.scale);
     }
   }
   public void setAlpha(int trans, int salpha=, int dalpha=)
@@ -4249,19 +4255,17 @@ public &Char
   public void trSetX()
   {
     float x = .v.toFloat();
-    if(x == .com.FERR) ret;
-    `setX(x);
+    if(.m.isfinite(x)) `setX(x);
   }
   public void trSetY()
   {
     float y = .v.toFloat();
-    if(y == .com.FERR) ret;
-    `setY(y);
+    if(.m.isfinite(y)) `setY(y);
   }
   public void trAddX()
   {
     float x = .v.toFloat();
-    if(x == .com.FERR) ret;
+    if(!.m.isfinite(x)) ret;
     float tmp = `oldx;
     `setX(`sysfvar[.fX] + (float)`facing*x);
     `oldx = tmp;
@@ -4269,50 +4273,42 @@ public &Char
   public void trAddY()
   {
     float y = .v.toFloat();
-    if(y == .com.FERR) ret;
-    `setY(`sysfvar[.fY] + y);
+    if(.m.isfinite(y)) `setY(`sysfvar[.fY] + y);
   }
   public void trVelSetX()
   {
     float f = .v.toFloat();
-    if(f == .com.FERR) ret;
-    `setXV(f);
+    if(.m.isfinite(f)) `setXV(f);
   }
   public void trVelSetY()
   {
     float f = .v.toFloat();
-    if(f == .com.FERR) ret;
-    `setYV(f);
+    if(.m.isfinite(f)) `setYV(f);
   }
   public void trVelAddX()
   {
     float f = .v.toFloat();
-    if(f == .com.FERR) ret;
-    `sysfvar[.fVX] += f;
+    if(.m.isfinite(f)) `sysfvar[.fVX] += f;
   }
   public void trVelAddY()
   {
     float f = .v.toFloat();
-    if(f == .com.FERR) ret;
-    `sysfvar[.fVY] += f;
+    if(.m.isfinite(f)) `sysfvar[.fVY] += f;
   }
   public void trVelMulX()
   {
     float f = .v.toFloat();
-    if(f == .com.FERR) ret;
-    `sysfvar[.fVX] *= f;
+    if(.m.isfinite(f)) `sysfvar[.fVX] *= f;
   }
   public void trVelMulY()
   {
     float f = .v.toFloat();
-    if(f == .com.FERR) ret;
-    `sysfvar[.fVY] *= f;
+    if(.m.isfinite(f)) `sysfvar[.fVY] *= f;
   }
   public void trAngleSet()
   {
     float f = .v.toFloat();
-    if(f == .com.FERR) ret;
-    `setAngle(f);
+    if(.m.isfinite(f)) `setAngle(f);
   }
   public void trAnim()
   {
@@ -4759,8 +4755,8 @@ public &Char
     `self h=, int st, int pt, float x, float y, int facing, int ownpal)
   {
     `helproSetPos!h.self?(h=, pt, x, y, facing);
-    if(x == .com.FERR) h.setX(0.0);
-    if(y == .com.FERR) h.sysfvar[.fY] = 0.0;
+    if(!.m.isfinite(x)) h.setX(0.0);
+    if(!.m.isfinite(y)) h.sysfvar[.fY] = 0.0;
     h.sysfvar[.fVX] = 0.0;
     h.sysfvar[.fVY] = 0.0;
     if(ownpal != 0) h.palfx.new(1);
@@ -4769,8 +4765,8 @@ public &Char
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
   {
     `helproSetPos!p.self?(p=, pt, x, y, 1);
-    if(x == .com.FERR) p.x = 0.0;
-    if(y == .com.FERR) p.y = 0.0;
+    if(!.m.isfinite(x)) p.x = 0.0;
+    if(!.m.isfinite(y)) p.y = 0.0;
     p.ani = `getAction(p.anim);
     if(`sysivar[.iPROJ_DOSCALE] != 0){
       p.scalex *= `sysfvar[.fXSCALE];
@@ -4919,7 +4915,7 @@ public &Char
   }
   public void trTargetVelSetX(^/int tar, float vx)
   {
-    if(vx == .com.FERR) ret;
+    if(!.m.isfinite(vx)) ret;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
@@ -4930,7 +4926,7 @@ public &Char
   }
   public void trTargetVelSetY(^/int tar, float vy)
   {
-    if(vy == .com.FERR) ret;
+    if(!.m.isfinite(vy)) ret;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
@@ -4941,7 +4937,7 @@ public &Char
   }
   public void trTargetVelAddX(^/int tar, float vx)
   {
-    if(vx == .com.FERR) ret;
+    if(!.m.isfinite(vx)) ret;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
@@ -4952,7 +4948,7 @@ public &Char
   }
   public void trTargetVelAddY(^/int tar, float vy)
   {
-    if(vy == .com.FERR) ret;
+    if(!.m.isfinite(vy)) ret;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
@@ -5023,7 +5019,7 @@ public &Char
   }
   public void trFallXvel()
   {
-    if(`stVal.hb.fall.xvelocity == .com.FERR){
+    if(!.m.isfinite(`stVal.hb.fall.xvelocity)){
       .v.setSF();
       ret;
     }
@@ -5033,13 +5029,13 @@ public &Char
   {
     if(`stVal.mov != .MovTy::H) ret;
     if(f >= 0) `stVal.hb.fallf = (int)(f != 0);
-    if(vx != .com.FERR) `stVal.hb.fall.xvelocity = vx;
-    if(vy != .com.FERR) `stVal.hb.fall.yvelocity = vy;
+    if(.m.isfinite(vx)) `stVal.hb.fall.xvelocity = vx;
+    if(.m.isfinite(vy)) `stVal.hb.fall.yvelocity = vy;
   }
   public void trHitFallVel()
   {
     if(`stVal.mov != .MovTy::H) ret;
-    if(`stVal.hb.fall.xvelocity != .com.FERR) `setXV(`stVal.hb.fall.xvelocity);
+    if(.m.isfinite(`stVal.hb.fall.xvelocity)) `setXV(`stVal.hb.fall.xvelocity);
     `setYV(`stVal.hb.fall.yvelocity);
   }
   public void trHitFall()
@@ -5440,8 +5436,8 @@ public void Explod::update()
         `bindtime = 0;
         break, break;
       }
-      if(`offsetx != .com.FERR) `setX(bc~sysfvar[.fX] + `offsetx);
-      if(`offsety != .com.FERR) `setY(bc~sysfvar[.fY] + `offsety);
+      if(.m.isfinite(`offsetx)) `setX(bc~sysfvar[.fX] + `offsetx);
+      if(.m.isfinite(`offsety)) `setY(bc~sysfvar[.fY] + `offsety);
     }
   }
   if(.com.tickFrame()){
@@ -5505,8 +5501,8 @@ public void Explod::setPos(&.Char c=)
     `bindid = c.id;
     `facing = c.facing*`relativef;
     `offsetx *= (float)c.facing;
-    if(`offsetx != .com.FERR) `setX(c.sysfvar[.fX] + `offsetx);
-    if(`offsety != .com.FERR) `setY(c.sysfvar[.fY] + `offsety);
+    if(.m.isfinite(`offsetx)) `setX(c.sysfvar[.fX] + `offsetx);
+    if(.m.isfinite(`offsety)) `setY(c.sysfvar[.fY] + `offsety);
     if(`bindtime == 0) `bindtime = 1;
   case 1:
     {
@@ -5515,15 +5511,15 @@ public void Explod::setPos(&.Char c=)
       `bindid = bc~id;
       `facing *= bc~facing*`relativef;
       `offsetx *= (float)bc~facing;
-      if(`offsetx != .com.FERR) `setX(bc~sysfvar[.fX] + `offsetx);
-      if(`offsety != .com.FERR) `setY(bc~sysfvar[.fY] + `offsety);
+      if(.m.isfinite(`offsetx)) `setX(bc~sysfvar[.fX] + `offsetx);
+      if(.m.isfinite(`offsety)) `setY(bc~sysfvar[.fY] + `offsety);
       if(`bindtime == 0) `bindtime = 1;
     }
   case 2, 3:
     branch{
     cond (c.facing > 0 && `postype == 2) || (c.facing < 0 && `postype == 3):
       `postype = 5;
-      if(`offsetx != .com.FERR) `offsetx *= -1.0;
+      if(.m.isfinite(`offsetx)) `offsetx *= -1.0;
     else:
       if(`postype == 2){
         `postype = 4;
@@ -5543,21 +5539,21 @@ public void Explod::modify(&.Char c=, &.ModifyExplod mod=, index i)
 {
   if(!c.matchExplodId(i, mod.id)) ret;
   if(mod.bindtime != .com.IERR) `bindtime = mod.bindtime;
-  if(mod.scalex != .com.FERR) `scalex = mod.scalex;
-  if(mod.scaley != .com.FERR) `scaley = mod.scaley;
+  if(.m.isfinite(mod.scalex)) `scalex = mod.scalex;
+  if(.m.isfinite(mod.scaley)) `scaley = mod.scaley;
   if(mod.removeongethit != .com.IERR) `removeongethit = mod.removeongethit;
   if(mod.removetime != .com.IERR) `removetime = mod.removetime;
-  if(mod.velocityx != .com.FERR) `velocityx = mod.velocityx;
-  if(mod.velocityy != .com.FERR) `velocityy = mod.velocityy;
-  if(mod.accelx != .com.FERR) `accelx = mod.accelx;
-  if(mod.accely != .com.FERR) `accely = mod.accely;
+  if(.m.isfinite(mod.velocityx)) `velocityx = mod.velocityx;
+  if(.m.isfinite(mod.velocityy)) `velocityy = mod.velocityy;
+  if(.m.isfinite(mod.accelx)) `accelx = mod.accelx;
+  if(.m.isfinite(mod.accely)) `accely = mod.accely;
   if(mod.sprpriority != .com.IERR) `sprpriority = mod.sprpriority;
   if(mod.postype != .com.IERR) `postype = mod.postype;
-  if(mod.offsetx != .com.FERR) `offsetx = mod.offsetx;
-  if(mod.offsety != .com.FERR) `offsety = mod.offsety;
+  if(.m.isfinite(mod.offsetx)) `offsetx = mod.offsetx;
+  if(.m.isfinite(mod.offsety)) `offsety = mod.offsety;
   if(mod.relativef != .com.IERR) `relativef = mod.relativef;
-  if(mod.x != .com.FERR) `x = mod.x;
-  if(mod.y != .com.FERR) `y = mod.y;
+  if(.m.isfinite(mod.x)) `x = mod.x;
+  if(.m.isfinite(mod.y)) `y = mod.y;
   if(mod.facing != .com.IERR) `setFacing(mod.facing);
   if(mod.vfacing != .com.IERR) `vfacing = mod.vfacing;
   if(mod.shadowr != .com.IERR) `shadowr = mod.shadowr;
@@ -5568,7 +5564,7 @@ public void Explod::modify(&.Char c=, &.ModifyExplod mod=, index i)
   if(mod.alphad != .com.IERR) `alphad = mod.alphad;
   if(mod.supermovetime != .com.IERR) `supermovetime = mod.supermovetime;
   if(mod.pausemovetime != .com.IERR) `pausemovetime = mod.pausemovetime;
-  if(mod.postype >= 0 || mod.offsetx != .com.FERR || mod.offsety != .com.FERR){
+  if(mod.postype >= 0 || .m.isfinite(mod.offsetx) || .m.isfinite(mod.offsety)){
     `setPos(c=);
   }
   if(`ontop != 0) `sprpriority = 0;
@@ -6018,7 +6014,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           == (byf * ((hit.p1facing < 0) != (hit.p2facing < 0) ? -1 : 1) < 0))
         {
           `pyr.stVal.hb.xvel *= -1.0;
-          if(`pyr.stVal.hb.fall.xvelocity != .com.FERR){
+          if(.m.isfinite(`pyr.stVal.hb.fall.xvelocity)){
             `pyr.stVal.hb.fall.xvelocity *= -1.0;
           }
         }

@@ -46,8 +46,7 @@ const float Speed = (float)cfg.GameSpeed / 60.0;
 const float P1P3Dist = 25.0;
 const float BodyHeight = 60.0;
 
-const float FERR = (float)consts.int_t::MIN;
-const int IERR = (int)FERR;
+const int IERR = consts.int_t::MIN;
 
 
 /int tickCount = 0;
@@ -238,7 +237,7 @@ public &IXY
 
 public &FXY
 {
-  public float x = .FERR, y = .FERR;
+  public float x = 0.0/0.0, y = 0.0/0.0;
   public void set(float x, float y)
   {
     `x = x;

@@ -2,7 +2,7 @@
 
 lib file = <file.ssz>;
 lib s = <string.ssz>;
-lib mat = <math.ssz>;
+lib m = <math.ssz>;
 lib consts = <consts.ssz>;
 lib sff = "sff.ssz";
 lib com = "common.ssz";
@@ -25,14 +25,14 @@ bgPalFX.new(1);
   public void clear()
   {
     `time = 0;
-    `freq = .mat.PI / 3.0;
+    `freq = .m.PI / 3.0;
     `ampl = -4.0;
-    `phase = .com.FERR;
+    `phase = 0.0/0.0;
   }
   public void setDefPhase()
   {
-    if(`phase != .com.FERR) ret;
-    `phase = (`freq >= .mat.PI/2.0 ? .mat.PI/2.0 : 0.0);
+    if(.m.isfinite(`phase)) ret;
+    `phase = (`freq >= .m.PI/2.0 ? .m.PI/2.0 : 0.0);
   }
   public void next()
   {
@@ -43,7 +43,7 @@ bgPalFX.new(1);
   public float getOffset()
   {
     if(`time <= 0) ret 0.0;
-    ret `ampl * .mat.sin(`phase);
+    ret `ampl * .m.sin(`phase);
   }
 }
 public &EnvShake envShake;
@@ -176,7 +176,7 @@ public &Stage
       ^/char data;
       if(#(data = sc.get("intensity")) > 0){
         `sdw.intensity =
-          .mat.max!int?(0)<, .mat.min!int?(255)<, .com.atoi(data);
+          .m.max!int?(0)<, .m.min!int?(255)<, .com.atoi(data);
       }
       if(#(data = sc.get("color")) > 0){
         ^ubyte c = .com.csvToAry!c<>.self?(data);
@@ -196,7 +196,7 @@ public &Stage
     {
       ^/char data;
       if(#(data = sc.get("intensity")) > 0){
-        `reflection = .mat.max!int?(0)<, .mat.min!int?(255)<, .com.atoi(data);
+        `reflection = .m.max!int?(0)<, .m.min!int?(255)<, .com.atoi(data);
       }
     }
     public void music(&.com.Section sc=)
