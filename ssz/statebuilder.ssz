@@ -552,18 +552,25 @@ public &StateBuilder
   }
   ^/char number(^/char token)
   {
+    if(
+      #token == 0
+      || (!.m.inRange!char?('0', '9', token[0]) &&  token[0] != '.')) ret "";
     double d;
-    if(!.s.sToNumber!d.self?(d=, token)) ret "";
     %char rtn;
     branch{
     cond .s.find(".", token) >= 0:
+      if(!.s.sToNumber!d.self?(d=, token)) ret "";
       rtn .= ".v.setF(" .= `fToS(d) .= ")";
-    cond d < (double)-.consts.int_t::MAX:
-      rtn .= ".v.setI(" .= .s.iToS(-.consts.int_t::MAX) .= ")";
-    cond d > (double).consts.int_t::MAX:
-      rtn .= ".v.setI(" .= .s.iToS(.consts.int_t::MAX) .= ")";
     else:
-      rtn .= ".v.setI(" .= .s.iToS((int)d) .= ")";
+      if(!.s.sToNumber!d.self?(d=, token + ".0")) ret "";
+      branch{
+      cond d < (double)-.consts.int_t::MAX:
+        rtn .= ".v.setI(" .= .s.iToS(-.consts.int_t::MAX) .= ")";
+      cond d > (double).consts.int_t::MAX:
+        rtn .= ".v.setI(" .= .s.iToS(.consts.int_t::MAX) .= ")";
+      else:
+        rtn .= ".v.setI(" .= .s.iToS((int)d) .= ")";
+      }
     }
     ret rtn;
   }
