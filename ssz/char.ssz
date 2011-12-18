@@ -2973,7 +2973,10 @@ public &Char
     if(`ls(.lsGETHIT)) branch{
     cond `stVal.typ == .StTy::L:
       `trSelfState(5080, -1, 0);
-    cond `stVal.hb.guarded != 0:
+    cond
+      `stVal.hb.guarded != 0
+      && (`stVal.hb.damage < `sysivar[.iLIFE] || .gs(.gsNOKO))
+      :
       switch(`stVal.typ){
       case .StTy::S:
         `trSelfState(150, -1, 0);
@@ -5863,13 +5866,16 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       `pyr.stVal.hb.damage +=
         `pyr.getDamage(
           `pyr.stVal.hb.absdamage*hits, kill, false, by.attackmul);
-      if(live && `pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
-      cond kill && !.gs(.gsNOKO):
-        `pyr.stVal.hb.fallf = 1;
-        if((int)`pyr.stVal.hb.fall.animtype < (int).AnimTy::Back){
-          `pyr.stVal.hb.fall.animtype = .AnimTy::Back;
+      if(`pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
+      cond kill || !live:
+        if(live && !.gs(.gsNOKO)){
+          `pyr.stVal.hb.fallf = 1;
+          if((int)`pyr.stVal.hb.fall.animtype < (int).AnimTy::Back){
+            `pyr.stVal.hb.fall.animtype = .AnimTy::Back;
+          }
+          `pyr.stVal.hb.yvel -= 6.0;
         }
-        `pyr.stVal.hb.yvel -= 6.0;
+        `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE];
       else:
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
       }
