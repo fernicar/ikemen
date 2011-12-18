@@ -345,7 +345,7 @@ public &StateBuilder
   new()
   {
     `pt1.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.;;;)$`trMinus()");
-    `pt2.compile(".v.setI(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toInt()");
+    `pt2.compile(".v.setI(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toI()");
     `pt3.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toF()");
   }
   public ^/char okikae(^/char code)
@@ -385,7 +385,7 @@ public &StateBuilder
       `pt2=,
       [s_t(c, j=){
         %char buf .= c[0];
-        j += 20 + #c[0];
+        j += 18 + #c[0];
         ret buf;
       }], tmp);
     tmp = rep(
@@ -553,8 +553,9 @@ public &StateBuilder
   ^/char number(^/char token)
   {
     if(
-      #token == 0
-      || (!.m.inRange!char?('0', '9', token[0]) &&  token[0] != '.')) ret "";
+      #token == 0 || (
+        !.m.inRange!char?('0', '9', token[0])
+        && token[0] != '.' && (#token < 2 || token[0] != '-'))) ret "";
     double d;
     %char rtn;
     branch{
@@ -564,7 +565,7 @@ public &StateBuilder
     else:
       if(!.s.sToNumber!d.self?(d=, token + ".0")) ret "";
       branch{
-      cond d < (double)-.consts.int_t::MAX:
+      cond d < (double).consts.int_t::MIN:
         rtn .= ".v.setI(" .= .s.iToS(-.consts.int_t::MAX) .= ")";
       cond d > (double).consts.int_t::MAX:
         rtn .= ".v.setI(" .= .s.iToS(.consts.int_t::MAX) .= ")";
@@ -773,8 +774,16 @@ public &StateBuilder
       `kakko++;
       if(!`expBoolOr(out=, in=) || !`tojikakko(in=)) ret false;
     cond .s.equ("-", token):
-      if(!`expPostNot(out=, in=)) ret false;
-      out .= "$`trMinus()";
+      branch{
+      cond #in > 0 && .m.inRange!char?('0', '9', in[0]) || in[0] == '.':
+        token = `tokenizer(in=);
+        num = `number("-" + token);
+        if(#num == 0) break, else;
+        out .= num;
+      else:
+        if(!`expPostNot(out=, in=)) ret false;
+        out .= "$`trMinus()";
+      }
     cond .s.equ("~", token):
       if(!`expPostNot(out=, in=)) ret false;
       out .= "$`trNot()";
@@ -1632,8 +1641,8 @@ public &StateBuilder
         out .= ".v.setB(";
         if(!`expAdsb(out=, in=)) ret false;
         out .=
-           "$!.v.isTrue()^(.v.setI(" .= .s.iToS(id) .= ")$"
-           .= obj .= ptime .= "$.v.toInt()>0&&";
+           "$!.v.isT()^(.v.setI(" .= .s.iToS(id) .= ")$"
+           .= obj .= ptime .= "$.v.toI()>0&&";
         branch{
           oldin = in;
           token = `tokenizer(in=);
@@ -1685,7 +1694,7 @@ public &StateBuilder
           in = oldin;
           out .= "`trEqu(.v,.v.setI(1)$.v)";
         }
-        out .= "$.v.isTrue()))";
+        out .= "$.v.isT()))";
       }
     cond .s.equ("numproj", token):
       out .= obj .= "trNumProj()";
@@ -1754,7 +1763,7 @@ public &StateBuilder
       }
       `kakko++;
       if(!`expBoolOr(out=, in=)) ret false;
-      out .= "$.v.isTrue()?";
+      out .= "$.v.isT()?";
       if(!.s.equ(",", `tokenizer(in=))){
         %char buf;
         `lasterror = (buf .= token .= "は引数が3個必要です");
@@ -2287,10 +2296,10 @@ public &StateBuilder
       comm:
         {
           %char buf2;
-          buf2 .= ".v.setB(" .= buf .= "$.v.isTrue()^";
+          buf2 .= ".v.setB(" .= buf .= "$.v.isT()^";
           buf = buf2;
           if(!`expBoolAnd(buf=, in=)) ret false;
-          buf .= "$.v.isTrue())";
+          buf .= "$.v.isT())";
         }
       }
     while true:
@@ -2706,7 +2715,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.deftask=, data=, "if(",
-            "$!.v.isTrue())`clearHitCount();")) ret false;
+            "$!.v.isT())`clearHitCount();")) ret false;
         `state.hitcountpersist = 1;
         ret true;
       }])) ret false;
@@ -2715,7 +2724,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.deftask=, data=, "if(",
-            "$!.v.isTrue())`clearMoveHit();")) ret false;
+            "$!.v.isT())`clearMoveHit();")) ret false;
         `state.movehitpersist = 1;
         ret true;
       }])) ret false;
@@ -2724,7 +2733,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.deftask=, data=, "if(",
-            "$!.v.isTrue())`clearHitDef();")) ret false;
+            "$!.v.isT())`clearHitDef();")) ret false;
         `state.hitdefpersist = 1;
         ret true;
       }])) ret false;
@@ -2733,14 +2742,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.deftask=, data=,
-            "`sprpriority=", "$.v.toInt();")) ret false;
+            "`sprpriority=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "facep2", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.deftask=, data=, "if(",
-            "$.v.isTrue()&&`trP2DistX()$.v.toF()<0.0)"
+            "$.v.isT()&&`trP2DistX()$.v.toF()<0.0)"
             "`setFacing(-`facing);")) ret false;
         ret true;
       }])) ret false;
@@ -2748,7 +2757,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.deftask=, data=,
-            "`stVal.juggle=", "$.v.toInt();")) ret false;
+            "`stVal.juggle=", "$.v.toI();")) ret false;
         `state.juggle = 1;
         ret true;
       }])) ret false;
@@ -2775,21 +2784,21 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.deftask=, data=,
-            "`trChangeAnim(", "$.v.toInt());")) ret false;
+            "`trChangeAnim(", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ctrl", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.deftask=, data=,
-            "`setCtrl(", "$.v.isTrue());")) ret false;
+            "`setCtrl(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "poweradd", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.deftask=, data=,
-            "`addPower(", "$.v.toInt());")) ret false;
+            "`addPower(", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -2802,21 +2811,21 @@ public &StateBuilder
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, "v=", "$.v.toInt();")) ret false;
+            `state.ctrlList[-1].task=, data=, "v=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ctrl", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "c=", "$(int).v.isTrue();")) ret false;
+            "c=", "$(int).v.isT();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "anim", [`paraF_t(data=){
         %char buf;
         if(
           !`fullExpression(
-          `state.ctrlList[-1].task=, data=, "a=", "$.v.toInt();")) ret false;
+          `state.ctrlList[-1].task=, data=, "a=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       branch{
@@ -2836,7 +2845,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "int e=", "$.v.toInt();")) ret false;
+            "int e=", "$.v.toI();")) ret false;
         elem = "if(#`ani>0)`ani~ani.setAnimElem(e);";
         ret true;
       }])) ret false;
@@ -2847,7 +2856,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "(.m.max!int?(0,", "$.v.toInt()));")) ret false;
+            "(.m.max!int?(0,", "$.v.toI()));")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= elem;
@@ -3004,19 +3013,19 @@ public &StateBuilder
       ^/char fir, las, val, fval;
       if(!`stateParam(param=, "first", [`paraF_t(data=){
         %char buf;
-        if(!`fullExpression(buf=, data=, "", "$.v.toInt(),")) ret false;
+        if(!`fullExpression(buf=, data=, "", "$.v.toI(),")) ret false;
         fir = buf;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "last", [`paraF_t(data=){
         %char buf;
-        if(!`fullExpression(buf=, data=, "", "$.v.toInt(),")) ret false;
+        if(!`fullExpression(buf=, data=, "", "$.v.toI(),")) ret false;
         las = buf;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         %char buf;
-        if(!`fullExpression(buf=, data=, "", "$.v.toInt());")) ret false;
+        if(!`fullExpression(buf=, data=, "", "$.v.toI());")) ret false;
         val = buf;
         ret true;
       }])) ret false;
@@ -3051,13 +3060,13 @@ public &StateBuilder
       if(v && !`stateParam(param=, "range", [`paraF_t(data=){
         %char buf;
         if(!`expression(buf=, data=)) ret false;
-        buf .= "$.v.toInt()";
+        buf .= "$.v.toI()";
         start = buf;
         branch{
           ^/char tmp = `tokenizer(data=);
         cond .s.equ(tmp, ","):
           buf.new(0);
-          if(!`fullExpression(buf=, data=, "", "$.v.toInt()")) ret false;
+          if(!`fullExpression(buf=, data=, "", "$.v.toI()")) ret false;
           end = buf;
         cond #tmp == 0:
           end = start;
@@ -3070,8 +3079,7 @@ public &StateBuilder
         if(#start > 0){
           `state.ctrlList[-1].task .=
             "int s,e;`trSetIVar(.v,.v.setI(.m.randI((s="
-            .= start .= ")$(e=" .= end
-            .= ")$(e==.com.IERR?.com.IERR:s),s==.com.IERR?.com.IERR:e))$.v);";
+            .= start .= ")$(e=" .= end .= ")$s,e))$.v);";
         }
         ret true;
       }])) ret false;
@@ -3092,7 +3100,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`setCtrl(", "$.v.isTrue());")) ret false;
+            "`setCtrl(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -3187,7 +3195,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`sprpriority=", "$.v.toInt();")) ret false;
+            "`sprpriority=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -3373,36 +3381,36 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~id=", "$.v.toInt();")) ret false;
+              "pr~id=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projremove", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~remove=(int)(", "$.v.isTrue());")) ret false;
+              "pr~remove=(int)(", "$.v.isT());")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projremovetime", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~removetime=", "$.v.toInt();")) ret false;
+              "pr~removetime=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projshadow", [`paraF_t(data=){
           `state.ctrlList[-1].task .= "pr~shadowr=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= "pr~shadowg=";
             if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-            `state.ctrlList[-1].task .= "$.v.toInt();";
+            `state.ctrlList[-1].task .= "$.v.toI();";
             if(.s.equ(",")<, `tokenizer(data=)){
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, data=,
-                  "pr~shadowb=", "$.v.toInt();")) ret false;
+                  "pr~shadowb=", "$.v.toI();")) ret false;
             }
           }
           ret true;
@@ -3411,42 +3419,42 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~misstime=", "$.v.toInt();")) ret false;
+              "pr~misstime=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projhits", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~hits=", "$.v.toInt();")) ret false;
+              "pr~hits=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projpriority", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~prioritypoint=pr~priority=", "$.v.toInt();")) ret false;
+              "pr~prioritypoint=pr~priority=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projhitanim", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~hitanim=", "$.v.toInt();")) ret false;
+              "pr~hitanim=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projremanim", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~remanim=", "$.v.toInt();")) ret false;
+              "pr~remanim=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projcancelanim", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~cancelanim=", "$.v.toInt();")) ret false;
+              "pr~cancelanim=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "velocity", [`paraF_t(data=){
@@ -3515,7 +3523,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".id=", "$.v.toInt();")) ret false;
+            ".id=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "chainid", [`paraF_t(data=){
@@ -3523,19 +3531,19 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".chainid=", "$.v.toInt();")) ret false;
+            ".chainid=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "nochainid", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".nochainid1=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".nochainid2=", "$.v.toInt();")) ret false;
+              ".nochainid2=", "$.v.toI();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -3544,7 +3552,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".kill=(int)(", "$.v.isTrue());")) ret false;
+            ".kill=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "guard.kill", [`paraF_t(data=){
@@ -3552,7 +3560,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".guard_kill=(int)(", "$.v.isTrue());")) ret false;
+            ".guard_kill=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.kill", [`paraF_t(data=){
@@ -3560,7 +3568,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".fall.kill=(int)(", "$.v.isTrue());")) ret false;
+            ".fall.kill=(int)(", "$.v.isT());")) ret false;
        ret true;
       }])) ret false;
       if(!`stateParam(param=, "hitonce", [`paraF_t(data=){
@@ -3568,7 +3576,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".hitonce=(int)(", "$.v.isTrue());")) ret false;
+            ".hitonce=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "air.juggle", [`paraF_t(data=){
@@ -3576,45 +3584,45 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".air_juggle=", "$.v.toInt();")) ret false;
+            ".air_juggle=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "getpower", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".hitgetpower=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".guardgetpower=", "$.v.toInt();")) ret false;
+              ".guardgetpower=", "$.v.toI();")) ret false;
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "damage", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".hitdamage=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".guarddamage=", "$.v.toInt();")) ret false;
+              ".guarddamage=", "$.v.toI();")) ret false;
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "givepower", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".hitgivepower=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".guardgivepower=", "$.v.toInt();")) ret false;
+              ".guardgivepower=", "$.v.toI();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -3623,7 +3631,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".numhits=", "$.v.toInt();")) ret false;
+            ".numhits=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       ~$bool(^/char, ^/char=) snset = [bool(^/char name, ^/char data=){
@@ -3641,7 +3649,7 @@ public &StateBuilder
         `state.ctrlList[-1].task .= "{int hsg=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
         `state.ctrlList[-1].task .=
-          "$.v.toInt();" .= obj .= (
+          "$.v.toI();" .= obj .= (
             name[0] == 'h'
             ? ".hitsoundg=hsg<0?.com.IERR:" : ".guardsoundg=hsg<0?.com.IERR:")
           .= (flg == 0 ?  "hsg;}" : "!hsg;}");
@@ -3651,7 +3659,7 @@ public &StateBuilder
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
               name[0] == 'h' ? ".hitsoundn=" : ".guardsoundn=",
-              "$.v.toInt();")) ret false;
+              "$.v.toI();")) ret false;
         }
         ret true;
       }];
@@ -3664,7 +3672,7 @@ public &StateBuilder
       if(!`stateParam(param=, "priority", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".priority=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           data = .s.trim(data);
           if(#data == 0) break;
@@ -3690,7 +3698,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".p1stateno=", "$.v.toInt();")) ret false;
+            ".p1stateno=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "p2stateno", [`paraF_t(data=){
@@ -3698,7 +3706,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".p2stateno=", "$.v.toInt();")) ret false;
+            ".p2stateno=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "p2getp1state", [`paraF_t(data=){
@@ -3706,7 +3714,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".p2getp1state=(int)(", "$.v.isTrue());")) ret false;
+            ".p2getp1state=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       bool p1sp = false;
@@ -3716,7 +3724,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".p1sprpriority=", "$.v.toInt();")) ret false;
+            ".p1sprpriority=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!p1sp && !`stateParam(param=, "sprpriority", [`paraF_t(data=){
@@ -3725,7 +3733,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".p1sprpriority=", "$.v.toInt();")) ret false;
+            ".p1sprpriority=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "p2sprpriority", [`paraF_t(data=){
@@ -3733,7 +3741,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".p2sprpriority=", "$.v.toInt();")) ret false;
+            ".p2sprpriority=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "forcestand", [`paraF_t(data=){
@@ -3741,7 +3749,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".forcestand=(int)(", "$.v.isTrue());")) ret false;
+            ".forcestand=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.damage", [`paraF_t(data=){
@@ -3749,7 +3757,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".fall.damage=", "$.v.toInt();")) ret false;
+            ".fall.damage=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.xvelocity", [`paraF_t(data=){
@@ -3773,7 +3781,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".fall.recover=(int)(", "$.v.isTrue());")) ret false;
+            ".fall.recover=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.recovertime", [`paraF_t(data=){
@@ -3781,7 +3789,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".fall.recovertime=", "$.v.toInt();")) ret false;
+            ".fall.recovertime=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       ~$bool(^/char, ^/char=) spset = [bool(^/char name, ^/char data=){
@@ -3798,7 +3806,7 @@ public &StateBuilder
         `state.ctrlList[-1].task .= "{int spn=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
         `state.ctrlList[-1].task .=
-          "$.v.toInt();" .= obj .= (
+          "$.v.toI();" .= obj .= (
             name[0] == 's'
             ? ".sparkno=spn<0?.com.IERR:" : ".guard_sparkno=spn<0?.com.IERR:")
           .= (flg == 0 ?  "spn;}" : "!spn;}");
@@ -3828,7 +3836,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".down_hittime=", "$.v.toInt();")) ret false;
+            ".down_hittime=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "guard.ctrltime", [`paraF_t(data=){
@@ -3836,7 +3844,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".guard_ctrltime=", "$.v.toInt();")) ret false;
+            ".guard_ctrltime=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "p1facing", [`paraF_t(data=){
@@ -3844,7 +3852,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".p1facing=", "$.v.toInt();")) ret false;
+            ".p1facing=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "p1getp2facing", [`paraF_t(data=){
@@ -3852,7 +3860,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".p1getp2facing=", "$.v.toInt();")) ret false;
+            ".p1getp2facing=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "mindist", [`paraF_t(data=){
@@ -3904,7 +3912,7 @@ public &StateBuilder
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, data=,
-                  "", "$.v.toInt();")) ret false;
+                  "", "$.v.toI();")) ret false;
             }
           }
         }
@@ -3915,7 +3923,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".p2facing=", "$.v.toInt();")) ret false;
+            ".p2facing=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "air.hittime", [`paraF_t(data=){
@@ -3923,7 +3931,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".air_hittime=", "$.v.toInt();")) ret false;
+            ".air_hittime=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall", [`paraF_t(data=){
@@ -3931,7 +3939,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".ground_fall=(int)(", "$.v.isTrue());")) ret false;
+            ".ground_fall=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "air.fall", [`paraF_t(data=){
@@ -3939,7 +3947,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".air_fall=(int)(", "$.v.isTrue());")) ret false;
+            ".air_fall=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "air.cornerpush.veloff", [`paraF_t(data=){
@@ -3955,7 +3963,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".down_bounce=(int)(", "$.v.isTrue());")) ret false;
+            ".down_bounce=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "down.velocity", [`paraF_t(data=){
@@ -3984,7 +3992,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".ground_hittime=", "$.v.toInt();")) ret false;
+            ".ground_hittime=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "guard.hittime", [`paraF_t(data=){
@@ -3992,7 +4000,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".guard_hittime=", "$.v.toInt();")) ret false;
+            ".guard_hittime=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "guard.dist", [`paraF_t(data=){
@@ -4000,32 +4008,32 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".guard_dist=", "$.v.toInt();")) ret false;
+            ".guard_dist=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pausetime", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".pausetime=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".shaketime=", "$.v.toInt();")) ret false;
+              ".shaketime=", "$.v.toI();")) ret false;
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "guard.pausetime", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".guard_pausetime=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".guard_shaketime=", "$.v.toInt();")) ret false;
+              ".guard_shaketime=", "$.v.toI();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -4060,7 +4068,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".ground_slidetime=", "$.v.toInt();")) ret false;
+            ".ground_slidetime=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "guard.slidetime", [`paraF_t(data=){
@@ -4068,7 +4076,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".guard_slidetime=", "$.v.toInt();")) ret false;
+            ".guard_slidetime=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "airguard.ctrltime", [`paraF_t(data=){
@@ -4076,7 +4084,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".airguard_ctrltime=", "$.v.toInt();")) ret false;
+            ".airguard_ctrltime=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ground.velocity", [`paraF_t(data=){
@@ -4138,7 +4146,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".palfx_time=", "$.v.toInt();")) ret false;
+            ".palfx_time=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palfx.color", [`paraF_t(data=){
@@ -4146,23 +4154,23 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".palfx_color=", "$.v.toInt();")) ret false;
+            ".palfx_color=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palfx.add", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".palfx_addr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj .= ".palfx_addg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= obj;
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                ".palfx_addb=", "$.v.toInt();")) ret false;
+                ".palfx_addb=", "$.v.toI();")) ret false;
           }
         }
         ret true;
@@ -4170,17 +4178,17 @@ public &StateBuilder
       if(!`stateParam(param=, "palfx.mul", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".palfx_mulr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj .= ".palfx_mulg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= obj;
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                ".palfx_mulb=", "$.v.toInt();")) ret false;
+                ".palfx_mulb=", "$.v.toI();")) ret false;
           }
         }
         ret true;
@@ -4188,21 +4196,21 @@ public &StateBuilder
       if(!`stateParam(param=, "palfx.sinadd", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".palfx_amplr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj .= ".palfx_amplg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= obj .= ".palfx_amplb=";
             if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-            `state.ctrlList[-1].task .= "$.v.toInt();";
+            `state.ctrlList[-1].task .= "$.v.toI();";
             if(.s.equ(",")<, `tokenizer(data=)){
               `state.ctrlList[-1].task .= obj;
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, data=,
-                  ".palfx_cycletime=", "$.v.toInt();")) ret false;
+                  ".palfx_cycletime=", "$.v.toI();")) ret false;
             }
           }
         }
@@ -4213,7 +4221,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".palfx_invertall=(int)(", "$.v.isTrue());")) ret false;
+            ".palfx_invertall=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "envshake.time", [`paraF_t(data=){
@@ -4221,7 +4229,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".envshake_time=", "$.v.toInt();")) ret false;
+            ".envshake_time=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "envshake.ampl", [`paraF_t(data=){
@@ -4253,7 +4261,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".fall.envshake_time=", "$.v.toInt();")) ret false;
+            ".fall.envshake_time=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.envshake.ampl", [`paraF_t(data=){
@@ -4300,32 +4308,32 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~sprpriority=", "$.v.toInt();")) ret false;
+              "pr~sprpriority=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projstagebound", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~stagebound=", "$.v.toInt();")) ret false;
+              "pr~stagebound=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projedgebound", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~edgebound=", "$.v.toInt();")) ret false;
+              "pr~edgebound=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projheightbound", [`paraF_t(data=){
           `state.ctrlList[-1].task .= "pr~heightboundt=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "pr~heightboundb=", "$.v.toInt();")) ret false;
+                "pr~heightboundb=", "$.v.toI();")) ret false;
           }
           ret true;
         }])) ret false;
@@ -4333,21 +4341,21 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~anim=", "$.v.toInt();")) ret false;
+              "pr~anim=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "supermovetime", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~supermovetime=", "$.v.toInt();")) ret false;
+              "pr~supermovetime=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "pausemovetime", [`paraF_t(data=){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~pausemovetime=", "$.v.toInt();")) ret false;
+              "pr~pausemovetime=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
       }
@@ -4356,7 +4364,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".forcenofall=(int)(", "$.v.isTrue());")) ret false;
+            ".forcenofall=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= "`setHitdefDefault";
@@ -4399,31 +4407,31 @@ public &StateBuilder
       if(!`stateParam(param=, "slot", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, "s=", "$.v.toInt();")) ret false;
+            `state.ctrlList[-1].task=, data=, "s=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "stateno", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "st=", "$.v.toInt();")) ret false;
+            "st=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "time", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, "t=", "$.v.toInt();")) ret false;
+            `state.ctrlList[-1].task=, data=, "t=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "forceair", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "f=(int)(", "$.v.isTrue());")) ret false;
+            "f=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .=
-        "if(s<0||s>7)s=0;if(st>=0&&t!=.com.IERR)"
+        "if(s<0||s>7)s=0;if(st>=0)"
         "{`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
         "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;}";
       ret true;
@@ -4438,7 +4446,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "t=", "$!.v.toInt();")) ret false;
+            "t=", "$!.v.toI();")) ret false;
         `state.ctrlList[-1].task .=
           "if(.pauseplayer==" .= .s.iToS(`playerno)
           .= "||t<.pausetime){.pausetime=t;.pauseplayer=`playerno;}";
@@ -4455,7 +4463,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".pausebg=(int)(", "$.v.isTrue());")) ret false;
+            ".pausebg=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .=
@@ -4482,7 +4490,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "t=", "$!.v.toInt();")) ret false;
+            "t=", "$!.v.toI();")) ret false;
         `state.ctrlList[-1].task .=
           "if(.superplayer==" .= .s.iToS(`playerno)
           .= "||t<.supertime){.supertime=t;.superplayer=`playerno;}";
@@ -4504,14 +4512,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".superpausebg=(int)(", "$.v.isTrue());")) ret false;
+            ".superpausebg=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "darken", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".superdarken=(int)(", "$.v.isTrue());")) ret false;
+            ".superdarken=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "anim", [`paraF_t(data=){
@@ -4522,7 +4530,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".superanim=`getAction (", "$.v.toInt());")) ret false;
+              ".superanim=`getAction (", "$.v.toI());")) ret false;
         cond data[0] == 'F' || data[0] == 'f':
           data = data[1..-1];
           else;
@@ -4530,7 +4538,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".superanim=.fight~getAction(", "$.v.toInt());")) ret false;
+              ".superanim=.fight~getAction(", "$.v.toI());")) ret false;
         }
         ret true;
       }])) ret false;
@@ -4562,14 +4570,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`addPower(", "$.v.toInt());")) ret false;
+            "`addPower(", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "unhittable", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".superunhittable=(int)(", "$.v.isTrue());")) ret false;
+            ".superunhittable=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "sound", [`paraF_t(data=){
@@ -4588,12 +4596,12 @@ public &StateBuilder
         if(
           !`expression(
             `state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "s=", "$.v.toInt();")) ret false;
+              "s=", "$.v.toI();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -4612,21 +4620,21 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "a=(int)(", "$.v.isTrue());")) ret false;
+            "a=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "kill", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "k=(int)(", "$.v.isTrue());")) ret false;
+            "k=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "va=", "$.v.toInt();")) ret false;
+            "va=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= "`addLife(va,k!=0,a!=0);";
@@ -4640,7 +4648,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`setLife(", "$.v.toInt());")) ret false;
+            "`setLife(", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -4653,7 +4661,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`addPower(", "$.v.toInt());")) ret false;
+            "`addPower(", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -4666,7 +4674,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`addPower(", "$.v.toInt()-`getSharePower());")) ret false;
+            "`addPower(", "$.v.toI()-`getSharePower());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -4681,28 +4689,28 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "tar=`getTarget(", "$.v.toInt());if(#tar==0)ret;")) ret false;
+            "tar=`getTarget(", "$.v.toI());if(#tar==0)ret;")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "absolute", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "a=(int)(", "$.v.isTrue());")) ret false;
+            "a=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "kill", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "va=", "$.v.toInt();")) ret false;
+            "va=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "va=", "$.v.toInt();")) ret false;
+            "va=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= "`trTargetLifeAdd(tar,va,k!=0,a!=0);";
@@ -4718,13 +4726,13 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "tar=`getTarget(", "$.v.toInt());if(#tar==0)ret;")) ret false;
+            "tar=`getTarget(", "$.v.toI());if(#tar==0)ret;")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "time", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, "t=", "$.v.toInt();")) ret false;
+            `state.ctrlList[-1].task=, data=, "t=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
@@ -4754,13 +4762,13 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "tar=`getTarget(", "$.v.toInt());if(#tar==0)ret;")) ret false;
+            "tar=`getTarget(", "$.v.toI());if(#tar==0)ret;")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, "s=", "$.v.toInt();")) ret false;
+            `state.ctrlList[-1].task=, data=, "s=", "$.v.toI();")) ret false;
        ret true;
       }])) ret false;
       `state.ctrlList[-1].task .=
@@ -4776,7 +4784,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "tar=`getTarget(", "$.v.toInt());if(#tar==0)ret;")) ret false;
+            "tar=`getTarget(", "$.v.toI());if(#tar==0)ret;")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "x", [`paraF_t(data=){
@@ -4808,14 +4816,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "tar=`getTarget(", "$.v.toInt());if(#tar==0)ret;")) ret false;
+            "tar=`getTarget(", "$.v.toI());if(#tar==0)ret;")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`trTargetFacing(tar,", "$.v.toInt());")) ret false;
+            "`trTargetFacing(tar,", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -4829,14 +4837,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "tar=`getTarget(", "$.v.toInt());if(#tar==0)ret;")) ret false;
+            "tar=`getTarget(", "$.v.toI());if(#tar==0)ret;")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`trTargetPowerAdd(tar,", "$.v.toInt());")) ret false;
+            "`trTargetPowerAdd(tar,", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -4851,14 +4859,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "ex=", "$.v.toInt();")) ret false;
+            "ex=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "keepone", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "one=", "$.v.isTrue();")) ret false;
+            "one=", "$.v.isT();")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= "`trTargetDrop(ex,one);";
@@ -4893,7 +4901,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             (ni ? "`stVal.hb.hitt2=" : "`stVal.hb.hitt1="),
-            "$.v.toInt();")) ret false;
+            "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!time){
@@ -5019,7 +5027,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "if(",
-            "$.v.isTrue())`sysivar[.iSPECIALFLAG]|="
+            "$.v.isT())`sysivar[.iSPECIALFLAG]|="
             ".lsPOSFREEZEX|.lsPOSFREEZEY;")) ret false;
         ret true;
       }])) ret false;
@@ -5039,7 +5047,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "branch{cond ",
-            "$.v.isTrue():`sysivar[.iSPECIALFLAG]|=.lsPLAYERPUSH;"
+            "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsPLAYERPUSH;"
             "else:`sysivar[.iSPECIALFLAG]&=!.lsPLAYERPUSH;}")) ret false;
         ret true;
       }])) ret false;
@@ -5104,7 +5112,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "`setBindFacing(", "$.v.toInt());"))
+              "`setBindFacing(", "$.v.toI());"))
           {
             ret false;
           }
@@ -5219,7 +5227,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "o=(int)(", "$.v.isTrue());")) ret false;
+            "o=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.xscale", [`paraF_t(data=){
@@ -5275,7 +5283,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~sysivar[.iPROJ_DOSCALE]=(int)(", "$.v.isTrue());")) ret false;
+            "h~sysivar[.iPROJ_DOSCALE]=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.head.pos", [`paraF_t(data=){
@@ -5315,21 +5323,21 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "st=", "$.v.toInt();")) ret false;
+            "st=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "keyctrl", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~keyctrl=", "$.v.isTrue();")) ret false;
+            "h~keyctrl=", "$.v.isT();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "id", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~helperid=", "$.v.toInt();")) ret false;
+            "h~helperid=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
@@ -5350,7 +5358,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "f=", "$.v.toInt();")) ret false;
+            "f=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pausemovetime", [`paraF_t(data=){
@@ -5390,7 +5398,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "e~ownpal=(int)(", "$.v.isTrue());")) ret false;
+              "e~ownpal=(int)(", "$.v.isT());")) ret false;
           ret true;
         }])) ret false;
       case .CtrlTy::GameMakeAnim:
@@ -5459,7 +5467,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".id=", "$.v.toInt();")) ret false;
+              ".id=", "$.v.toI();")) ret false;
           if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
             `state.ctrlList[-1].task .= "if(e~id<0)e~id=0;";
           }
@@ -5467,14 +5475,14 @@ public &StateBuilder
         }])) ret false;
         if(`state.ctrlList[-1].typ == .CtrlTy::ModifyExplod){
           `state.ctrlList[-1].task .=
-            "if(.v.setI(m.id)$`trNumExplod()$.v.toInt()<=0)ret;";
+            "if(.v.setI(m.id)$`trNumExplod()$.v.toI()<=0)ret;";
         }
         if(!`stateParam(param=, "facing", [`paraF_t(data=){
           `state.ctrlList[-1].task .= exp;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".relativef=", "$.v.toInt()<0?-1:1;")) ret false;
+              ".relativef=", "$.v.toI()<0?-1:1;")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "vfacing", [`paraF_t(data=){
@@ -5482,7 +5490,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".vfacing=", "$.v.toInt()<0?-1:1;")) ret false;
+              ".vfacing=", "$.v.toI()<0?-1:1;")) ret false;
           ret true;
         }])) ret false;
       }
@@ -5562,7 +5570,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".bindtime=", "$.v.toInt();")) ret false;
+              ".bindtime=", "$.v.toI();")) ret false;
           `state.ctrlList[-1].task .=
             "if(" .= exp .= ".bindtime>0)" .= exp .= ".bindtime++;";
           ret true;
@@ -5572,7 +5580,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".removetime=", "$.v.toInt();")) ret false;
+              ".removetime=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "supermove", [`paraF_t(data=){
@@ -5580,7 +5588,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".supermovetime=", "$.v.isTrue()?-1:0;")) ret false;
+              ".supermovetime=", "$.v.isT()?-1:0;")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "supermovetime", [`paraF_t(data=){
@@ -5588,7 +5596,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".supermovetime=", "$.v.toInt();")) ret false;
+              ".supermovetime=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "pausemovetime", [`paraF_t(data=){
@@ -5596,7 +5604,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".pausemovetime=", "$.v.toInt();")) ret false;
+              ".pausemovetime=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "sprpriority", [`paraF_t(data=){
@@ -5604,7 +5612,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".sprpriority=", "$.v.toInt();")) ret false;
+              ".sprpriority=", "$.v.toI();")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "ontop", [`paraF_t(data=){
@@ -5612,25 +5620,25 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".ontop=(int)(", "$.v.isTrue());")) ret false;
+              ".ontop=(int)(", "$.v.isT());")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "shadow", [`paraF_t(data=){
           `state.ctrlList[-1].task .= exp .= ".shadowr=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= exp .= ".shadowg=";
             if(
               !`expression(
                 `state.ctrlList[-1].task=, data=)) ret false;
-            `state.ctrlList[-1].task .= "$.v.toInt();";
+            `state.ctrlList[-1].task .= "$.v.toI();";
             if(.s.equ(",")<, `tokenizer(data=)){
               `state.ctrlList[-1].task .= exp;
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, data=,
-                  ".shadowb=", "$.v.toInt();")) ret false;
+                  ".shadowb=", "$.v.toI();")) ret false;
             }
           }
           ret true;
@@ -5640,19 +5648,19 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".removeongethit=(int)(", "$.v.isTrue());")) ret false;
+              ".removeongethit=(int)(", "$.v.isT());")) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "alpha", [`paraF_t(data=){
           `state.ctrlList[-1].task .= "if(t==3){" .= exp .= ".alphas=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();" .= exp;
+          `state.ctrlList[-1].task .= "$.v.toI();" .= exp;
           branch{
           cond .s.equ(",")<, `tokenizer(data=):
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                ".alphad=", "$.v.toInt();")) ret false;
+                ".alphad=", "$.v.toI();")) ret false;
           else:
             `state.ctrlList[-1].task .= ".alphad=255;";
           }
@@ -5665,7 +5673,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "e~ontop=(int)(", "$!.v.isTrue());")) ret false;
+              "e~ontop=(int)(", "$!.v.isT());")) ret false;
           ret true;
         }])) ret false;
       }
@@ -5697,7 +5705,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "getAction(", "$.v.toInt());")) ret false;
+              "getAction(", "$.v.toI());")) ret false;
           ret true;
         }];
         if(!`stateParam(param=, "anim", aniset)) ret false;
@@ -5735,7 +5743,7 @@ public &StateBuilder
       if(!`stateParam(param=, "id", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, "i=", "$.v.toInt();")) ret false;
+            `state.ctrlList[-1].task=, data=, "i=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       bool time = false;
@@ -5743,7 +5751,7 @@ public &StateBuilder
         time = true;
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, "t=", "$.v.toInt();")) ret false;
+            `state.ctrlList[-1].task=, data=, "t=", "$.v.toI();")) ret false;
         ret true;
       }];
       if(!`stateParam(param=, "time", tset)) ret false;
@@ -5761,7 +5769,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`trRemoveExplod(", "$.v.toInt());")) ret false;
+            "`trRemoveExplod(", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       if(!id) `state.ctrlList[-1].task .= "`trRemoveExplod(0);";
@@ -5796,28 +5804,28 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`aimg.time=", "$.v.toInt();")) ret false;
+            "`aimg.time=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "length", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`aimg.length=", "$.v.toInt();")) ret false;
+            "`aimg.length=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "timegap", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`aimg.timegap=.m.max!int?(1,", "$.v.toInt());")) ret false;
+            "`aimg.timegap=.m.max!int?(1,", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "framegap", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`aimg.framegap=", "$.v.toInt();")) ret false;
+            "`aimg.framegap=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palcolor", [`paraF_t(data=){
@@ -5832,22 +5840,22 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`aimg.palfx~invertall=(int)(", "$.v.isTrue());")) ret false;
+            "`aimg.palfx~invertall=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palbright", [`paraF_t(data=){
         `state.ctrlList[-1].task .= "`aimg.palfx~addr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= "`aimg.palfx~addg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "`aimg.palfx~addb=", "$.v.toInt();")) ret false;
+                "`aimg.palfx~addb=", "$.v.toI();")) ret false;
           }
         }
         ret true;
@@ -5872,16 +5880,16 @@ public &StateBuilder
       if(!`stateParam(param=, "palpostbright", [`paraF_t(data=){
         `state.ctrlList[-1].task .= "`aimg.postbrightr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= "`aimg.postbrightg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "`aimg.postbrightb=", "$.v.toInt();")) ret false;
+                "`aimg.postbrightb=", "$.v.toI();")) ret false;
           }
         }
         ret true;
@@ -5889,16 +5897,16 @@ public &StateBuilder
       if(!`stateParam(param=, "paladd", [`paraF_t(data=){
         `state.ctrlList[-1].task .= "`aimg.addr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= "`aimg.addg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "`aimg.addb=", "$.v.toInt();")) ret false;
+                "`aimg.addb=", "$.v.toI();")) ret false;
           }
         }
         ret true;
@@ -5934,7 +5942,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`aimg.time=", "$.v.toInt();")) ret false;
+            "`aimg.time=", "$.v.toI();")) ret false;
         ret true;
       }];
       if(!`stateParam(param=, "time", tset)) ret false;
@@ -5951,7 +5959,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "s=.m.max!int?(1,", "$.v.toInt());")) ret false;
+            "s=.m.max!int?(1,", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .=
@@ -6073,7 +6081,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "time=", "$.v.toInt();")) ret false;
+            "time=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "color", [`paraF_t(data=){
@@ -6088,17 +6096,17 @@ public &StateBuilder
       if(!`stateParam(param=, "add", [`paraF_t(data=){
         `state.ctrlList[-1].task .= pf .= "addr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= pf .= "addg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= pf;
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "addb=", "$.v.toInt();")) ret false;
+                "addb=", "$.v.toI();")) ret false;
           }
         }
         ret true;
@@ -6124,21 +6132,21 @@ public &StateBuilder
       if(!`stateParam(param=, "sinadd", [`paraF_t(data=){
         `state.ctrlList[-1].task .= pf .= "amplr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= pf .= "amplg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toInt();";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= pf .= "amplb=";
             if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-            `state.ctrlList[-1].task .= "$.v.toInt();";
+            `state.ctrlList[-1].task .= "$.v.toI();";
             if(.s.equ(",")<, `tokenizer(data=)){
               `state.ctrlList[-1].task .= pf;
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, data=,
-                  "cycletime=", "$.v.toInt();")) ret false;
+                  "cycletime=", "$.v.toI();")) ret false;
             }
           }
         }
@@ -6149,7 +6157,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "invertall=(int)(", "$.v.isTrue());")) ret false;
+            "invertall=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -6236,14 +6244,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "if(", "$.v.isTrue())`trHitVelSetX();")) ret false;
+            "if(", "$.v.isT())`trHitVelSetX();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "y", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "if(", "$.v.isTrue())`trHitVelSetY();")) ret false;
+            "if(", "$.v.isT())`trHitVelSetY();")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -6256,7 +6264,7 @@ public &StateBuilder
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, "f=", "$.v.toInt();")) ret false;
+            `state.ctrlList[-1].task=, data=, "f=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= "if(#`stVal.hb.byid==0)ret;";
@@ -6313,7 +6321,7 @@ public &StateBuilder
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         `state.ctrlList[-1].task .= ".envcol_r=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(!.s.equ(",")<, `tokenizer(data=)){
           `lasterror = ",がありません";
           ret false;
@@ -6322,7 +6330,7 @@ public &StateBuilder
         if(
           !`expression(
             `state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(!.s.equ(",")<, `tokenizer(data=)){
           `lasterror = ",がありません";
           ret false;
@@ -6330,21 +6338,21 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".envcol_b=", "$.v.toInt();")) ret false;
+            ".envcol_b=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "time", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".envcol_time=", "$.v.toInt();")) ret false;
+            ".envcol_time=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "under", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".envcol_under=(int)(", "$.v.isTrue());")) ret false;
+            ".envcol_under=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -6358,7 +6366,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".stage.envShake.time=", "$.v.toInt();")) ret false;
+            ".stage.envShake.time=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ampl", [`paraF_t(data=){
@@ -6449,13 +6457,13 @@ public &StateBuilder
         `state.ctrlList[-1].task .= "branch{cond ";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
         `state.ctrlList[-1].task .=
-          "$.v.isTrue():`sysivar[.iSPECIALFLAG]|=.lsSCREENBOUNDX;"
+          "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsSCREENBOUNDX;"
           "else:`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUNDX;}";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=, "branch{cond ",
-              "$.v.isTrue():`sysivar[.iSPECIALFLAG]|=.lsSCREENBOUNDY;"
+              "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsSCREENBOUNDY;"
               "else:`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUNDY;}")) ret false;
         }
         ret true;
@@ -6465,7 +6473,7 @@ public &StateBuilder
         if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=, "branch{cond ",
-              "$.v.isTrue():`sysivar[.iSPECIALFLAG]|="
+              "$.v.isT():`sysivar[.iSPECIALFLAG]|="
               ".lsSCREENBOUNDX|.lsSCREENBOUNDY;"
               "else:`sysivar[.iSPECIALFLAG]&="
               "!(.lsSCREENBOUNDX|.lsSCREENBOUNDY);}")) ret false;
@@ -6485,7 +6493,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`trHitAdd(", "$.v.toInt());")) ret false;
+            "`trHitAdd(", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -6510,13 +6518,13 @@ public &StateBuilder
         if(
           !`expression(
             `state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toInt();";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         branch{
         cond .s.equ(",")<, `tokenizer(data=):
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "s=", "$.v.toInt();")) ret false;
+              "s=", "$.v.toI();")) ret false;
         else:
           `state.ctrlList[-1].task .= "s=0;";
         }
@@ -6526,14 +6534,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "ch=", "$.v.toInt();")) ret false;
+            "ch=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "lowpriority", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "lw=", "$.v.isTrue();")) ret false;
+            "lw=", "$.v.isT();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pan", [`paraF_t(data=){
@@ -6554,7 +6562,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "vo=", "$.v.toInt();")) ret false;
+            "vo=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "freqmul", [`paraF_t(data=){
@@ -6568,7 +6576,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "lp=", "$.v.isTrue();")) ret false;
+            "lp=", "$.v.isT();")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= .sndend;
@@ -6583,7 +6591,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "branch{int i=.m.min!int?(255,",
-            "$.v.toInt());cond i<0:.stopAllSound();"
+            "$.v.toI());cond i<0:.stopAllSound();"
             "else:`sounds.new[i].sound.new(0);}")) ret false;
         ret true;
       }])) ret false;
@@ -6599,7 +6607,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "ch=", "$.v.toInt();")) ret false;
+            "ch=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pan", [`paraF_t(data=){
@@ -6872,7 +6880,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].triggerall=, text=,
-            "", "$.v.isTrue()")) ret false;
+            "", "$.v.isT()")) ret false;
       cond .s.equ(name[0..7], "trigger"):
         {
           index idx;
@@ -6895,7 +6903,7 @@ public &StateBuilder
           if(#`state.ctrlList[-1].trigger.new[idx] > 0){
             buf .= "&&";
           }
-          if(!`fullExpression(buf=, text=, "", "$.v.isTrue()")){
+          if(!`fullExpression(buf=, text=, "", "$.v.isT()")){
             if(
               !.cfg.IgnoreMostErrors || #`state.ctrlList[-1].trigger[idx] == 0)
             {
@@ -6931,22 +6939,22 @@ public &StateBuilder
           cond .s.equ(name, "source"):
             `state.ctrlList[-1].task .= "sg=";
             if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
-            `state.ctrlList[-1].task .= "$.v.toInt();";
+            `state.ctrlList[-1].task .= "$.v.toI();";
             if(.s.equ(",")<, `tokenizer(text=)){
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, text=,
-                  "sn=", "$.v.toInt();")) ret false;
+                  "sn=", "$.v.toI();")) ret false;
             }
           cond .s.equ(name, "dest"):
             `state.ctrlList[-1].task .= "dg=";
             if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
-            `state.ctrlList[-1].task .= "$.v.toInt();";
+            `state.ctrlList[-1].task .= "$.v.toI();";
             if(.s.equ(",")<, `tokenizer(text=)){
               if(
                 !`fullExpression(
                   `state.ctrlList[-1].task=, text=,
-                  "dn=", "$.v.toInt();")) ret false;
+                  "dn=", "$.v.toI();")) ret false;
             }
           else:
             break, default;

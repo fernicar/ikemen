@@ -501,10 +501,6 @@ public &Var
   public float f = 0.0;
   public void setI(int i)
   {
-    if(i == .com.IERR){
-      `setSF();
-      ret;
-    }
     `typ = .VarTy::Int;
     `i = i;
   }
@@ -526,33 +522,28 @@ public &Var
   {
     `typ = .VarTy::SFalse;
   }
-  const bool isTrue()
+  const bool isT()
   {
     if(`isSF()) ret false;
-    if(`typ == .VarTy::Int) ret `i != 0;
-    ret `f != 0.0;
+    ret `typ == .VarTy::Int ? `i != 0 : `f != 0.0;
   }
   const bool isSF()
   {
     ret `typ == .VarTy::SFalse;
   }
-  /int toInt()
+  /int toI()
   {
-    if(`isSF()) ret .com.IERR;
+    if(`isSF()) ret 0;
     if(`typ == .VarTy::Float){
-      if(!.m.isfinite(`f)) ret .com.IERR;
+      if(!.m.isfinite(`f)) ret 0;
       ret (int)`f;
     }
     ret `i;
   }
-  const float toF()
+  const double toF()
   {
     if(`isSF()) ret 0.0/0.0;
-    if(`typ == .VarTy::Int){
-      if(`i == .com.IERR) ret 0.0/0.0;
-      ret (float)`i;
-    }
-    ret `f;
+    ret `typ == .VarTy::Int ? (double)`i : `f;
   }
 }
 public &Var v;//work
@@ -578,7 +569,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
       case '%':
         line<> .= '%';
       case 'd':
-        if(#vars > 0) line<> .= .s.iToS(vars[vi++].toInt());
+        if(#vars > 0) line<> .= .s.iToS(vars[vi++].toI());
       case 'f':
         if(#vars > 0){
           ^char tmp;
@@ -3342,7 +3333,7 @@ public &Char
           :
           `trSelfState(5050, -1, -1);
         cond `stVal.no == 140:
-          if(`trAnimTime()$.v.toInt() == 0){
+          if(`trAnimTime()$.v.toI() == 0){
             `trSelfState(
               (int)(`stVal.typ == .StTy::C)*11
               + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
@@ -3971,15 +3962,15 @@ public &Char
   }
   public void trPlayerID()
   {
-    .c = .players.get(.v.toInt());
+    .c = .players.get(.v.toI());
   }
   public void trEnemy()
   {
-    .c = .players.enemy(`playerno, .v.toInt());
+    .c = .players.enemy(`playerno, .v.toI());
   }
   public void trEnemyNear()
   {
-    .c = .players.enemyNear(`=, .v.toInt());
+    .c = .players.enemyNear(`=, .v.toI());
   }
   public void trRoot()
   {
@@ -4002,8 +3993,8 @@ public &Char
   }
   public void trHelper()
   {
-    int id = .v.toInt();
-    if(id != .com.IERR) loop{index i = 1; while; do:
+    int id = .v.toI();
+    loop{index i = 1; while; do:
       if(
         .chars[`playerno][i]~helperindex > 0 && !.chars[`playerno][i]~destmp
         && (id <= 0 || id == .chars[`playerno][i]~helperid))
@@ -4018,7 +4009,7 @@ public &Char
   }
   public void trTarget()
   {
-    int id = .v.toInt();
+    int id = .v.toI();
     loop{index i = 0; while; do:
       .c = .players.get(`targets[i]);
       if(#.c > 0 && (id < 0 || .c~stVal.hb.hitid == id)) ret;
@@ -4030,8 +4021,8 @@ public &Char
   public void trRange(
     &.Var v, bool not, bool minequ, &.Var min, &.Var max, bool maxequ)
   {
-    bool b1 = (minequ ? `trGrE(v, min) : `trGr(v, min))$.v.isTrue();
-    bool b2 = (maxequ ? `trLsE(v, max) : `trLs(v, max))$.v.isTrue();
+    bool b1 = (minequ ? `trGrE(v, min) : `trGr(v, min))$.v.isT();
+    bool b2 = (maxequ ? `trLsE(v, max) : `trLs(v, max))$.v.isT();
     .v.setB((b1&b2) ^ not);
   }
   public void trEqu(&.Var v1, &.Var v2)
@@ -4091,23 +4082,27 @@ public &Char
   public void trNot()
   {
     if(.v.isSF()) ret;
-    .v.setI(!.v.toInt());
+    .v.setI(!.v.toI());
   }
   public void trBoolAnd(&.Var v1, &.Var v2)
   {
-    .v.setB(v1.isTrue() && v2.isTrue());
+    .v.setB(v1.isT() && v2.isT());
   }
   public void trBoolOr(&.Var v1, &.Var v2)
   {
-    .v.setB(v1.isTrue() || v2.isTrue());
+    .v.setB(v1.isT() || v2.isT());
   }
   public void trIfelse(&.Var b, &.Var v1, &.Var v2)
   {
-    .v = b.isTrue() ? v1 : v2;
+    if(b.isSF() || v1.isSF() || v2.isSF()){
+      .v.setSF();
+      ret;
+    }
+    .v = b.isT() ? v1 : v2;
   }
   public void trBoolNot()
   {
-    .v.setB(!.v.isTrue());
+    .v.setB(!.v.isT());
   }
   public void trMinus()
   {
@@ -4123,27 +4118,24 @@ public &Char
   {
     if(.v.typ != .VarTy::Float) ret;
     .v.setF(.m.floor(.v.f));
-    .v.setI(.v.toInt());
+    if(!.v.isSF()) .v.setI(.v.toI());
   }
   public void trCeil()
   {
     if(.v.typ != .VarTy::Float) ret;
     .v.setF(.m.ceil(.v.f));
-    .v.setI(.v.toInt());
+    if(!.v.isSF()) .v.setI(.v.toI());
   }
   public void trSin()
   {
-    if(.v.isSF()) ret;
     .v.setF(.m.sin(.v.toF()));
   }
   public void trCos()
   {
-    if(.v.isSF()) ret;
     .v.setF(.m.cos(.v.toF()));
   }
   public void trTan()
   {
-    if(.v.isSF()) ret;
     .v.setF(.m.tan(.v.toF()));
   }
   public void trAsin()
@@ -4166,7 +4158,6 @@ public &Char
   }
   public void trAtan()
   {
-    if(.v.isSF()) ret;
     .v.setF(.m.atan(.v.toF()));
   }
   public void trLog(&.Var v1, &.Var v2)
@@ -4189,7 +4180,6 @@ public &Char
   }
   public void trExp()
   {
-    if(.v.isSF()) ret;
     .v.setF(.m.exp(.v.toF()));
   }
   public void trMul(&.Var v1, &.Var v2)
@@ -4327,7 +4317,7 @@ public &Char
   }
   public void trAnimElemTime()
   {
-    int e = .v.toInt();
+    int e = .v.toI();
     if(e < 1 || #`ani == 0 || e > #`ani~ani.frames){
       .v.setSF();
       ret;
@@ -4336,8 +4326,8 @@ public &Char
   }
   public void trAnimElemNo()
   {
-    int tim = .v.toInt();
-    if(tim == .com.IERR || #`ani == 0 || #`ani~ani.frames == 0){
+    int tim = .v.toI();
+    if(#`ani == 0 || tim + `ani~ani.sumtime < 0){
       .v.setSF();
       ret;
     }
@@ -4345,7 +4335,6 @@ public &Char
   }
   public void trChangeAnim(int no)
   {
-    if(no == .com.IERR) ret;
     *`ani.self tmp = `getAction(no);
     if(#tmp == 0) ret;
     `ani = tmp;
@@ -4357,7 +4346,6 @@ public &Char
   }
   public void trChangeAnim2(int no)
   {
-    if(no == .com.IERR) ret;
     *`ani.self tmp = .chars[`stVal.playerno][0]~getAction(no);
     if(#tmp == 0) ret;
     `ani = tmp;
@@ -4372,24 +4360,23 @@ public &Char
   {
     if(.v.isSF()) ret;
     .v.setB(
-      #.chars[`id == pid ? `stVal.playerno : `playerno][0]~getAction(
-        .v.toInt())
+      #.chars[`id == pid ? `stVal.playerno : `playerno][0]~getAction(.v.toI())
       > 0);
   }
   public void trSelfAnimExist()
   {
     if(.v.isSF()) ret;
-    .v.setB(#`getAction(.v.toInt()) > 0);
+    .v.setB(#`getAction(.v.toI()) > 0);
   }
   public void trPlayerIDExist()
   {
     if(.v.isSF()) ret;
-    .v.setB(#.players.get(.v.toInt()) > 0);
+    .v.setB(#.players.get(.v.toI()) > 0);
   }
   public void trSysIVar()
   {
-    int i = .v.toInt();
-    if(i < 0){
+    int i = .v.toI();
+    if(.v.isSF() || i < 0){
       .v.setSF();
       ret;
     }
@@ -4397,17 +4384,17 @@ public &Char
   }
   public void trSetSysIVar(&.Var idx, &.Var v)
   {
-    int i = idx.toInt();
-    if(i < 0){
+    int i = idx.toI();
+    if(.v.isSF() || i < 0){
       .v.setSF();
       ret;
     }
-    .v.setI(`sysivar[i] = v.toInt());
+    .v.setI(`sysivar[i] = v.toI());
   }
   public void trSysFVar()
   {
-    int i = .v.toInt();
-    if(i < 0){
+    int i = .v.toI();
+    if(.v.isSF() || i < 0){
       .v.setSF();
       ret;
     }
@@ -4415,8 +4402,8 @@ public &Char
   }
   public void trSetSysFVar(&.Var idx, &.Var v)
   {
-    int i = idx.toInt();
-    if(i < 0){
+    int i = idx.toI();
+    if(.v.isSF() || i < 0){
       .v.setSF();
       ret;
     }
@@ -4424,8 +4411,8 @@ public &Char
   }
   public void trIVar()
   {
-    int i = .v.toInt();
-    if(i < 0){
+    int i = .v.toI();
+    if(.v.isSF() || i < 0 || i >= 60){
       .v.setSF();
       ret;
     }
@@ -4433,17 +4420,17 @@ public &Char
   }
   public void trSetIVar(&.Var idx, &.Var v)
   {
-    int i = idx.toInt();
-    if(i < 0){
+    int i = idx.toI();
+    if(.v.isSF() || i < 0 || i >= 60){
       .v.setSF();
       ret;
     }
-    .v.setI(`ivar[i] = v.toInt());
+    .v.setI(`ivar[i] = v.toI());
   }
   public void trFVar()
   {
-    int i = .v.toInt();
-    if(i < 0){
+    int i = .v.toI();
+    if(.v.isSF() || i < 0 || i >= 40){
       .v.setSF();
       ret;
     }
@@ -4451,8 +4438,8 @@ public &Char
   }
   public void trSetFVar(&.Var idx, &.Var v)
   {
-    int i = idx.toInt();
-    if(i < 0){
+    int i = idx.toI();
+    if(.v.isSF() || i < 0 || i >= 40){
       .v.setSF();
       ret;
     }
@@ -4603,11 +4590,19 @@ public &Char
   }
   public void trRootDistX()
   {
+    if(`helperindex == 0){
+      .v.setSF();
+      ret;
+    }
     .v.setF()<, .m.floor(
       (float)`facing*(.chars[`playerno][0]~sysfvar[.fX] - `sysfvar[.fX]));
   }
   public void trRootDistY()
   {
+    if(`helperindex == 0){
+      .v.setSF();
+      ret;
+    }
     .v.setF(
       (.chars[`playerno][0]~sysfvar[.fY] - .chars[`playerno][0]~getHeight())
       - (`sysfvar[.fY] - `getHeight()));
@@ -4639,11 +4634,19 @@ public &Char
   public void trP2StateType(|.StTy st)
   {
     ^`self e = .players.enemyNear(`=, 0);
+    if(#e == 0){
+      .v.setSF();
+      ret;
+    }
     .v.setB(st == e~stVal.typ);
   }
   public void trP2StateNo()
   {
     ^`self e = .players.enemyNear(`=, 0);
+    if(#e == 0){
+      .v.setSF();
+      ret;
+    }
     .v.setI(e~stVal.no);
   }
   public void trMoveType(|.MovTy mt)
@@ -4703,11 +4706,8 @@ public &Char
   }
   public void trIsHelper()
   {
-    int id = .v.toInt();
-    if(id == .com.IERR){
-      .v.setSF();
-      ret;
-    }
+    if(.v.isSF()) ret;
+    int id = .v.toI();
     .v.setB(`helperindex != 0 && (id <= 0 || `helperid == id));
   }
   public void trActive()
@@ -4801,7 +4801,6 @@ public &Char
   }
   public void trTargetBind(^/int tar, int time, float x, float y)
   {
-    if(time == .com.IERR) ret;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
@@ -4837,12 +4836,11 @@ public &Char
   }
   public void setBindFacing(int f)
   {
-    if(f == .com.IERR || f== 0) ret;
+    if(f== 0) ret;
     `sysivar[.iBINDFACING] = f < 0 ? -1 : 1;
   }
   public void trTargetDrop(int id, bool keepone)
   {
-    if(id == .com.IERR) ret;
     %int tmp;
     ^`self c;
     loop{
@@ -4961,7 +4959,6 @@ public &Char
   }
   public void trTargetLifeAdd(^/int tar, int va, bool kill, bool absolute)
   {
-    if(va == .com.IERR) ret;
     ^`self c;
     loop{index i = 0; while; do:
       if(#(c = .players.get(tar[i])) > 0){
@@ -4986,7 +4983,6 @@ public &Char
   }
   public void trTargetPowerAdd(^/int tar, int pw)
   {
-    if(pw == .com.IERR) ret;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
@@ -4997,7 +4993,6 @@ public &Char
   }
   public void trHitAdd(int h)
   {
-    if(h == .com.IERR) ret;
     `sysivar[.iHITCOUNT] += h;
     ^`self c;
     loop{index i = 0; while; do:
@@ -5072,11 +5067,8 @@ public &Char
   }
   public void trProjTime(|.ProjContact pct)
   {
-    int id = .v.toInt();
-    if(id == .com.IERR){
-      .v.setSF();
-      ret;
-    }
+    if(.v.isSF()) ret;
+    int id = .v.toI();
     .v.typ = .VarTy::Int;
     branch{
     cond id < 0:
@@ -5102,11 +5094,8 @@ public &Char
   }
   public void trProjContactTime()
   {
-    int id = .v.toInt();
-    if(id == .com.IERR){
-      .v.setSF();
-      ret;
-    }
+    if(.v.isSF()) ret;
+    int id = .v.toI();
     .v.typ = .VarTy::Int;
     branch{
     cond id < 0:
@@ -5141,7 +5130,7 @@ public &Char
   public void trNumHelper()
   {
     if(.v.isSF()) ret;
-    int id = .v.toInt();
+    int id = .v.toI();
     .v.typ = .VarTy::Int;
     .v.i = 0;
     loop{index i = 1; while; do:
@@ -5161,7 +5150,6 @@ public &Char
   }
   public void trExplodBindTime(int id, int bt)
   {
-    if(bt == .com.IERR || id == .com.IERR) ret;
     loop{index i = 0; while; do:
       if(`matchExplodId(i, id)){
         .explods[`playerno][i].bindtime = bt + (bt > 0 ? 1 : 0);
@@ -5172,7 +5160,6 @@ public &Char
   }
   public void trRemoveExplod(int id)
   {:<-
-    if(id == .com.IERR) ret;
     void expRemove(int id, ^%index drawlist=, bool delI)
     {
       loop{index i = #drawlist[`playerno]-1; while; do:
@@ -5196,11 +5183,8 @@ public &Char
   }
   public void trNumExplod()
   {
-    int id = .v.toInt();
-    if(id == .com.IERR){
-      .v.setSF();
-      ret;
-    }
+    if(.v.isSF()) ret;
+    int id = .v.toI();
     .v.typ = .VarTy::Int;
     .v.i = 0;
     loop{index i = 0; while; do:
@@ -5211,11 +5195,8 @@ public &Char
   }
   public void trNumTarget()
   {
-    int id = .v.toInt();
-    if(id == .com.IERR){
-      .v.setSF();
-      ret;
-    }
+    if(.v.isSF()) ret;
+    int id = .v.toI();
     .v.typ = .VarTy::Int;
     .v.i = 0;
     loop{index i = 0; while; do:
@@ -5235,11 +5216,8 @@ public &Char
   }
   public void trNumProjID()
   {
-    int id = .v.toInt();
-    if(id == .com.IERR){
-      .v.setSF();
-      ret;
-    }
+    if(.v.isSF()) ret;
+    int id = .v.toI();
     if(`helperindex != 0){
       .v.setI(0);
       ret;
