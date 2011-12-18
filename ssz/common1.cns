@@ -2030,7 +2030,7 @@ void c.Char::s##_@@P()
     `stVal.hb.hitf1 = -8;
     `stVal.hb.hitt1 = 1;
     if(`trAnimTime()$.v.toInt() == 0){
-      `trHitFallSet(1, .com.FERR, .com.FERR);
+      `trHitFallSet(1, 0.0/0.0, 0.0/0.0);
       `stVal.hb.hitf1 = -9345;
       `stVal.hb.hitt1 = 12;
       `stVal.hb.hitf2 = -8;
@@ -2163,7 +2163,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     switch(`stVal.time){
     case 0:
-      if(`trP2DistX()$.v.toFloat() < -5.0) `setFacing(-`facing);
+      if(`trP2DistX()$.v.toF() < -5.0) `setFacing(-`facing);
       `setXV(`sysfvar[.fAIR_GETHIT_GROUNDRECOVERX]);
       `setYV(`sysfvar[.fAIR_GETHIT_GROUNDRECOVERY]);
       .v.setF(0.0)$`trSetY();
@@ -2230,7 +2230,7 @@ void c.Char::s##_@@P()
         fx~addb = 128;
       }
       `sysivar[.iSPECIALFLAG] |= .lsPOSFREEZEX | .lsPOSFREEZEY;
-      if(`trP2DistX()$.v.toFloat() < -20.0) `setFacing(-`facing);
+      if(`trP2DistX()$.v.toF() < -20.0) `setFacing(-`facing);
       `stVal.hb.hitf1 = -8;
       `stVal.hb.hitt1 = 15;
     case 4:

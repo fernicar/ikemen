@@ -346,7 +346,7 @@ public &StateBuilder
   {
     `pt1.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.;;;)$`trMinus()");
     `pt2.compile(".v.setI(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toInt()");
-    `pt3.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toFloat()");
+    `pt3.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toF()");
   }
   public ^/char okikae(^/char code)
   {
@@ -394,7 +394,7 @@ public &StateBuilder
         %char buf;
         buf .= c[0];
         if(tmp[j+6] == 'I') buf .= ".0";
-        j += 22 + #c[0];
+        j += 18 + #c[0];
         ret buf;
       }], tmp);
     ret  tmp;
@@ -2740,7 +2740,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.deftask=, data=, "if(",
-            "$.v.isTrue()&&`trP2DistX()$.v.toFloat()<0.0)"
+            "$.v.isTrue()&&`trP2DistX()$.v.toF()<0.0)"
             "`setFacing(-`facing);")) ret false;
         ret true;
       }])) ret false;
@@ -3022,7 +3022,7 @@ public &StateBuilder
       }])) ret false;
       if(#val == 0 && !`stateParam(param=, "fvalue", [`paraF_t(data=){
         %char buf;
-        if(!`fullExpression(buf=, data=, "", "$.v.toFloat());")) ret false;
+        if(!`fullExpression(buf=, data=, "", "$.v.toF());")) ret false;
         fval = buf;
         ret true;
       }])) ret false;
@@ -3452,60 +3452,60 @@ public &StateBuilder
         if(!`stateParam(param=, "velocity", [`paraF_t(data=){
           `state.ctrlList[-1].task .= "pr~velocityx=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat();";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "pr~velocityy=", "$.v.toFloat();")) ret false;
+                "pr~velocityy=", "$.v.toF();")) ret false;
           }
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "velmul", [`paraF_t(data=){
           `state.ctrlList[-1].task .= "pr~velmulx=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat();";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "pr~velmuly=", "$.v.toFloat();")) ret false;
+                "pr~velmuly=", "$.v.toF();")) ret false;
           }
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "remvelocity", [`paraF_t(data=){
           `state.ctrlList[-1].task .= "pr~remvelocityx=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat();";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "pr~remvelocityy=", "$.v.toFloat();")) ret false;
+                "pr~remvelocityy=", "$.v.toF();")) ret false;
           }
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "accel", [`paraF_t(data=){
           `state.ctrlList[-1].task .= "pr~accelx=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat();";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "pr~accely=", "$.v.toFloat();")) ret false;
+                "pr~accely=", "$.v.toF();")) ret false;
           }
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projscale", [`paraF_t(data=){
           `state.ctrlList[-1].task .= "pr~scalex=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat();";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "pr~scaley=", "$.v.toFloat();")) ret false;
+                "pr~scaley=", "$.v.toF();")) ret false;
           }
           ret true;
         }])) ret false;
@@ -3757,7 +3757,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".fall.xvelocity=", "$.v.toFloat();")) ret false;
+            ".fall.xvelocity=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.yvelocity", [`paraF_t(data=){
@@ -3765,7 +3765,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".fall.yvelocity=", "$.v.toFloat();")) ret false;
+            ".fall.yvelocity=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.recover", [`paraF_t(data=){
@@ -3813,13 +3813,13 @@ public &StateBuilder
       if(!`stateParam(param=, "sparkxy", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".sparkx=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".sparky=", "$.v.toFloat();")) ret false;
+              ".sparky=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -3858,26 +3858,26 @@ public &StateBuilder
       if(!`stateParam(param=, "mindist", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".mindistx=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".mindisty=", "$.v.toFloat();")) ret false;
+              ".mindisty=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "maxdist", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".maxdistx=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".maxdisty=", "$.v.toFloat();")) ret false;
+              ".maxdisty=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -3885,20 +3885,20 @@ public &StateBuilder
         `state.ctrlList[-1].task .= obj .= ".snapx=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
         `state.ctrlList[-1].task .=
-          "$.v.toFloat();if(" .= obj .= ".p2facing==.com.IERR)"
+          "$.v.toF();if(" .= obj .= ".p2facing==.com.IERR)"
           .= obj .= ".p2facing=1;" .= obj .= ".snapt=1;";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj .= ".snapy=";
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "", "$.v.toFloat();")) ret false;
+              "", "$.v.toF();")) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= obj .= ".snapz=";
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "", "$.v.toFloat();")) ret false;
+                "", "$.v.toF();")) ret false;
             if(.s.equ(",")<, `tokenizer(data=)){
               `state.ctrlList[-1].task .= obj .= ".snapt=";
               if(
@@ -3947,7 +3947,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".air_cornerpush_veloff=", "$.v.toFloat();")) ret false;
+            ".air_cornerpush_veloff=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "down.bounce", [`paraF_t(data=){
@@ -3961,13 +3961,13 @@ public &StateBuilder
       if(!`stateParam(param=, "down.velocity", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".down_velocityx=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".down_velocityy=", "$.v.toFloat();")) ret false;
+              ".down_velocityy=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -3976,7 +3976,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".down_cornerpush_veloff=", "$.v.toFloat();")) ret false;
+            ".down_cornerpush_veloff=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ground.hittime", [`paraF_t(data=){
@@ -4032,26 +4032,26 @@ public &StateBuilder
       if(!`stateParam(param=, "air.velocity", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".air_velocityx=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".air_velocityy=", "$.v.toFloat();")) ret false;
+              ".air_velocityy=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "airguard.velocity", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".airguard_velocityx=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".airguard_velocityy=", "$.v.toFloat();")) ret false;
+              ".airguard_velocityy=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -4082,13 +4082,13 @@ public &StateBuilder
       if(!`stateParam(param=, "ground.velocity", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj .= ".ground_velocityx=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".ground_velocityy=", "$.v.toFloat();")) ret false;
+              ".ground_velocityy=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -4097,7 +4097,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".guard_velocity=", "$.v.toFloat();")) ret false;
+            ".guard_velocity=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ground.cornerpush.veloff", [`paraF_t(data=){
@@ -4106,7 +4106,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             ".ground_cornerpush_veloff=",
-            "$.v.toFloat();")) ret false;
+            "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "guard.cornerpush.veloff", [`paraF_t(data=){
@@ -4114,7 +4114,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".guard_cornerpush_veloff=", "$.v.toFloat();")) ret false;
+            ".guard_cornerpush_veloff=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "airguard.cornerpush.veloff", [`paraF_t(data=){
@@ -4122,7 +4122,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".airguard_cornerpush_veloff=", "$.v.toFloat();")) ret false;
+            ".airguard_cornerpush_veloff=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "yaccel", [`paraF_t(data=){
@@ -4130,7 +4130,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".yaccel=", "$.v.toFloat();")) ret false;
+            ".yaccel=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palfx.time", [`paraF_t(data=){
@@ -4229,7 +4229,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".envshake_ampl=", "$.v.toFloat();")) ret false;
+            ".envshake_ampl=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "envshake.phase", [`paraF_t(data=){
@@ -4237,7 +4237,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".envshake_phase=", "$.v.toFloat();")) ret false;
+            ".envshake_phase=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "envshake.freq", [`paraF_t(data=){
@@ -4245,7 +4245,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".envshake_freq=.m.max!float?(0.0,", "$.v.toFloat());")) ret false;
+            ".envshake_freq=.m.max!float?(0.0,", "$.v.toF());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.envshake.time", [`paraF_t(data=){
@@ -4261,7 +4261,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".fall.envshake_ampl=", "$.v.toFloat();")) ret false;
+            ".fall.envshake_ampl=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.envshake.phase", [`paraF_t(data=){
@@ -4269,7 +4269,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".fall.envshake_phase=", "$.v.toFloat();")) ret false;
+            ".fall.envshake_phase=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.envshake.freq", [`paraF_t(data=){
@@ -4278,7 +4278,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             ".fall.envshake_freq=.m.max!float?(0.0,",
-            "$.v.toFloat());")) ret false;
+            "$.v.toF());")) ret false;
         ret true;
       }])) ret false;
       if(`state.ctrlList[-1].typ == .CtrlTy::Projectile){
@@ -4287,12 +4287,12 @@ public &StateBuilder
           if(
             !`expression(
               `state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat();";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "y=", "$.v.toFloat();")) ret false;
+                "y=", "$.v.toF();")) ret false;
           }
           ret true;
         }])) ret false;
@@ -4380,7 +4380,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`attackdist=", "$.v.toFloat();")) ret false;
+            "`attackdist=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -4540,12 +4540,12 @@ public &StateBuilder
         if(
           !`expression(
             `state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".superposy=`sysfvar[.fY]+", "$.v.toFloat();")) ret false;
+              ".superposy=`sysfvar[.fY]+", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -4554,7 +4554,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             ".superp2defmul=",
-            "$.v.toFloat();if(.superp2defmul==0.0)"
+            "$.v.toF();if(.superp2defmul==0.0)"
             ".superp2defmul=.cfg.Super_TargetDefenceMul;")) ret false;
         ret true;
       }])) ret false;
@@ -4732,12 +4732,12 @@ public &StateBuilder
         if(
           !`expression(
             `state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "y=", "$.v.toFloat();")) ret false;
+              "y=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -4785,8 +4785,7 @@ public &StateBuilder
           ? "`trTargetVelSetX(tar," : "`trTargetVelAddX(tar,";
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "", "$.v.toFloat());")) ret false;
+            `state.ctrlList[-1].task=, data=, "", "$.v.toF());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "y", [`paraF_t(data=){
@@ -4795,8 +4794,7 @@ public &StateBuilder
           ? "`trTargetVelSetY(tar," : "`trTargetVelAddY(tar,";
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "", "$.v.toFloat());")) ret false;
+            `state.ctrlList[-1].task=, data=, "", "$.v.toF());")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -4913,7 +4911,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "`attackmul=((float)`sysivar[.iATTACK]/100.0)*",
-            "$.v.toFloat();")) ret false;
+            "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -4927,7 +4925,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "`defencemul=(float)`sysivar[.iDEFENCE]/(",
-            "$.v.toFloat()*100.0);")) ret false;
+            "$.v.toF()*100.0);")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -5339,12 +5337,12 @@ public &StateBuilder
         if(
           !`expression(
             `state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "y=", "$.v.toFloat();")) ret false;
+              "y=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -5493,25 +5491,25 @@ public &StateBuilder
         if(
           !`expression(
             `state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= exp;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".offsety=", "$.v.toFloat();")) ret false;
+              ".offsety=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "random", [`paraF_t(data=){
         `state.ctrlList[-1].task .= "rx=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "ry=", "$.v.toFloat();")) ret false;
+              "ry=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -5521,13 +5519,13 @@ public &StateBuilder
           vel = true;
           `state.ctrlList[-1].task .= exp .= ".velocityx=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat();";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= exp;
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                ".velocityy=", "$.v.toFloat();")) ret false;
+                ".velocityy=", "$.v.toF();")) ret false;
           }
           ret true;
         }];
@@ -5536,26 +5534,26 @@ public &StateBuilder
         if(!`stateParam(param=, "accel", [`paraF_t(data=){
           `state.ctrlList[-1].task .= exp .= ".accelx=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat();";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= exp;
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                ".accely=", "$.v.toFloat();")) ret false;
+                ".accely=", "$.v.toF();")) ret false;
           }
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "scale", [`paraF_t(data=){
           `state.ctrlList[-1].task .= exp .= ".scalex=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat();";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= exp;
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                ".scaley=", "$.v.toFloat();")) ret false;
+                ".scaley=", "$.v.toF();")) ret false;
           }
           ret true;
         }])) ret false;
@@ -5827,7 +5825,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "`aimg.palfx~color=.m.max!float?(0.0,.m.min!float?(1.0,",
-            "$.v.toFloat()/256.0));")) ret false;
+            "$.v.toF()/256.0));")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palinvertall", [`paraF_t(data=){
@@ -5857,16 +5855,16 @@ public &StateBuilder
       if(!`stateParam(param=, "palcontrast", [`paraF_t(data=){
         `state.ctrlList[-1].task .= "`aimg.palfx~mulr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat()/256.0;";
+        `state.ctrlList[-1].task .= "$.v.toF()/256.0;";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= "`aimg.palfx~mulg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat()/256.0;";
+          `state.ctrlList[-1].task .= "$.v.toF()/256.0;";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "`aimg.palfx~mulb=", "$.v.toFloat()/256.0;")) ret false;
+                "`aimg.palfx~mulb=", "$.v.toF()/256.0;")) ret false;
           }
         }
         ret true;
@@ -5908,16 +5906,16 @@ public &StateBuilder
       if(!`stateParam(param=, "palmul", [`paraF_t(data=){
         `state.ctrlList[-1].task .= "`aimg.mulr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= "`aimg.mulg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat();";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "`aimg.mulb=", "$.v.toFloat();")) ret false;
+                "`aimg.mulb=", "$.v.toF();")) ret false;
           }
         }
         ret true;
@@ -5961,24 +5959,24 @@ public &StateBuilder
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
         `state.ctrlList[-1].task .= "x=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "y=", "$.v.toFloat();")) ret false;
+              "y=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pos2", [`paraF_t(data=){
         `state.ctrlList[-1].task .= "x2=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "y2=", "$.v.toFloat();")) ret false;
+              "y2=", "$.v.toF();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -6084,7 +6082,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "color=.m.max!float?(0.0,.m.min!float?(1.0,",
-            "$.v.toFloat()/256.0));")) ret false;
+            "$.v.toF()/256.0));")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "add", [`paraF_t(data=){
@@ -6108,17 +6106,17 @@ public &StateBuilder
       if(!`stateParam(param=, "mul", [`paraF_t(data=){
         `state.ctrlList[-1].task .= pf .= "mulr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat()/256.0;";
+        `state.ctrlList[-1].task .= "$.v.toF()/256.0;";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= pf .= "mulg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toFloat()/256.0;";
+          `state.ctrlList[-1].task .= "$.v.toF()/256.0;";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= pf;
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "mulb=", "$.v.toFloat()/256.0;")) ret false;
+                "mulb=", "$.v.toF()/256.0;")) ret false;
           }
         }
         ret true;
@@ -6218,14 +6216,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`offsetx=", "$.v.toFloat();")) ret false;
+            "`offsetx=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "y", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`offsety=", "$.v.toFloat();")) ret false;
+            "`offsety=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       ret true;
@@ -6266,14 +6264,14 @@ public &StateBuilder
          if(
            !`fullExpression(
              `state.ctrlList[-1].task=, data=,
-             "vx=", "$.v.toFloat();")) ret false;
+             "vx=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "yvel", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "vy=", "$.v.toFloat();")) ret false;
+            "vy=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= "`trHitFallSet(f,vx,vy);";
@@ -6367,14 +6365,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".stage.envShake.ampl=", "$.v.toFloat();")) ret false;
+            ".stage.envShake.ampl=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "phase", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".stage.envShake.phase=", "$.v.toFloat();")) ret false;
+            ".stage.envShake.phase=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "freq", [`paraF_t(data=){
@@ -6382,7 +6380,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
               ".stage.envShake.freq=.m.max!float?(0.0,(",
-              "$.v.toFloat()/180.0)*.m.PI);")) ret false;
+              "$.v.toF()/180.0)*.m.PI);")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= ".stage.envShake.setDefPhase();";
@@ -6397,12 +6395,12 @@ public &StateBuilder
         val = true;
         `state.ctrlList[-1].task .= "float f=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         branch{
         cond .s.equ(",")<, `tokenizer(data=):
           if(
             !`fullExpression(`state.ctrlList[-1].task=, data=,
-              "float b=", "$.v.toFloat();")) ret false;
+              "float b=", "$.v.toF();")) ret false;
         else:
           `state.ctrlList[-1].task .= "float b=f;";
         }
@@ -6413,12 +6411,12 @@ public &StateBuilder
         val = true;
         `state.ctrlList[-1].task .= "`setFWidth(";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat());";
+        `state.ctrlList[-1].task .= "$.v.toF());";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "`setBWidth(", "$.v.toFloat());")) ret false;
+              "`setBWidth(", "$.v.toF());")) ret false;
         }
         ret true;
       }])) ret false;
@@ -6426,12 +6424,12 @@ public &StateBuilder
         val = true;
         `state.ctrlList[-1].task .= "float f=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toFloat();";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         branch{
         cond .s.equ(",")<, `tokenizer(data=):
           if(
             !`fullExpression(`state.ctrlList[-1].task=, data=,
-              "float b=", "$.v.toFloat();")) ret false;
+              "float b=", "$.v.toF();")) ret false;
         else:
           `state.ctrlList[-1].task .= "float b=f;";
         }
@@ -6542,14 +6540,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "p=", "$.v.toFloat();")) ret false;
+            "p=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "abspan", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "x.new(0);p=", "$.v.toFloat();")) ret false;
+            "x.new(0);p=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "volume", [`paraF_t(data=){
@@ -6563,7 +6561,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "fr=", "$.v.toFloat();")) ret false;
+            "fr=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "loop", [`paraF_t(data=){
@@ -6607,15 +6605,14 @@ public &StateBuilder
       if(!`stateParam(param=, "pan", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "p=", "$.v.toFloat();")) ret false;
+            `state.ctrlList[-1].task=, data=, "p=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "abspan", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "x.new(0);p=", "$.v.toFloat();")) ret false;
+            "x.new(0);p=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .=

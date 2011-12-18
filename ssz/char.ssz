@@ -545,7 +545,7 @@ public &Var
     }
     ret `i;
   }
-  const float toFloat()
+  const float toF()
   {
     if(`isSF()) ret 0.0/0.0;
     if(`typ == .VarTy::Int){
@@ -582,7 +582,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
       case 'f':
         if(#vars > 0){
           ^char tmp;
-          .mes.DoubleToStr(:tmp=, vars[vi++].toFloat():);
+          .mes.DoubleToStr(:tmp=, vars[vi++].toF():);
           line<> .= tmp;
         }
       default:
@@ -3054,7 +3054,7 @@ public &Char
       }
       if(
         `stVal.typ != .StTy::A && !`ls(.lsNOAUTOTURN)
-        && `trP2DistX()$.v.toFloat() <= -1.0)
+        && `trP2DistX()$.v.toF() <= -1.0)
       {
         `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
         `setFacing(-`facing);
@@ -4122,31 +4122,33 @@ public &Char
   public void trFloor()
   {
     if(.v.typ != .VarTy::Float) ret;
-    .v.setI((int).m.floor(.v.f));
+    .v.setF(.m.floor(.v.f));
+    .v.setI(.v.toInt());
   }
   public void trCeil()
   {
     if(.v.typ != .VarTy::Float) ret;
-    .v.setI((int).m.ceil(.v.f));
+    .v.setF(.m.ceil(.v.f));
+    .v.setI(.v.toInt());
   }
   public void trSin()
   {
     if(.v.isSF()) ret;
-    .v.setF(.m.sin(.v.toFloat()));
+    .v.setF(.m.sin(.v.toF()));
   }
   public void trCos()
   {
     if(.v.isSF()) ret;
-    .v.setF(.m.cos(.v.toFloat()));
+    .v.setF(.m.cos(.v.toF()));
   }
   public void trTan()
   {
     if(.v.isSF()) ret;
-    .v.setF(.m.tan(.v.toFloat()));
+    .v.setF(.m.tan(.v.toF()));
   }
   public void trAsin()
   {
-    double x = .v.toFloat();
+    double x = .v.toF();
     if(!.m.inRange!double?(-1.0, 1.0, x)){
       .v.setSF();
       ret;
@@ -4155,7 +4157,7 @@ public &Char
   }
   public void trAcos()
   {
-    double x = .v.toFloat();
+    double x = .v.toF();
     if(!.m.inRange!double?(-1.0, 1.0, x)){
       .v.setSF();
       ret;
@@ -4165,11 +4167,11 @@ public &Char
   public void trAtan()
   {
     if(.v.isSF()) ret;
-    .v.setF(.m.atan(.v.toFloat()));
+    .v.setF(.m.atan(.v.toF()));
   }
   public void trLog(&.Var v1, &.Var v2)
   {
-    double x = v1.toFloat(), y = v2.toFloat();
+    double x = v1.toF(), y = v2.toF();
     if(x < 0.0 || y < 0.0){
       .v.setSF();
       ret;
@@ -4178,7 +4180,7 @@ public &Char
   }
   public void trLn()
   {
-    double x = .v.toFloat();
+    double x = .v.toF();
     if(x < 0.0){
       .v.setSF();
       ret;
@@ -4188,7 +4190,7 @@ public &Char
   public void trExp()
   {
     if(.v.isSF()) ret;
-    .v.setF(.m.exp(.v.toFloat()));
+    .v.setF(.m.exp(.v.toF()));
   }
   public void trMul(&.Var v1, &.Var v2)
   {:<-
@@ -4209,7 +4211,7 @@ public &Char
     }
     void f(&.Var r=, float f1, float f2){r.setF(f1 / f2);}
     `nikou!i, f?(.v=, v1, v2);
-    if(!.m.isfinite(.v.toFloat())) .v.setSF();
+    if(!.m.isfinite(.v.toF())) .v.setSF();
   }
   public void trMod(&.Var v1, &.Var v2)
   {:<-
@@ -4254,17 +4256,17 @@ public &Char
   }
   public void trSetX()
   {
-    float x = .v.toFloat();
+    float x = .v.toF();
     if(.m.isfinite(x)) `setX(x);
   }
   public void trSetY()
   {
-    float y = .v.toFloat();
+    float y = .v.toF();
     if(.m.isfinite(y)) `setY(y);
   }
   public void trAddX()
   {
-    float x = .v.toFloat();
+    float x = .v.toF();
     if(!.m.isfinite(x)) ret;
     float tmp = `oldx;
     `setX(`sysfvar[.fX] + (float)`facing*x);
@@ -4272,42 +4274,42 @@ public &Char
   }
   public void trAddY()
   {
-    float y = .v.toFloat();
+    float y = .v.toF();
     if(.m.isfinite(y)) `setY(`sysfvar[.fY] + y);
   }
   public void trVelSetX()
   {
-    float f = .v.toFloat();
+    float f = .v.toF();
     if(.m.isfinite(f)) `setXV(f);
   }
   public void trVelSetY()
   {
-    float f = .v.toFloat();
+    float f = .v.toF();
     if(.m.isfinite(f)) `setYV(f);
   }
   public void trVelAddX()
   {
-    float f = .v.toFloat();
+    float f = .v.toF();
     if(.m.isfinite(f)) `sysfvar[.fVX] += f;
   }
   public void trVelAddY()
   {
-    float f = .v.toFloat();
+    float f = .v.toF();
     if(.m.isfinite(f)) `sysfvar[.fVY] += f;
   }
   public void trVelMulX()
   {
-    float f = .v.toFloat();
+    float f = .v.toF();
     if(.m.isfinite(f)) `sysfvar[.fVX] *= f;
   }
   public void trVelMulY()
   {
-    float f = .v.toFloat();
+    float f = .v.toF();
     if(.m.isfinite(f)) `sysfvar[.fVY] *= f;
   }
   public void trAngleSet()
   {
-    float f = .v.toFloat();
+    float f = .v.toF();
     if(.m.isfinite(f)) `setAngle(f);
   }
   public void trAnim()
@@ -4418,7 +4420,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF(`sysfvar[i] = v.toFloat());
+    .v.setF(`sysfvar[i] = v.toF());
   }
   public void trIVar()
   {
@@ -4454,7 +4456,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF(`fvar[i] = v.toFloat());
+    .v.setF(`fvar[i] = v.toF());
   }
   public bool changeState1(int p, int n)
   {:<-
