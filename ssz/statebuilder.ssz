@@ -561,12 +561,19 @@ public &StateBuilder
     branch{
     cond .s.find(".", token) >= 0:
       if(!.s.sToNumber!d.self?(d=, token)) ret "";
-      rtn .= ".v.setF(" .= `fToS(d) .= ")";
+      branch{
+      cond .m.isnan(d):
+        rtn .= ".v.setSF()";
+      else:
+        rtn .= ".v.setF(" .= `fToS(d) .= ")";
+      }
     else:
       if(!.s.sToNumber!d.self?(d=, token + ".0")) ret "";
       branch{
+      cond .m.isnan(d):
+        rtn .= ".v.setSF()";
       cond d < (double).consts.int_t::MIN:
-        rtn .= ".v.setI(" .= .s.iToS(-.consts.int_t::MAX) .= ")";
+        rtn .= ".v.setI(" .= .s.iToS(.consts.int_t::MIN) .= ")";
       cond d > (double).consts.int_t::MAX:
         rtn .= ".v.setI(" .= .s.iToS(.consts.int_t::MAX) .= ")";
       else:
@@ -5716,8 +5723,8 @@ public &StateBuilder
       switch(`state.ctrlList[-1].typ){
       case .CtrlTy::Explod, .CtrlTy::GameMakeAnim:
         `state.ctrlList[-1].task .=
-          "if(.m.isfinite(e~offsetx))e~offsetx+=.m.randF(-rx,rx);"
-          "if(.m.isfinite(e~offsety))e~offsety+=.m.randF(-ry,ry);"
+          "if(!.m.isnan(e~offsetx))e~offsetx+=.m.randF(-rx,rx);"
+          "if(!.m.isnan(e~offsety))e~offsety+=.m.randF(-ry,ry);"
           "e~setPos(`=);`setAlpha(t,e~alphas=,e~alphad=);"
           "`insertExplod(i);";
         if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
@@ -5726,8 +5733,8 @@ public &StateBuilder
         }
       case .CtrlTy::ModifyExplod:
         `state.ctrlList[-1].task .=
-          "if(.m.isfinite(m.offsetx))m.offsetx+=.m.randF(-rx,rx);"
-          "if(.m.isfinite(m.offsety))m.offsety+=.m.randF(-ry,ry);"
+          "if(!.m.isnan(m.offsetx))m.offsetx+=.m.randF(-rx,rx);"
+          "if(!.m.isnan(m.offsety))m.offsety+=.m.randF(-ry,ry);"
           "`setAlpha(t,m.alphas=,m.alphad=);"
           "loop{index i=0;while;do:"
           ".explods[`playerno][i].modify(`=,m=,i++);"
@@ -5989,7 +5996,7 @@ public &StateBuilder
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= 
-        "`makeDust(x,y);if(.m.isfinite(x2))`makeDust(x2,y2);";
+        "`makeDust(x,y);if(!.m.isnan(x2))`makeDust(x2,y2);";
       ret true;
     }]);
   }
