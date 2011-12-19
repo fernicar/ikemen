@@ -4325,7 +4325,7 @@ public &Char
   public void trAnimElemNo()
   {
     int tim = .v.toI();
-    if(#`ani == 0 || tim + `ani~ani.sumtime < 0){
+    if(#`ani == 0 || tim < -`ani~ani.sumtime){
       .v.setSF();
       ret;
     }
@@ -5204,8 +5204,7 @@ public &Char
       else:
         {
           ^`self t = .players.get(`targets[i]);
-          if(#t == 0) break;
-          if(t~stVal.hb.hitid == id) .v.i++;
+          if(#t > 0 && t~stVal.hb.hitid == id) .v.i++;
         } 
       }
       i++;

@@ -6318,7 +6318,7 @@ public &StateBuilder
         ".stage.envShake.time=`stVal.hb.fall.envshake_time;"
         ".stage.envShake.freq=(`stVal.hb.fall.envshake_freq/180.0)*.m.PI;"
         ".stage.envShake.ampl=`stVal.hb.fall.envshake_ampl;"
-        ".stage.envShake.phase=`stVal.hb.fall.envshake_phase;";
+        ".stage.envShake.phase=`stVal.hb.fall.envshake_phase;"
         ".stage.envShake.setDefPhase();";
       ret true;
     }]);

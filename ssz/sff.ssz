@@ -577,7 +577,7 @@ public &Sff
     `clear();
     uint lofs, tofs;
     if(!`head.read(f=, lofs=, tofs=)) ret false;
-    if(`head.ver0 != 0d1)loop{
+    if(`head.ver0 != 0d1) loop{
        index i = 0;
        ^uint pal;
        ushort group, item, link, dummy;
@@ -872,7 +872,7 @@ public &Anim<frame_t>
       t = `animTime();
       ret t > 0 ? 0 : t;
     }
-    int e = elem - 1;
+    int e = .m.max!int?(0, elem) - 1;
     t = `sumtime;
     loop{index i = 0; while; do:
       t -= .m.max!int?(0, `frames[i].time);
@@ -1087,6 +1087,9 @@ public &Anim<frame_t>
     comm:
       ret;
     }
+    .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
+    .m.limRange!float?(
+      ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
   /?/*.cfg.OpenGL:
     ^uint pal = `palFoo(fx);
     .sdl.RenderMugenGl(:

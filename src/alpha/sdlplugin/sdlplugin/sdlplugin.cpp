@@ -1979,7 +1979,7 @@ TUserFunc(
 	if(
 		pdst->format->BitsPerPixel != 32 || img.len() == 0
 		|| tl.x <= -(int)psrcr->w || tl.y <= -(int)psrcr->h
-		|| _finite(cx+ty+rcx+rcy+xtopscl+xbotscl+yscl+rasterxadd+rcx+rcy) == 0
+		|| _finite(cx+ty+rcx+rcy+xtopscl+xbotscl+yscl+rasterxadd) == 0
 		|| abs(rcx) > 1.0e5f || abs(rcy) > 1.0e5f
 		|| abs(cx) > 1.0e5f || abs(ty) > 1.0e5f
 		|| abs(xtopscl) > 16383.0f || abs(xbotscl) > 16383.0f
@@ -2312,7 +2312,12 @@ TUserFunc(
 	int mask, uint8_t* ppal, uint32_t texid)
 {
 	float plt[4*256];
-	if(texid == 0) return false;
+	if(
+		texid == 0
+		|| _finite(x+y+rcx+rcy+xtopscl+xbotscl+yscl+rasterxadd+angle) == 0)
+	{
+		return false;
+	}
 	SDL_Rect r = *rect, tl = *tile;
 	if(tl.x > 0) tl.x -= r.w;
 	if(tl.y > 0) tl.y -= r.h;
