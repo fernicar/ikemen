@@ -534,15 +534,11 @@ public &Var
   /int toI()
   {
     if(`isSF()) ret 0;
-    if(`typ == .VarTy::Float){
-      if(.m.isnan(`f)) ret 0;
-      ret (int)`f;
-    }
-    ret `i;
+    ret `typ == .VarTy::Int ? `i : (int)`f;
   }
   const double toF()
   {
-    if(`isSF()) ret 0.0/0.0;
+    if(`isSF()) ret 0.0;
     ret `typ == .VarTy::Int ? (double)`i : `f;
   }
 }
@@ -3476,7 +3472,7 @@ public &Char
           * ((int)`isFall() + 1) + 1;
         if(
           `isActive() && `sysfvar[.fY] == 0.0 && #`sysfvar[.fVX] >= 1.0
-          && `stVal.time % 3 == 2)
+          && `stVal.time % 3 == 0)
         {
           `makeDust(0.0, 0.0);
         }
@@ -3638,31 +3634,23 @@ public &Char
   }
   void setFWidth(float f)
   {
-    if(!.m.isnan(f)){
-      `frontw = `defFW() + f;
-      `sysivar[.iSPECIALFLAG] |= .lsFRONTWCHANGE;
-    }
+    `frontw = `defFW() + f;
+    `sysivar[.iSPECIALFLAG] |= .lsFRONTWCHANGE;
   }
   void setBWidth(float b)
   {
-    if(!.m.isnan(b)){
-      `backw = `defBW() + b;
-      `sysivar[.iSPECIALFLAG] |= .lsBACKWCHANGE;
-    }
+    `backw = `defBW() + b;
+    `sysivar[.iSPECIALFLAG] |= .lsBACKWCHANGE;
   }
   void setFEdge(float f)
   {
-    if(!.m.isnan(f)){
-      `fedge = f;
-      `sysivar[.iSPECIALFLAG] |= .lsFEDGECHANGE;
-    }
+    `fedge = f;
+    `sysivar[.iSPECIALFLAG] |= .lsFEDGECHANGE;
   }
   void setBEdge(float b)
   {
-    if(!.m.isnan(b)){
-      `bedge = b;
-      `sysivar[.iSPECIALFLAG] |= .lsBEDGECHANGE;
-    }
+    `bedge = b;
+    `sysivar[.iSPECIALFLAG] |= .lsBEDGECHANGE;
   }
   void setHitdefDefault(&.Hitdef h=, bool proj)
   {
@@ -4130,14 +4118,15 @@ public &Char
   }
   public void trCos()
   {
-    .v.setF(.m.cos(.v.toF()));
+    if(!.v.isSF()) .v.setF(.m.cos(.v.toF()));
   }
   public void trTan()
   {
-    .v.setF(.m.tan(.v.toF()));
+    if(!.v.isSF()) .v.setF(.m.tan(.v.toF()));
   }
   public void trAsin()
   {
+    if(.v.isSF()) ret;
     double x = .v.toF();
     if(!.m.inRange!double?(-1.0, 1.0, x)){
       .v.setSF();
@@ -4147,6 +4136,7 @@ public &Char
   }
   public void trAcos()
   {
+    if(.v.isSF()) ret;
     double x = .v.toF();
     if(!.m.inRange!double?(-1.0, 1.0, x)){
       .v.setSF();
@@ -4156,10 +4146,11 @@ public &Char
   }
   public void trAtan()
   {
-    .v.setF(.m.atan(.v.toF()));
+    if(!.v.isSF()) .v.setF(.m.atan(.v.toF()));
   }
   public void trLog(&.Var v1, &.Var v2)
   {
+    if(.v.isSF()) ret;
     double x = v1.toF(), y = v2.toF();
     if(x < 0.0 || y < 0.0){
       .v.setSF();
@@ -4169,6 +4160,7 @@ public &Char
   }
   public void trLn()
   {
+    if(.v.isSF()) ret;
     double x = .v.toF();
     if(x < 0.0){
       .v.setSF();
@@ -4178,7 +4170,7 @@ public &Char
   }
   public void trExp()
   {
-    .v.setF(.m.exp(.v.toF()));
+    if(!.v.isSF()) .v.setF(.m.exp(.v.toF()));
   }
   public void trMul(&.Var v1, &.Var v2)
   {:<-
@@ -4199,7 +4191,6 @@ public &Char
     }
     void f(&.Var r=, float f1, float f2){r.setF(f1 / f2);}
     `nikou!i, f?(.v=, v1, v2);
-    if(.m.isnan(.v.toF())) .v.setSF();
   }
   public void trMod(&.Var v1, &.Var v2)
   {:<-
@@ -4244,61 +4235,50 @@ public &Char
   }
   public void trSetX()
   {
-    float x = .v.toF();
-    if(!.m.isnan(x)) `setX(x);
+    `setX(.v.toF());
   }
   public void trSetY()
   {
-    float y = .v.toF();
-    if(!.m.isnan(y)) `setY(y);
+    `setY(.v.toF());
   }
   public void trAddX()
   {
     float x = .v.toF();
-    if(.m.isnan(x)) ret;
     float tmp = `oldx;
     `setX(`sysfvar[.fX] + (float)`facing*x);
     `oldx = tmp;
   }
   public void trAddY()
   {
-    float y = .v.toF();
-    if(!.m.isnan(y)) `setY(`sysfvar[.fY] + y);
+    `setY(`sysfvar[.fY] + .v.toF());
   }
   public void trVelSetX()
   {
-    float f = .v.toF();
-    if(!.m.isnan(f)) `setXV(f);
+    `setXV(.v.toF());
   }
   public void trVelSetY()
   {
-    float f = .v.toF();
-    if(!.m.isnan(f)) `setYV(f);
+    `setYV(.v.toF());
   }
   public void trVelAddX()
   {
-    float f = .v.toF();
-    if(!.m.isnan(f)) `sysfvar[.fVX] += f;
+    `sysfvar[.fVX] += .v.toF();
   }
   public void trVelAddY()
   {
-    float f = .v.toF();
-    if(!.m.isnan(f)) `sysfvar[.fVY] += f;
+    `sysfvar[.fVY] += .v.toF();
   }
   public void trVelMulX()
   {
-    float f = .v.toF();
-    if(!.m.isnan(f)) `sysfvar[.fVX] *= f;
+    `sysfvar[.fVX] *= .v.toF();
   }
   public void trVelMulY()
   {
-    float f = .v.toF();
-    if(!.m.isnan(f)) `sysfvar[.fVY] *= f;
+    `sysfvar[.fVY] *= .v.toF();
   }
   public void trAngleSet()
   {
-    float f = .v.toF();
-    if(!.m.isnan(f)) `setAngle(f);
+    `setAngle(.v.toF());
   }
   public void trAnim()
   {
@@ -4755,8 +4735,6 @@ public &Char
     `self h=, int st, int pt, float x, float y, int facing, int ownpal)
   {
     `helproSetPos!h.self?(h=, pt, x, y, facing);
-    if(.m.isnan(x)) h.setX(0.0);
-    if(.m.isnan(y)) h.sysfvar[.fY] = 0.0;
     h.sysfvar[.fVX] = 0.0;
     h.sysfvar[.fVY] = 0.0;
     if(ownpal != 0) h.palfx.new(1);
@@ -4765,8 +4743,6 @@ public &Char
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
   {
     `helproSetPos!p.self?(p=, pt, x, y, 1);
-    if(.m.isnan(x)) p.x = 0.0;
-    if(.m.isnan(y)) p.y = 0.0;
     p.ani = `getAction(p.anim);
     if(`sysivar[.iPROJ_DOSCALE] != 0){
       p.scalex *= `sysfvar[.fXSCALE];
@@ -4913,7 +4889,6 @@ public &Char
   }
   public void trTargetVelSetX(^/int tar, float vx)
   {
-    if(.m.isnan(vx)) ret;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
@@ -4924,7 +4899,6 @@ public &Char
   }
   public void trTargetVelSetY(^/int tar, float vy)
   {
-    if(.m.isnan(vy)) ret;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
@@ -4935,7 +4909,6 @@ public &Char
   }
   public void trTargetVelAddX(^/int tar, float vx)
   {
-    if(.m.isnan(vx)) ret;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
@@ -4946,7 +4919,6 @@ public &Char
   }
   public void trTargetVelAddY(^/int tar, float vy)
   {
-    if(.m.isnan(vy)) ret;
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
