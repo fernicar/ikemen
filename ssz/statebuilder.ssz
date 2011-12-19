@@ -564,8 +564,12 @@ public &StateBuilder
       branch{
       cond .m.isnan(d):
         rtn .= ".v.setSF()";
-      else:
+      cond .m.isfinite(d):
         rtn .= ".v.setF(" .= `fToS(d) .= ")";
+      cond d > 0.0:
+        rtn .= ".v.setF(1.0/0.0)";
+      else:
+        rtn .= ".v.setF(-1.0/0.0)";
       }
     else:
       if(!.s.sToNumber!d.self?(d=, token + ".0")) ret "";

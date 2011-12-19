@@ -31,7 +31,7 @@ bgPalFX.new(1);
   }
   public void setDefPhase()
   {
-    if(.m.isfinite(`phase)) ret;
+    if(!.m.isnan(`phase)) ret;
     `phase = (`freq >= .m.PI/2.0 ? .m.PI/2.0 : 0.0);
   }
   public void next()
