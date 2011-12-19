@@ -4354,7 +4354,7 @@ public &Char
   public void trSysIVar()
   {
     int i = .v.toI();
-    if(.v.isSF() || i < 0){
+    if(.v.isSF() || i < 0 || (`minus != 1 && i >= 5)){
       .v.setSF();
       ret;
     }
@@ -4363,8 +4363,8 @@ public &Char
   public void trSetSysIVar(&.Var idx, &.Var v)
   {
     int i = idx.toI();
-    if(.v.isSF() || i < 0){
-      .v.setSF();
+    if(.v.isSF() || i < 0 || (`minus != 1 && i >= 5)){
+      .v.setI(v.toI());
       ret;
     }
     .v.setI(`sysivar[i] = v.toI());
@@ -4372,7 +4372,7 @@ public &Char
   public void trSysFVar()
   {
     int i = .v.toI();
-    if(.v.isSF() || i < 0){
+    if(.v.isSF() || i < 0 || (`minus != 1 && i >= 5)){
       .v.setSF();
       ret;
     }
@@ -4381,8 +4381,8 @@ public &Char
   public void trSetSysFVar(&.Var idx, &.Var v)
   {
     int i = idx.toI();
-    if(.v.isSF() || i < 0){
-      .v.setSF();
+    if(.v.isSF() || i < 0 || (`minus != 1 && i >= 5)){
+      .v.setF(v.toF());
       ret;
     }
     .v.setF(`sysfvar[i] = v.toF());
@@ -4400,7 +4400,7 @@ public &Char
   {
     int i = idx.toI();
     if(.v.isSF() || i < 0 || i >= 60){
-      .v.setSF();
+      .v.setI(v.toI());
       ret;
     }
     .v.setI(`ivar[i] = v.toI());
@@ -4418,7 +4418,7 @@ public &Char
   {
     int i = idx.toI();
     if(.v.isSF() || i < 0 || i >= 40){
-      .v.setSF();
+      .v.setF(v.toF());
       ret;
     }
     .v.setF(`fvar[i] = v.toF());

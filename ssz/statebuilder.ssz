@@ -1106,9 +1106,9 @@ public &StateBuilder
       token = `tokenizer(in=);
       branch{
       cond .s.equ("x", token):
-        out .= ".v.setI(.fVX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fVX])";
       cond .s.equ("y", token):
-        out .= ".v.setI(.fVY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fVY])";
       cond .s.equ("z", token):
         out .= ".v.setF(0.0)";
       else:
@@ -1172,169 +1172,160 @@ public &StateBuilder
       token = `tokenizer(in=);
       branch{
       cond .s.equ("velocity.walk.fwd.x", token):
-        out .= ".v.setI(.fWALK_FWD)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fWALK_FWD])";
       cond .s.equ("velocity.walk.back.x", token):
-        out .= ".v.setI(.fWALK_BACK)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fWALK_BACK])";
       cond .s.equ("velocity.run.fwd.x", token):
-        out .= ".v.setI(.fRUN_FWDX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUN_FWDX])";
       cond .s.equ("velocity.run.fwd.y", token):
-        out .= ".v.setI(.fRUN_FWDY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUN_FWDY])";
       cond .s.equ("velocity.run.back.x", token):
-        out .= ".v.setI(.fRUN_BACKX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUN_BACKX])";
       cond .s.equ("velocity.run.back.y", token):
-        out .= ".v.setI(.fRUN_BACKY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUN_BACKY])";
       cond .s.equ("velocity.jump.y", token):
-        out .= ".v.setI(.fJUMP_NEUY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fJUMP_NEUY])";
       cond .s.equ("velocity.jump.neu.x", token):
-        out .= ".v.setI(.fJUMP_NEUX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fJUMP_NEUX])";
       cond .s.equ("velocity.jump.fwd.x", token):
-        out .= ".v.setI(.fJUMP_FWD)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fJUMP_FWD])";
       cond .s.equ("velocity.jump.back.x", token):
-        out .= ".v.setI(.fJUMP_BACK)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fJUMP_BACK])";
       cond .s.equ("velocity.airjump.y", token):
-        out .= ".v.setI(.fAIRJUMP_NEUY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIRJUMP_NEUY])";
       cond .s.equ("velocity.airjump.neu.x", token):
-        out .= ".v.setI(.fAIRJUMP_NEUX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIRJUMP_NEUX])";
       cond .s.equ("velocity.airjump.fwd.x", token):
-        out .= ".v.setI(.fAIRJUMP_FWD)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIRJUMP_FWD])";
       cond .s.equ("velocity.airjump.back.x", token):
-        out .= ".v.setI(.fAIRJUMP_BACK)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIRJUMP_BACK])";
       cond .s.equ("velocity.runjump.fwd.x", token):
-        out .= ".v.setI(.fRUNJUMP_FWDX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUNJUMP_FWDX])";
       cond .s.equ("velocity.runjump.y", token):
-        out .= ".v.setI(.fRUNJUMP_FWDY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUNJUMP_FWDY])";
       cond .s.equ("velocity.runjump.back.x", token):
-        out .= ".v.setI(.fRUNJUMP_BACKX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUNJUMP_BACKX])";
       cond .s.equ("velocity.runjump.back.y", token):
-        out .= ".v.setI(.fRUNJUMP_BACKY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUNJUMP_BACKY])";
       cond .s.equ("movement.yaccel", token):
-        out .= ".v.setI(.fYACCEL)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fYACCEL])";
       cond .s.equ("movement.airjump.num", token):
-        out .= ".v.setI(.iAIRJUMP_NUM)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iAIRJUMP_NUM])";
       cond .s.equ("movement.airjump.height", token):
-        out .= ".v.setI(.iAIRJUMP_HEIGHT)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iAIRJUMP_HEIGHT])";
       cond .s.equ("size.height", token):
-        out .= ".v.setI(.iHEIGHT)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iHEIGHT])";
       cond .s.equ("size.air.front", token):
-        out .= ".v.setI(.iAIR_FRONT)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iAIR_FRONT])";
       cond .s.equ("size.ground.front", token):
-        out .= ".v.setI(.iGROUND_FRONT)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iGROUND_FRONT])";
       cond .s.equ("size.ground.back", token):
-        out .= ".v.setI(.iGROUND_BACK)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iGROUND_BACK])";
       cond .s.equ("size.head.pos.x", token):
-        out .= ".v.setI(.iHEAD_POSX)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iHEAD_POSX])";
       cond .s.equ("size.head.pos.y", token):
-        out .= ".v.setI(.iHEAD_POSY)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iHEAD_POSY])";
       cond .s.equ("size.air.back", token):
-        out .= ".v.setI(.iAIR_BACK)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iAIR_BACK])";
       cond .s.equ("size.xscale", token):
-        out .= ".v.setI(.fXSCALE)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fXSCALE])";
       cond .s.equ("size.yscale", token):
-        out .= ".v.setI(.fYSCALE)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fYSCALE])";
       cond .s.equ("data.life", token):
-        out .= ".v.setI(.iLIFEMAX)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iLIFEMAX])";
       cond .s.equ("size.proj.doscale", token):
-        out .= ".v.setI(.iPROJ_DOSCALE)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iPROJ_DOSCALE])";
       cond .s.equ("size.shadowoffset", token):
-        out .= ".v.setI(.iSHADOWOFFSET)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iSHADOWOFFSET])";
       cond .s.equ("data.power", token):
-        out .= ".v.setI(.iPOWERMAX)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iPOWERMAX])";
       cond .s.equ("data.attack", token):
-        out .= ".v.setI(.iATTACK)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iATTACK])";
       cond .s.equ("data.defence", token):
-        out .= ".v.setI(.iDEFENCE)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iDEFENCE])";
       cond .s.equ("size.mid.pos.x", token):
-        out .= ".v.setI(.iMID_POSX)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iMID_POSX])";
       cond .s.equ("size.mid.pos.y", token):
-        out .= ".v.setI(.iMID_POSY)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iMID_POSY])";
       cond .s.equ("data.fall.defence_mul", token):
-        out .= ".v.setI(.fFALL_DEFENCE_MUL)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fFALL_DEFENCE_MUL])";
       cond .s.equ("data.liedown.time", token):
-        out .= ".v.setI(.iLIEDOWN_TIME)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iLIEDOWN_TIME])";
       cond .s.equ("data.airjuggle", token):
-        out .= ".v.setI(.iAIRJUGGLE)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iAIRJUGGLE])";
       cond .s.equ("data.sparkno", token):
-        out .= ".v.setI(.iSPARKNO)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iSPARKNO])";
       cond .s.equ("data.guard.sparkno", token):
-        out .= ".v.setI(.iGUARD_SPARKNO)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iGUARD_SPARKNO])";
       cond .s.equ("data.ko.echo", token):
-        out .= ".v.setI(.iKO_ECHO)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iKO_ECHO])";
       cond .s.equ("data.intpersistindex", token):
-        out .= ".v.setI(.iINTPERSISTINDEX)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iINTPERSISTINDEX])";
       cond .s.equ("data.FloatPersistIndex", token):
-        out .= ".v.setI(.iFLOATPERSISTINDEX)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iFLOATPERSISTINDEX])";
       cond .s.equ("size.attack.dist", token):
-        out .= ".v.setI(.iATTACK_DIST)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iATTACK_DIST])";
       cond .s.equ("size.proj.attack.dist", token):
-        out .= ".v.setI(.iPROJ_ATTACK_DIST)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iPROJ_ATTACK_DIST])";
       cond .s.equ("size.draw.offset.x", token):
-        out .= ".v.setI(.iDRAW_OFFSETX)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iDRAW_OFFSETX])";
       cond .s.equ("size.draw.offset.y", token):
-        out .= ".v.setI(.iDRAW_OFFSETY)$" .= obj .= "trSysIVar()";
+        out .= ".v.setI(" .= obj .= "sysivar[.iDRAW_OFFSETY])";
       cond .s.equ("movement.stand.friction", token):
-        out .= ".v.setI(.fSTAND_FRICTION)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fSTAND_FRICTION])";
       cond .s.equ("movement.crouch.friction", token):
-        out .= ".v.setI(.fCROUCH_FRICTION)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fCROUCH_FRICTION])";
       cond .s.equ("velocity.air.gethit.groundrecover.x", token):
-        out .= ".v.setI(.fAIR_GETHIT_GROUNDRECOVERX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_GROUNDRECOVERX])";
       cond .s.equ("velocity.air.gethit.groundrecover.y", token):
-        out .= ".v.setI(.fAIR_GETHIT_GROUNDRECOVERY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_GROUNDRECOVERY])";
       cond .s.equ("velocity.air.gethit.airrecover.mul.x", token):
-        out .=
-          ".v.setI(.fAIR_GETHIT_AIRRECOVER_MULX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_MULX])";
       cond .s.equ("velocity.air.gethit.airrecover.mul.y", token):
-        out .=
-          ".v.setI(.fAIR_GETHIT_AIRRECOVER_MULY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_MULY)";
       cond .s.equ("velocity.air.gethit.airrecover.add.x", token):
-        out .=
-          ".v.setI(.fAIR_GETHIT_AIRRECOVER_ADDX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_ADDX])";
       cond .s.equ("velocity.air.gethit.airrecover.add.y", token):
-        out .=
-          ".v.setI(.fAIR_GETHIT_AIRRECOVER_ADDY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_ADDY])";
       cond .s.equ("velocity.air.gethit.airrecover.back", token):
-        out .=
-          ".v.setI(.fAIR_GETHIT_AIRRECOVER_BACK)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_BACK])";
       cond .s.equ("velocity.air.gethit.airrecover.fwd", token):
-        out .= ".v.setI(.fAIR_GETHIT_AIRRECOVER_FWD)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_FWD)";
       cond .s.equ("velocity.air.gethit.airrecover.up", token):
-        out .= ".v.setI(.fAIR_GETHIT_AIRRECOVER_UP)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_UP)";
       cond .s.equ("velocity.air.gethit.airrecover.down", token):
-        out .=
-          ".v.setI(.fAIR_GETHIT_AIRRECOVER_DOWN)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_DOWN])";
       cond .s.equ("movement.stand.friction.threshold", token):
-        out .= ".v.setI(.fSTAND_FRICTION_THRESHOLD)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fSTAND_FRICTION_THRESHOLD])";
       cond .s.equ("movement.crouch.friction.threshold", token):
-        out .= ".v.setI(.fCROUCH_FRICTION_THRESHOLD)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fCROUCH_FRICTION_THRESHOLD])";
       cond .s.equ("movement.air.gethit.groundlevel", token):
-        out .= ".v.setI(.fAIR_GETHIT_GROUNDLEVEL)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_GROUNDLEVEL])";
       cond .s.equ("movement.air.gethit.groundrecover.ground.threshold", token):
         out .=
-          ".v.setI(.fAIR_GETHIT_GROUNDRECOVER_GROUND_THRESHOLD)$"
-          .= obj .= "trSysFVar()";
+          ".v.setF(" .= obj
+          .= "sysfvar[.fAIR_GETHIT_GROUNDRECOVER_GROUND_THRESHOLD])";
       cond .s.equ("movement.air.gethit.groundrecover.groundlevel", token):
         out .=
-          ".v.setI(.fAIR_GETHIT_GROUNDRECOVER_GROUNDLEVEL)$"
-          .= obj .= "trSysFVar()";
+          ".v.setF(" .= obj
+          .= "sysfvar[.fAIR_GETHIT_GROUNDRECOVER_GROUNDLEVEL])";
       cond .s.equ("movement.air.gethit.airrecover.threshold", token):
         out .=
-          ".v.setI(.fAIR_GETHIT_AIRRECOVER_THRESHOLD)$"
-          .= obj .= "trSysFVar()";
+          ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_THRESHOLD])";
       cond .s.equ("movement.air.gethit.airrecover.yaccel", token):
-        out .=
-          ".v.setI(.fAIR_GETHIT_AIRRECOVER_YACCEL)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_YACCEL])";
       cond .s.equ("movement.air.gethit.trip.groundlevel", token):
-        out .=
-          ".v.setI(.fAIR_GETHIT_TRIP_GROUNDLEVEL)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_TRIP_GROUNDLEVEL])";
       cond .s.equ("movement.down.bounce.offset.x", token):
-        out .= ".v.setI(.fDOWN_BOUNCE_OFFSETX)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fDOWN_BOUNCE_OFFSETX])";
       cond .s.equ("movement.down.bounce.offset.y", token):
-        out .= ".v.setI(.fDOWN_BOUNCE_OFFSETY)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fDOWN_BOUNCE_OFFSETY])";
       cond .s.equ("movement.down.bounce.yaccel", token):
-        out .= ".v.setI(.fDOWN_BOUNCE_YACCEL)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fDOWN_BOUNCE_YACCEL])";
       cond .s.equ("movement.down.bounce.groundlevel", token):
-        out .= ".v.setI(.fDOWN_BOUNCE_GROUNDLEVEL)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fDOWN_BOUNCE_GROUNDLEVEL])";
       cond .s.equ("movement.down.friction.threshold", token):
-        out .= ".v.setI(.fDOWN_FRICTION_THRESHOLD)$" .= obj .= "trSysFVar()";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fDOWN_FRICTION_THRESHOLD])";
       else:
         branch{
         cond .cfg.IgnoreMostErrors:
@@ -4467,7 +4458,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`trSetSysIVar(.v.setI(.iMOVETIMEPAUSE)$.v,", "$.v);")) ret false;
+            "`sysivar[.iMOVETIMEPAUSE]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pausebg", [`paraF_t(data=){
@@ -4516,7 +4507,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`trSetSysIVar(.v.setI(.iMOVETIMESUPER)$.v,", "$.v);")) ret false;
+            "`sysivar[.iMOVETIMESUPER]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pausebg", [`paraF_t(data=){
@@ -5063,7 +5054,7 @@ public &StateBuilder
         ret true;
       }])) ret false;
       if(!val){
-        `state.ctrlList[-1].task .= "`sysivar[.iSPECIALFLAG]|=.lsPLAYERPUSH;;";
+        `state.ctrlList[-1].task .= "`sysivar[.iSPECIALFLAG]|=.lsPLAYERPUSH;";
       }
       ret true;
     }]);
@@ -5115,7 +5106,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`trSetSysIVar(.v.setI(.iBINDTIME)$.v,", "$.v);")) ret false;
+            "`sysivar[.iBINDTIME]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(`state.ctrlList[-1].typ != .CtrlTy::BindToTarget){
@@ -5131,15 +5122,13 @@ public &StateBuilder
         }])) ret false;
       }
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
-        `state.ctrlList[-1].task .=
-          "`trSetSysFVar(.v.setI(.fBINDPOSX)$.v,";
+        `state.ctrlList[-1].task .= "`sysfvar[.fBINDPOSX]=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v);";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         if(.s.equ(",")<, `tokenizer(data=)){
-          `state.ctrlList[-1].task .=
-            "`trSetSysFVar(.v.setI(.fBINDPOSY)$.v,";
+          `state.ctrlList[-1].task .= "`sysfvar[.fBINDPOSY]=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v);";
+          `state.ctrlList[-1].task .= "$.v.toF();";
           if(
             .s.equ(",")<, `tokenizer(data=)
             && `state.ctrlList[-1].typ == .CtrlTy::BindToTarget)
@@ -5245,49 +5234,49 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~trSetSysFVar(.v.setI(.fXSCALE)$.v,", "$.v);")) ret false;
+            "h~sysfvar[.fXSCALE]=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.yscale", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~trSetSysFVar(.v.setI(.fYSCALE)$.v,", "$.v);")) ret false;
+            "h~sysfvar[.fYSCALE]=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.ground.back", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~trSetSysIVar(.v.setI(.iGROUND_BACK)$.v,", "$.v);")) ret false;
+            "h~sysivar[.iGROUND_BACK]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.ground.front", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~trSetSysIVar(.v.setI(.iGROUND_FRONT)$.v,", "$.v);")) ret false;
+            "h~sysivar[.iGROUND_FRONT]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.air.back", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~trSetSysIVar(.v.setI(.iAIR_BACK)$.v,", "$.v);")) ret false;
+            "h~sysivar[.iAIR_BACK]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.air.front", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~trSetSysIVar(.v.setI(.iAIR_FRONT)$.v,", "$.v);")) ret false;
+            "h~sysivar[.iAIR_FRONT]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.height", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~trSetSysIVar(.v.setI(.iHEIGHT)$.v,", "$.v);")) ret false;
+            "h~sysivar[.iHEIGHT]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.proj.doscale", [`paraF_t(data=){
@@ -5298,28 +5287,26 @@ public &StateBuilder
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.head.pos", [`paraF_t(data=){
-        `state.ctrlList[-1].task .=
-          "h~trSetSysIVar(.v.setI(.iHEAD_POSX)$.v,";
+        `state.ctrlList[-1].task .= "h~sysivar[.iHEAD_POSX]=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v);";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "h~trSetSysIVar(.v.setI(.iHEAD_POSY)$.v,", "$.v);")) ret false;
+              "h~sysivar[.iHEAD_POSY]=", "$.v.toI();")) ret false;
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "size.mid.pos", [`paraF_t(data=){
-        `state.ctrlList[-1].task .=
-          "h~trSetSysIVar(.v.setI(.iMID_POSX)$.v,";
+        `state.ctrlList[-1].task .= "h~sysivar[.iMID_POSX]=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v);";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "h~trSetSysIVar(.v.setI(.iMID_POSY)$.v,", "$.v);")) ret false;
+              "h~sysivar[.iMID_POSY]=", "$.v.toI();")) ret false;
         }
         ret true;
       }])) ret false;
@@ -5327,14 +5314,13 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~trSetSysIVar(.v.setI(.iSHADOWOFFSET)$.v,", "$.v);")) ret false;
+            "h~sysivar[.iSHADOWOFFSET]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "stateno", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "st=", "$.v.toI();")) ret false;
+            `state.ctrlList[-1].task=, data=, "st=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "keyctrl", [`paraF_t(data=){
@@ -5376,14 +5362,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~trSetSysIVar(.v.setI(.iPAUSEMOVETIME)$.v,", "$.v);")) ret false;
+            "h~sysivar[.iPAUSEMOVETIME]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "supermovetime", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "h~trSetSysIVar(.v.setI(.iSUPERMOVETIME)$.v,", "$.v);")) ret false;
+            "h~sysivar[.iSUPERMOVETIME]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= "`trHelperInit(h<>=,st,pt,x,y,f,o);";
@@ -6018,17 +6004,16 @@ public &StateBuilder
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "scale", [`paraF_t(data=){
-        `state.ctrlList[-1].task .=
-          "`trSetSysFVar(.v.setI(.fANGLESCALEX)$.v,";
+        `state.ctrlList[-1].task .= "`sysfvar[.fANGLESCALEX]=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v);";
+        `state.ctrlList[-1].task .= "$.v.toF();";
         branch{
           ^/char tmp = `tokenizer(data=);
         cond .s.equ(tmp, ","):
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "`trSetSysFVar(.v.setI(.fANGLESCALEY)$.v,", "$.v);")) ret false;
+              "`sysfvar[.fANGLESCALEY]=", "$.v.toF();")) ret false;
         cond #tmp == 0:
           `state.ctrlList[-1].task .= "`sysfvar[.fANGLESCALEY]=1.0;";
         else:
@@ -6050,11 +6035,9 @@ public &StateBuilder
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         switch(`state.ctrlList[-1].typ){
         case .CtrlTy::AngleAdd:
-          `state.ctrlList[-1].task .=
-            "`trAdd(.v.setI(.fANGLE)$`trSysFVar()$.v,";
+          `state.ctrlList[-1].task .= "`trAdd(.v.setF(`sysfvar[.fANGLE])$.v,";
         case .CtrlTy::AngleMul:
-          `state.ctrlList[-1].task .=
-            "`trMul(.v.setI(.fANGLE)$`trSysFVar()$.v,";
+          `state.ctrlList[-1].task .= "`trMul(.v.setF(`sysfvar[.fANGLE])$.v,";
         }
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
         switch(`state.ctrlList[-1].typ){
@@ -6209,15 +6192,15 @@ public &StateBuilder
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "alpha", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= "`trSetSysIVar(.v.setI(.iALPHAS)$.v,";
+        `state.ctrlList[-1].task .= "`sysivar[.iALPHAS]=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v);";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         branch{
         cond .s.equ(",")<, `tokenizer(data=):
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "`trSetSysIVar(.v.setI(.iALPHAD)$.v,", "$.v);")) ret false;
+              "`sysivar[.iALPHAD]=", "$.v.toI();")) ret false;
         else:
           `state.ctrlList[-1].task .= "`sysivar[.iALPHAD]=255;";
         }
