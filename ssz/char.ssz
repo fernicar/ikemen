@@ -3325,7 +3325,7 @@ public &Char
           }
         cond
           `helperid == 0 && !`isKO() && `sysivar[.iLIFE] <= 0
-          && `stVal.mov != .MovTy::H
+          && `stVal.mov != .MovTy::H && !.gs(.gsNOKO)
           :
           `trSelfState(5050, -1, -1);
         cond `stVal.no == 140:
