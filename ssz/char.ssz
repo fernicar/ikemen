@@ -3002,7 +3002,7 @@ public &Char
           `sysivar[.iAIRJUMP_CNT] = 0;
           `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
         }
-      cond `ctrl():
+      cond `ctrl() && (`key >= 0 || `helperindex == 0):
         if(
           `helperindex == 0 && `stVal.typ != .StTy::A
            && !`ls(.lsNOAUTOTURN) && `trP2DistX()$.v.toF() <= -1.0)
@@ -3031,7 +3031,7 @@ public &Char
         cond
           !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
             `cmd~buffer~F > 0 || (
-            (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
+              (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
           :
           if(`stVal.no != 20) `trSelfState(20, -1, -1);
         cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
@@ -3062,7 +3062,7 @@ public &Char
                 || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
                 || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
         {
-        `sysivar[.iSPECIALFLAG] |= .lsGUARD;
+          `sysivar[.iSPECIALFLAG] |= .lsGUARD;
         }
       }
       if(
@@ -4537,7 +4537,8 @@ public &Char
     }
     .v.typ = .VarTy::Int;
     if(`key < 0){
-      if(.s.equ(name[0..4], "hold")) break;
+      if(
+        `helperindex == 0 && (#name == 1 || .s.equ(name[0..4], "hold"))) break;
       .v.i = `cpucmd < 0 ? 0 : (int).s.equ(name, `cmd~commands[`cpucmd]);
       ret;
     }
@@ -6398,14 +6399,13 @@ void commandUpdate()
         .chars[i][0]~key < 0, .chars[i][0]~isHitPaused());
       if(.chars[i][0]~key < 0) loop{
         index j = 0;
+        index cc =
+          .roundState() == 2 && #.chars[i][j]~keyctrl
+          && .m.rand(0, .com.com[i]+16) > 16
+          ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
         while;
       do:
-        if(.chars[i][j]~helperindex >= 0){
-          .chars[i][j]~cpucmd =
-            .roundState() == 2 && #.chars[i][j]~keyctrl
-            && .m.rand(0, .com.com[i]+16) > 16
-            ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
-        }
+        if(.chars[i][j]~helperindex >= 0) .chars[i][0]~cpucmd = cc;
         j++;
       while j < #.chars[i]:
       }
