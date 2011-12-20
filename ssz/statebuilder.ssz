@@ -1282,7 +1282,7 @@ public &StateBuilder
       cond .s.equ("velocity.air.gethit.airrecover.mul.x", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_MULX])";
       cond .s.equ("velocity.air.gethit.airrecover.mul.y", token):
-        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_MULY)";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_MULY])";
       cond .s.equ("velocity.air.gethit.airrecover.add.x", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_ADDX])";
       cond .s.equ("velocity.air.gethit.airrecover.add.y", token):
@@ -1290,9 +1290,9 @@ public &StateBuilder
       cond .s.equ("velocity.air.gethit.airrecover.back", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_BACK])";
       cond .s.equ("velocity.air.gethit.airrecover.fwd", token):
-        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_FWD)";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_FWD])";
       cond .s.equ("velocity.air.gethit.airrecover.up", token):
-        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_UP)";
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_UP])";
       cond .s.equ("velocity.air.gethit.airrecover.down", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_DOWN])";
       cond .s.equ("movement.stand.friction.threshold", token):
