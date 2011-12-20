@@ -1465,7 +1465,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     if(
       `stVal.time == 0 && #`getAction(5035) > 0
-      && !.m.inRange!int?(`animno, 5051, 5059) && `animno != 5090)
+      && !.m.inRange!int?(5051, 5059, `animno) && `animno != 5090)
     {
       `trChangeAnim(5035);
     }
@@ -1555,13 +1555,13 @@ void c.Char::s##_@@P()
     if(
       (`trAnimTime()$.v.toI() == 0 && `animno == 5035) || (
         `stVal.time == 0 && `animno != 5035
-        && !.m.inRange!int?(`animno, 5051, 5059)
-        && !.m.inRange!int?(`animno, 5061, 5069) && `animno != 5090))
+        && !.m.inRange!int?(5051, 5059, `animno)
+        && !.m.inRange!int?(5061, 5069, `animno) && `animno != 5090))
     {
       `trChangeAnim(5050);
     }
     if(
-      --`stVal.ps[0].p <= 0 && .m.inRange!int?(`animno, 5050, 5059)
+      --`stVal.ps[0].p <= 0 && .m.inRange!int?(5050, 5059, `animno)
       && `sysfvar[.fVY] >= (`animno == 5050 ? 1.0 : -2.0)
       && #`getAction(`animno + 10) > 0)
     {
@@ -1588,8 +1588,8 @@ void c.Char::s##_@@P()
     }
     if(
       `sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= (
-          .m.inRange!int?(`animno, 5051, 5059)
-          || .m.inRange!int?(`animno, 5061, 5069) ? 0.0 : 25.0))
+          .m.inRange!int?(5051, 5059, `animno)
+          || .m.inRange!int?(5061, 5069, `animno) ? 0.0 : 25.0))
     {
       `trChangeState(5100, -1, -1);
       ret;
@@ -1694,8 +1694,8 @@ void c.Char::s##_@@P()
       `sysivar[2] = `stVal.hb.yvel == 0.0 ? 5080 : 5090;
       if(
         (
-          .m.inRange!int?(`animno, 5081, 5089)
-          || .m.inRange!int?(`animno, 5111, 5119))
+          .m.inRange!int?(5081, 5089, `animno)
+          || .m.inRange!int?(5111, 5119, `animno))
         && #`getAction(`sysivar[2] + `animno%10) > 0)
       {
         `sysivar[2] += `animno%10;
@@ -1785,8 +1785,8 @@ void c.Char::s##_@@P()
       branch{
       cond
         (
-          !.m.inRange!int?(`animno, 5051, 5059)
-          && !.m.inRange!int?(`animno, 5061, 5069))
+          !.m.inRange!int?(5051, 5059, `animno)
+          && !.m.inRange!int?(5061, 5069, `animno))
         || #`getAction(5100 + `animno%10) == 0
         :
         `trChangeAnim(5100);
@@ -1861,7 +1861,7 @@ void c.Char::s##_@@P()
     case 0:
       branch{
       cond
-        !.m.inRange!int?(`animno, 5101, 5109)
+        !.m.inRange!int?(5101, 5109, `animno)
         || #`getAction(5160 + `animno%10) == 0
         :
         `trChangeAnim(5160);
@@ -1907,7 +1907,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     if(
       --`stVal.ps[0].p <= 0 && #`getAction(5110 + `animno%10) > 0
-      && .m.inRange!int?(`animno, 5081, 5089))
+      && .m.inRange!int?(5081, 5089, `animno))
     {
       `stVal.ps[0].p = .consts.int_t::MAX;
       `trChangeAnim(5110 + `animno%10);
@@ -1918,9 +1918,9 @@ void c.Char::s##_@@P()
       .stage.envShake.ampl = `stVal.hb.fall.envshake_ampl;
       .stage.envShake.phase = `stVal.hb.fall.envshake_phase;
       .stage.envShake.setDefPhase();
-      if(!.m.inRange!int?(`animno, 5110, 5119)) branch{
+      if(!.m.inRange!int?(5110, 5119, `animno)) branch{
       cond
-        !.m.inRange!int?(`animno, 5161, 5169)
+        !.m.inRange!int?(5161, 5169, `animno)
         || #`getAction(5170 + `animno%10) == 0
         :
         `trChangeAnim(5170);
@@ -1956,7 +1956,7 @@ void c.Char::s##_@@P()
       `setYV(0.0);
     }
     if(
-      --`stVal.ps[1].p <= 0 && .m.inRange!int?(`animno, 5171, 5171)
+      --`stVal.ps[1].p <= 0 && .m.inRange!int?(5171, 5171, `animno)
       && #`getAction(5110 + `animno%10) > 0 && (
         `trAnimTime()$.v.toI() == 0 || `sysivar[0] != 0))
     {
@@ -1964,7 +1964,7 @@ void c.Char::s##_@@P()
       `trChangeAnim(5110 + `animno%10);
     }
     if(
-      --`stVal.ps[2].p <= 0 && !.m.inRange!int?(`animno, 5111, 5119) && (
+      --`stVal.ps[2].p <= 0 && !.m.inRange!int?(5111, 5119, `animno) && (
         `trAnimTime()$.v.toI() == 0 || `sysivar[0] != 0))
     {
       `stVal.ps[2].p = .consts.int_t::MAX;
@@ -1973,7 +1973,7 @@ void c.Char::s##_@@P()
     if(
       !`isAlive() && (
         `trAnimTime()$.v.toI() == 0 || `sysivar[0] != 0
-        || .m.inRange!int?(`animno, 5110, 5119)))
+        || .m.inRange!int?(5110, 5119, `animno)))
     {
       `trChangeState(5150, -1, -1);
       ret;
@@ -2020,7 +2020,7 @@ void c.Char::s##_@@P()
     if(`stVal.time == 0){
       branch{
       cond
-        !.m.inRange!int?(`animno, 5111, 5119)
+        !.m.inRange!int?(5111, 5119, `animno)
         || #`getAction(5120 + `animno%10) == 0
         :
         `trChangeAnim(5120);
@@ -2068,8 +2068,8 @@ void c.Char::s##_@@P()
       branch{
       cond
         (
-          !.m.inRange!int?(`animno, 5111, 5119)
-          && !.m.inRange!int?(`animno, 5171, 5179))
+          !.m.inRange!int?(5111, 5119, `animno)
+          && !.m.inRange!int?(5171, 5179, `animno))
         || #`getAction(5140 + `animno%10) == 0
         :
         if(#`getAction(5140) > 0) `trChangeAnim(5140);
@@ -2077,15 +2077,15 @@ void c.Char::s##_@@P()
         `trChangeAnim(5140 + `animno%10);
       }
       if(
-        !.m.inRange!int?(`animno, 5140, 5149)
-        && !.m.inRange!int?(`animno, 5110, 5119))
+        !.m.inRange!int?(5140, 5149, `animno)
+        && !.m.inRange!int?(5110, 5119, `animno))
       {
         `trChangeAnim(5110);
       }
     }
     if(
       --`stVal.ps[0].p <= 0 && `trMatchOver()$.v.isT()
-      && .m.inRange!int?(`animno, 5140, 5149) && #`getAction(`animno + 10) > 0)
+      && .m.inRange!int?(5140, 5149, `animno) && #`getAction(`animno + 10) > 0)
     {
       `stVal.ps[0].p = .consts.int_t::MAX;
       `trChangeAnim(`animno + 10);
