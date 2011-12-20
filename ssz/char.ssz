@@ -6405,7 +6405,7 @@ void commandUpdate()
           ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
         while;
       do:
-        if(.chars[i][j]~helperindex >= 0) .chars[i][0]~cpucmd = cc;
+        if(.chars[i][j]~helperindex >= 0) .chars[i][j]~cpucmd = cc;
         j++;
       while j < #.chars[i]:
       }
