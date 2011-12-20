@@ -1943,7 +1943,6 @@ public &Char
     `sn = c.sn;
     `actionList = c.actionList;
     `key = c.key;
-    `cmd = c.cmd;
     `palno = c.palno;
     `drawpalno = c.drawpalno;
     `state_1 = c.state_1;
@@ -2993,90 +2992,93 @@ public &Char
         `trSelfState(5020, -1, 0);
       }
     }
-    branch{
-    cond `stVal.typ == .StTy::A:
-      if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
-    else:
-      `sysivar[.iAIRJUMP_CNT] = 0;
-      `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-    }
-    if(`player && `isActive()) branch{
-    cond `ctrl():
-      branch{
-      cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
-        if(`stVal.no != 10) `trSelfState(10, -1, -1);
-      cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
-        if(`stVal.no != 12) `trSelfState(12, -1, -1);
-      cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
-        if(`stVal.no != 40) `trSelfState(40, -1, -1);
-      cond
-        `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
-        && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
-        && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
-        && `cmd~buffer~U > 0
-        :
-        if(`stVal.no != 45){
-          `sysivar[.iAIRJUMP_CNT]++;
+    if(`isActive()){
+      if(`keyctrl) branch{
+        if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
+        branch{
+        cond `stVal.typ == .StTy::A:
+          if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
+        else:
+          `sysivar[.iAIRJUMP_CNT] = 0;
           `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-          `trSelfState(45, -1, -1);
         }
-      cond
-        !`ls(.lsNOWALK) && `stVal.typ == .StTy::S
-        && (
-          `cmd~buffer~F > 0 || (
+      cond `ctrl():
+        if(
+          `helperindex == 0 && `stVal.typ != .StTy::A
+           && !`ls(.lsNOAUTOTURN) && `trP2DistX()$.v.toF() <= -1.0)
+        {
+          `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
+          `setFacing(-`facing);
+        }
+        branch{
+        cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
+          if(`stVal.no != 10) `trSelfState(10, -1, -1);
+        cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
+          if(`stVal.no != 12) `trSelfState(12, -1, -1);
+        cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
+          if(`stVal.no != 40) `trSelfState(40, -1, -1);
+        cond
+          `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
+          && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
+          && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
+          && `cmd~buffer~U > 0
+          :
+          if(`stVal.no != 45){
+            `sysivar[.iAIRJUMP_CNT]++;
+            `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
+            `trSelfState(45, -1, -1);
+          }
+        cond
+          !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
+            `cmd~buffer~F > 0 || (
             (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
-        :
-        if(`stVal.no != 20) `trSelfState(20, -1, -1);
-      cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
-        `trSelfState(0, -1, -1);
-      }
-      if(
-        `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
-          (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-          || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-          || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-        && `cmd~buffer~B > 0)
-      {
-        `trSelfState(120, -1, -1);
-      }
-      if(
-        `stVal.typ != .StTy::A && !`ls(.lsNOAUTOTURN)
-        && `trP2DistX()$.v.toF() <= -1.0)
-      {
-        `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
-        `setFacing(-`facing);
-      }
-    cond `sysivar[.iCTRL] != 0 || .roundState() == 4:
-      switch(`stVal.no){
-      case 11:
-        `trSelfState(12, -1, 1);
-      case 20:
-        `trSelfState(0, -1, 1);
-      }
-    comm:
-      if(
-        !`isKO() && (
-          .m.inRange!int?(120, 159, `stVal.no) || (
-            `ctrl() && `cmd~buffer~B > 0 && (
-              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
-      {
+          :
+          if(`stVal.no != 20) `trSelfState(20, -1, -1);
+        cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
+          `trSelfState(0, -1, -1);
+        }
+        if(
+          `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
+            (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+            || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+            || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
+          && `cmd~buffer~B > 0)
+        {
+          `trSelfState(120, -1, -1);
+        }
+      cond `sysivar[.iCTRL] != 0:
+        switch(`stVal.no){
+        case 11:
+          `trSelfState(12, -1, 1);
+        case 20:
+          `trSelfState(0, -1, 1);
+        }
+      comm:
+        if(
+          !`isKO() && (
+            .m.inRange!int?(120, 159, `stVal.no) || (
+              `ctrl() && `cmd~buffer~B > 0 && (
+                (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+                || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+                || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
+        {
         `sysivar[.iSPECIALFLAG] |= .lsGUARD;
+        }
+      }
+      if(
+        `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0 && (
+          `cmd~buffer~Bb == 1 || `cmd~buffer~Db == 1
+          || `cmd~buffer~Fb == 1 || `cmd~buffer~Ub == 1
+          || `cmd~buffer~ab == 1 || `cmd~buffer~bb == 1
+          || `cmd~buffer~cb == 1 || `cmd~buffer~xb == 1
+          || `cmd~buffer~yb == 1 || `cmd~buffer~zb == 1
+          || `cmd~buffer~sb == 1))
+      {
+        `sysivar[.iRECOVERTIME] -= .m.randI(1, (`sysivar[.iRECOVERTIME]+1)/2);
       }
     }
+    `minus = 11;
     `state_i1(::);
-    if(
-      `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0 && `isActive() && (
-        `cmd~buffer~Bb == 1 || `cmd~buffer~Db == 1
-        || `cmd~buffer~Fb == 1 || `cmd~buffer~Ub == 1
-        || `cmd~buffer~ab == 1 || `cmd~buffer~bb == 1
-        || `cmd~buffer~cb == 1 || `cmd~buffer~xb == 1
-        || `cmd~buffer~yb == 1 || `cmd~buffer~zb == 1
-        || `cmd~buffer~sb == 1))
-    {
-      `sysivar[.iRECOVERTIME] -= .m.randI(1, (`sysivar[.iRECOVERTIME]+1)/2);
-    }
     `minus = 2;
   }
   public void drawAnim()
@@ -3767,7 +3769,9 @@ public &Char
   }
   public bool ctrl()
   {
-    ret `sysivar[.iCTRL] != 0 && !`isKO() && .com.intro <= 0 && !`ctrlOver();
+    ret
+      `sysivar[.iCTRL] != 0 && !`isKO()
+      && (`helperindex != 0 || .com.intro <= 0) && !`ctrlOver();
   }
   public void setCtrl(bool c)
   {
@@ -4354,7 +4358,7 @@ public &Char
   public void trSysIVar()
   {
     int i = .v.toI();
-    if(.v.isSF() || i < 0 || (`minus != 1 && i >= 5)){
+    if(.v.isSF() || i < 0 || (`minus != 11 && i >= 5)){
       .v.setSF();
       ret;
     }
@@ -4363,7 +4367,7 @@ public &Char
   public void trSetSysIVar(&.Var idx, &.Var v)
   {
     int i = idx.toI();
-    if(.v.isSF() || i < 0 || (`minus != 1 && i >= 5)){
+    if(.v.isSF() || i < 0 || (`minus != 11 && i >= 5)){
       .v.setI(v.toI());
       ret;
     }
@@ -4372,7 +4376,7 @@ public &Char
   public void trSysFVar()
   {
     int i = .v.toI();
-    if(.v.isSF() || i < 0 || (`minus != 1 && i >= 5)){
+    if(.v.isSF() || i < 0 || (`minus != 11 && i >= 5)){
       .v.setSF();
       ret;
     }
@@ -4381,7 +4385,7 @@ public &Char
   public void trSetSysFVar(&.Var idx, &.Var v)
   {
     int i = idx.toI();
-    if(.v.isSF() || i < 0 || (`minus != 1 && i >= 5)){
+    if(.v.isSF() || i < 0 || (`minus != 11 && i >= 5)){
       .v.setF(v.toF());
       ret;
     }
@@ -4527,6 +4531,10 @@ public &Char
   }
   public void trCommand(^/char name)
   {
+    if(!`keyctrl || #`cmd == 0){
+      .v.setI(0);
+      ret;
+    }
     .v.typ = .VarTy::Int;
     if(`key < 0){
       if(.s.equ(name[0..4], "hold")) break;
@@ -4738,7 +4746,7 @@ public &Char
     h.sysfvar[.fVX] = 0.0;
     h.sysfvar[.fVY] = 0.0;
     if(ownpal != 0) h.palfx.new(1);
-    h.trChangeState2(st, `stVal.playerno, -1, -1);
+    h.trChangeState2(st, `stVal.playerno, 0, 1);
   }
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
   {
@@ -5661,18 +5669,12 @@ public void PlayerList!&Char?::action(
   float x, float cvx=,
   float highest=, float lowest=, float leftest=, float rightest=)
 {
-  bool foo = true;
+  .commandUpdate();
   loop{
     *`top.self p = `top;
     while;
   do:
-    if(p~c~id < 0){
-      p~c~id ^= -1;
-      if(foo){
-        .commandUpdate();
-        foo = false;
-      }
-    }
+    if(p~c~id < 0) p~c~id ^= -1;
     branch{
     cond #p~c~stVal.hb.byid == 0:
       p~c~action();
@@ -5683,7 +5685,6 @@ public void PlayerList!&Char?::action(
     p = p~next;
   while #p > 0:
   }
-  if(foo) .commandUpdate();
   .update(cvx=, highest=, lowest=, leftest=, rightest=);
   .com.gametime++;
   .rootAction();
@@ -6011,8 +6012,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         && ((pyr.playerno&1) != (p~c~playerno&1))
         != (p~c~stVal.hit.affectteam > 0))) continue;
     if(
-      p~c~stVal.mov == .MovTy::A && (
-        p~c~attackdist >= #(pyr.sysfvar[.fX] - p~c~sysfvar[.fX])))
+      p~c~stVal.mov == .MovTy::A && .m.inRange!float?(
+        0.0, p~c~attackdist,
+        (pyr.sysfvar[.fX] - p~c~sysfvar[.fX])*(float)p~c~facing))
     {
       pyr.inguarddist = true;
     }
@@ -6399,7 +6401,8 @@ void commandUpdate()
         while;
       do:
         .chars[i][j]~cpucmd =
-          .roundState() == 2 && .m.rand(0, .com.com[i]+16) > 16
+          .roundState() == 2 && #.chars[i][j]~keyctrl && #.chars[i][j]~cmd > 0
+          && .m.rand(0, .com.com[i]+16) > 16
           ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
         j++;
       while j < #.chars[i]:
@@ -7044,6 +7047,7 @@ public void nextRound()
     i++;
   while i < #.chars:
   }
+  .commandUpdate();
   loop{
     index i = 0;
     while;
