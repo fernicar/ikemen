@@ -6400,10 +6400,12 @@ void commandUpdate()
         index j = 0;
         while;
       do:
-        .chars[i][j]~cpucmd =
-          .roundState() == 2 && #.chars[i][j]~keyctrl
-          && .m.rand(0, .com.com[i]+16) > 16
-          ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
+        if(.chars[i][j]~helperindex >= 0){
+          .chars[i][j]~cpucmd =
+            .roundState() == 2 && #.chars[i][j]~keyctrl
+            && .m.rand(0, .com.com[i]+16) > 16
+            ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
+        }
         j++;
       while j < #.chars[i]:
       }
