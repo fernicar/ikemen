@@ -2992,9 +2992,9 @@ public &Char
         `trSelfState(5020, -1, 0);
       }
     }
+    if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
     if(`isActive()){
       if(`keyctrl) branch{
-        if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
         branch{
         cond `stVal.typ == .StTy::A:
           if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
@@ -6401,7 +6401,7 @@ void commandUpdate()
         while;
       do:
         .chars[i][j]~cpucmd =
-          .roundState() == 2 && #.chars[i][j]~keyctrl && #.chars[i][j]~cmd > 0
+          .roundState() == 2 && #.chars[i][j]~keyctrl
           && .m.rand(0, .com.com[i]+16) > 16
           ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
         j++;
