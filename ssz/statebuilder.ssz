@@ -4619,14 +4619,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "a=(int)(", "$.v.isT());")) ret false;
+            "a=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "kill", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "k=(int)(", "$.v.isT());")) ret false;
+            "k=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
@@ -4695,14 +4695,14 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "a=(int)(", "$.v.isT());")) ret false;
+            "a=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "kill", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "va=", "$.v.toI();")) ret false;
+            "k=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
@@ -6442,37 +6442,34 @@ public &StateBuilder
   bool screenBound(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
-      bool val = false;
+      if(!`stateParam(param=, "value", [`paraF_t(data=){
+        if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=, "branch{cond ",
+              "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsSCREENBOUND;"
+              "else:`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUND;}")) ret false;
+        ret true;
+      }])) ret false;
+      bool mc = false;
       if(!`stateParam(param=, "movecamera", [`paraF_t(data=){
-        val = true;
+        mc = true;
         `state.ctrlList[-1].task .= "branch{cond ";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
         `state.ctrlList[-1].task .=
-          "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsSCREENBOUNDX;"
-          "else:`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUNDX;}";
+          "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsMOVECAMERAX;"
+          "else:`sysivar[.iSPECIALFLAG]&=!.lsMOVECAMERAX;}";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=, "branch{cond ",
-              "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsSCREENBOUNDY;"
-              "else:`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUNDY;}")) ret false;
+              "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsMOVECAMERAY;"
+              "else:`sysivar[.iSPECIALFLAG]&=!.lsMOVECAMERAY;}")) ret false;
         }
         ret true;
       }])) ret false;
-      if(!val && !`stateParam(param=, "value", [`paraF_t(data=){
-        val = true;
-        if(
-            !`fullExpression(
-              `state.ctrlList[-1].task=, data=, "branch{cond ",
-              "$.v.isT():`sysivar[.iSPECIALFLAG]|="
-              ".lsSCREENBOUNDX|.lsSCREENBOUNDY;"
-              "else:`sysivar[.iSPECIALFLAG]&="
-              "!(.lsSCREENBOUNDX|.lsSCREENBOUNDY);}")) ret false;
-        ret true;
-      }])) ret false;
-      if(!val){
+      if(!mc){
         `state.ctrlList[-1].task .=
-          "`sysivar[.iSPECIALFLAG]&=!(.lsSCREENBOUNDX|.lsSCREENBOUNDY);";
+          "`sysivar[.iSPECIALFLAG]&=!(.lsMOVECAMERAX|.lsMOVECAMERAY);";
       }
       ret true;
     }]);

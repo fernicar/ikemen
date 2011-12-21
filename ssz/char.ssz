@@ -1263,17 +1263,18 @@ const int lsUNGUARDABLE   = 0b00000000000000000000000100000000;
 const int lsPOSFREEZEX    = 0b00000000000000000000001000000000;
 const int lsPOSFREEZEY    = 0b00000000000000000000010000000000;
 const int lsPLAYERPUSH    = 0b00000000000000000000100000000000;
-const int lsSCREENBOUNDX  = 0b00000000000000000001000000000000;
-const int lsSCREENBOUNDY  = 0b00000000000000000010000000000000;
-const int lsGETHIT        = 0b00000000000000000100000000000000;
-const int lsANGLEDRAW     = 0b00000000000000001000000000000000;
-const int lsTRANS         = 0b00000000000000010000000000000000;
-const int lsFRONTWCHANGE  = 0b00000000000000100000000000000000;
-const int lsBACKWCHANGE   = 0b00000000000001000000000000000000;
-const int lsFEDGECHANGE   = 0b00000000000010000000000000000000;
-const int lsBEDGECHANGE   = 0b00000000000100000000000000000000;
-const int lsGUARD         = 0b00000000001000000000000000000000;
-const int lsBindCancel    = 0b00000000010000000000000000000000;
+const int lsSCREENBOUND   = 0b00000000000000000001000000000000;
+const int lsMOVECAMERAX   = 0b00000000000000000010000000000000;
+const int lsMOVECAMERAY   = 0b00000000000000000100000000000000;
+const int lsGETHIT        = 0b00000000000000001000000000000000;
+const int lsANGLEDRAW     = 0b00000000000000010000000000000000;
+const int lsTRANS         = 0b00000000000000100000000000000000;
+const int lsFRONTWCHANGE  = 0b00000000000001000000000000000000;
+const int lsBACKWCHANGE   = 0b00000000000010000000000000000000;
+const int lsFEDGECHANGE   = 0b00000000000100000000000000000000;
+const int lsBEDGECHANGE   = 0b00000000001000000000000000000000;
+const int lsGUARD         = 0b00000000010000000000000000000000;
+const int lsBindCancel    = 0b00000000100000000000000000000000;
 
 public uint specialFlag;
 const uint gsINTRO          = 0b00000000000000000000000000000001;
@@ -3224,7 +3225,7 @@ public &Char
       .lsGUARD | (`isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0);
     `sysivar[.iSPECIALFLAG] |=
       `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
-      ? .lsSCREENBOUNDX | .lsSCREENBOUNDY | .lsPLAYERPUSH : 0;
+      ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH : 0;
     `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
     `attackdist = (float)`sysivar[.iATTACK_DIST];
     `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
@@ -3400,10 +3401,10 @@ public &Char
       }
     }
     float cvx = 0.0;
-    if(`ls(.lsSCREENBOUNDX) && `sysivar[.iBINDTIME] == 0 && !`isFreezeX()){
+    if(`ls(.lsMOVECAMERAX) && `sysivar[.iBINDTIME] == 0 && !`isFreezeX()){
       cvx = `sysfvar[.fX] - `oldx;
     }
-    if(`ls(.lsSCREENBOUNDX)){
+    if(`ls(.lsSCREENBOUND)){
       .m.limRange!float?(
         `sysfvar[.fX]=, .com.xmin+(`facing > 0 ? `bedge : `fedge),
         .com.xmax-(`facing > 0 ? `fedge : `bedge));
@@ -3435,7 +3436,7 @@ public &Char
   }
   public void xScreenBound()
   {
-    if(`ls(.lsSCREENBOUNDX)){
+    if(`ls(.lsSCREENBOUND)){
       float l, r;
       branch{
       cond `facing > 0:
@@ -3533,13 +3534,13 @@ public &Char
     }
     `bind();
     `xScreenBound();
-    if(`ls(.lsSCREENBOUNDX)){
-      leftest = .m.min!float?(
+    if(`ls(.lsMOVECAMERAX)){
+      leftest = .m.max!float?(.com.xmin)<, .m.min!float?(
         `sysfvar[.fX]-(`facing > 0 ? `bedge : `fedge), leftest);
-      rightest = .m.max!float?(
+      rightest = .m.min!float?(.com.xmax)<, .m.max!float?(
         `sysfvar[.fX]+(`facing > 0 ? `fedge : `bedge), rightest);
     }
-    if(`ls(.lsSCREENBOUNDY)){
+    if(`ls(.lsMOVECAMERAY)){
       highest = .m.min!float?(`sysfvar[.fY], highest);
       lowest = .m.min!float?(0.0)<, .m.max!float?(`sysfvar[.fY], lowest);
     }
@@ -3854,7 +3855,7 @@ public &Char
   public void setAngle(float a)
   {
     `sysfvar[.fANGLE] = a;
-    `angleset = true;
+    `angleset |= a != 0.0;
   }
   public void setPos<_t>(_t o=, int pt, float x, float y, int facing)
   {
@@ -5899,7 +5900,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       `pyr.getcombo += hit.numhits*hits;
       if(
-        pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUNDX) && (
+        pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
           || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
         ) switch(`pyr.stVal.typ)
@@ -5941,7 +5942,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         sou~setDefaultParameter();
       }
       if(
-        pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUNDX) && (
+        pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
           || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
         ) switch(`pyr.stVal.typ)
@@ -6125,13 +6126,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             p~c~sysfvar[.fX] += (pr - el) * foo;
           }
         }
-        if(pyr.ls(.lsSCREENBOUNDX)) branch{
+        if(pyr.ls(.lsSCREENBOUND)) branch{
         cond pyr.sysfvar[.fX] < pxmi:
           pyr.sysfvar[.fX] = pxmi;
         cond pyr.sysfvar[.fX] > pxma:
           pyr.sysfvar[.fX] = pxma;
         }
-        if(p~c~ls(.lsSCREENBOUNDX)) branch{
+        if(p~c~ls(.lsSCREENBOUND)) branch{
           float l, r, x = p~c~sysfvar[.fX];
           branch{
           cond p~c~facing > 0:

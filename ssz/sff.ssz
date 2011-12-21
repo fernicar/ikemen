@@ -1080,10 +1080,7 @@ public &Anim<frame_t>
         .com.scrrect=, x+160.0 - xs*(float)(h*`frames[`drawidx].x), y,
         1.0, 1.0, xs, xs, ys, 0.0, 0.0, fx);
     else:
-      `draw(
-        .com.scrrect=,
-        x - (float)h*xscale*(axscl - 1.0)*(float)`frames[`drawidx].x, y,
-        1.0, 1.0, xs, xs, ys, 0.0, 160.0, fx);
+      `draw(.com.scrrect=, x, y, 1.0, 1.0, xs, xs, ys, 0.0, 160.0, fx);
     comm:
       ret;
     }
