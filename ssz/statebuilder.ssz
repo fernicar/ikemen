@@ -599,6 +599,8 @@ public &StateBuilder
       case 'A', 'a':
         flg |= (int).chr.StTy::A;
       case ' ', '\t':
+        if(!.cfg.IgnoreMostErrors) default;
+        ret true;
       default:
         if(!.cfg.IgnoreMostErrors){
           `lasterror = hit[0] + "が無効な値です";
@@ -608,10 +610,14 @@ public &StateBuilder
       i++;
     while i < #hit[0]:
     }
-    loop{index i = 1; while; do:
+    loop{
+      index i = 1;
+      ^char foo;
+      while;
+    do:
+      foo = .s.toLower()<, .s.trim(hit[i]);
       branch{
-        ^char tmp = .s.toLower()<, .s.trim(hit[i]);
-        tmp = tmp[0..2];
+        ^/char tmp = .s.trim(foo[0..2]);
       cond .s.equ(tmp, "na"): flg |= (int).chr.AtTy::NA;
       cond .s.equ(tmp, "nt"): flg |= (int).chr.AtTy::NT;
       cond .s.equ(tmp, "np"): flg |= (int).chr.AtTy::NP;
@@ -629,7 +635,7 @@ public &StateBuilder
         flg |= (int).chr.AtTy::SA;
         flg |= (int).chr.AtTy::ST;
         flg |= (int).chr.AtTy::SP;
-      cond .s.equ(tmp, "h"):
+      cond .s.equ(tmp, "h") || .s.equ(tmp, "a"):
         flg |= (int).chr.AtTy::HA;
         flg |= (int).chr.AtTy::HT;
         flg |= (int).chr.AtTy::HP;
@@ -645,22 +651,13 @@ public &StateBuilder
         flg |= (int).chr.AtTy::NP;
         flg |= (int).chr.AtTy::SP;
         flg |= (int).chr.AtTy::HP;
-      cond .s.equ(tmp, "a"):
-        flg |= (int).chr.AtTy::NA;
-        flg |= (int).chr.AtTy::SA;
-        flg |= (int).chr.AtTy::HA;
-        flg |= (int).chr.AtTy::NT;
-        flg |= (int).chr.AtTy::ST;
-        flg |= (int).chr.AtTy::HT;
-        flg |= (int).chr.AtTy::NP;
-        flg |= (int).chr.AtTy::SP;
-        flg |= (int).chr.AtTy::HP;
       else:
         if(!.cfg.IgnoreMostErrors){
           `lasterror = hit[i] + "が無効な値です";
           ret false;
         }
       }
+      if(.s.cFind(" "\t, foo) >= 0) break;
       i++;
     while i < #hit:
     }

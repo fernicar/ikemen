@@ -3656,6 +3656,7 @@ public &Char
   }
   void setHitdefDefault(&.Hitdef h=, bool proj)
   {
+    if((h.attr & 63) == 0 || (h.attr & !63) == 0) h.attr = 0;
     if(!proj && h.guard_dist < 0) h.guard_dist = `sysivar[.iATTACK_DIST];
     if(h.guard_pausetime < 0) h.guard_pausetime = h.pausetime;
     if(h.guard_shaketime < 0) h.guard_shaketime = h.shaketime;
