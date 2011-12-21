@@ -51,6 +51,16 @@ public &Action
       }
       line = .s.toLower()<, .s.trim()<, lines[i][0...s.find(";", lines[i])];
       branch{
+      cond #line > 0 && ((line[0] >= '0' && line[0] <= '9') || line[0] == '-'):
+        ary = .com.csvToAry!int?(line);
+        if(#ary < 5) break;
+        ols = `ani.loopstart;
+        `ani.frames.new[-1].readData(ary, line);
+        if(defaul1) clsn1 = clsn1d;
+        if(defaul2) clsn2 = clsn2d;
+        `ani.frames[-1].clsn1 = clsn1;
+        `ani.frames[-1].clsn2 = clsn2;
+        defaul1 = defaul2 = true;
       cond .s.equ("loopstart", line[0..9]):
         `ani.loopstart = #`ani.frames;
       cond .s.equ("clsn", line[0..4]):
@@ -112,16 +122,6 @@ public &Action
           while i < #lines:
           }
         }
-      else:
-        ary = .com.csvToAry!int?(line);
-        if(#ary < 5) break;
-        ols = `ani.loopstart;
-        `ani.frames.new[-1].readData(ary, line);
-        if(defaul1) clsn1 = clsn1d;
-        if(defaul2) clsn2 = clsn2d;
-        `ani.frames[-1].clsn1 = clsn1;
-        `ani.frames[-1].clsn2 = clsn2;
-        defaul1 = defaul2 = true;
       }
       i++;
     while i < #lines:

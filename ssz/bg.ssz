@@ -80,14 +80,15 @@ public &Action
         i--;
         break, break;
       }
-      line = lines[i][0...s.find(";", lines[i])];
-      ary = .com.csvToAry!int?(line);
+      line = .s.trim(lines[i][0...s.find(";", lines[i])]);
       branch{
-      cond #ary >= 5:
+      cond #line > 0 && ((line[0] >= '0' && line[0] <= '9') || line[0] == '-'):
+        ary = .com.csvToAry!int?(line);
+        if(#ary < 5) break;
         ols = `loopstart;
         `frames.new[-1].readData(ary, line);
       else:
-        line = .s.toLower()<, .s.trim(line);
+        line = .s.toLower()<, line;
         if(.s.equ("loopstart")<, line[0..9]) `loopstart = #`frames;
       }
       i++;
