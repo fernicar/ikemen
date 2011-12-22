@@ -2530,14 +2530,14 @@ public &StateBuilder
         name = .s.toLower()<, name[0.. .s.cFind(" "\t, name)];
         index nr = -1;
         branch{
-        cond .s.equ(name[0..4], "var("):
+        cond .s.equ(name[0..3], "var"):
+          nr = 3;
+        cond .s.equ(name[0..4], "fvar"):
           nr = 4;
-        cond .s.equ(name[0..5], "fvar("):
-          nr = 5;
-        cond .s.equ(name[0..7], "sysvar("):
+        cond .s.equ(name[0..6], "sysvar"):
+          nr = 6;
+        cond .s.equ(name[0..7], "sysfvar"):
           nr = 7;
-        cond .s.equ(name[0..8], "sysfvar("):
-          nr = 8;
         else:
           break;
         comm:
@@ -2582,7 +2582,8 @@ public &StateBuilder
               || .s.equ(name, "persistent") || .s.equ(name, "ignorehitpause")
               :
             else:
-              atomawasi.set(name[0..nr], ?(nr>0?name[nr..-1]+"="+data:data));
+              atomawasi.set(
+                name[0..nr], ?(nr>0 ? .s.trim(name[nr..-1])+"="+data : data));
               break;
             comm:
               if(!func_t(sec, name, data)) ret false;
@@ -2926,38 +2927,40 @@ public &StateBuilder
         `state.ctrlList[-1].task .= "^`self p=`trParent()$.c;if(#p==0)ret;";
       }
       bool v = false, fv = false, value = false;
-      if(!`stateParam(param=, "v", [`paraF_t(data=){
-        v = true;
-        if(!`fullExpression(`state.ctrlList[-1].task=, data=, "", ";")){
-          ret false;
-        }
-        ret true;
-      }])) ret false;
-      if(!v && !`stateParam(param=, "fv", [`paraF_t(data=){
-        fv = true;
-        if(!`fullExpression(`state.ctrlList[-1].task=, data=, "", ";")){
-          ret false;
-        }
-        ret true;
-      }])) ret false;
-      if((v || fv) && !`stateParam(param=, "value", [`paraF_t(data=){
+      %char valexp, varexp;
+      if(!`stateParam(param=, "value", [`paraF_t(data=){
         value = true;
+        ret `expression(valexp=, data=);
+      }]))ret false;
+      if(value && !`stateParam(param=, "v", [`paraF_t(data=){
+        v = true;
+        ret `expression(varexp=, data=);
+      }])) ret false;
+      if(value && !v && !`stateParam(param=, "fv", [`paraF_t(data=){
+        fv = true;
+        ret `expression(varexp=, data=);
+      }])) ret false;
+      if((v || fv) && value){
         `state.ctrlList[-1].task .=
-          (par ? "p~" : "`") .= (v ? "trSetIVar(.v," : "trSetFVar(.v,");
+          (par ? "p~" : "`") .= (v ? "trSetIVar(" : "trSetFVar(")
+          .= varexp .= "$.v,";
         if(add){
           `state.ctrlList[-1].task.=
             (par ? "`trAdd(p~" : "`trAdd(`")
             .= (v ? "trIVar()$.v," : "trFVar()$.v,");
         }
-        if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
+        `state.ctrlList[-1].task .= valexp;
         if(add) `state.ctrlList[-1].task.= "$.v)";
         `state.ctrlList[-1].task.= "$.v);";
         ret true;
-      }])) ret false;
+      }
       v = fv = false;
       bool sys = false;
       ~$bool(^/char=) set = [bool(^/char data=){
-        data = "(" + data;
+        if(data[0] != '('){
+           `lasterror = "'('がありません";
+           ret false;
+        }
         `kakko = 0;
         if(!`expValue(`state.ctrlList[-1].task=, data=)) ret false;
         index f = .s.find("=", data);
@@ -2981,23 +2984,23 @@ public &StateBuilder
         `state.ctrlList[-1].task.= "$.v);";
         ret true;
       }];
-      if(!value && !`stateParam(param=, "var(", [`paraF_t(data=){
+      if(!value && !`stateParam(param=, "var", [`paraF_t(data=){
         value = true;
         v = true;
         ret set(:data=:);
       }])) ret false;
-      if(!value && !`stateParam(param=, "fvar(", [`paraF_t(data=){
+      if(!value && !`stateParam(param=, "fvar", [`paraF_t(data=){
         value = true;
         fv = true;
         ret set(:data=:);
       }])) ret false;
-      if(!value && !`stateParam(param=, "sysvar(", [`paraF_t(data=){
+      if(!value && !`stateParam(param=, "sysvar", [`paraF_t(data=){
         value = true;
         v = true;
         sys = true;
         ret set(:data=:);
       }])) ret false;
-      if(!value && !`stateParam(param=, "sysfvar(", [`paraF_t(data=){
+      if(!value && !`stateParam(param=, "sysfvar", [`paraF_t(data=){
         value = true;
         fv = true;
         sys = true;
