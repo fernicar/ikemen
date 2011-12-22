@@ -6442,7 +6442,9 @@ public &StateBuilder
   bool screenBound(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool val = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        val = true;
         if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=, "branch{cond ",
@@ -6450,6 +6452,10 @@ public &StateBuilder
               "else:`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUND;}")) ret false;
         ret true;
       }])) ret false;
+      if(!val){
+        `state.ctrlList[-1].task .=
+          "`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUND;";
+      }
       bool mc = false;
       if(!`stateParam(param=, "movecamera", [`paraF_t(data=){
         mc = true;
