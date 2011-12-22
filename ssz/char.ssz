@@ -5762,10 +5762,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       || !`pyr.ls(.lsGETHIT))
     {
       rtn = damageable = true;
-      if(hitting > 0){
-        if(!`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
-        `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
-      }
       loop{index i = 0; while; do:
         if(
           `pyr.stVal.ho[i].time != 0
@@ -5802,6 +5798,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(rtn || ho) branch{
       `pyr.stVal.setHb(
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
+      if(hitting > 0){
+        if(!ho && p2s < 2 && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
+        `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
+      }
       if(pro == 0) by.sprpriority = hit.p1sprpriority;
       `pyr.sprpriority = hit.p2sprpriority;
       if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
