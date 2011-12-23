@@ -694,7 +694,7 @@ public &StateBuilder
     `lasterror = ")がありません";
     ret false;
   }
-  int kyuushiki(bool not=, %char out=, ^/char in=)
+  bool kyuushiki(bool not=, %char out=, ^/char in=)
   {
     not = false;
     loop{
@@ -709,19 +709,11 @@ public &StateBuilder
       cond #token > 0 && token[-1] == '=':
         break, break;
       }
-    while
-      #token > 0 && !.s.equ("||", token)
-      && !.s.equ("^^", token) && !.s.equ("&&", token)
-      :
-      if(!.cfg.IgnoreMostErrors){
-        `lasterror = "=か!=がありません";
-        ret -1;
-      }
-      in = oldin;
-      out .= ".v.setI(1)";
-      ret 1;
+    while #token > 0:
+      `lasterror = "=か!=がありません";
+      ret false;
     }
-    ret 0;
+    ret true;
   }
   bool kyuushiki2(bool range, ^/char in=)
   {
@@ -768,8 +760,7 @@ public &StateBuilder
     bool eqneq(%char out=, ^/char in=, ~$bool() proc)
     {
       bool not;
-      int re = `kyuushiki(not=, out=, in=);
-      if(re != 0) ret re > 0;
+      if(!`kyuushiki(not=, out=, in=)) ret false;
       if(!proc(::)) ret false;
       if(not) out .= "$`trBoolNot()";
       ret true;
@@ -902,8 +893,7 @@ public &StateBuilder
     cond .s.equ("animelem", token):
       {
         bool not;
-        int re = `kyuushiki(not=, out=, in=);
-        if(re != 0) ret re > 0;
+        if(!`kyuushiki(not=, out=, in=)) ret false;
         if(!`expAdsb(out=, in=)) ret false;
         out .= '$' .= obj .= "trAnimElemTime()$(.v.isSF()?.v.setSF():";
         branch{
@@ -968,8 +958,7 @@ public &StateBuilder
     cond .s.equ("timemod", token):
       {
         bool not;
-        int re = `kyuushiki(not=, out=, in=);
-        if(re != 0) ret re > 0;
+        if(!`kyuushiki(not=, out=, in=)) ret false;
         out .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
         if(!`expAdsb(out=, in=)) ret false;
         out .= "$.v)$";
@@ -1635,8 +1624,7 @@ public &StateBuilder
         ^/char oldin;
         int id = .com.atoi(token[(h?7:11)..-1]);
         bool not;
-        int re = `kyuushiki(not=, out=, in=);
-        if(re != 0) ret re > 0;
+        if(!`kyuushiki(not=, out=, in=)) ret false;
         out .= ".v.setB(";
         if(!`expAdsb(out=, in=)) ret false;
         out .=

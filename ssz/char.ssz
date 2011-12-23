@@ -5953,6 +5953,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         by.veloff = by.stVal.hit.airguard_cornerpush_veloff * (float)by.facing;
       }
     comm:
+      if(!rtn) break;
       branch{
         int byf;
       cond pro == 0 || hit.p1facing != 0:
@@ -5971,19 +5972,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
         `pyr.setFacing(byf * -hit.p2facing);
       }
-      if(#hitting == 1 && hit.p1stateno >= 0) branch{
-      cond
-        !by.ls(.lsGETHIT) && (!by.cs1tmp || by.stVal.playerno == by.playerno)
-        && (hit.p2stateno < 0 || hit.p2getp1state == 0 || p2s > 0)
-        :
+      if(#hitting == 1 && hit.p1stateno >= 0 && !by.ls(.lsGETHIT)){
         by.changeState1(by.playerno, hit.p1stateno);
-      else:
-        break, break;
       }
-      if(rtn && (!ho || #`pyr.stVal.hb.byid == 0)){
-        by.addTarget(`pyr.id);
-        `pyr.stVal.hb.addByid(by.id);
-      }
+      by.addTarget(`pyr.id);
+      `pyr.stVal.hb.addByid(by.id);
     }
     ret rtn;
   }
