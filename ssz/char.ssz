@@ -1928,9 +1928,9 @@ public &Char
     state_2 = dummy, state_3 = dummy, state_i1 = dummy;
   new()
   {
-    `ivar.new(61);
+    `ivar.new(60);
     `sysivar.new(60);
-    `fvar.new(41);
+    `fvar.new(40);
     `sysfvar.new(70);
     `clearVal();
   }
@@ -2067,21 +2067,17 @@ public &Char
   }
   public void rangeSetIVar(index start, index end, int n)
   {
-    if(start < 0) ret;
+    if(start < 0 || end >= #`ivar) ret;
     loop{index i = start; while; do:
-      `ivar[i] = n;
-      i++;
-    while i <= end && i < #`ivar:
-    }
+      `ivar[i++] = n;
+    while i <= end:}
   }
   public void rangeSetFVar(index start, index end, float n)
   {
-    if(start < 0) ret;
+    if(start < 0 || end >= #`fvar) ret;
     loop{index i = start; while; do:
-      `fvar[i] = n;
-      i++;
-    while i <= end && i < #`fvar:
-    }
+      `fvar[i++] = n;
+    while i <= end:}
   }
   public ^&.act.Action getAction(int no)
   {
@@ -6474,11 +6470,12 @@ public float action(
     -(
       .fight~ro.over_hittime
       + .fight~ro.over_waittime + .fight~ro.over_wintime);
-  if(.com.intro == rs4t-1 && .com.turbo > 0.0 && #(x - .oldx) >= .com.turbo){
-    .com.intro = rs4t;
-  }
   branch{
   cond .com.tickFrame():
+    if(.com.intro == rs4t-1 && .com.turbo > 0.0 && #(x - .oldx) >= 1.0){
+      .com.intro = rs4t;
+    }
+    .oldx = x;
     .com.xmin = .com.screenx + .com.screenleft;
     .com.xmax = .com.screenx + (320.0 / .com.scale) - .com.screenright;
     if(.com.xmin > .com.xmax){
@@ -6600,7 +6597,6 @@ public float action(
     tmp = .m.min!float?(rightest - (160.0/.com.scale - tension), tmp);
     if(cvx > tmp) cvx = .m.max!float?(0.0, tmp);
   }
-  if(.com.turbo > 0.0) .oldx = x;
   x += cvx;
   if(lowest >= highest) branch{
   cond highest < (float)-.stg~cam.floortension / .com.scale:
@@ -6689,6 +6685,7 @@ public float action(
   {
     loop{
       index i = 0;
+      float ox = `x;
       while;
     do:
       if(#.chars[i] > 0){
@@ -6705,12 +6702,14 @@ public float action(
       `x = 0.0;
       `leftest =
         .m.max!float?(
-          (float).m.min!int?(.stg~p1.startx, .stg~p2.startx) - `x,
-          -160.0/.com.scale + .com.screenleft) + (`x - .oldx);
+          (float).m.min!int?(.stg~p1.startx, .stg~p2.startx),
+          -160.0/.com.scale + .com.screenleft)
+        - ox;
       `rightest =
         .m.min!float?(
-          (float).m.max!int?(.stg~p1.startx, .stg~p2.startx) - `x,
-          160.0/.com.scale - .com.screenright) + (`x - .oldx);
+          (float).m.max!int?(.stg~p1.startx, .stg~p2.startx),
+          160.0/.com.scale - .com.screenright)
+        - ox;
     }
   }
   int slowfade = .fight~ro.slow_time * 2 / 5;

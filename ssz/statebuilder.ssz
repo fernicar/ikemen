@@ -3034,7 +3034,7 @@ public &StateBuilder
         `state.ctrlList[-1].task .=
           (#val > 0 ? "`rangeSetIVar(" : "`rangeSetFVar(")
           .= (#fir > 0 ? fir : "0,")
-          .= (#fir > 0 ? fir : (#val > 0 ? "59," : "39,"))
+          .= (#las > 0 ? las : (#val > 0 ? "59," : "39,"))
           .= (#val > 0 ? val : fval);
       }
       ret true;
