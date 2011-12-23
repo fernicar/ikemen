@@ -1540,14 +1540,19 @@ public &StateBuilder
       }
       if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("hitdefattr", token):
-      if(!eqneq(out=, in=)<, [bool(){
+      {
+        bool not;
+        if(!`kyuushiki(not=, out=, in=)){
+          if(!.cfg.IgnoreMostErrors) ret false;
+          out .= ".v.setI(0)";
+          break, break;
+        }
         int flg;
         index fi = .s.cFind(")]&|^", in);
         if(!`attr(flg=, in[0..fi])) ret false;
         in = in[fi..-1];
         out .= obj .= "trHitDefAttr(" .= .s.iToS(flg) .= ")";
-        ret true;
-      }]) ret false;
+      }
     cond
       .s.equ("numhelper", token) || .s.equ("numexplod", token)
       || .s.equ("numtarget", token) || .s.equ("numprojid", token)
