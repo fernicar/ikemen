@@ -2977,9 +2977,6 @@ public &Char
     cond `stVal.hb.typ == 3:
       `trSelfState(5070, -1, 0);
     else:
-      if(`stVal.hb.yvel != 0.0 || `stVal.hb.fallf != 0){
-        `stVal.typ = .StTy::A;
-      }
       switch(`stVal.typ){
       case .StTy::S:
         `trSelfState(5000, -1, 0);
