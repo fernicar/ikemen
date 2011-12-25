@@ -6470,10 +6470,7 @@ public float action(
       + .fight~ro.over_waittime + .fight~ro.over_wintime);
   branch{
   cond .com.tickFrame():
-    if(
-      .gs(.gsROUNDNOTOVER) && .com.intro == rs4t-1
-      && .com.turbo > 0.0 && #(x - .oldx) >= 1.0)
-    {
+    if(.gs(.gsROUNDNOTOVER) && .com.intro == rs4t-1 && #(x - .oldx) >= 1.0){
       .com.intro = rs4t;
     }
     .oldx = x;
