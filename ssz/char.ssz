@@ -18,7 +18,7 @@ lib mes = <alpha/mesdialog.ssz>;
 
 int changeStateNest = 0;
 float oldx = 0.0;
-int slowt = 0, shuttertime = 0;
+int waitdown = 0, shuttertime = 0;
 bool winskipped = false;
 
 public float zoomdelay = 0.0;
@@ -3974,10 +3974,6 @@ public &Char
     e~setPos(`=);
     `insertExplod(i);
   }
-  public void setRoundNotOver()
-  {
-    if(`minus == 11 || .roundState() == 4) .specialFlag |= .gsROUNDNOTOVER;
-  }
   public void trPlayerID()
   {
     .c = .players.get(.v.toI());
@@ -6470,7 +6466,7 @@ public float action(
       + .fight~ro.over_waittime + .fight~ro.over_wintime);
   branch{
   cond .com.tickFrame():
-    if(.gs(.gsROUNDNOTOVER) && .com.intro == rs4t-1 && #(x - .oldx) >= 1.0){
+    if(.waitdown > 0 && .com.intro == rs4t-1 && #(x - .oldx) >= 1.0){
       .com.intro = rs4t;
     }
     .oldx = x;
@@ -6808,7 +6804,7 @@ public float action(
             !.m.inRange!int?(5150, 5159, .chars[i][0]~stVal.no)
             && .chars[i][0]~sysivar[.iCTRL] == 0
             :
-            if(.chars[i][0]~sysivar[.iWAITWIN]-- > 0) .com.intro = rs4t;
+            if(.waitdown-- > 0) .com.intro = rs4t;
           }
           i++;
         while i < #.chars:
@@ -6825,20 +6821,21 @@ public float action(
     sprite();
   }
   if(.com.turbo == 0.0 || .com.tickNextFrame()) branch{
+    int slowt = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
     float spd =
       .com.pause && !.com.keyDown(.com.KeyEvent::Scroll)
       ? 0.0 : .com.Speed*.com.accel;
   cond
     !.gs(.gsNOKOSLOW) && .com.time != 0
-    && .m.inRange!int?(.slowt, -.fight~ro.over_hittime-1, .com.intro)
+    && .m.inRange!int?(slowt, -.fight~ro.over_hittime-1, .com.intro)
     :
     .com.turbo = spd * 0.25;
   cond
     !.gs(.gsNOKOSLOW) && .com.time != 0
-    && .m.inRange!int?(.slowt-slowfade, .slowt-1, .com.intro)
+    && .m.inRange!int?(slowt-slowfade, slowt-1, .com.intro)
     :
     .com.turbo =
-      spd*(0.25 + 0.75 * (float)(-.com.intro + .slowt)/(float)slowfade);
+      spd*(0.25 + 0.75 * (float)(-.com.intro + slowt)/(float)slowfade);
   else:
     .com.turbo = spd;
   }
@@ -6982,7 +6979,7 @@ void resetGbl()
   .zoomdelay = 0.0;
   .playerid.new(0);
   .resetNumenemy();
-  .slowt = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
+  .waitdown = 900;
   .shuttertime = 0;
   .winskipped = false;
 }
