@@ -3313,14 +3313,14 @@ public &Char
       ret
         .super > 0 && (
           !`isAlive() || (
-            `sysivar[.iSUPERMOVETIME] == 0 && `sysivar[.iMOVETIMESUPER] <= 0);
+            `sysivar[.iSUPERMOVETIME] == 0 && `sysivar[.iMOVETIMESUPER] <= 0));
     }
     bool isNormalPaused()
     {
       ret
         .super <= 0 && .pause > 0 && (
           !`isAlive() || (
-            `sysivar[.iPAUSEMOVETIME] == 0 && `sysivar[.iMOVETIMEPAUSE] <= 0);
+            `sysivar[.iPAUSEMOVETIME] == 0 && `sysivar[.iMOVETIMEPAUSE] <= 0));
     }
     if(`minus != 2) ret;
     {
