@@ -2223,6 +2223,36 @@ public &Char
       `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
     }
   }
+  void enemyExplodsRemove(int enemy)
+  {
+    void enemyExpRemove(^%index drawlist=, bool delI, int id)
+    {
+      loop{
+        index i = #drawlist[`enemy]-1, tmp;
+        while;
+      do:
+        tmp = drawlist[`enemy][i];
+        if(tmp < 0) continue;
+        if(
+          .explods[`enemy][tmp].bindtime != 0
+          && .explods[`enemy][tmp].bindid == id)
+        {
+          .explods[`enemy][tmp].id = .com.IERR;
+          branch{
+          cond delI:
+            .delIL(drawlist[`enemy]=, i);
+          else:
+            drawlist[`enemy][i] = -1;
+          }
+        }
+      continue:
+        i--;
+      while i >= 0:
+      }
+    }
+    enemyExpRemove(.expdrawlist=, true, `id);
+    enemyExpRemove(.topexpdrawlist=, false, `id);
+  }
   public void outTarget()
   {
     if(`hittmp >= 0){
@@ -2232,7 +2262,10 @@ public &Char
         while;
       do:
         c = .players.get(`stVal.hb.byid[i]);
-        if(#c > 0) c~removeTarget(`id);
+        if(#c > 0){
+          c~removeTarget(`id);
+          `enemyExplodsRemove(c~playerno);
+        }
         i++;
       while i < #`stVal.hb.byid:
       }
@@ -4435,36 +4468,8 @@ public &Char
     %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PSet";
     if(!<consteval>(`state=, buf)) ret false;
     if(!`cs1tmp) `stVal.prevno = `stVal.no;
-    void enemyExpRemove(^%index drawlist=, bool delI)
-    {
-      loop{
-        index i = #drawlist[`stVal.playerno]-1;
-        while;
-      do:
-        if(drawlist[`stVal.playerno][i] < 0) continue;
-        if(
-          .explods[`stVal.playerno][drawlist[`stVal.playerno][i]].bindtime
-          != 0
-          && .explods[`stVal.playerno][drawlist[`stVal.playerno][i]].bindid
-          == `id)
-        {
-          .explods[`stVal.playerno][drawlist[`stVal.playerno][i]].id =
-            .com.IERR;
-          branch{
-          cond delI:
-            .delIL(drawlist[`stVal.playerno]=, i);
-          else:
-            drawlist[`stVal.playerno][i] = -1;
-          }
-        }
-      continue:
-        i--;
-      while i >= 0:
-      }
-    }
     if(`stVal.playerno != `playerno && p != `stVal.playerno){
-      enemyExpRemove(.expdrawlist=, true);
-      enemyExpRemove(.topexpdrawlist=, false);
+      `enemyExplodsRemove(`stVal.playerno);
     }
     `stVal.no = n;
     `stVal.playerno = p;
