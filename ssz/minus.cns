@@ -55,7 +55,7 @@ sysvar(58) = sysvar(58) | 2;SYSFLAG,NOTOVER
 
 [State -I1, Win or Lose2]
 type = AssertSpecial
-triggerall = roundstate = 4
+triggerall = roundstate >= 3
 triggerall = !ishelper
 triggerall = win
 triggerall = alive

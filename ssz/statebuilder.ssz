@@ -4972,7 +4972,7 @@ public &StateBuilder
           `state.ctrlList[-1].task .=
             "`sysivar[.iSPECIALFLAG]|=.lsNOSHADOW;";
         cond .s.equ(text, "intro"):
-          `state.ctrlList[-1].task .= ".specialFlag|=.gsINTRO;";
+          `state.ctrlList[-1].task .= "`setRoundNotOver();";
         cond .s.equ(text, "nokosnd"):
           `state.ctrlList[-1].task .= ".specialFlag|=.gsNOKOSND;";
         cond .s.equ(text, "nobg"):

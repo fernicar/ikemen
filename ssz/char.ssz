@@ -3311,24 +3311,27 @@ public &Char
     bool isSuperPaused()
     {
       ret
-        .super > 0 && `sysivar[.iSUPERMOVETIME] == 0
-        && `sysivar[.iMOVETIMESUPER] <= 0;
+        .super > 0 && (
+          !`isAlive() || (
+            `sysivar[.iSUPERMOVETIME] == 0 && `sysivar[.iMOVETIMESUPER] <= 0);
     }
     bool isNormalPaused()
     {
       ret
-        .super <= 0 && .pause > 0 && `sysivar[.iPAUSEMOVETIME] == 0
-        && `sysivar[.iMOVETIMEPAUSE] <= 0;
+        .super <= 0 && .pause > 0 && (
+          !`isAlive() || (
+            `sysivar[.iPAUSEMOVETIME] == 0 && `sysivar[.iMOVETIMEPAUSE] <= 0);
     }
     if(`minus != 2) ret;
     {
       if(#`palfx > 0 && !`isPaused()) `palfx~step();
-      bool p = isSuperPaused() || isNormalPaused();
+      bool p =
+        (isSuperPaused() || isNormalPaused()) && `stVal.hb.hitshaketime <= 0;
       `acttmp = -(int)p * 2;
       bool lc = !`ls(.lsGETHIT) && `landCondition();
       `bind();
       {
-        if(p && !`cs1tmp) ret;
+        if(p) ret;
         branch{
         cond .super > 0:
           if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
@@ -3970,6 +3973,10 @@ public &Char
     e~offsety = y;
     e~setPos(`=);
     `insertExplod(i);
+  }
+  public void setRoundNotOver()
+  {
+    if(`minus == 11 || .roundState() == 4) .specialFlag |= .gsROUNDNOTOVER;
   }
   public void trPlayerID()
   {
@@ -6463,7 +6470,10 @@ public float action(
       + .fight~ro.over_waittime + .fight~ro.over_wintime);
   branch{
   cond .com.tickFrame():
-    if(.com.intro == rs4t-1 && .com.turbo > 0.0 && #(x - .oldx) >= 1.0){
+    if(
+      .gs(.gsROUNDNOTOVER) && .com.intro == rs4t-1
+      && .com.turbo > 0.0 && #(x - .oldx) >= 1.0)
+    {
       .com.intro = rs4t;
     }
     .oldx = x;
@@ -6745,77 +6755,66 @@ public float action(
       && (.pause <= 0 || .pausebg == 0)) .com.time--;
     branch{
     cond .roundEnd() || finish():
-      branch{
-      cond
-        .roundState() != 3 || (.super <= 0 && .pause <= 0) || .cmd.anybutton()
-        :
-      cond .com.intro >= .slowt-slowfade:
-        .slowt++;
-        break;
-      else:
-        break;
-      comm:
-        if(.winskipped || !.gs(.gsROUNDNOTOVER) || .com.intro >= rs4t){
-          if(.ko == .fgt.KOTy::NotYet && .com.intro == rs4t){
-            bool p1 = false, p2 = false;
-            float l1 = 0.0, l2 = 0.0;
-            loop{index i = 0; while; do:
-              if(#.chars[i] > 0){
-                l1 +=
-                  (.com.tmode[0] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
-                  * (float).chars[i][0]~sysivar[.iLIFE]
-                  / (float).chars[i][0]~sysivar[.iLIFEMAX];
-              }
-              i += 2;
-            while i < #.chars:
+      if(.winskipped || !.gs(.gsROUNDNOTOVER) || .com.intro >= rs4t){
+        if(.ko == .fgt.KOTy::NotYet && .com.intro == rs4t){
+          bool p1 = false, p2 = false;
+          float l1 = 0.0, l2 = 0.0;
+          loop{index i = 0; while; do:
+            if(#.chars[i] > 0){
+              l1 +=
+                (.com.tmode[0] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
+                * (float).chars[i][0]~sysivar[.iLIFE]
+                / (float).chars[i][0]~sysivar[.iLIFEMAX];
             }
-            loop{index i = 1; while; do:
-              if(#.chars[i] > 0){
-                l2 +=
-                  (.com.tmode[1] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
-                  * (float).chars[i][0]~sysivar[.iLIFE]
-                  / (float).chars[i][0]~sysivar[.iLIFEMAX];
-              }
-              i += 2;
-            while i < #.chars:
-            }
-            branch{
-            cond l1 > l2:
-              p2 = true;
-            cond l2 > l1:
-              p1 = true;
-            else:
-              p1 = p2 = true;
-            }
-            setWinType(p1, p2);
-            branch{
-            cond p1 && p2:
-              .ko = .fgt.KOTy::TODraw;
-              .com.win = -1;
-            cond p1:
-              .ko = .fgt.KOTy::TO;
-              .com.win = 1;
-            cond p2:
-              .ko = .fgt.KOTy::TO;
-              .com.win = 0;
-            }
-          }
-          .com.intro--;
-          if(.com.time != 0 && .com.intro == rs4t-1) loop{
-            index i = 0;
-            while;
-          do:
-            if(#.chars[i] > 0) branch{
-            cond .chars[i][0]~isWin():
-            cond
-              !.m.inRange!int?(5150, 5159, .chars[i][0]~stVal.no)
-              && .chars[i][0]~sysivar[.iCTRL] == 0
-              :
-              if(.chars[i][0]~sysivar[.iWAITWIN]-- > 0) .com.intro = rs4t;
-            }
-            i++;
+            i += 2;
           while i < #.chars:
           }
+          loop{index i = 1; while; do:
+            if(#.chars[i] > 0){
+              l2 +=
+                (.com.tmode[1] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
+                * (float).chars[i][0]~sysivar[.iLIFE]
+                / (float).chars[i][0]~sysivar[.iLIFEMAX];
+            }
+            i += 2;
+          while i < #.chars:
+          }
+          branch{
+          cond l1 > l2:
+            p2 = true;
+          cond l2 > l1:
+            p1 = true;
+          else:
+            p1 = p2 = true;
+          }
+          setWinType(p1, p2);
+          branch{
+          cond p1 && p2:
+            .ko = .fgt.KOTy::TODraw;
+            .com.win = -1;
+          cond p1:
+            .ko = .fgt.KOTy::TO;
+            .com.win = 1;
+          cond p2:
+            .ko = .fgt.KOTy::TO;
+            .com.win = 0;
+          }
+        }
+        .com.intro--;
+        if(.com.time != 0 && .com.intro == rs4t-1) loop{
+          index i = 0;
+          while;
+        do:
+          if(#.chars[i] > 0) branch{
+          cond .chars[i][0]~isWin():
+          cond
+            !.m.inRange!int?(5150, 5159, .chars[i][0]~stVal.no)
+            && .chars[i][0]~sysivar[.iCTRL] == 0
+            :
+            if(.chars[i][0]~sysivar[.iWAITWIN]-- > 0) .com.intro = rs4t;
+          }
+          i++;
+        while i < #.chars:
         }
       }
     else:
