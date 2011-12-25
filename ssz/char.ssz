@@ -3345,7 +3345,7 @@ public &Char
         `minus = -1;
         if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       break:
-        if(!`isHitPaused()) `changeState2();
+        `changeState2();
       }
       if(!`cs1tmp){
         if(lc) `trSelfState(52, -1, -1);
@@ -4492,7 +4492,7 @@ public &Char
   }
   public void changeState2()
   {
-    if(`cs1tmp){
+    if(`cs1tmp && !`isHitPaused()){
       `state(::);
       `cs1tmp = false;
     }
@@ -4504,12 +4504,10 @@ public &Char
     if(ctrl >= 0) `setCtrl(ctrl != 0);
     if(`changeState1kai(p, n)){
       if(`minus <= 0) `changeState2();
-      if(`minus == 0){
-        if(`id >= 0){
-          .changeStateNest++;
-          `state(::);
-          .changeStateNest--;
-        }
+      if(`minus == 0 && `id >= 0 && !`cs1tmp){
+        .changeStateNest++;
+        `state(::);
+        .changeStateNest--;
       }
     }
   }
