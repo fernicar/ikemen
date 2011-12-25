@@ -3313,20 +3313,21 @@ public &Char
       ret
         .super > 0 && (
           !`isAlive() || (
-            `sysivar[.iSUPERMOVETIME] == 0 && `sysivar[.iMOVETIMESUPER] <= 0));
+            `sysivar[.iSUPERMOVETIME] == 0 && `sysivar[.iMOVETIMESUPER] <= 0
+            && (`stVal.hb.hitshaketime <= 0 || .super == 1)));
     }
     bool isNormalPaused()
     {
       ret
         .super <= 0 && .pause > 0 && (
           !`isAlive() || (
-            `sysivar[.iPAUSEMOVETIME] == 0 && `sysivar[.iMOVETIMEPAUSE] <= 0));
+            `sysivar[.iPAUSEMOVETIME] == 0 && `sysivar[.iMOVETIMEPAUSE] <= 0
+            && (`stVal.hb.hitshaketime <= 0 || .pause == 1)));
     }
     if(`minus != 2) ret;
     {
       if(#`palfx > 0 && !`isPaused()) `palfx~step();
-      bool p =
-        (isSuperPaused() || isNormalPaused()) && `stVal.hb.hitshaketime <= 0;
+      bool p = isSuperPaused() || isNormalPaused();
       `acttmp = -(int)p * 2;
       bool lc = !`ls(.lsGETHIT) && `landCondition();
       `bind();
