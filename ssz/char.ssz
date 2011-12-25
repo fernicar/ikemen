@@ -809,7 +809,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `p2sprpriority = 0;
     `p1getp2facing = 0;
     `p1facing = 0;
-    `p2facing = .com.IERR;
+    `p2facing = 0;
     `p1stateno = -1;
     `p2stateno = -1;
     `p2getp1state = 1;
@@ -1906,10 +1906,9 @@ public &Char
   public bool keyctrl;
   public bool player;
   public bool inguarddist;
+  public byte palno, drawpalno, p1facing, animpno;
   public int sprpriority;
-  public int palno, drawpalno;
   public int animno;
-  public int animpno;
   public int getcombo;
   public float frontw, backw, fedge, bedge;
   public float attackmul, defencemul, attackdist;
@@ -2008,8 +2007,9 @@ public &Char
     `inguarddist = false;
     `palno = 0;
     `drawpalno = 0;
-    `animno = 0;
+    `p1facing = 0;
     `animpno = -1;
+    `animno = 0;
     `tmphit = false;
     `atktmp = -1;
     `hittmp = 0;
@@ -2977,6 +2977,10 @@ public &Char
         if(`stVal.mctime > 0) `stVal.mctime++;
       }
       if(!`isHitPaused()){
+        if(`p1facing != 0){
+          `setFacing(`facing * `p1facing);
+          `p1facing = 0;
+        }
         if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
         if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
         if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
@@ -3754,17 +3758,6 @@ public &Char
       h.guardgivepower =
         (int)(.cfg.GetHit_LifeToPowerMul*(float)(h.hitdamage)*0.5);
     }
-    if(h.hitdamage == .com.IERR) h.hitdamage = 0;
-    if(h.guarddamage == .com.IERR) h.guarddamage = 0;
-    if(h.p1facing == .com.IERR) h.p1facing = 0;
-    if(h.p2facing == .com.IERR) h.p2facing = 0;
-    if(h.p1getp2facing == .com.IERR) h.p1getp2facing = 0;
-    if(.m.isnan(h.snapx)) h.snapx = 0.0;
-    if(.m.isnan(h.snapz)) h.snapz = 0.0;
-    if(h.snapt == .com.IERR) h.snapt = 0;
-    if(.m.isnan(h.fall.yvelocity)) h.fall.yvelocity = -4.5;
-    if(h.fall.recovertime == .com.IERR) h.fall.recovertime = 4;
-    if(h.fall.damage == .com.IERR) h.fall.damage = 0;
   }
   void playSound(
     bool f, bool lw, bool lp, int g, int s, int ch,
@@ -4474,7 +4467,6 @@ public &Char
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
-    `sysivar[.iHITPAUSETIME] = 0;
     if(p == `playerno && ((n >= 170 && n < 190) || (n >= 5150 && n < 5160))){
       if(`sysivar[.iWAITWIN] > 180) `sysivar[.iWAITWIN] = 180;
       `sysivar[.iSYSFLAG] &= !.sfNOTOVER;
@@ -5955,16 +5947,12 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       branch{
         int byf;
       cond pro == 0 || hit.p1facing != 0:
-        by.setFacing(
-          (int)(`pyr.sysfvar[.fX] - by.sysfvar[.fX]) * hit.p1facing);
+        if(hit.p1facing != 0) by.p1facing = hit.p1facing < 0 ? -1 : 1;
         byf = by.facing;
       else:
         byf = pro;
       comm:
-        if(
-          (`pyr.facing < 0)
-          == (byf * ((hit.p1facing < 0) != (hit.p2facing < 0) ? -1 : 1) < 0))
-        {
+        if(((`pyr.facing < 0) == (byf < 0)) ^ (hit.p1facing < 0)){
           `pyr.stVal.hb.xvel *= -1.0;
           `pyr.stVal.hb.fall.xvelocity *= -1.0;
         }
@@ -6059,7 +6047,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               .m.max!int?(1, p~c~stVal.hit.guard_pausetime);
           }
         comm:
-          if(h > 0) pyr.sysivar[.iHITPAUSETIME] = 0;
+          if(h > 0){
+            pyr.sysivar[.iHITPAUSETIME] = 0;
+            pyr.p1facing = 0;
+          }
           if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
           p~c~stVal.mctime = -1;
         break:
