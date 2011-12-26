@@ -590,8 +590,9 @@ public &StateBuilder
   {
     flg = 0;
     ^^/char hit = .s.split(",", text);
+    ^/char foo = .s.trim(hit[0]);
     loop{index i = 0; while; do:
-      switch(hit[0][i]){
+      switch(foo[i]){
       case 'S', 's':
         flg |= (int).chr.StTy::S;
       case 'C', 'c':
@@ -608,11 +609,10 @@ public &StateBuilder
         }
       }
       i++;
-    while i < #hit[0]:
+    while i < #foo:
     }
     loop{
       index i = 1;
-      ^char foo;
       while;
     do:
       foo = .s.toLower()<, .s.trim(hit[i]);
