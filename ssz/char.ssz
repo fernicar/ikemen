@@ -5751,7 +5751,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     int p2s = 0;
     if(
       !`pyr.cs1tmp || `pyr.stVal.playerno == by.playerno
-      || !`pyr.ls(.lsGETHIT))
+      || `pyr.stVal.playerno == `pyr.playerno || !`pyr.ls(.lsGETHIT))
     {
       rtn = damageable = true;
       loop{index i = 0; while; do:
@@ -5765,7 +5765,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             if(pro != 0) rtn = true;
           }
           branch{
-          cond `pyr.cs1tmp:
           cond `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno):
             if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
             `pyr.setCtrl(false);
