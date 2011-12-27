@@ -2974,10 +2974,8 @@ public &Char
         if(`stVal.mctime > 0) `stVal.mctime++;
       }
       if(!`isHitPaused()){
-        if(`p1facing != 0){
-          `setFacing(`facing * `p1facing);
-          `p1facing = 0;
-        }
+        `setFacing(`p1facing);
+        `p1facing = 0;
         if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
         if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
         if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
@@ -5758,8 +5756,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0)
         {
           if(
-            pro == 0 && #hitting == 1
-            && hit.p2stateno >= 0 && hit.p2getp1state != 0)
+            pro == 0 && #hitting == 1 && (
+              (hit.p2stateno >= 0 && hit.p2getp1state != 0)
+              || hit.p1stateno >= 0))
           {
             rtn = damageable = false;
             break, break, break, break;
@@ -5786,9 +5785,15 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
       }
     }
-    if(rtn || ho) branch{
+    if(rtn) branch{
       `pyr.stVal.setHb(
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
+      if(
+        ((`pyr.facing < 0) == ((pro != 0 ? pro : by.facing*hit.p1facing) < 0)))
+      {
+        `pyr.stVal.hb.xvel *= -1.0;
+        `pyr.stVal.hb.fall.xvelocity *= -1.0;
+      }
       if(hitting > 0){
         if(!ho && p2s < 2 && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
         `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
@@ -5843,7 +5848,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     }
     if(damageable) branch{
       ^&.snd.Sound sou;
-    cond #hitting == 1:
+    cond<hit> #hitting == 1:
       by.addPower(hit.hitgetpower);
       `pyr.addPower(hit.hitgivepower);
       branch{
@@ -5889,30 +5894,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         .stage.envShake.phase = hit.envshake_phase;
         .stage.envShake.setDefPhase();
       }
-      `pyr.getcombo += hit.numhits*hits;
-      if(
-        pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
-          (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
-          || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
-        ) switch(`pyr.stVal.typ)
-      {
-      case .StTy::S, .StTy::C:
-        by.veloff = by.stVal.hit.ground_cornerpush_veloff * (float)by.facing;
-      case .StTy::A:
-        by.veloff = by.stVal.hit.air_cornerpush_veloff * (float)by.facing;
-      case .StTy::L:
-        by.veloff = by.stVal.hit.down_cornerpush_veloff * (float)by.facing;
-      }
-      if(
-        `pyr.hittmp < 2
-        || #`pyr.stVal.hb.byid == 0 || `pyr.stVal.hb.byid[-1] != by.id)
-      {
-        `pyr.stVal.hb.juggle = by.sysivar[.iAIRJUGGLE];
-      }
-      if(!by.ls(.lsNOJUGGLECHECK)){
-        `pyr.stVal.hb.juggle -=
-          pro != 0 ? by.stVal.hit.air_juggle : by.stVal.juggle;
-      }
     else:
       by.addPower(hit.guardgetpower);
       `pyr.addPower(hit.guardgivepower);
@@ -5944,19 +5925,18 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         by.veloff = by.stVal.hit.airguard_cornerpush_veloff * (float)by.facing;
       }
     comm:
-      if(!rtn) break;
+      if(!rtn || ho) break;
       branch{
         int byf;
-      cond pro == 0 || hit.p1facing != 0:
-        if(hit.p1facing != 0) by.p1facing = hit.p1facing < 0 ? -1 : 1;
+      cond pro == 0:
         byf = by.facing;
+        if(hit.p1facing != 0){
+          byf *= hit.p1facing < 0 ? -1 : 1;
+          by.p1facing = byf;
+        }
       else:
         byf = pro;
       comm:
-        if(((`pyr.facing < 0) == (byf < 0)) ^ (hit.p1facing < 0)){
-          `pyr.stVal.hb.xvel *= -1.0;
-          `pyr.stVal.hb.fall.xvelocity *= -1.0;
-        }
         `pyr.setFacing(byf * -hit.p2facing);
       }
       if(#hitting == 1 && hit.p1stateno >= 0 && !by.ls(.lsGETHIT)){
@@ -5964,6 +5944,43 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       by.addTarget(`pyr.id);
       `pyr.stVal.hb.addByid(by.id);
+    diff<hit>:
+      `pyr.getcombo += hit.numhits*hits;
+      if(
+        pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
+          (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
+          || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
+        ) switch(`pyr.stVal.typ)
+      {
+      case .StTy::S, .StTy::C:
+        by.veloff = by.stVal.hit.ground_cornerpush_veloff * (float)by.facing;
+      case .StTy::A:
+        by.veloff = by.stVal.hit.air_cornerpush_veloff * (float)by.facing;
+      case .StTy::L:
+        by.veloff = by.stVal.hit.down_cornerpush_veloff * (float)by.facing;
+      }
+      if(
+        `pyr.hittmp < 2
+        || #`pyr.stVal.hb.byid == 0 || `pyr.stVal.hb.byid[-1] != by.id)
+      {
+        `pyr.stVal.hb.juggle = by.sysivar[.iAIRJUGGLE];
+      }
+      if(!by.ls(.lsNOJUGGLECHECK)){
+        `pyr.stVal.hb.juggle -=
+          pro != 0 ? by.stVal.hit.air_juggle : by.stVal.juggle;
+      }
+    else:
+      if(
+        pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
+          (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
+          || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
+        ) switch(`pyr.stVal.typ)
+      {
+      case .StTy::S, .StTy::C:
+        by.veloff = by.stVal.hit.guard_cornerpush_veloff * (float)by.facing;
+      case .StTy::A:
+        by.veloff = by.stVal.hit.airguard_cornerpush_veloff * (float)by.facing;
+      }
     }
     ret rtn;
   }
