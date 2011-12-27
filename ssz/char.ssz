@@ -891,8 +891,6 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public float yvel;
   public float yaccel;
   public int hitid;
-  public int nochainid1;
-  public int nochainid2;
   public int guarded;
   public int fallf;
   public int juggle;
@@ -931,8 +929,6 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `yvel = 0.0;
     `yaccel = 0.0/0.0;
     `hitid = -1;
-    `nochainid1 = -1;
-    `nochainid2 = -1;
     `guarded = 0;
     `fallf = 0;
     `juggle = 0;
@@ -1063,8 +1059,6 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.juggle = jgl;
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
-    `hb.nochainid1 = hit.nochainid1;
-    `hb.nochainid2 = hit.nochainid2;
     `hb.fall = hit.fall;
     `hb.yaccel = hit.yaccel;
     `hb.p1getp2facing = hit.p1getp2facing;
@@ -2667,9 +2661,9 @@ public &Char
     if(hit.chainid >= 0 && `stVal.hb.hitid != hit.chainid) ret false;
     if(#`stVal.hb.byid > 0 && `stVal.hb.byid[-1] == cid){
       if(
-        `stVal.hb.nochainid1 >= 0 && hit.id == `stVal.hb.nochainid1) ret false;
+        hit.nochainid1 >= 0 && `stVal.hb.hitid == hit.nochainid1) ret false;
       if(
-        `stVal.hb.nochainid2 >= 0 && hit.id == `stVal.hb.nochainid2) ret false;
+        hit.nochainid2 >= 0 && `stVal.hb.hitid == hit.nochainid2) ret false;
     }
     if(hit.reversal_attr > 0){
       ret
@@ -6947,18 +6941,21 @@ public void draw(float x, float y, float scl)
   .fight~ro.draw(2, .ko, winner);
   void fade(.com.scrrect.self rect=, int alpha)
   {
-    .com.rectFill(rect=, 0x000000, alpha);
+    .com.rectFill(
+      rect=, 0x000000, (alpha>>(int).com.clsndraw)+(int).com.clsndraw*128);
   }
-  if(.com.intro > .fight~ro.ctrl_time+1){
+  branch{
+    int tmp =
+      .fight~ro.over_hittime + .fight~ro.over_waittime
+      + (.fight~ro.over_time - .fight~ro.start_waittime);
+  cond .com.intro > .fight~ro.ctrl_time+1:
     fade(
       .com.scrrect=,
       256 * (.com.intro - (.fight~ro.ctrl_time+1)) / .fight~ro.start_waittime);
-  }
-  int tmp =
-    .fight~ro.over_hittime + .fight~ro.over_waittime
-    + (.fight~ro.over_time - .fight~ro.start_waittime);
-  if(.fight~ro.over_time >= .fight~ro.start_waittime && .com.intro < -tmp){
+  cond .fight~ro.over_time >= .fight~ro.start_waittime && .com.intro < -tmp:
     fade(.com.scrrect=, 256 * (-tmp - .com.intro) / .fight~ro.start_waittime);
+  cond .com.clsndraw:
+    fade(.com.scrrect=, 0);
   }
   if(.shuttertime > 0){
     *.com.scrrect.self rect = .com.scrrect;
