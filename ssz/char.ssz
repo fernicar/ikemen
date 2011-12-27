@@ -1899,14 +1899,16 @@ public &Char
   public &.StateVal stVal;
   public &.AfterImage aimg;
   public int key;
-  public int id, playerno, helperindex, helperid, parentindex;
+  public int id, helperindex, helperid, parentindex;
   public %int children;
   public %int targets;
+  public byte playerno;
   public byte facing;
   public bool keyctrl;
   public bool player;
   public bool inguarddist;
   public byte palno, drawpalno, p1facing, animpno;
+  public bool destmp, cs1tmp, angleset;
   public int sprpriority;
   public int animno;
   public int getcombo;
@@ -1915,7 +1917,6 @@ public &Char
   public float offsetx, offsety;
   public float veloff;
   public float oldx, ticOldX, ticNewX, ticOldY, ticNewY;
-  public bool destmp, cs1tmp, tmphit, angleset;
   public int atktmp, hittmp, acttmp, minus;
   public %&.RdCacheInfo enemyn;
   public ^&.act.Frame curFrame;
@@ -2010,7 +2011,6 @@ public &Char
     `p1facing = 0;
     `animpno = -1;
     `animno = 0;
-    `tmphit = false;
     `atktmp = -1;
     `hittmp = 0;
     `acttmp = 0;
@@ -2898,11 +2898,8 @@ public &Char
   public void tick()
   {
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
-    if(`tmphit){
-      `stVal.hit.invalidate();
-      `tmphit = false;
-    }
     if(`stVal.mctime < 0){
+      `stVal.hit.invalidate();
       `stVal.mctime = 1;
       if(`stVal.mctyp == .MoveContact::Hit){
         `stVal.juggle = 0;
@@ -5760,21 +5757,22 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           && (`pyr.stVal.ho[i].attr & hit.attr & 63) != 0
           && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0)
         {
-          if(#hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0){
+          if(
+            pro == 0 && #hitting == 1
+            && hit.p2stateno >= 0 && hit.p2getp1state != 0)
+          {
             rtn = damageable = false;
-            if(pro != 0) rtn = true;
+            break, break, break, break;
           }
           branch{
           cond `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno):
             if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
             `pyr.setCtrl(false);
-          else:
-            rtn = damageable = true;
-            break;
-          comm:
             if(`pyr.stVal.mov != .MovTy::H) damageable = false;
             ho = true;
             break, break, break, break;
+          else:
+            rtn = damageable = true;
           }
         }
         i++;
@@ -6031,7 +6029,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if(p~c~stVal.hit.reversal_attr > 0){
             pyr.stVal.mctyp = .MoveContact::Reversed;
             pyr.stVal.mctime = -1;
-            pyr.tmphit = true;
             if(pyr.hittmp == 0) pyr.hittmp = -1;
             if(!pyr.ls(.lsGETHIT)){
               pyr.sysivar[.iHITPAUSETIME] =
@@ -6056,8 +6053,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           }
           if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
           p~c~stVal.mctime = -1;
-        break:
-          p~c~tmphit = true;
         }
       }
     }

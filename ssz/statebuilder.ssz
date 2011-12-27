@@ -2920,10 +2920,12 @@ public &StateBuilder
         `state.ctrlList[-1].task .= "^`self p=`trParent()$.c;if(#p==0)ret;";
       }
       bool v = false, fv = false, value = false;
-      %char valexp, varexp;
+      ^/char valexp;
+      %char varexp;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         value = true;
-        ret `expression(valexp=, data=);
+        valexp = data;
+        ret true;
       }]))ret false;
       if(value && !`stateParam(param=, "v", [`paraF_t(data=){
         v = true;
@@ -2942,7 +2944,9 @@ public &StateBuilder
             (par ? "`trAdd(p~" : "`trAdd(`")
             .= (v ? "trIVar()$.v," : "trFVar()$.v,");
         }
-        `state.ctrlList[-1].task .= valexp;
+        `errorexp = valexp;
+        if(!`expression(`state.ctrlList[-1].task=, valexp=)) ret false;
+        `errorexp = "";
         if(add) `state.ctrlList[-1].task.= "$.v)";
         `state.ctrlList[-1].task.= "$.v);";
         ret true;
