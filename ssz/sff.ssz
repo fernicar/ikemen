@@ -861,6 +861,10 @@ public &Anim<frame_t>
   {
     ret `frames[`current..`current+1];
   }
+  public ^frame_t drawFrame()
+  {
+    ret `frames[`drawidx..`drawidx+1];
+  }
   public int animTime()
   {
      ret `sumtime - `totaltime;
@@ -926,8 +930,11 @@ public &Anim<frame_t>
   public void setAnimElem(int e)
   {
     `current = .m.max!index?(0, e-1);
-    if(`current  >= #`frames){
-      `current = `loopstart + `current % (#`frames-`loopstart);
+    if(`current >= #`frames) branch{
+    cond `totaltime == -1:
+      `current = #`frames - 1;
+    else:
+      `current = `loopstart + (`current-`loopstart) % (#`frames-`loopstart);
     }
     `drawidx = `current;
     `time = 0;

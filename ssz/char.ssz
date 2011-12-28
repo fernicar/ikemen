@@ -1646,6 +1646,7 @@ public &Projectile
   }
   public void remvel()
   {
+    if(#`ani > 0) `ani~ani.updateSprite();
     `velocityx = `remvelocityx;
     `velocityy = `remvelocityy;
     `accelx = `accely = 0.0;
@@ -1838,8 +1839,14 @@ public &Projectile
   }
   public void anime()
   {
+    if(
+      .com.tickFrame() && #`ani > 0
+      && !`paused() && (`hitpause == 0 || `anim < 0))
+    {
+      `ani~ani.updateSprite();
+    }
     if(.com.clsndraw && #`ani > 0){
-      ^&.act.Frame frm = `ani~ani.currentFrame();
+      ^&.act.Frame frm = `ani~ani.drawFrame();
       if(#frm == 0) break;
       ^&.act.Rect clsn = frm~clsn1;
       if(#clsn > 0){
@@ -1850,7 +1857,6 @@ public &Projectile
         .drawc2.new[-1].set(clsn, `x, `y, (float)`facing*`scalex, `scaley);
       }
     }
-    if(.com.tickFrame() && #`ani > 0) `ani~ani.updateSprite();
     if(.com.tickNextFrame()){
       if(#`ani > 0 && !`paused() && (`hitpause == 0 || `anim < 0)){
         `ani~ani.action();
@@ -2130,6 +2136,9 @@ public &Char
   }
   public void insertExplod(index i)
   {
+    if(#.explods[`playerno][i].ani > 0){
+      .explods[`playerno][i].ani~ani.updateSprite();
+    }
     branch{
     cond .explods[`playerno][i].ontop != 0:
       loop{
@@ -3361,7 +3370,7 @@ public &Char
     }
     `minus = 1;
     `acttmp += (int)`isActive() - (int)`isHitPaused();
-    branch{
+    if(`acttmp > 0) branch{
     cond #`ani > 0:
       `curFrame = `ani~ani.currentFrame();
     else:
@@ -3485,7 +3494,7 @@ public &Char
     `bind();
     `xScreenBound();
     if(.com.tickFrame()){
-      if(#`ani > 0) `ani~ani.updateSprite();
+      if(`acttmp > 0 && #`ani > 0) `ani~ani.updateSprite();
       `atktmp =
         (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
         && `isActive() ? `stVal.no : -1;
@@ -4734,6 +4743,7 @@ public &Char
   {
     `helproSetPos!p.self?(p=, pt, x, y, 1);
     p.ani = `getAction(p.anim);
+    if(#p.ani > 0) p.ani~ani.updateSprite();
     if(`sysivar[.iPROJ_DOSCALE] != 0){
       p.scalex *= `sysfvar[.fXSCALE];
       p.scaley *= `sysfvar[.fYSCALE];
@@ -5380,7 +5390,7 @@ public void Explod::update()
     }
   }
   if(.com.tickFrame()){
-    if(#`ani > 0) `ani~ani.updateSprite();
+    if(act && #`ani > 0) `ani~ani.updateSprite();
     if(`bindtime > 0) `bindtime--;
     if(act && `bindtime == 0){
       `ticOldX = `x;
