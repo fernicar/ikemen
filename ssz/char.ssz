@@ -3459,26 +3459,34 @@ public &Char
   }
   public void xScreenBound()
   {
-    if(`ls(.lsSCREENBOUND)){
-      float l, r;
+    float min, max;
+    branch{
+    cond `ls(.lsSCREENBOUND):
+      min = .com.xmin;
+      max = .com.xmax;
       branch{
       cond `facing > 0:
-        l = `bedge; r = `fedge;
+        min += `bedge;
+        max -= `fedge;
       else:
-        l = `fedge; r = `bedge;
+        min += `fedge;
+        max -= `bedge;
       }
-      float oldx = `sysfvar[.fX];
-      .m.limRange!float?(`sysfvar[.fX]=, .com.xmin+l, .com.xmax-r);
-      if(oldx != `sysfvar[.fX] && `sysivar[.iBINDTIME] != 0){
-        ^`self c = .players.get(`sysivar[.iBINDTOID]);
-        if(#c == 0) break;
-        if(!`isTarget(c~id)){
-          `sysfvar[.fX] = oldx;
-          break, break;
-        }
-        c~sysfvar[.fX] += `sysfvar[.fX] - oldx;
-        c~xScreenBound();
+    else:
+      min = (float).stg~leftbound;
+      max = (float).stg~rightbound;
+    }
+    float oldx = `sysfvar[.fX];
+    .m.limRange!float?(`sysfvar[.fX]=, min, max);
+    if(oldx != `sysfvar[.fX] && `sysivar[.iBINDTIME] != 0){
+      ^`self c = .players.get(`sysivar[.iBINDTOID]);
+      if(#c == 0) break;
+      if(!`isTarget(c~id)){
+        `sysfvar[.fX] = oldx;
+        break, break;
       }
+      c~sysfvar[.fX] += `sysfvar[.fX] - oldx;
+      c~xScreenBound();
     }
   }
   public void update(

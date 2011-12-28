@@ -92,6 +92,7 @@ public &Stage
   public &.Camera cam;
   public &.Shadow sdw;
   public &.Player p1, p2;
+  public int leftbound = -1160, rightbound = 840;
   public int screenleft = 15, screenright = 15;
   public int zoffset = 0;
   public int zoffsetlink = 0;
@@ -151,6 +152,8 @@ public &Stage
       if(#(data = sc.get("p1starty")) > 0) `p1.starty = .com.atoi(data);
       if(#(data = sc.get("p2startx")) > 0) `p2.startx = .com.atoi(data);
       if(#(data = sc.get("p2starty")) > 0) `p2.starty = .com.atoi(data);
+      if(#(data = sc.get("leftbound")) > 0) `leftbound = .com.atoi(data)-160;
+      if(#(data = sc.get("rightbound")) > 0) `rightbound = .com.atoi(data)-160;
     }
     public void scaling(&.com.Section sc=)
     {
