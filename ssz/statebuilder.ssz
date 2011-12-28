@@ -2328,6 +2328,21 @@ public &StateBuilder
   }
   bool expression(%char out=, ^/char in=)
   {
+    if(.cfg.IgnoreMostErrors){
+      ^/char oldin = in, oldin2;
+      ^/char token = `tokenizer(in=);
+      if(
+        !.s.equ(token, "n") || (
+          (oldin2 = in)$#(token = `tokenizer(in=)) > 0
+          && !.s.equ(token, ",")))
+      {
+        in = oldin;
+        break, break;
+      }
+      in = oldin2;
+      out .= ".v.setSF()";
+      ret true;
+    }
     `kakko = 0;
     if(!`expBoolOr(out=, in=)) ret false;
     ^/char oldin = in;
