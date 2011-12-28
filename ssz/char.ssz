@@ -2971,18 +2971,15 @@ public &Char
         `setFacing(`p1facing);
         `p1facing = 0;
         if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
-        if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
-        if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
-        loop{index i = 0; while; do:
-          if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
-          i++;
-        while i < #`stVal.ho:
-        }
         `tickBind();
         `sysivar[.iSPECIALFLAG] &= !.lsGUARD;
       }
     }
     `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
+    if(`ls(.lsGETHIT)){
+      `sysivar[.iHITPAUSETIME] = 0;
+      `p1facing = 0;
+    }
     if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     `enemyn.new(0);
     if(`ls(.lsGETHIT)) branch{
@@ -3231,25 +3228,6 @@ public &Char
   {
     ret (float)`sysivar[.iHEIGHT];
   }
-  void lSetNormal()
-  {
-    if((!`ls(.lsGETHIT) && `stVal.mov != .MovTy::H) || `stVal.hb.guarded != 0){
-      `getcombo = 0;
-    }
-    `sysivar[.iSPECIALFLAG] &=
-      .lsGUARD | (`isHitPaused() ? .lsANGLEDRAW | .lsTRANS : 0);
-    `sysivar[.iSPECIALFLAG] |=
-      `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
-      ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH : 0;
-    `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
-    `attackdist = (float)`sysivar[.iATTACK_DIST];
-    `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
-    `offsety = (float)`sysivar[.iDRAW_OFFSETY];
-    if(.super <= 0){
-      `sysivar[.iMOVETIMESUPER] = 0;
-      if(.pause <= 0) `sysivar[.iMOVETIMEPAUSE] = 0;
-    }
-  }
   public float defFW()
   {
     ret
@@ -3313,6 +3291,8 @@ public &Char
     if(#`palfx > 0 && !`isPaused()) `palfx~step();
     bool p = isSuperPaused() || isNormalPaused();
     `acttmp = -(int)p * 2;
+    if(.super <= 0) `sysivar[.iMOVETIMESUPER] = 0;
+    if(.pause <= 0) `sysivar[.iMOVETIMEPAUSE] = 0;
     if(!p){
       bool lc = !`ls(.lsGETHIT) && `landCondition();
       `bind();
@@ -3324,7 +3304,30 @@ public &Char
         if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
         if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
       }
-      if(!`isHitPaused()) `lSetNormal();
+      if(!`isHitPaused()){
+        if(
+          (!`ls(.lsGETHIT) && `stVal.mov != .MovTy::H)
+          || `stVal.hb.guarded != 0)
+        {
+          `getcombo = 0;
+        }
+        `sysivar[.iSPECIALFLAG] &= .lsGUARD;
+        `sysivar[.iSPECIALFLAG] |=
+          `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
+          ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH
+          : 0;
+        `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
+        `attackdist = (float)`sysivar[.iATTACK_DIST];
+        `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
+        `offsety = (float)`sysivar[.iDRAW_OFFSETY];
+        if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
+        if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
+        loop{index i = 0; while; do:
+          if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
+          i++;
+        while i < #`stVal.ho:
+        }
+      }
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
       `minus = -2;
@@ -6043,10 +6046,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               .m.max!int?(1, p~c~stVal.hit.guard_pausetime);
           }
         comm:
-          if(h > 0){
-            pyr.sysivar[.iHITPAUSETIME] = 0;
-            pyr.p1facing = 0;
-          }
           if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
           p~c~stVal.mctime = -1;
         }
@@ -6179,7 +6178,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
                 : .projs[i][j].hit.guard_pausetime) <= 0
               ? .projs[i][j].hits : 1))
           {
-            if(hit > 0) pyr.sysivar[.iHITPAUSETIME] = 0;
             .projs[i][j].timemiss = !.m.max!int?(0, .projs[i][j].misstime);
             branch{
             cond #hit == 1:
