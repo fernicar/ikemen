@@ -3223,10 +3223,6 @@ public &Char
   {
     ret `ls(.lsPOSFREEZEX) || `isBound();
   }
-  public bool pushable()
-  {
-    ret `ls(.lsPLAYERPUSH) && !`isFreezeX();
-  }
   public bool isFall()
   {
     ret `stVal.hb.fallf != 0 && `stVal.hb.hittime <= 0;
@@ -3314,32 +3310,28 @@ public &Char
             && (`stVal.hb.hitshaketime <= 0 || .pause == 1)));
     }
     if(`minus != 2) ret;
-    {
-      if(#`palfx > 0 && !`isPaused()) `palfx~step();
-      bool p = isSuperPaused() || isNormalPaused();
-      `acttmp = -(int)p * 2;
+    if(#`palfx > 0 && !`isPaused()) `palfx~step();
+    bool p = isSuperPaused() || isNormalPaused();
+    `acttmp = -(int)p * 2;
+    if(!p){
       bool lc = !`ls(.lsGETHIT) && `landCondition();
       `bind();
-      {
-        if(p) ret;
-        branch{
-        cond .super > 0:
-          if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
-          if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
-        cond .pause > 0:
-          if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
-          if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
-        }
-        `lSetNormal();
-        `minus = -3;
-        if(`stVal.playerno == `playerno && `player) `state_3(::);
-        `minus = -2;
-        if(`player) `state_2(::);
-        `minus = -1;
-        if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
-      break:
-        `changeState2();
+      branch{
+      cond .super > 0:
+        if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
+        if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
+      cond .pause > 0:
+        if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
+        if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
       }
+      if(!`isHitPaused()) `lSetNormal();
+      `minus = -3;
+      if(`stVal.playerno == `playerno && `player) `state_3(::);
+      `minus = -2;
+      if(`player) `state_2(::);
+      `minus = -1;
+      if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
+      `changeState2();
       if(!`cs1tmp){
         if(lc) `trSelfState(52, -1, -1);
         `minus = 0;
@@ -3363,23 +3355,22 @@ public &Char
         }
         if(!`isHitPaused()) `stVal.time++;
       }
-    break:
-      `minus = 1;
-      `acttmp += (int)`isActive() - (int)`isHitPaused();
-      branch{
-      cond #`ani > 0:
-        `curFrame = `ani~ani.currentFrame();
-      else:
-        `curFrame.new(0);
-      }
-      if(!`isHitPaused()){
-        if(!`ls(.lsFRONTWCHANGE)) `frontw = `defFW();
-        if(!`ls(.lsBACKWCHANGE)) `backw = `defBW();
-        if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
-        if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
-      }
-      `targetAction();
     }
+    `minus = 1;
+    `acttmp += (int)`isActive() - (int)`isHitPaused();
+    branch{
+    cond #`ani > 0:
+      `curFrame = `ani~ani.currentFrame();
+    else:
+      `curFrame.new(0);
+    }
+    if(!`isHitPaused()){
+      if(!`ls(.lsFRONTWCHANGE)) `frontw = `defFW();
+      if(!`ls(.lsBACKWCHANGE)) `backw = `defBW();
+      if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
+      if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
+    }
+    `targetAction();
   }
   public void gravity()
   {
@@ -5912,17 +5903,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         sou~chrx = `pyr.sysfvar[.fX...fX+1];
         sou~setDefaultParameter();
       }
-      if(
-        pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
-          (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
-          || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
-        ) switch(`pyr.stVal.typ)
-      {
-      case .StTy::S, .StTy::C:
-        by.veloff = by.stVal.hit.guard_cornerpush_veloff * (float)by.facing;
-      case .StTy::A:
-        by.veloff = by.stVal.hit.airguard_cornerpush_veloff * (float)by.facing;
-      }
     comm:
       if(!rtn || ho) break;
       branch{
@@ -6075,7 +6055,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
   continue:
     if(
       p~c~id >= 0 && (pyr.playerno&1) != (p~c~playerno&1)
-      && pyr.pushable() && p~c~pushable()
+      && pyr.ls(.lsPLAYERPUSH) && p~c~ls(.lsPLAYERPUSH)
       && pyr.sysfvar[.fY] - p~c~sysfvar[.fY] < .com.BodyHeight
       && p~c~sysfvar[.fY] - pyr.sysfvar[.fY] < .com.BodyHeight)
     {
