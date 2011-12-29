@@ -3299,7 +3299,8 @@ public &Char
     }
     if(`minus != 2) ret;
     if(#`palfx > 0 && !`isPaused()) `palfx~step();
-    bool p = isSuperPaused() || isNormalPaused();
+    bool p =
+      (isSuperPaused() || isNormalPaused()) && (!`cs1tmp || `isHitPaused());
     `acttmp = -(int)p * 2;
     if(.super <= 0) `sysivar[.iMOVETIMESUPER] = 0;
     if(.pause <= 0) `sysivar[.iMOVETIMEPAUSE] = 0;
