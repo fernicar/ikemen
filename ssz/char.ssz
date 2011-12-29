@@ -3430,10 +3430,15 @@ public &Char
         `gravity();
       }
     }
-    `bind();
     float cvx = 0.0;
-    if(`ls(.lsMOVECAMERAX)) cvx = `sysfvar[.fX] - `oldx;
-    `xScreenBound();
+    if(`ls(.lsMOVECAMERAX) && `sysivar[.iBINDTIME] == 0){
+      cvx = `sysfvar[.fX] - `oldx;
+    }
+    if(`ls(.lsSCREENBOUND)){
+      .m.limRange!float?(
+        `sysfvar[.fX]=, .com.xmin+(`facing > 0 ? `bedge : `fedge),
+        .com.xmax-(`facing > 0 ? `fedge : `bedge));
+    }
     ret cvx;
   }
   public void bind()
@@ -3487,9 +3492,11 @@ public &Char
     .m.limRange!float?(
       `sysfvar[.fX]=, (float).stg~leftbound, (float).stg~rightbound);
   }
-  public void update(
+  public float update(
     float highest=, float lowest=, float leftest=, float rightest=)
   {
+    `bind();
+    `xScreenBound();
     if(.com.tickFrame()){
       if(`acttmp > 0 && #`ani > 0) `ani~ani.updateSprite();
       `atktmp =
@@ -3554,7 +3561,9 @@ public &Char
     {
       `makeDust(0.0, 0.0);
     }
+    float cvx = 0.0;
     if(`ls(.lsMOVECAMERAX)){
+      if(`sysivar[.iBINDTIME] != 0) cvx = `sysfvar[.fX] - `oldx;
       leftest = .m.max!float?(.com.xmin)<, .m.min!float?(
         `sysfvar[.fX]-(`facing > 0 ? `bedge : `fedge), leftest);
       rightest = .m.min!float?(.com.xmax)<, .m.max!float?(
@@ -3565,6 +3574,7 @@ public &Char
       lowest = .m.min!float?(0.0)<, .m.max!float?(`sysfvar[.fY], lowest);
     }
     `oldx = `sysfvar[.fX];
+    ret cvx;
   }
   public void posReset(float p1x, float p2x)
   {
@@ -5685,14 +5695,14 @@ public void PlayerList!&Char?::move(float cvx=)
   }
 }
 public void PlayerList!&Char?::update(
-  float highest=, float lowest=, float leftest=, float rightest=)
+  float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
 {
   loop{
     *`top.self p = `top;
     while;
   do:
     if(p~c~id < 0) continue;
-    p~c~update(highest=, lowest=, leftest=, rightest=);
+    cvx += p~c~update(highest=, lowest=, leftest=, rightest=);
   continue:
     p = p~next;
   while #p > 0:
@@ -6352,7 +6362,7 @@ void update(
   float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
 {
   .players.move(cvx=);
-  .players.update(highest=, lowest=, leftest=, rightest=);
+  .players.update(cvx=, highest=, lowest=, leftest=, rightest=);
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
       if(.projs[i][j].id >= 0) .projs[i][j].update();
