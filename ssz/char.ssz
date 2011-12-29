@@ -4464,8 +4464,6 @@ public &Char
       ret false;
     }
     if(n < 0) ret false;
-    %char buf .= "`s" .= .s.iToS(n) .= '_' .= .s.iToS(p) .= "PSet";
-    if(!<consteval>(`state=, buf)) ret false;
     if(!`cs1tmp) `stVal.prevno = `stVal.no;
     if(`stVal.playerno != `playerno && p != `stVal.playerno){
       `enemyExplodsRemove(`stVal.playerno);
@@ -4477,28 +4475,23 @@ public &Char
       if(`sysivar[.iWAITWIN] > 180) `sysivar[.iWAITWIN] = 180;
       `sysivar[.iSYSFLAG] &= !.sfNOTOVER;
     }
-    `state(::);
     `cs1tmp = true;
     ret true;
   }
   public bool changeState1kai(int p, int no)
   {
-    int n = .m.max!int?(0, no);
-    if(!`changeState1(p, n)){
-      if(.changeStateNest < 2500){
-        `trDestroySelf();
-        `state = `dummy;
-        `stVal.prevno = `stVal.no;
-        `stVal.no = n;
-        `stVal.playerno = p;
-      }
-      ret false;
-    }
-    ret true;
+    ret `changeState1(p, .m.max!int?(0, no));
   }
   public void changeState2()
   {
     if(`cs1tmp && !`isHitPaused()){
+      %char buf .=
+        "`s" .= .s.iToS(`stVal.no) .= '_'
+        .= .s.iToS(`stVal.playerno) .= "PInit";
+      if(!<consteval>(`state=, buf)){
+        `trDestroySelf();
+        `state = `dummy;
+      }
       `state(::);
       `cs1tmp = false;
     }
@@ -5775,7 +5768,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           cond `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno):
             if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
             `pyr.setCtrl(false);
-            if(`pyr.stVal.mov != .MovTy::H) damageable = false;
             ho = true;
             break, break, break, break;
           else:
@@ -5876,33 +5868,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         sou~chrx = `pyr.sysfvar[.fX...fX+1];
         sou~setDefaultParameter();
       }
-      if(hit.palfx_time > 0){
-        ^&.com.PalFX fx = `pyr.getPalfx();
-        fx~clear();
-        fx~player = `pyr.id;
-        fx~time = hit.palfx_time;
-        fx~mulr = (float)hit.palfx_mulr / 256.0;
-        fx~mulg = (float)hit.palfx_mulg / 256.0;
-        fx~mulb = (float)hit.palfx_mulb / 256.0;
-        fx~addr = hit.palfx_addr;
-        fx~addg = hit.palfx_addg;
-        fx~addb = hit.palfx_addb;
-        fx~amplr = hit.palfx_amplr;
-        fx~amplg = hit.palfx_amplg;
-        fx~amplb = hit.palfx_amplb;
-        if(hit.palfx_cycletime > 0) fx~cycletime = hit.palfx_cycletime;
-        fx~color =
-          .m.max!float?(0.0)<, .m.min!float?(1.0)<,
-          ((float)hit.palfx_color / 256.0);
-        fx~invertall = hit.palfx_invertall;
-      }
-      if(hit.envshake_time > 0){
-        .stage.envShake.time = hit.envshake_time;
-        .stage.envShake.freq = (hit.envshake_freq / 180.0) * .m.PI;
-        .stage.envShake.ampl = hit.envshake_ampl;
-        .stage.envShake.phase = hit.envshake_phase;
-        .stage.envShake.setDefPhase();
-      }
     else:
       by.addPower(hit.guardgetpower);
       `pyr.addPower(hit.guardgivepower);
@@ -5943,6 +5908,33 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       by.addTarget(`pyr.id);
       `pyr.stVal.hb.addByid(by.id);
     diff<hit>:
+      if(hit.palfx_time > 0){
+        ^&.com.PalFX fx = `pyr.getPalfx();
+        fx~clear();
+        fx~player = `pyr.id;
+        fx~time = hit.palfx_time;
+        fx~mulr = (float)hit.palfx_mulr / 256.0;
+        fx~mulg = (float)hit.palfx_mulg / 256.0;
+        fx~mulb = (float)hit.palfx_mulb / 256.0;
+        fx~addr = hit.palfx_addr;
+        fx~addg = hit.palfx_addg;
+        fx~addb = hit.palfx_addb;
+        fx~amplr = hit.palfx_amplr;
+        fx~amplg = hit.palfx_amplg;
+        fx~amplb = hit.palfx_amplb;
+        if(hit.palfx_cycletime > 0) fx~cycletime = hit.palfx_cycletime;
+        fx~color =
+          .m.max!float?(0.0)<, .m.min!float?(1.0)<,
+          ((float)hit.palfx_color / 256.0);
+        fx~invertall = hit.palfx_invertall;
+      }
+      if(hit.envshake_time > 0){
+        .stage.envShake.time = hit.envshake_time;
+        .stage.envShake.freq = (hit.envshake_freq / 180.0) * .m.PI;
+        .stage.envShake.ampl = hit.envshake_ampl;
+        .stage.envShake.phase = hit.envshake_phase;
+        .stage.envShake.setDefPhase();
+      }
       `pyr.getcombo += hit.numhits*hits;
       if(
         pro == 0 && rtn && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (

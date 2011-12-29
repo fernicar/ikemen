@@ -7229,6 +7229,14 @@ public &StateBuilder
           case .chr.StTy::L:
             buf .= \t"`stVal.typ = .StTy::L;"\r\n;
           }
+          switch(`state.mov){
+          case .chr.MovTy::I:
+            buf .= \t"`stVal.mov = .MovTy::I;"\r\n;
+          case .chr.MovTy::A:
+            buf .= \t"`stVal.mov = .MovTy::A;"\r\n;
+          case .chr.MovTy::H:
+            buf .= \t"`stVal.mov = .MovTy::H;"\r\n;
+          }
           switch(`state.phy){
           case .chr.StTy::S:
             buf .= \t"`stVal.phy = .StTy::S;"\r\n;
@@ -7250,19 +7258,6 @@ public &StateBuilder
           }
           if(#`state.deftask > 0){
              buf .= '\t' .= `okikae(`state.deftask) .= \r\n;
-          }
-          buf .=
-            "}"\r\n
-            "void c.Char::" .= fname .= "Set()"\r\n
-            "{"\r\n
-            \t"`state = `" .= fname .= "Init;"\r\n;
-          switch(`state.mov){
-          case .chr.MovTy::I:
-            buf .= \t"`stVal.mov = .MovTy::I;"\r\n;
-          case .chr.MovTy::A:
-            buf .= \t"`stVal.mov = .MovTy::A;"\r\n;
-          case .chr.MovTy::H:
-            buf .= \t"`stVal.mov = .MovTy::H;"\r\n;
           }
           buf .= "}"\r\n;
         }
