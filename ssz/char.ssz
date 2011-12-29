@@ -3225,10 +3225,6 @@ public &Char
     }
     ret false;
   }
-  public bool isFreezeX()
-  {
-    ret `ls(.lsPOSFREEZEX) || `isBound();
-  }
   public bool isFall()
   {
     ret `stVal.hb.fallf != 0 && `stVal.hb.hittime <= 0;
@@ -3396,6 +3392,14 @@ public &Char
         `destroySelf();
         ret 0.0;
       }
+      if(
+        `stVal.playerno == `playerno && (
+          `hittmp <= 0 || (
+            .roundState() == 2 && `isKO()
+            && (`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0)))
+      {
+        `outTarget();
+      }
       if(`sysivar[.iBINDTOID] >= 0 && `sysivar[.iBINDTIME] == 0){
         `releaseBinding();
       }
@@ -3426,15 +3430,10 @@ public &Char
         `gravity();
       }
     }
+    `bind();
     float cvx = 0.0;
-    if(`ls(.lsMOVECAMERAX) && `sysivar[.iBINDTIME] == 0 && !`isFreezeX()){
-      cvx = `sysfvar[.fX] - `oldx;
-    }
-    if(`ls(.lsSCREENBOUND)){
-      .m.limRange!float?(
-        `sysfvar[.fX]=, .com.xmin+(`facing > 0 ? `bedge : `fedge),
-        .com.xmax-(`facing > 0 ? `fedge : `bedge));
-    }
+    if(`ls(.lsMOVECAMERAX)) cvx = `sysfvar[.fX] - `oldx;
+    `xScreenBound();
     ret cvx;
   }
   public void bind()
@@ -3491,8 +3490,6 @@ public &Char
   public void update(
     float highest=, float lowest=, float leftest=, float rightest=)
   {
-    `bind();
-    `xScreenBound();
     if(.com.tickFrame()){
       if(`acttmp > 0 && #`ani > 0) `ani~ani.updateSprite();
       `atktmp =
@@ -3505,12 +3502,6 @@ public &Char
             `stVal.hb.fallf != 0 && `hittmp > 0 && !`isBound()
             && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
           * ((int)`isFall() + 1) + 1;
-        if(
-          `isActive() && `sysfvar[.fY] == 0.0
-          && #(`sysfvar[.fX]-`ticOldX) >= 1.0 && `stVal.time % 3 == 0)
-        {
-          `makeDust(0.0, 0.0);
-        }
         if(`stVal.hb.damage != 0) branch{
         cond `stVal.hb.guarded != 0:
           if(
@@ -3555,14 +3546,13 @@ public &Char
         `stVal.hb.juggle = 0;
       }
       `stVal.hb.damage = 0;
-      if(
-        `stVal.playerno == `playerno && (
-          `hittmp <= 0 || (
-            .roundState() == 2 && `isKO()
-            && (`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0)))
-      {
-        `outTarget();
-      }
+    }
+    if(
+      .com.tickNextFrame() && `stVal.mov == .MovTy::H
+      && `isActive() && `sysfvar[.fY] == 0.0
+      && #(`sysfvar[.fX]-`ticOldX) >= 1.0 && `stVal.time % 3 == 0)
+    {
+      `makeDust(0.0, 0.0);
     }
     if(`ls(.lsMOVECAMERAX)){
       leftest = .m.max!float?(.com.xmin)<, .m.min!float?(
