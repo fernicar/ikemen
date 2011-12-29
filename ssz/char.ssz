@@ -1007,7 +1007,8 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
 &StateVal
 {
   public ^&.Persistent ps;
-  public int no, prevno, playerno;
+  public int no, prevno;
+  public short playerno, hitdefContact;
   public int time;
   public |.StTy typ;
   public |.StTy phy;
@@ -1029,6 +1030,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `no = 0;
     `prevno = 0;
     `playerno = 0;
+    `hitdefContact = 0;
     `time = 0;
     `typ = .StTy::S;
     `phy = .StTy::N;
@@ -2901,8 +2903,11 @@ public &Char
   public void tick()
   {
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
-    if(`stVal.mctime < 0){
+    if(`stVal.hitdefContact != 0){
       `stVal.hit.invalidate();
+      `stVal.hitdefContact = 0;
+    }
+    if(`stVal.mctime < 0){
       `stVal.mctime = 1;
       if(`stVal.mctyp == .MoveContact::Hit){
         `stVal.juggle = 0;
@@ -6057,7 +6062,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           }
         comm:
           if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
-          p~c~stVal.mctime = -1;
+          if(h > 0 || p~c~stVal.hit.reversal_attr > 0) p~c~stVal.mctime = -1;
+          p~c~stVal.hitdefContact = 1;
         }
       }
     }
