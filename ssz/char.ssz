@@ -489,6 +489,42 @@ void mLrSet(float dl=, float dr=, float sl, float sr)
   dr = -sl;
 }
 
+&ClsnHantei
+{
+  float xscl1, yscl1;
+  float xofs1, yofs1;
+  func$void(float=, float=, float, float) lrset1 = .pLrSet;
+  float xscl2, yscl2;
+  float xofs2, yofs2;
+  func$void(float=, float=, float, float) lrset2 = .pLrSet;
+  public void set(
+    float xs1, float ys1, float xo1, float yo1, `lrset1.self lr1, 
+    float xs2, float ys2, float xo2, float yo2, `lrset2.self lr2)
+  {
+    `xscl1 = xs1;
+    `yscl1 = ys1;
+    `xofs1 = xo1;
+    `yofs1 = yo1;
+    `lrset1 = lr1;
+    `xscl2 = xs2;
+    `yscl2 = ys2;
+    `xofs2 = xo2;
+    `yofs2 = yo2;
+    `lrset2 = lr2;
+  }
+  /bool hantei(&.act.Rect c1, &.act.Rect c2)
+  {
+    float l1, r1, l2, r2;
+    `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
+    `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
+    ret
+      l1*`xscl1+`xofs1 <= r2*`xscl2+`xofs2
+      && l2*`xscl2+`xofs2 <= r1*`xscl1+`xofs1
+      && (float)(c1.t-1)*`yscl1+`yofs1 <= (float)c2.b*`yscl2+`yofs2
+      && (float)(c2.t-1)*`yscl2+`yofs2 <= (float)c1.b*`yscl1+`yofs1;
+  }
+}
+
 
 |VarTy
 {
@@ -1689,54 +1725,21 @@ public &Projectile
   }
   public bool hitCheck(&.Projectile pr=)
   {
-    float xscl1 = pr.scalex, yscl1 = pr.scaley;
-    float xscl2 = `scalex, yscl2 = `scaley;
-    float xofs1 = pr.x, yofs1 = pr.y;
-    float xofs2 = `x, yofs2 = `y;
-    func$void(float=, float=, float, float) lrset1 =
-      (pr.facing > 0 ? .pLrSet : .mLrSet);
-    func$void(float=, float=, float, float) lrset2 =
-      (`facing > 0 ? .pLrSet : .mLrSet);
-    bool hentei(&.act.Rect c1, &.act.Rect c2)
-    {
-      float l1, r1, l2, r2;
-      `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
-      `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
-      branch{
-      cond l1*`xscl1+`xofs1 < l2*`xscl2+`xofs2:
-        if(r1*`xscl1+`xofs1 < l2*`xscl2+`xofs2) break;
-      else:
-        if(l1*`xscl1+`xofs1 > r2*`xscl2+`xofs2) break;
-      comm:
-        branch{
-        cond
-          (float)c1.b*`yscl1+`yofs1 < (float)c2.b*`yscl2+`yofs2
-          :
-          if(
-            (float)(c2.t-1)*`yscl2+`yofs2
-            <= (float)c1.b*`yscl1+`yofs1) ret true;
-        else:
-          if(
-            (float)c2.b*`yscl2+`yofs2
-            >= (float)(c1.t-1)*`yscl1+`yofs1) ret true;
-        }
-      }
-      ret false;
-    }
     if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
     if(#`ani == 0 || #`ani~ani.frames == 0) ret false;
     ^&.act.Frame frm;
     ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn1;
     ^&.act.Rect clsn2 = `ani~ani.currentFrame()=>frm#frm~clsn2;
+    &.ClsnHantei ch.set(
+      pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
+      `scalex, `scaley, `x, `y, `facing > 0 ? .pLrSet : .mLrSet);
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
-        if(hentei(clsn1[i], clsn2[j])) ret true;
+        if(ch.hantei(clsn1[i], clsn2[j])) ret true;
         j++;
-      while j < #clsn2:
-      }
+      while j < #clsn2:}
       i++;
-    while i < #clsn1:
-    }
+    while i < #clsn1:}
     ret false;
   }
   public void projClsn()
@@ -2719,55 +2722,24 @@ public &Char
   }
   public bool clsnCheck(`self atk=, bool c1atk, bool c1slf)
   {
-    float xscl1 = atk.sysfvar[.fCLSNXSCALE],
-      yscl1 = atk.sysfvar[.fCLSNYSCALE];
-    float xscl2 = `sysfvar[.fCLSNXSCALE],
-      yscl2 = `sysfvar[.fCLSNYSCALE];
-    float xofs1 = atk.sysfvar[.fX] + atk.offsetx,
-      yofs1 = atk.sysfvar[.fY] + atk.offsety;
-    float xofs2 = `sysfvar[.fX] + `offsetx,
-      yofs2 = `sysfvar[.fY] + `offsety;
-    func$void(float=, float=, float, float) lrset1 =
-      (atk.facing > 0 ? .pLrSet : .mLrSet);
-    func$void(float=, float=, float, float) lrset2 =
-      (`facing > 0 ? .pLrSet : .mLrSet);
-    bool hentei(&.act.Rect c1, &.act.Rect c2)
-    {
-      float l1, r1, l2, r2;
-      `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
-      `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
-      branch{
-      cond l1*`xscl1+`xofs1 < l2*`xscl2+`xofs2:
-        if(r1*`xscl1+`xofs1 < l2*`xscl2+`xofs2) break;
-      else:
-        if(l1*`xscl1+`xofs1 > r2*`xscl2+`xofs2) break;
-      comm:
-        branch{
-        cond (float)c1.b*`yscl1+`yofs1 < (float)c2.b*`yscl2+`yofs2:
-          if(
-            (float)(c2.t-1)*`yscl2+`yofs2
-            <= (float)c1.b*`yscl1+`yofs1) ret true;
-        else:
-          if(
-            (float)c2.b*`yscl2+`yofs2
-            >= (float)(c1.t-1)*`yscl1+`yofs1) ret true;
-        }
-      }
-      ret false;
-    }
     if(#atk.ani == 0 || #atk.curFrame == 0) ret false;
     if(#`ani == 0 || #`curFrame == 0) ret false;
     ^&.act.Rect clsn1 = c1atk ? atk.curFrame~clsn1 : atk.curFrame~clsn2;
     ^&.act.Rect clsn2 = c1slf ? `curFrame~clsn1 : `curFrame~clsn2;
+    &.ClsnHantei ch.set(
+      atk.sysfvar[.fCLSNXSCALE], atk.sysfvar[.fCLSNYSCALE],
+      atk.sysfvar[.fX] + atk.offsetx, atk.sysfvar[.fY] + atk.offsety,
+      atk.facing > 0 ? .pLrSet : .mLrSet,
+      `sysfvar[.fCLSNXSCALE], `sysfvar[.fCLSNYSCALE],
+      `sysfvar[.fX] + `offsetx, `sysfvar[.fY] + `offsety,
+      `facing > 0 ? .pLrSet : .mLrSet);
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
-        if(hentei(clsn1[i], clsn2[j])) ret true;
+        if(ch.hantei(clsn1[i], clsn2[j])) ret true;
         j++;
-      while j < #clsn2:
-      }
+      while j < #clsn2:}
       i++;
-    while i < #clsn1:
-    }
+    while i < #clsn1:}
     ret false;
   }
   public bool hitCheck(`self atk=)
@@ -2776,107 +2748,45 @@ public &Char
   }
   public bool projHitCheck(&.Projectile pr=)
   {
-    float xscl1 = pr.scalex, yscl1 = pr.scaley;
-    float xscl2 = `sysfvar[.fCLSNXSCALE],
-      yscl2 = `sysfvar[.fCLSNYSCALE];
-    float xofs1 = pr.x, yofs1 = pr.y;
-    float xofs2 = `sysfvar[.fX] + `offsetx,
-      yofs2 = `sysfvar[.fY] + `offsety;
-    func$void(float=, float=, float, float) lrset1 =
-      (pr.facing > 0 ? .pLrSet : .mLrSet);
-    func$void(float=, float=, float, float) lrset2 =
-      (`facing > 0 ? .pLrSet : .mLrSet);
-    bool hentei(&.act.Rect c1, &.act.Rect c2)
-    {
-      float l1, r1, l2, r2;
-      `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
-      `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
-      branch{
-      cond l1*`xscl1+`xofs1 < l2*`xscl2+`xofs2:
-        if(r1*`xscl1+`xofs1 < l2*`xscl2+`xofs2) break;
-      else:
-        if(l1*`xscl1+`xofs1 > r2*`xscl2+`xofs2) break;
-      comm:
-        branch{
-        cond (float)c1.b*`yscl1+`yofs1 < (float)c2.b*`yscl2+`yofs2:
-          if(
-            (float)(c2.t-1)*`yscl2+`yofs2
-            <= (float)c1.b*`yscl1+`yofs1) ret true;
-        else:
-          if(
-            (float)c2.b*`yscl2+`yofs2
-            >= (float)(c1.t-1)*`yscl1+`yofs1) ret true;
-        }
-      }
-      ret false;
-    }
     if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
     if(#`ani == 0 || #`curFrame == 0) ret false;
     ^&.act.Frame frm;
     ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn1;
     ^&.act.Rect clsn2 = `curFrame~clsn2;
+    &.ClsnHantei ch.set(
+      pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
+      `sysfvar[.fCLSNXSCALE], `sysfvar[.fCLSNYSCALE],
+      `sysfvar[.fX] + `offsetx, `sysfvar[.fY] + `offsety,
+      `facing > 0 ? .pLrSet : .mLrSet);
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
-        if(hentei(clsn1[i], clsn2[j])) ret true;
+        if(ch.hantei(clsn1[i], clsn2[j])) ret true;
         j++;
-      while j < #clsn2:
-      }
+      while j < #clsn2:}
       i++;
-    while i < #clsn1:
-    }
+    while i < #clsn1:}
     ret false;
   }
   public bool hitProjCheck(&.Projectile pr=)
   {
-    float xscl1 = pr.scalex, yscl1 = pr.scaley;
-    float xscl2 = `sysfvar[.fCLSNXSCALE],
-      yscl2 = `sysfvar[.fCLSNYSCALE];
-    float xofs1 = pr.x, yofs1 = pr.y;
-    float xofs2 = `sysfvar[.fX] + `offsetx,
-      yofs2 = `sysfvar[.fY] + `offsety;
-    func$void(float=, float=, float, float) lrset1 =
-      (pr.facing > 0 ? .pLrSet : .mLrSet);
-    func$void(float=, float=, float, float) lrset2 =
-      (`facing > 0 ? .pLrSet : .mLrSet);
-    bool hentei(&.act.Rect c1, &.act.Rect c2)
-    {
-      float l1, r1, l2, r2;
-      `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
-      `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
-      branch{
-      cond l1*`xscl1+`xofs1 < l2*`xscl2+`xofs2:
-        if(r1*`xscl1+`xofs1 < l2*`xscl2+`xofs2) break;
-      else:
-        if(l1*`xscl1+`xofs1 > r2*`xscl2+`xofs2) break;
-      comm:
-        branch{
-        cond (float)c1.b*`yscl1+`yofs1 < (float)c2.b*`yscl2+`yofs2:
-          if(
-            (float)(c2.t-1)*`yscl2+`yofs2
-            <= (float)c1.b*`yscl1+`yofs1) ret true;
-        else:
-          if(
-            (float)c2.b*`yscl2+`yofs2
-            >= (float)(c1.t-1)*`yscl1+`yofs1) ret true;
-        }
-      }
-      ret false;
-    }
     if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
     if(#`ani == 0 || #`curFrame == 0) ret false;
     ^&.act.Frame frm;
     ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn2;
     if(`stVal.hit.reversal_attr > 0) clsn1 = frm~clsn1;
     ^&.act.Rect clsn2 = `curFrame~clsn1;
+    &.ClsnHantei ch.set(
+      pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
+      `sysfvar[.fCLSNXSCALE], `sysfvar[.fCLSNYSCALE],
+      `sysfvar[.fX] + `offsetx, `sysfvar[.fY] + `offsety,
+      `facing > 0 ? .pLrSet : .mLrSet);
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
-        if(hentei(clsn1[i], clsn2[j])) ret true;
+        if(ch.hantei(clsn1[i], clsn2[j])) ret true;
         j++;
-      while j < #clsn2:
-      }
+      while j < #clsn2:}
       i++;
-    while i < #clsn1:
-    }
+    while i < #clsn1:}
     ret false;
   }
   public void releaseBinding()
