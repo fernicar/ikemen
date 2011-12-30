@@ -7054,11 +7054,7 @@ public &StateBuilder
         fname .= '_' .= .s.iToS(`playerno) .= 'P';
         buf .=
           "void c.Char::" .= fname .= "()"\r\n
-          "{"\r\n;
-        if(`state.no == -1){
-          buf .= \t"if(!`ctrlOver()){"\r\n;
-        }
-        buf .=
+          "{"\r\n
           \t"bool nh = !`isHitPaused();"\r\n
           \t"byte ih;"\r\n;
         while;
@@ -7212,7 +7208,6 @@ public &StateBuilder
         && .s.find("]", lines[i+1][0.. .s.find(";", lines[i+1])]) >= 0
         :
       break:
-        if(`state.no == -1) buf .= \t"}"\r\n;
         buf .= "}"\r\n .= cbuf;
         if(`state.no >= 0 && !`state.i){
           buf .=
