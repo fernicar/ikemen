@@ -1996,6 +1996,7 @@ public &Char
   public void clearVal()
   {
     `ani.new(0);
+    `cmd.new(0);
     `curFrame.new(0);
     `stVal.clear();
     `rangeSetSysIVar(0, #`sysivar-1, 0);
