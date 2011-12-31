@@ -3250,13 +3250,14 @@ public &Char
         while i < #`stVal.ho:
         }
       }
-      `changeState2();
+      if(#`cmd == 0) `changeState2();
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
       `minus = -2;
       if(`player) `state_2(::);
       `minus = -1;
       if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
+      `changeState2();
       if(!`cs1tmp){
         if(lc) `trSelfState(52, -1, -1);
         `minus = 0;

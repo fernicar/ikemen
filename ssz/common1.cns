@@ -1778,7 +1778,7 @@ void c.Char::s##_@@P()
       `setYV(0.0);
     }
     if(
-      --`stVal.ps[1].p <= 0 && .m.inRange!int?(5171, 5171, `animno)
+      --`stVal.ps[1].p <= 0 && .m.inRange!int?(5171, 5179, `animno)
       && #`getAction(5110 + `animno%10) > 0 && (
         `trAnimTime()$.v.toI() == 0 || `sysivar[0] != 0))
     {
