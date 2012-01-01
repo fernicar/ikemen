@@ -1247,7 +1247,7 @@ public &StateBuilder
         out .= ".v.setI(" .= obj .= "sysivar[.iKO_ECHO])";
       cond .s.equ("data.intpersistindex", token):
         out .= ".v.setI(" .= obj .= "sysivar[.iINTPERSISTINDEX])";
-      cond .s.equ("data.FloatPersistIndex", token):
+      cond .s.equ("data.floatpersistindex", token):
         out .= ".v.setI(" .= obj .= "sysivar[.iFLOATPERSISTINDEX])";
       cond .s.equ("size.attack.dist", token):
         out .= ".v.setI(" .= obj .= "sysivar[.iATTACK_DIST])";
@@ -7568,10 +7568,10 @@ public &StateBuilder
         ? .s.iToS(`c.d.guard_sparkno) : "!.com.IERR") .= ";"\r\n
       \t"`sysivar[.iKO_ECHO] = " .= .s.iToS(`c.d.ko_echo) .= ";"\r\n
       \t"`sysivar[.iVOLUME] = " .= .s.iToS(`c.d.volume) .= ";"\r\n
-      \t"`sysivar[.iINTPERSISTINDEX] = "
-      .= .s.iToS(`c.d.intpersistindex) .= ";"\r\n
-      \t"`sysivar[.iFLOATPERSISTINDEX] = "
-      .= .s.iToS(`c.d.floatpersistindex) .= ";"\r\n
+      \t"`sysivar[.iINTPERSISTINDEX] = .m.min!int?(#`ivar, "
+      .= .s.iToS(`c.d.intpersistindex) .= ");"\r\n
+      \t"`sysivar[.iFLOATPERSISTINDEX] = .m.min!int?(#`fvar, "
+      .= .s.iToS(`c.d.floatpersistindex) .= ");"\r\n
       \t"`sysfvar[.fXSCALE] = " .= `fToS(`c.s.xscale) .= ";"\r\n
       \t"`sysfvar[.fYSCALE] = " .= `fToS(`c.s.yscale) .= ";"\r\n
       \t"`sysivar[.iGROUND_BACK] = " .= .s.iToS(`c.s.ground_back) .= ";"\r\n
