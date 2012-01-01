@@ -7568,9 +7568,9 @@ public &StateBuilder
         ? .s.iToS(`c.d.guard_sparkno) : "!.com.IERR") .= ";"\r\n
       \t"`sysivar[.iKO_ECHO] = " .= .s.iToS(`c.d.ko_echo) .= ";"\r\n
       \t"`sysivar[.iVOLUME] = " .= .s.iToS(`c.d.volume) .= ";"\r\n
-      \t"`sysivar[.iINTPERSISTINDEX] = .m.min!int?(#`ivar, "
+      \t"`sysivar[.iINTPERSISTINDEX] = .m.max!int?(0)<, .m.min!int?(#`ivar, "
       .= .s.iToS(`c.d.intpersistindex) .= ");"\r\n
-      \t"`sysivar[.iFLOATPERSISTINDEX] = .m.min!int?(#`fvar, "
+      \t"`sysivar[.iFLOATPERSISTINDEX] = .m.max!int?(0)<, .m.min!int?(#`fvar, "
       .= .s.iToS(`c.d.floatpersistindex) .= ");"\r\n
       \t"`sysfvar[.fXSCALE] = " .= `fToS(`c.s.xscale) .= ";"\r\n
       \t"`sysfvar[.fYSCALE] = " .= `fToS(`c.s.yscale) .= ";"\r\n
