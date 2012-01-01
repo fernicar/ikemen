@@ -1055,6 +1055,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public ^&.HitOverride ho;
   public |.MoveContact mctyp;
   public int mctime;
+  public int fallRecoverTime;
   new()
   {
     `ho.new(8);
@@ -1074,9 +1075,10 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `juggle = 0;
     `hit.clear();
     `hb.clear();
-    loop{index i=0;do:`ho[i].clear();while ++i<8:}
+    loop{index i=0;do:`ho[i].clear();while ++i<#`ho:}
     `mctyp = .MoveContact::Hit;
     `mctime = 0;
+    `fallRecoverTime = 0;
   }
   public int hitCheck(&.Hitdef hit=, bool guard)
   {
@@ -1098,6 +1100,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
     `hb.fall = hit.fall;
+    `fallRecoverTime = `hb.fall.recovertime;
     `hb.yaccel = hit.yaccel;
     `hb.p1getp2facing = hit.p1getp2facing;
     `hb.mindistx = hit.mindistx;
@@ -2814,6 +2817,8 @@ public &Char
   public void tick()
   {
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
+    if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
+    `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
     if(`stVal.hitdefContact != 0){
       `stVal.hit.invalidate();
       `stVal.hitdefContact = 0;
@@ -2872,35 +2877,6 @@ public &Char
         `bind();
       }
     }
-    if(!`isPaused()){
-      branch{
-      cond `stVal.hb.hitshaketime > 0:
-        `stVal.hb.hitshaketime--;
-      else:
-        if(`stVal.hb.hittime > 0){
-          `stVal.hb.hittime--;
-          if(`isFall()){
-            `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
-            `stVal.hb.fallcount++;
-          }
-        }
-        if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
-      }
-      branch{
-      cond `sysivar[.iHITPAUSETIME] > 0:
-        `sysivar[.iHITPAUSETIME]--;
-      else:
-        if(`stVal.mctime > 0) `stVal.mctime++;
-      }
-      if(!`isHitPaused()){
-        `setFacing(`p1facing);
-        `p1facing = 0;
-        if(`stVal.hb.fall.recovertime > 0) `stVal.hb.fall.recovertime--;
-        `tickBind();
-        `sysivar[.iSPECIALFLAG] &= !.lsGUARD;
-      }
-    }
-    `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
     if(`ls(.lsGETHIT)){
       `sysivar[.iHITPAUSETIME] = 0;
       `p1facing = 0;
@@ -2934,8 +2910,24 @@ public &Char
         `trSelfState(5020, -1, 0);
       }
     }
-    if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
+    if(!`isPaused() && `sysivar[.iHITPAUSETIME] > 0){
+      `sysivar[.iHITPAUSETIME]--;
+    }
     if(`isActive()){
+      branch{
+      cond `stVal.hb.hitshaketime > 0:
+        `stVal.hb.hitshaketime--;
+      else:
+        if(`stVal.hb.hittime > 0){
+          `stVal.hb.hittime--;
+          if(`isFall()){
+            `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
+            `stVal.hb.fallcount++;
+          }
+        }
+      }
+      if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
+      if(`stVal.mctime > 0) `stVal.mctime++;
       if(`keyctrl) branch{
         branch{
         cond `stVal.typ == .StTy::A:
@@ -2994,17 +2986,6 @@ public &Char
           `trSelfState(12, -1, 1);
         case 20:
           `trSelfState(0, -1, 1);
-        }
-      comm:
-        if(
-          !`isKO() && (
-            .m.inRange!int?(120, 159, `stVal.no) || (
-              `ctrl() && `cmd~buffer~B > 0 && (
-                (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-                || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-                || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
-        {
-          `sysivar[.iSPECIALFLAG] |= .lsGUARD;
         }
       }
       if(
@@ -3217,7 +3198,6 @@ public &Char
     if(.pause <= 0) `sysivar[.iMOVETIMEPAUSE] = 0;
     if(!p){
       bool lc = !`ls(.lsGETHIT) && `landCondition();
-      `bind();
       branch{
       cond .super > 0:
         if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
@@ -3233,8 +3213,7 @@ public &Char
         {
           `getcombo = 0;
         }
-        `sysivar[.iSPECIALFLAG] &= .lsGUARD;
-        `sysivar[.iSPECIALFLAG] |=
+        `sysivar[.iSPECIALFLAG] =
           `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
           ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH
           : 0;
@@ -3249,7 +3228,11 @@ public &Char
           i++;
         while i < #`stVal.ho:
         }
+        `setFacing(`p1facing);
+        `p1facing = 0;
+        `tickBind();
       }
+      `bind();
       if(#`cmd == 0) `changeState2();
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
@@ -3471,6 +3454,16 @@ public &Char
         `stVal.hb.juggle = 0;
       }
       `stVal.hb.damage = 0;
+      if(
+        `isKO() && (
+          .m.inRange!int?(120, 159, `stVal.no) || (
+            `isActive() && `ctrl() && `cmd~buffer~B > 0 && (
+              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
+      {
+        `sysivar[.iSPECIALFLAG] |= .lsGUARD;
+      }
     }
     if(
       .com.tickNextFrame() && `stVal.mov == .MovTy::H
@@ -5142,7 +5135,7 @@ public &Char
     .v.setI(
       (int)(
         `isFall() && `stVal.hb.fall.recover != 0
-        && `stVal.hb.fall.recovertime <= 0));
+        && `stVal.fallRecoverTime <= 0));
   }
   public void trMoveContact()
   {
@@ -5653,7 +5646,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       ret e;
     }
     bool guard =
-      (pro == 0 ? !by.ls(.lsUNGUARDABLE) : true) && `pyr.ls(.lsGUARD);
+      (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.ls(.lsGUARD);
     hitting = `pyr.stVal.hitCheck(hit=, guard);
     bool ho = false;
     int p2s = 0;
