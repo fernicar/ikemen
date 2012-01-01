@@ -3026,7 +3026,7 @@ public &Char
       if(`ls(.lsPLAYERPUSH)){
         clsn.new(1);
         clsn~l = (short)-`backw;
-        clsn~t = (short)-.com.BodyHeight + 1;
+        clsn~t = (short)-`getHeight() + 1;
         clsn~r = (short)`frontw - 1;
         clsn~b = 0;
         .drawwh.new[-1].set(clsn, x-`offsetx, y-`offsety, (float)`facing, 1.0);
@@ -5960,8 +5960,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(
       p~c~id >= 0 && (pyr.playerno&1) != (p~c~playerno&1)
       && pyr.ls(.lsPLAYERPUSH) && p~c~ls(.lsPLAYERPUSH)
-      && pyr.sysfvar[.fY] - p~c~sysfvar[.fY] < .com.BodyHeight
-      && p~c~sysfvar[.fY] - pyr.sysfvar[.fY] < .com.BodyHeight)
+      && pyr.sysfvar[.fY] - p~c~sysfvar[.fY] < pyr.getHeight()
+      && p~c~sysfvar[.fY] - pyr.sysfvar[.fY] < p~c~getHeight())
     {
       float el, er;
       branch{
@@ -5974,9 +5974,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       float ev = p~c~acttmp > 0 ? p~c~sysfvar[.fVX] : 0.0;
       if(
-        (pl < el || pl < er) && (el < pr || er < pr) && (
-          contact > 0 || (contact == 0 && pyr.clsnCheck(p~c<>=, true, false))
-          || pyr.clsnCheck(p~c<>=, false, false)))
+        (pl < el || pl < er) && (el < pr || er < pr)
+        && (contact > 0 || pyr.clsnCheck(p~c<>=, false, false)))
       {
         const float foo = 0.5;
         branch{
