@@ -2928,6 +2928,7 @@ public &Char
       }
       if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
       if(`stVal.mctime > 0) `stVal.mctime++;
+      `tickBind();
       if(`keyctrl) branch{
         branch{
         cond `stVal.typ == .StTy::A:
@@ -3230,7 +3231,6 @@ public &Char
         }
         `setFacing(`p1facing);
         `p1facing = 0;
-        `tickBind();
       }
       `bind();
       if(#`cmd == 0) `changeState2();
@@ -3457,7 +3457,7 @@ public &Char
       if(
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
-            `isActive() && `ctrl() && `cmd~buffer~B > 0 && (
+            `isActive() && `ctrl() && #`cmd > 0 && `cmd~buffer~B > 0 && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
               || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
               || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
