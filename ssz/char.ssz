@@ -2910,88 +2910,15 @@ public &Char
         }
       }
     }
-    if(!`isPaused() && `sysivar[.iHITPAUSETIME] > 0){
+    if(!`isPaused()) branch{
+    cond `sysivar[.iHITPAUSETIME] > 0:
       `sysivar[.iHITPAUSETIME]--;
-    }
-    `changeState2();
-    if(`isActive()){
-      branch{
-      cond `stVal.hb.hitshaketime > 0:
-        `stVal.hb.hitshaketime--;
-      else:
-        if(`stVal.hb.hittime > 0){
-          `stVal.hb.hittime--;
-          if(`isFall()){
-            `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
-            `stVal.hb.fallcount++;
-          }
-        }
-      }
-      if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
+    else:
       if(`stVal.mctime > 0) `stVal.mctime++;
-      `tickBind();
-      if(`keyctrl) branch{
-        branch{
-        cond `stVal.typ == .StTy::A:
-          if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
-        else:
-          `sysivar[.iAIRJUMP_CNT] = 0;
-          `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-        }
-      cond `ctrl() && (`key >= 0 || `helperindex == 0):
-        if(
-          `helperindex == 0 && `stVal.typ != .StTy::A
-           && !`ls(.lsNOAUTOTURN) && `trP2DistX()$.v.toF() <= -1.0)
-        {
-          `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
-          `setFacing(-`facing);
-        }
-        branch{
-        cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
-          if(`stVal.no != 10) `trSelfState(10, -1, -1);
-        cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
-          if(`stVal.no != 12) `trSelfState(12, -1, -1);
-        cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
-          if(`stVal.no != 40) `trSelfState(40, -1, -1);
-        cond
-          `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
-          && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
-          && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
-          && `cmd~buffer~U > 0
-          :
-          if(`stVal.no != 45){
-            `sysivar[.iAIRJUMP_CNT]++;
-            `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-            `trSelfState(45, -1, -1);
-          }
-        cond
-          !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
-            `cmd~buffer~F > 0 || (
-              (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
-          :
-          if(`stVal.no != 20) `trSelfState(20, -1, -1);
-        cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
-          `trSelfState(0, -1, -1);
-        }
-        if(
-          `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
-            (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-            || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-            || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-          && `cmd~buffer~B > 0)
-        {
-          `trSelfState(120, -1, -1);
-        }
-      cond `sysivar[.iCTRL] != 0:
-        switch(`stVal.no){
-        case 11:
-          `trSelfState(12, -1, 1);
-        case 20:
-          `trSelfState(0, -1, 1);
-        }
-      }
+    comm:
       if(
-        `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0 && (
+        `sysivar[.iHITPAUSETIME] <= 0
+        && `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0 && (
           `cmd~buffer~Bb == 1 || `cmd~buffer~Db == 1
           || `cmd~buffer~Fb == 1 || `cmd~buffer~Ub == 1
           || `cmd~buffer~ab == 1 || `cmd~buffer~bb == 1
@@ -3066,6 +2993,85 @@ public &Char
         an, `angleset, `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY]);
     }
     if(.com.tickNextFrame()){
+      if(.roundState() == 4) `outTarget();
+      if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
+      `changeState2();
+      if(`isActive()){
+        branch{
+        cond `stVal.hb.hitshaketime > 0:
+          `stVal.hb.hitshaketime--;
+        else:
+          if(`stVal.hb.hittime > 0){
+            `stVal.hb.hittime--;
+            if(`isFall()){
+              `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
+              `stVal.hb.fallcount++;
+            }
+          }
+        }
+        if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
+        `tickBind();
+        if(`keyctrl) branch{
+          branch{
+          cond `stVal.typ == .StTy::A:
+            if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
+          else:
+            `sysivar[.iAIRJUMP_CNT] = 0;
+            `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
+          }
+        cond `ctrl() && (`key >= 0 || `helperindex == 0):
+          if(
+            `helperindex == 0 && `stVal.typ != .StTy::A
+            && !`ls(.lsNOAUTOTURN) && `trP2DistX()$.v.toF() <= -1.0)
+          {
+            `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
+            `setFacing(-`facing);
+          }
+          branch{
+          cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
+            if(`stVal.no != 10) `trSelfState(10, -1, -1);
+          cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
+            if(`stVal.no != 12) `trSelfState(12, -1, -1);
+          cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
+            if(`stVal.no != 40) `trSelfState(40, -1, -1);
+          cond
+            `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
+            && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
+            && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
+            && `cmd~buffer~U > 0
+            :
+            if(`stVal.no != 45){
+              `sysivar[.iAIRJUMP_CNT]++;
+              `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
+              `trSelfState(45, -1, -1);
+            }
+          cond
+            !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
+              `cmd~buffer~F > 0 || (
+                (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
+            :
+            if(`stVal.no != 20) `trSelfState(20, -1, -1);
+          cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
+            `trSelfState(0, -1, -1);
+          }
+          if(
+            `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
+              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
+            && `cmd~buffer~B > 0)
+          {
+            `trSelfState(120, -1, -1);
+          }
+        cond `sysivar[.iCTRL] != 0:
+          switch(`stVal.no){
+          case 11:
+            `trSelfState(12, -1, 1);
+          case 20:
+            `trSelfState(0, -1, 1);
+          }
+        }
+      }
       if(.pausetime < 0){
         if(
           (.pause > 0 || #`stVal.hb.byid > 0)
@@ -3085,8 +3091,6 @@ public &Char
           `defencemul *= .superp2defmul;
         }
       }
-      if(.roundState() == 4) `outTarget();
-      if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
     }
   }
   public bool isKO()
