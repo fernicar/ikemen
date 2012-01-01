@@ -2881,9 +2881,8 @@ public &Char
       `sysivar[.iHITPAUSETIME] = 0;
       `p1facing = 0;
     }
-    if(`cs1tmp) `sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     `enemyn.new(0);
-    if(`ls(.lsGETHIT)) branch{
+    if(`ls(.lsGETHIT) && !`cs1tmp) branch{
     cond `stVal.typ == .StTy::L:
       `trSelfState(5080, -1, 0);
     cond
@@ -2929,7 +2928,7 @@ public &Char
       if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
       if(`stVal.mctime > 0) `stVal.mctime++;
       `tickBind();
-      if(`keyctrl) branch{
+      if(`keyctrl && !`cs1tmp) branch{
         branch{
         cond `stVal.typ == .StTy::A:
           if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
@@ -3207,13 +3206,9 @@ public &Char
         if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
         if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
       }
+      `bind();
+      if(#`cmd == 0 || `ls(.lsGETHIT)) `changeState2();
       if(!`isHitPaused()){
-        if(
-          (!`ls(.lsGETHIT) && `stVal.mov != .MovTy::H)
-          || `stVal.hb.guarded != 0)
-        {
-          `getcombo = 0;
-        }
         `sysivar[.iSPECIALFLAG] =
           `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
           ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH
@@ -3232,8 +3227,6 @@ public &Char
         `setFacing(`p1facing);
         `p1facing = 0;
       }
-      `bind();
-      if(#`cmd == 0) `changeState2();
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
       `minus = -2;
@@ -3412,6 +3405,7 @@ public &Char
           * ((int)`isFall() + 1) + 1;
         if(`stVal.hb.damage != 0) branch{
         cond `stVal.hb.guarded != 0:
+          `getcombo = 0;
           if(
             `addLife(-`stVal.hb.damage, true, true)
             && `helperindex == 0) branch
@@ -3452,6 +3446,7 @@ public &Char
         `stVal.hb.fallf = 0;
         `stVal.hb.fallcount = 0;
         `stVal.hb.juggle = 0;
+        `getcombo = 0;
       }
       `stVal.hb.damage = 0;
       if(
