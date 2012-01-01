@@ -3455,7 +3455,7 @@ public &Char
       }
       `stVal.hb.damage = 0;
       if(
-        `isKO() && (
+        !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
             `isActive() && `ctrl() && `cmd~buffer~B > 0 && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
