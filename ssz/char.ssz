@@ -2819,6 +2819,7 @@ public &Char
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
     if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
     `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
+    `enemyn.new(0);
     if(`stVal.hitdefContact != 0){
       `stVal.hit.invalidate();
       `stVal.hitdefContact = 0;
@@ -2830,88 +2831,89 @@ public &Char
         `sysivar[.iHITCOUNT] += `stVal.hit.numhits;
       }
     }
-    ^`self c;
-    if(
-      `ls(.lsGETHIT) && #`stVal.hb.byid > 0
-      && #(c = .players.get(`stVal.hb.byid[-1])) > 0)
-    {
-      if(`stVal.hb.p1getp2facing != 0){
-        c~setFacing(`facing*`stVal.hb.p1getp2facing);
-      }
-      if(!.m.isnan(`stVal.hb.mindistx)) branch{
-      cond c~facing < 0:
-        `sysfvar[.fX] =
-          .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] - `stVal.hb.mindistx);
-      else:
-        `sysfvar[.fX] =
-          .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.mindistx);
-      }
-      if(!.m.isnan(`stVal.hb.maxdistx)) branch{
-      cond c~facing < 0:
-        `sysfvar[.fX] =
-          .m.max!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] - `stVal.hb.maxdistx);
-      else:
-        `sysfvar[.fX] =
-          .m.min!float?(`sysfvar[.fX])<, (c~sysfvar[.fX] + `stVal.hb.maxdistx);
-      }
-      if(`stVal.hb.guarded == 0 || `stVal.typ == .StTy::A){
-        if(!.m.isnan(`stVal.hb.mindisty)){
-          `sysfvar[.fY] =
-            .m.max!float?(`sysfvar[.fY])<,
-            (c~sysfvar[.fY] + `stVal.hb.mindisty);
-        }
-        if(!.m.isnan(`stVal.hb.maxdisty)){
-          `sysfvar[.fY] =
-            .m.min!float?(`sysfvar[.fY])<,
-            (c~sysfvar[.fY] + `stVal.hb.maxdisty);
-        }
-      }
-      if(`stVal.hb.snapt != 0 && c~sysivar[.iBINDTOID] != `id){
-        `setBindToId(c<>=);
-        `setBindTime(`stVal.hb.snapt);
-        `sysivar[.iBINDFACING] = 0;
-        `sysfvar[.fBINDPOSX] = `stVal.hb.snapx;
-        `sysfvar[.fBINDPOSY] =
-          `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A
-          ? `stVal.hb.snapy : 0.0/0.0;
-        `bind();
-      }
-    }
     if(`ls(.lsGETHIT)){
       `sysivar[.iHITPAUSETIME] = 0;
       `p1facing = 0;
-    }
-    `enemyn.new(0);
-    if(`ls(.lsGETHIT) && !`cs1tmp) branch{
-    cond `stVal.typ == .StTy::L:
-      `trSelfState(5080, -1, 0);
-    cond
-      `stVal.hb.guarded != 0
-      && (`stVal.hb.damage < `sysivar[.iLIFE] || .gs(.gsNOKO))
-      :
-      switch(`stVal.typ){
-      case .StTy::S:
-        `trSelfState(150, -1, 0);
-      case .StTy::C:
-        `trSelfState(152, -1, 0);
-      case .StTy::A:
-        `trSelfState(154, -1, 0);
+      ^`self c;
+      if(#`stVal.hb.byid > 0 && #(c = .players.get(`stVal.hb.byid[-1])) > 0){
+        if(`stVal.hb.p1getp2facing != 0){
+          c~setFacing(`facing*`stVal.hb.p1getp2facing);
+        }
+        if(!.m.isnan(`stVal.hb.mindistx)) branch{
+        cond c~facing < 0:
+          `sysfvar[.fX] =
+            .m.min!float?(`sysfvar[.fX])<,
+            (c~sysfvar[.fX] - `stVal.hb.mindistx);
+        else:
+          `sysfvar[.fX] =
+            .m.max!float?(`sysfvar[.fX])<,
+            (c~sysfvar[.fX] + `stVal.hb.mindistx);
+        }
+        if(!.m.isnan(`stVal.hb.maxdistx)) branch{
+        cond c~facing < 0:
+          `sysfvar[.fX] =
+            .m.max!float?(`sysfvar[.fX])<,
+            (c~sysfvar[.fX] - `stVal.hb.maxdistx);
+        else:
+          `sysfvar[.fX] =
+            .m.min!float?(`sysfvar[.fX])<,
+            (c~sysfvar[.fX] + `stVal.hb.maxdistx);
+        }
+        if(`stVal.hb.guarded == 0 || `stVal.typ == .StTy::A){
+          if(!.m.isnan(`stVal.hb.mindisty)){
+            `sysfvar[.fY] =
+              .m.max!float?(`sysfvar[.fY])<,
+              (c~sysfvar[.fY] + `stVal.hb.mindisty);
+          }
+          if(!.m.isnan(`stVal.hb.maxdisty)){
+            `sysfvar[.fY] =
+              .m.min!float?(`sysfvar[.fY])<,
+              (c~sysfvar[.fY] + `stVal.hb.maxdisty);
+          }
+        }
+        if(`stVal.hb.snapt != 0 && c~sysivar[.iBINDTOID] != `id){
+          `setBindToId(c<>=);
+          `setBindTime(`stVal.hb.snapt);
+          `sysivar[.iBINDFACING] = 0;
+          `sysfvar[.fBINDPOSX] = `stVal.hb.snapx;
+          `sysfvar[.fBINDPOSY] =
+            `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A
+            ? `stVal.hb.snapy : 0.0/0.0;
+          `bind();
+        }
       }
-    cond `stVal.hb.typ == 3:
-      `trSelfState(5070, -1, 0);
-    else:
-      switch(`stVal.typ){
-      case .StTy::S:
-        `trSelfState(5000, -1, 0);
-      case .StTy::C:
-        `trSelfState(5010, -1, 0);
-      case .StTy::A:
-        `trSelfState(5020, -1, 0);
+      if(!`cs1tmp) branch{
+      cond `stVal.typ == .StTy::L:
+        `trSelfState(5080, -1, 0);
+      cond
+        `stVal.hb.guarded != 0
+        && (`stVal.hb.damage < `sysivar[.iLIFE] || .gs(.gsNOKO))
+        :
+        switch(`stVal.typ){
+        case .StTy::S:
+          `trSelfState(150, -1, 0);
+        case .StTy::C:
+          `trSelfState(152, -1, 0);
+        case .StTy::A:
+          `trSelfState(154, -1, 0);
+        }
+      cond `stVal.hb.typ == 3:
+        `trSelfState(5070, -1, 0);
+      else:
+        switch(`stVal.typ){
+        case .StTy::S:
+          `trSelfState(5000, -1, 0);
+        case .StTy::C:
+          `trSelfState(5010, -1, 0);
+        case .StTy::A:
+          `trSelfState(5020, -1, 0);
+        }
       }
     }
     if(!`isPaused() && `sysivar[.iHITPAUSETIME] > 0){
       `sysivar[.iHITPAUSETIME]--;
     }
+    `changeState2();
     if(`isActive()){
       branch{
       cond `stVal.hb.hitshaketime > 0:
@@ -2928,7 +2930,7 @@ public &Char
       if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
       if(`stVal.mctime > 0) `stVal.mctime++;
       `tickBind();
-      if(`keyctrl && !`cs1tmp) branch{
+      if(`keyctrl) branch{
         branch{
         cond `stVal.typ == .StTy::A:
           if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
@@ -3206,8 +3208,7 @@ public &Char
         if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
         if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
       }
-      `bind();
-      if(#`cmd == 0 || `ls(.lsGETHIT)) `changeState2();
+      if(#`cmd == 0) `changeState2();
       if(!`isHitPaused()){
         `sysivar[.iSPECIALFLAG] =
           `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
@@ -3227,6 +3228,7 @@ public &Char
         `setFacing(`p1facing);
         `p1facing = 0;
       }
+      `bind();
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
       `minus = -2;
