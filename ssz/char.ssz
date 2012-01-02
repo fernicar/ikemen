@@ -2916,17 +2916,33 @@ public &Char
     else:
       if(`stVal.mctime > 0) `stVal.mctime++;
     comm:
-      if(
-        `sysivar[.iHITPAUSETIME] <= 0
-        && `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0 && (
-          `cmd~buffer~Bb == 1 || `cmd~buffer~Db == 1
-          || `cmd~buffer~Fb == 1 || `cmd~buffer~Ub == 1
-          || `cmd~buffer~ab == 1 || `cmd~buffer~bb == 1
-          || `cmd~buffer~cb == 1 || `cmd~buffer~xb == 1
-          || `cmd~buffer~yb == 1 || `cmd~buffer~zb == 1
-          || `cmd~buffer~sb == 1))
-      {
-        `sysivar[.iRECOVERTIME] -= .m.randI(1, (`sysivar[.iRECOVERTIME]+1)/2);
+      if(`sysivar[.iHITPAUSETIME] <= 0){
+        branch{
+        cond `stVal.hb.hitshaketime > 0:
+          `stVal.hb.hitshaketime--;
+        else:
+          if(`stVal.hb.hittime > 0){
+            `stVal.hb.hittime--;
+            if(`isFall()){
+              `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
+              `stVal.hb.fallcount++;
+            }
+          }
+        }
+        if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
+        `tickBind();
+        if(
+          `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0 && (
+            `cmd~buffer~Bb == 1 || `cmd~buffer~Db == 1
+            || `cmd~buffer~Fb == 1 || `cmd~buffer~Ub == 1
+            || `cmd~buffer~ab == 1 || `cmd~buffer~bb == 1
+            || `cmd~buffer~cb == 1 || `cmd~buffer~xb == 1
+            || `cmd~buffer~yb == 1 || `cmd~buffer~zb == 1
+            || `cmd~buffer~sb == 1))
+        {
+          `sysivar[.iRECOVERTIME] -=
+            .m.randI(1, (`sysivar[.iRECOVERTIME]+1)/2);
+        }
       }
     }
     `minus = 11;
@@ -2997,20 +3013,6 @@ public &Char
       if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
       `changeState2();
       if(`isActive()){
-        branch{
-        cond `stVal.hb.hitshaketime > 0:
-          `stVal.hb.hitshaketime--;
-        else:
-          if(`stVal.hb.hittime > 0){
-            `stVal.hb.hittime--;
-            if(`isFall()){
-              `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
-              `stVal.hb.fallcount++;
-            }
-          }
-        }
-        if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
-        `tickBind();
         if(`keyctrl) branch{
           branch{
           cond `stVal.typ == .StTy::A:
