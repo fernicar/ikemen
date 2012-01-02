@@ -87,17 +87,14 @@ public &Action
           if(siz <= 0) break;
           i++;
           loop{
-            index fnd, n;
+            index fnd, n = 0;
             ^short ary;
             while;
           do:
-            fnd = .s.find("[", lines[i]);
-            if(fnd <= 0){
-              i--;
-              break, break;
-            }
-            line = lines[i][fnd+1...s.find(";", lines[i])];
-            n = .com.atoi()<, line[0...s.find("]", line)];
+            line =
+              .s.toLower()<, .s.trim(lines[i][0...s.find(";", lines[i])]);
+            if(#line == 0) continue;
+            if(!.s.equ("clsn", line[0..4])) break;
             fnd = .s.find("=", line);
             if(fnd < 0) break;
             ary = .com.csvToAry!short?(line[fnd+1..-1]);
@@ -118,9 +115,12 @@ public &Action
               clsn[n].t = ary[3];
               clsn[n].b = ary[1];
             }
+            n++;
+          continue:
             i++;
-          while i < #lines:
+          while i < #lines && n < #clsn:
           }
+          i--;
         }
       }
       i++;
