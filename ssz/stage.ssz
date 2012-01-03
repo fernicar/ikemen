@@ -16,7 +16,7 @@ bgPalFX.new(1);
 {
   public int time;
   public float freq;
-  public float ampl;
+  public int ampl;
   public float phase;
   new()
   {
@@ -26,7 +26,7 @@ bgPalFX.new(1);
   {
     `time = 0;
     `freq = .m.PI / 3.0;
-    `ampl = -4.0;
+    `ampl = -4;
     `phase = 0.0/0.0;
   }
   public void setDefPhase()
@@ -43,7 +43,7 @@ bgPalFX.new(1);
   public float getOffset()
   {
     if(`time <= 0) ret 0.0;
-    ret `ampl * .m.sin(`phase);
+    ret (float)`ampl * .m.sin(`phase);
   }
 }
 public &EnvShake envShake;

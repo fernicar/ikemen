@@ -259,7 +259,7 @@ public void drawShadowList(float x, float y)
           float ss = syscl < 0.0 ? -1.0 : 1.0;//pow用
           sl~al~anim~ani.angleDraw(
             .com.xoffset-(x-sl~al~x)*cs,
-            .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety)*cs,
+            .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety*2.0)*cs,
             cs*sl~al~xscl * ss * (ss*syscl)**#.m.sin(agl),
             cs*-sl~al~yscl * ss * (ss*syscl)**#.m.cos(agl),
             agl, sl~al~aset, sl~al~axscl, sl~al~ayscl,
@@ -268,7 +268,7 @@ public void drawShadowList(float x, float y)
       else:
         sl~al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
-          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y*syscl-sl~offsety),
+          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y*syscl-sl~offsety*2.0),
           cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl*syscl, 0.0,
           160.0, .com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX);
       }
@@ -672,9 +672,23 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public int kill;
   public int envshake_time;
   public float envshake_freq;
-  public float envshake_ampl;
+  public int envshake_ampl;
   public float envshake_phase;
   public void clear()
+  {
+    `animtype = .AnimTy::Unknown;
+    `xvelocity = 0.0/0.0;
+    `yvelocity = -4.5;
+    `recover = 0;
+    `recovertime = 0;
+    `damage = 0;
+    `kill = 0;
+    `envshake_time = 0;
+    `envshake_freq = 0.0;
+    `envshake_ampl = 0;
+    `envshake_phase = 0.0;
+  }
+  public void setDefault()
   {
     `animtype = .AnimTy::Unknown;
     `xvelocity = 0.0/0.0;
@@ -685,7 +699,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `kill = 1;
     `envshake_time = 0;
     `envshake_freq = 60.0;
-    `envshake_ampl = -4.0;
+    `envshake_ampl = -4;
     `envshake_phase = 0.0/0.0;
   }
 }
@@ -780,7 +794,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public int palfx_invertall;
   public int envshake_time;
   public float envshake_freq;
-  public float envshake_ampl;
+  public int envshake_ampl;
   public float envshake_phase;
   public float mindistx;
   public float maxdistx;
@@ -883,7 +897,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `palfx_invertall = 0;
     `envshake_time = 0;
     `envshake_freq = 60.0;
-    `envshake_ampl = -4.0;
+    `envshake_ampl = -4;
     `envshake_phase = 0.0/0.0;
     `mindistx = 0.0/0.0;
     `maxdistx = 0.0/0.0;
@@ -894,7 +908,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `snapz = 0.0;
     `snapt = 0;
     `forcenofall = 0;
-    `fall.clear();
+    `fall.setDefault();
   }
   public void invalidate()
   {
@@ -958,7 +972,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hitcount = 0;
     `fallcount = 0;
     `hitshaketime = 0;
-    `hittime = 0;
+    `hittime = -1;
     `slidetime = 0;
     `ctrltime = 0;
     `xvel = 0.0;
@@ -1121,8 +1135,8 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.airanimtype = (int)hit.air_animtype;
     `hb.groundanimtype = (int)hit.animtype;
     if(guard && ((int)`typ&hit.guardflag) != 0){
-      `hb.hitshaketime = .m.max!int?(1, hit.guard_shaketime+1);
-      `hb.hittime = .m.max!int?(1, hit.guard_hittime);
+      `hb.hitshaketime = .m.max!int?(0, hit.guard_shaketime);
+      `hb.hittime = .m.max!int?(0, hit.guard_hittime);
       `hb.slidetime = hit.guard_slidetime;
       `hb.guarded = 1;
       branch{
@@ -1139,7 +1153,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
       `hb.hitcount = hc;
       ret 2 * (`hb.typ == 0 || hit.reversal_attr > 0 ? -1 : 1);
     }
-    `hb.hitshaketime = .m.max!int?(1, hit.shaketime+1);
+    `hb.hitshaketime = .m.max!int?(0, hit.shaketime);
     `hb.slidetime = hit.ground_slidetime;
     branch{
     cond `typ == .StTy::A:
@@ -1167,7 +1181,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
       `hb.yvel = hit.ground_velocityy;
       `hb.fallf = hit.ground_fall;
     }
-    if(`hb.hittime <= 0) `hb.hittime = 1;
+    if(`hb.hittime < 0) `hb.hittime = 0;
     `hb.absdamage = hit.hitdamage;
     `hb.hitcount = cmb ? hc+1 : 1;
     `hb.fallcount = fc;
@@ -2919,19 +2933,6 @@ public &Char
       if(`stVal.mctime > 0) `stVal.mctime++;
     comm:
       if(`sysivar[.iHITPAUSETIME] <= 0){
-        branch{
-        cond `stVal.hb.hitshaketime > 0:
-          `stVal.hb.hitshaketime--;
-        else:
-          if(`stVal.hb.hittime > 0){
-            `stVal.hb.hittime--;
-            if(`isFall()){
-              `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
-              `stVal.hb.fallcount++;
-            }
-          }
-        }
-        if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
         `tickBind();
         if(
           `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0 && (
@@ -3138,7 +3139,7 @@ public &Char
   }
   public bool isFall()
   {
-    ret `stVal.hb.fallf != 0 && `stVal.hb.hittime <= 0;
+    ret `stVal.hb.fallf != 0 && `stVal.hb.hittime < 0;
   }
   public float getHeight()
   {
@@ -3411,12 +3412,17 @@ public &Char
         (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
         && `isActive() ? `stVal.no : -1;
       branch{
+        int oht = `hittmp;
       cond `stVal.mov == .MovTy::H:
         `hittmp =
           (int)(
-            `stVal.hb.fallf != 0 && `hittmp > 0 && !`isBound()
+            `stVal.hb.fallf != 0 && `hittmp > 0
             && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
           * ((int)`isFall() + 1) + 1;
+        if(`hittmp > 2 && oht <= 2){
+          `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
+          `stVal.hb.fallcount++;
+        }
         if(`stVal.hb.damage != 0) branch{
         cond `stVal.hb.guarded != 0:
           `getcombo = 0;
@@ -3455,7 +3461,7 @@ public &Char
       else:
         if(`hittmp > 0) `hittmp = 0;
         `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
-        `stVal.hb.hittime = 0;
+        `stVal.hb.hittime = -1;
         `stVal.hb.hitshaketime = 0;
         `stVal.hb.fallf = 0;
         `stVal.hb.fallcount = 0;
@@ -3472,6 +3478,13 @@ public &Char
               || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
       {
         `sysivar[.iSPECIALFLAG] |= .lsGUARD;
+      }
+      if(`isActive()){
+        if(`stVal.hb.hitshaketime > 0) `stVal.hb.hitshaketime--;
+        if(`stVal.hb.hitshaketime <= 0 && `stVal.hb.hittime >= 0){
+          `stVal.hb.hittime--;
+        }
+        if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
       }
     }
     if(
@@ -4900,7 +4913,7 @@ public &Char
   public void trFallXvel()
   {
     if(.m.isnan(`stVal.hb.fall.xvelocity)){
-      .v.setSF();
+      .v.setF(-32760.0);
       ret;
     }
     .v.setF(`stVal.hb.fall.xvelocity * (float)`facing);
@@ -5133,7 +5146,7 @@ public &Char
   }
   public void trHitOver()
   {
-    .v.setB(`stVal.hb.hittime <= 0);
+    .v.setB(`stVal.hb.hittime < 0);
   }
   public void trHitShakeOver()
   {
@@ -5143,7 +5156,7 @@ public &Char
   {
     .v.setI(
       (int)(
-        `isFall() && `stVal.hb.fall.recover != 0
+        `stVal.hb.fallf != 0 && `stVal.hb.fall.recover != 0
         && `stVal.fallRecoverTime <= 0));
   }
   public void trMoveContact()
@@ -5255,7 +5268,19 @@ public void Explod::update()
 {
   if(`id == .com.IERR) ret;
   ^&.Char c;
-  if(.com.tickNextFrame()){
+  bool p = false;
+  branch{
+  cond .super > 0:
+    p = `supermovetime == 0;
+  cond .pause > 0:
+    p = `pausemovetime == 0;
+  }
+  bool act = !p && `ignorehitpause != 0;
+  if(!p && !act){
+    if(#c == 0) c = .players.get(`player);
+    act = #c == 0 || c~acttmp%2 != -1;
+  }
+  if(act && .com.tickNextFrame()){
     if(`removeongethit != 0){
       if(#c == 0) c = .players.get(`player);
       if(#c == 0 || c~stVal.mov == .MovTy::H){
@@ -5272,18 +5297,6 @@ public void Explod::update()
     }
   }
   float scl = 1.0, cscl = .com.scale, xofs = 0.0, yofs = 0.0;
-  bool p = false;
-  branch{
-  cond .super > 0:
-    p = `supermovetime == 0;
-  cond .pause > 0:
-    p = `pausemovetime == 0;
-  }
-  bool act = !p && `ignorehitpause != 0;
-  if(!p && !act){
-    if(#c == 0) c = .players.get(`player);
-    act = #c == 0 || c~acttmp%2 != -1;
-  }
   if(`bindtime != 0) branch{
   cond `postype >= 4:
     cscl = 1.0;

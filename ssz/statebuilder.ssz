@@ -1517,7 +1517,7 @@ public &StateBuilder
       cond .s.equ("fall.envshake.freq", token):
         out .= ".v.setF(" .= obj .= "stVal.hb.fall.envshake_freq)";
       cond .s.equ("fall.envshake.ampl", token):
-        out .= ".v.setF(" .= obj .= "stVal.hb.fall.envshake_ampl)";
+        out .= ".v.setI(" .= obj .= "stVal.hb.fall.envshake_ampl)";
       cond .s.equ("fall.envshake.phase", token):
         out .= ".v.setF(" .= obj .= "stVal.hb.fall.envshake_phase)";
       cond .s.equ("isbound", token):
@@ -4242,7 +4242,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".envshake_ampl=", "$.v.toF();")) ret false;
+            ".envshake_ampl=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "envshake.phase", [`paraF_t(data=){
@@ -4274,7 +4274,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".fall.envshake_ampl=", "$.v.toF();")) ret false;
+            ".fall.envshake_ampl=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.envshake.phase", [`paraF_t(data=){
@@ -6370,7 +6370,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".stage.envShake.ampl=", "$.v.toF();")) ret false;
+            ".stage.envShake.ampl=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "phase", [`paraF_t(data=){
