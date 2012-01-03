@@ -3206,6 +3206,10 @@ public &Char
     if(`minus != 2) ret;
     if(#`palfx > 0 && !`isPaused()) `palfx~step();
     bool p = isSuperPaused() || isNormalPaused();
+    if(#`cmd == 0){
+      `changeState2();
+      p = false;
+    }
     `acttmp = -(int)p * 2;
     if(.super <= 0) `sysivar[.iMOVETIMESUPER] = 0;
     if(.pause <= 0) `sysivar[.iMOVETIMEPAUSE] = 0;
@@ -3219,7 +3223,6 @@ public &Char
         if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
         if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
       }
-      if(#`cmd == 0) `changeState2();
       if(!`isHitPaused()){
         `sysivar[.iSPECIALFLAG] =
           `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
