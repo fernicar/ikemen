@@ -339,12 +339,11 @@ public &StateBuilder
   public ^/char lasterror, errorexp;
   public &.Const c;
   public int playerno = 0;
-  *.s.ptn_t pt1, pt2, pt3;
+  *.s.ptn_t pt2, pt3;
   int kakko = 0;
   type paraF_t = $bool(^/char=);
   new()
   {
-    `pt1.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.;;;)$`trMinus()");
     `pt2.compile(".v.setI(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toI()");
     `pt3.compile(".v.set%c:IF;(%cp:%g,-1:%c,'0','9':.-;;;)$.v.toF()");
   }
@@ -373,14 +372,6 @@ public &StateBuilder
       ret buf;
     }
     ^/char tmp = code;
-    tmp = rep(
-      `pt1=,
-      [s_t(c, j=){
-        %char buf .=
-          (tmp[j+6] == 'I' ? ".v.setI(" : ".v.setF(") .= '-' .= c[0] .= ')';
-        j += 20 + #c[0];
-        ret buf;
-      }], tmp);
     tmp = rep(
       `pt2=,
       [s_t(c, j=){
@@ -721,7 +712,7 @@ public &StateBuilder
     bool re = false;
     loop{while; do:
       switch(in[i]){
-      case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+      case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-':
         re = true;
         break, break;
       case '(', '[':
