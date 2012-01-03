@@ -1968,6 +1968,8 @@ public &Char
   }
   public void clearSpSysVar()
   {
+    `rangeSetSysIVar(0, 4, 0);
+    `rangeSetSysFVar(0, 4, 0.0);
     `sysivar[.iAIRJUMP_CNT] = 0;
     `sysivar[.iCTRL] = 0;
     `sysivar[.iHITCOUNT] = 0;
@@ -3011,6 +3013,10 @@ public &Char
     if(.com.tickNextFrame()){
       if(.roundState() == 4) `outTarget();
       if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
+      if(!`isHitPaused()){
+        `setFacing(`p1facing);
+        `p1facing = 0;
+      }
       `changeState2();
       if(`isActive()){
         if(`keyctrl) branch{
@@ -3199,8 +3205,7 @@ public &Char
     }
     if(`minus != 2) ret;
     if(#`palfx > 0 && !`isPaused()) `palfx~step();
-    bool p =
-      (isSuperPaused() || isNormalPaused()) && (!`cs1tmp || `isHitPaused());
+    bool p = isSuperPaused() || isNormalPaused();
     `acttmp = -(int)p * 2;
     if(.super <= 0) `sysivar[.iMOVETIMESUPER] = 0;
     if(.pause <= 0) `sysivar[.iMOVETIMEPAUSE] = 0;
@@ -3231,8 +3236,6 @@ public &Char
           i++;
         while i < #`stVal.ho:
         }
-        `setFacing(`p1facing);
-        `p1facing = 0;
       }
       `bind();
       `minus = -3;
