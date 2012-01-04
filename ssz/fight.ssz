@@ -1522,8 +1522,9 @@ public &Fight
     public void begin(^^/char lines, index i=, ^/char section)
     {
       index fnd = .s.cFind(" ", section);
+      if(fnd < 0) fnd = -2;
       ^/char name = .s.toLower(section[0..fnd]);
-      ^/char sec = fnd >= 0 ? section[fnd+1..-1] : "";
+      ^/char sec = section[fnd+1..-1];
       branch{
       cond .s.equ(name, "action"):
         {
@@ -1657,9 +1658,9 @@ public &Fight
         `load:<-face(sc=);
       cond .s.equ(secname, "name"):
         `load:<-name(sc=);
-      cond .s.equ(secname, "simul"):
+      cond .s.equ(secname, "simul "):
         `load:<-simul(sec, sc=);
-      cond .s.equ(secname, "turns"):
+      cond .s.equ(secname, "turns "):
         `load:<-turns(sec, sc=);
       cond .s.equ(secname, "winicon"):
         `load:<-winicon(sc=);
@@ -1674,8 +1675,9 @@ public &Fight
     public void beginf(^^/char lines, index i=, ^/char section)
     {
       index fnd = .s.cFind(" ", section);
+      if(fnd < 0) fnd = -2;
       ^/char name = .s.toLower(section[0..fnd]);
-      ^/char sec = fnd >= 0 ? section[fnd+1..-1] : "";
+      ^/char sec = section[fnd+1..-1];
       branch{
       cond .s.equ(name, "action"):
         {
