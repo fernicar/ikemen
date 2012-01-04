@@ -2415,10 +2415,10 @@ public &Char
     {
       index fnd = .s.cFind(" ", section);
       if(fnd < 0) fnd = -2;
-      ^/char name = .s.toLower(section[0..fnd]);
+      ^/char name = .s.toLower(section[0..fnd+1]);
       ^/char sec = section[fnd+1..-1];
       branch{
-      cond .s.equ(name, "action"):
+      cond .s.equ(name, "action "):
         {
           int no;
           no = .com.atoi(sec);
