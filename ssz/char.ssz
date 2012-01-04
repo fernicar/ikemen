@@ -2413,13 +2413,9 @@ public &Char
     }
     public void begin(^^/char lines, index i=, ^/char section)
     {
-      index fnd = .s.cFind(" "\t, section);
-      ^/char name = .s.toLower()<, section[0..fnd];
-      if(fnd >= 0) loop{while; do:
-        fnd++;
-      while fnd < #section && .s.cMatch!char?(" "\t, section[fnd]):
-      }
-      ^/char sec = section[fnd..-1];
+      index fnd = .s.cFind(" ", section);
+      ^/char name = .s.toLower(section[0..fnd]);
+      ^/char sec = fnd >= 0 ? section[fnd+1..-1] : "";
       branch{
       cond .s.equ(name, "action"):
         {
@@ -2440,7 +2436,7 @@ public &Char
       if(#secname == 0) ret;
       i++;
       branch{
-      cond .s.equ(secname, "begin"):
+      cond .s.equ(secname, "begin "):
         `load:<-begin(lines, i=, sec);
       }
     }
@@ -3484,7 +3480,9 @@ public &Char
         if(`stVal.hb.hitshaketime <= 0 && `stVal.hb.hittime >= 0){
           `stVal.hb.hittime--;
         }
-        if(`stVal.fallRecoverTime > 0) `stVal.fallRecoverTime--;
+        if(`stVal.hb.fallf != 0 && `stVal.fallRecoverTime > 0){
+          `stVal.fallRecoverTime--;
+        }
       }
     }
     if(
@@ -5154,10 +5152,7 @@ public &Char
   }
   public void trCanRecover()
   {
-    .v.setI(
-      (int)(
-        `stVal.hb.fallf != 0 && `stVal.hb.fall.recover != 0
-        && `stVal.fallRecoverTime <= 0));
+    .v.setI((int)(`stVal.hb.fall.recover != 0 && `stVal.fallRecoverTime <= 0));
   }
   public void trMoveContact()
   {

@@ -6984,16 +6984,15 @@ public &StateBuilder
     %^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     loop{
-      index i = 0, fnd;
+      index i = 0;
       ^/char line;
       while;
     do:
       line = lines[i][0.. .s.find(";", lines[i])];
       if(#line <= 0 || line[0] != '[' || .s.find("]", line) < 0) continue;
       line = .s.toLower(line);
-      fnd = .s.cFind(" ]"\t, line);
-      if(fnd < 0 || !.s.equ("statedef", line[1..fnd])) continue;
-      line = .s.trim(line[fnd..-1]);
+      if(!.s.equ("statedef ", line[1..10])) continue;
+      line = .s.trim(line[10..-1]);
       `state.i = .s.equ("-i", line[0..2]);
       if(`state.i){
         %char tmp .= line[1..-1];
@@ -7051,9 +7050,8 @@ public &StateBuilder
         while;
       do:
         line = .s.toLower(lines[i+1]);
-        fnd = .s.cFind(" ]"\t, line);
-        if(.s.equ("statedef", line[1..fnd])) break;
-        if(fnd < 0 || !.s.equ("state", line[1..fnd])) loop{while; do:
+        if(.s.equ("statedef ", line[1..10])) break;
+        if(!.s.equ("state ", line[1..7])) loop{while; do:
           i++;
           if(
             #lines[i+1] > 0 && lines[i+1][0] == '['

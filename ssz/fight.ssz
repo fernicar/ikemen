@@ -1521,13 +1521,9 @@ public &Fight
   {:<-
     public void begin(^^/char lines, index i=, ^/char section)
     {
-      index fnd = .s.cFind(" "\t, section);
-      ^/char name = .s.toLower()<, section[0..fnd];
-      if(fnd >= 0) loop{while; do:
-        fnd++;
-      while fnd < #section && .s.cMatch!char?(" "\t, section[fnd]):
-      }
-      ^/char sec = section[fnd..-1];
+      index fnd = .s.cFind(" ", section);
+      ^/char name = .s.toLower(section[0..fnd]);
+      ^/char sec = fnd >= 0 ? section[fnd+1..-1] : "";
       branch{
       cond .s.equ(name, "action"):
         {
@@ -1543,20 +1539,12 @@ public &Fight
     }
     void action(^^/char lines, index i=)
     {
-      if(#lines[i] == 0 || lines[i][0] != '[') ret;
-      index f = .s.find("]", lines[i]);
-      if(f < 0) ret;
-      ^/char sec = lines[i][1..f];
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
       i++;
-      index fnd = .s.cFind(" "\t, sec);
-      ^/char secname = .s.toLower()<, sec[0..fnd];
-      if(fnd >= 0) loop{while; do:
-        fnd++;
-      while fnd < #sec && .s.cMatch!char?(" "\t, sec[fnd]):
-      }
-      sec = sec[fnd..-1];
       branch{
-      cond .s.equ(secname, "begin"):
+      cond .s.equ(secname, "begin "):
         `load:<-begin(lines, i=, sec);
       }
     }
@@ -1655,7 +1643,7 @@ public &Fight
     {
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
-      if(#secname == 0 || .s.equ(secname, "begin")) ret;
+      if(#secname == 0 || .s.equ(secname, "begin ")) ret;
       i++;
       &.com.Section sc.parse(lines, i=);
       branch{
@@ -1685,13 +1673,9 @@ public &Fight
     }
     public void beginf(^^/char lines, index i=, ^/char section)
     {
-      index fnd = .s.cFind(" "\t, section);
-      ^/char name = .s.toLower()<, section[0..fnd];
-      if(fnd >= 0) loop{while; do:
-        fnd++;
-      while fnd < #section && .s.cMatch!char?(" "\t, section[fnd]):
-      }
-      ^/char sec = section[fnd..-1];
+      index fnd = .s.cFind(" ", section);
+      ^/char name = .s.toLower(section[0..fnd]);
+      ^/char sec = fnd >= 0 ? section[fnd+1..-1] : "";
       branch{
       cond .s.equ(name, "action"):
         {
@@ -1713,7 +1697,7 @@ public &Fight
       if(#secname == 0) ret;
       i++;
       branch{
-      cond .s.equ(secname, "begin"):
+      cond .s.equ(secname, "begin "):
         `load:<-beginf(lines, i=, sec);
       }
     }

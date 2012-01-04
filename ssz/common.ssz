@@ -568,14 +568,11 @@ public ^/char sectionName(^/char sec=)
   index f = .s.find("]", sec);
   if(f < 0) ret "";
   sec = sec[1..f];
-  index fnd = .s.cFind(" "\t, sec);
-  ^/char secname = .s.toLower()<, sec[0..fnd];
-  if(fnd >= 0) loop{while; do:
-    fnd++;
-  while fnd < #sec && .s.cMatch!char?(" "\t, sec[fnd]):
-  }
-  sec = sec[fnd..-1];
-  ret secname;
+  index fnd = .s.cFind(" ", sec);
+  if(fnd < 0) fnd = -2;
+  ^/char name = .s.toLower(sec[0..fnd+1]);
+  sec = sec[fnd+1..-1];
+  ret name;
 }
 
 

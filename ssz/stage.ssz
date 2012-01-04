@@ -221,13 +221,9 @@ public &Stage
     }
     public void begin(^^/char lines, index i=, ^/char section)
     {
-      index fnd = .s.cFind(" "\t, section);
-      ^/char name = .s.toLower()<, section[0..fnd];
-      if(fnd >= 0) loop{while; do:
-        fnd++;
-      while fnd < #section && .s.cMatch!char?(" "\t, section[fnd]):
-      }
-      ^/char sec = section[fnd..-1];
+      index fnd = .s.cFind(" ", section);
+      ^/char name = .s.toLower(section[0..fnd]);
+      ^/char sec = fnd >= 0 ? section[fnd+1..-1] : "";
       branch{
       cond .s.equ(name, "action"):
         {
@@ -313,7 +309,7 @@ public &Stage
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
       i++;
-      if(.s.equ(secname, "begin")){
+      if(.s.equ(secname, "begin ")){
         `load:<-begin(lines, i=, sec);
         ret;
       }
@@ -339,11 +335,11 @@ public &Stage
         `load:<-music(sc=);
       cond .s.equ(secname, "bgdef"):
         `load:<-bgdef(sc=);
-      cond .s.equ(secname, "bg"):
+      cond .s.equ(secname, "bg "):
         `load:<-bg(sc=, link=);
-      cond .s.equ(secname, "bgctrldef"):
+      cond .s.equ(secname, "bgctrldef "):
         `load:<-bgctrldef(sc=);
-      cond .s.equ(secname, "bgctrl"):
+      cond .s.equ(secname, "bgctrl "):
         `load:<-bgctrl(sc=);
       }
     }
