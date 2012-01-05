@@ -76,7 +76,7 @@ public &Action
       ^/char line;
       while;
     do:
-      if(#lines[i] > 0 && lines[i][0] == '['){
+      if(#`frames > 0 && #lines[i] > 0 && lines[i][0] == '['){
         i--;
         break, break;
       }

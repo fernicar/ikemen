@@ -45,7 +45,7 @@ public &Action
       bool defaul1 = true, defaul2 = true;
       while;
     do:
-      if(#lines[i] > 0 && lines[i][0] == '['){
+      if(#`ani.frames > 0 && #lines[i] > 0 && lines[i][0] == '['){
         i--;
         break, break;
       }

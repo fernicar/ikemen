@@ -4180,8 +4180,28 @@ public &Char
   public void trPow(&.Var v1, &.Var v2)
   {:<-
     void i(&.Var r=, int i1, int i2)
-    {
-      r.setI((int)((double)i1**(double)i2));
+    {//winmugenのバグの再現
+      r.typ = .VarTy::Int;
+      branch{
+      cond i2 < 0:
+        {
+          float f = (float)i1**(float)i2;
+          .mes.veryUnsafeCopy!int, float?(r.i=, f=);
+          r.i = r.i << 29;
+        }
+      else:
+        {
+          int hb = -1;
+          int tmp = i1;
+          loop{while; do: hb++; while (uint)i2>>(uint)(hb+1) != 0x0:}
+          r.i = 1;
+          loop{int bit = 0; while; do:
+            if((i2 & (int)1<<(bit == hb ? bit : (hb-1)-bit)) != 0) r.i *= tmp;
+            tmp *= tmp;
+            bit++;
+          while bit <= hb:}
+        }
+      }
     }
     void f(&.Var r=, float f1, float f2){r.setF(f1**f2);}
     `nikou!i, f?(.v=, v1, v2);

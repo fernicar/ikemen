@@ -886,7 +886,7 @@ public &Anim<frame_t>
   }
   public int animElemNo(int time)
   {
-    branch{
+    if(#`frames > 0) branch{
       int t = time, oldt = 0;
     cond t < 0:
       loop{
@@ -925,7 +925,7 @@ public &Anim<frame_t>
       while true:
       }
     }
-    ret #`frames-1;
+    ret #`frames;
   }
   public void setAnimElem(int e)
   {
