@@ -5920,6 +5920,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     ret a <= 0 || a <= h;
   }
   pyr.inguarddist = false;
+  pyr.sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
   loop{
     *`top.self p = `top;
     float pl, pr, pv;
