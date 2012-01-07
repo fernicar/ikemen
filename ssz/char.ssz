@@ -5840,8 +5840,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       comm:
         `pyr.setFacing(byf * -hit.p2facing);
       }
-      if(#hitting == 1 && hit.p1stateno >= 0 && !by.ls(.lsGETHIT)){
-        by.changeState1(by.playerno, hit.p1stateno);
+      if(
+        #hitting == 1 && hit.p1stateno >= 0 && !by.ls(.lsGETHIT)
+        && by.changeState1(by.playerno, hit.p1stateno))
+      {
+        by.setCtrl(false);
       }
       by.addTarget(`pyr.id);
       `pyr.stVal.hb.addByid(by.id);
