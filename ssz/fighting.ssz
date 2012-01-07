@@ -135,6 +135,7 @@ void game()
       `put(x, y=, .s.iToS(p.stVal.prevno));
       `put(x, y=, .s.iToS(p.stVal.no));
       `put(x, y=, .s.iToS(p.animno));
+      `put(x, y=, .s.iToS(.chr.v.setI(0)$p.trAnimElemNo()$.chr.v.toI()));
       ret y;
     }
     float y = 48.0;
@@ -169,6 +170,15 @@ void game()
   float newx = x, newy = y;
   int oldp1wins, oldp2wins, olddraws;
   ^int lif.new(4), pow.new(4);
+  ^^/int var.new(4);
+  ^^/float fvar.new(4);
+  void copyVar(int pno)
+  {
+    `lif[pno] = .chr.chars[pno][0]~sysivar[.chr.iLIFE];
+    `pow[pno] = .chr.chars[pno][0]~sysivar[.chr.iPOWER];
+    `var[pno] = .s.clone!int?(.chr.chars[pno][0]~ivar);
+    `fvar[pno] = .s.clone!float?(.chr.chars[pno][0]~fvar);
+  }
   void reset()
   {
     .com.p1wins = `oldp1wins;
@@ -178,6 +188,8 @@ void game()
       if(#.chr.chars[i] > 0){
         .chr.chars[i][0]~sysivar[.chr.iLIFE] = `lif[i];
         .chr.chars[i][0]~sysivar[.chr.iPOWER] = `pow[i];
+        .s.copy!int?(.chr.chars[i][0]~ivar, `var[i]);
+        .s.copy!float?(.chr.chars[i][0]~fvar, `fvar[i]);
       }
     continue:
       i++;
@@ -299,8 +311,7 @@ void game()
           .chr.chars[i][0]~sysivar[.chr.iLIFEMAX];
         if(.com.round == 1) .chr.chars[i][0]~sysivar[.chr.iPOWER] = 0;
       }
-      lif[i] = .chr.chars[i][0]~sysivar[.chr.iLIFE];
-      pow[i] = .chr.chars[i][0]~sysivar[.chr.iPOWER];
+      copyVar(i);
     continue:
       i++;
     while i < #.chr.chars:
@@ -385,12 +396,10 @@ void game()
           if(#.chr.chars[i+2] > 0){
             .chr.chars[i+2][0]~sysivar[.chr.iLIFE] =
               .chr.chars[i+2][0]~sysivar[.chr.iLIFEMAX];
-            lif[i+2] = .chr.chars[i+2][0]~sysivar[.chr.iLIFE];
-            pow[i+2] = .chr.chars[i+2][0]~sysivar[.chr.iPOWER];
+            copyVar(i+2);
           }
         }
-        lif[i] = .chr.chars[i][0]~sysivar[.chr.iLIFE];
-        pow[i] = .chr.chars[i][0]~sysivar[.chr.iPOWER];
+        copyVar(i);
         i++;
       while i < #.com.tmode:
       }

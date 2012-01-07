@@ -5664,12 +5664,17 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
   {
     ^&.Explod expreset(&.Char p1=, &.Char p2=, float y)
     {
-      float x = (p2.sysfvar[.fX] - p1.sysfvar[.fX]) * (float)p1.facing;
+      float dist = p2.sysfvar[.fX] - p1.sysfvar[.fX];
+      float x =
+        (float)p1.facing * (
+          dist + (float)p2.facing * (
+            dist == 0.0 || (dist < 0.0) ^ (p2.facing < 0)
+            ? p2.frontw : -p2.backw));
       index tmp;
       ^&.Explod e = `by.newExplod(tmp=);
       if(#e == 0) ret e;
       e~postype = 0;
-      e~offsetx = x + `hit.sparkx * (`by.id == p1.id ? 1.0 : -1.0);
+      e~offsetx = x - `hit.sparkx;
       e~offsety =
         y + `hit.sparky + (`by.id == p1.id ? 0.0 : p1.stVal.hit.sparky);
       e~relativef = 1;
