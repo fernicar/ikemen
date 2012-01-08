@@ -3300,7 +3300,7 @@ public &Char
       }
       if(
         `stVal.playerno == `playerno && (
-          `hittmp <= 0 || (
+          `stVal.mov != .MovTy::H || (
             .roundState() == 2 && `isKO()
             && (`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0)))
       {
