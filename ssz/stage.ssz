@@ -99,6 +99,8 @@ public &Stage
   public float ztopscale = 1.0;
   public int reflection = 0;
   public bool hires = false, resetbg = true, debugbg = false, reflect = true;
+  type action_t = &.bg.Action;
+  &.sff.AirFileMethods!self? airFileMethods;
   new()
   {
     `p2.startx *= -1;
@@ -219,25 +221,6 @@ public &Stage
       `bg.new[-1];
       `bg[-1].read(sc=, `hires, `bg[link..link+1]);
     }
-    public void begin(^^/char lines, index i=, ^/char section)
-    {
-      index fnd = .s.cFind(" ", section);
-      if(fnd < 0) fnd = -2;
-      ^/char name = .s.toLower(section[0..fnd+1]);
-      ^/char sec = section[fnd+1..-1];
-      branch{
-      cond .s.equ(name, "action "):
-        {
-          int no;
-          no = .com.atoi(sec);
-          ^&.bg.Action act = `getAction(no);
-          if(#act > 0) break;
-          `actionList.new[-1].no = no;
-          act = `actionList[#`actionList-1..-1];
-          act~read(lines, i=);
-        }
-      }
-    }
     public void bgctrldef(&.com.Section sc=)
     {
       `bgcdef.ctrlbg.new(0);
@@ -309,11 +292,11 @@ public &Stage
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
-      i++;
       if(.s.equ(secname, "begin ")){
-        `load:<-begin(lines, i=, sec);
+        `readAction(lines, i=);
         ret;
       }
+      i++;
       &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "info"):

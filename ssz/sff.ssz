@@ -776,6 +776,47 @@ public &FrameMethods<_t>
   }
 }
 
+public &AirFileMethods<_t>
+{
+  public .._t::readAction(^^/char lines, index i=) ^`action_t
+  {
+    ^`action_t act;
+    ^/char sec = lines[i];
+    ^/char name = @com.sectionName(sec=);
+    if(#name == 0) ret act;
+    i++;
+    if(!@s.equ(name, "begin ")) ret act;
+    index fnd = @s.cFind(" ", sec);
+    if(fnd < 0) fnd = -2;
+    name = @s.toLower(sec[0..fnd+1]);
+    sec = sec[fnd+1..-1];
+    if(!@s.equ(name, "action ")) ret act;
+    int no;
+    no = @com.atoi(sec);
+    act = `getAction(no);
+    if(#act > 0) ret act;
+    `actionList.new[-1].no = no;
+    act = `actionList[#`actionList-1..-1];
+    act~read(lines, i=);
+    if(#act~numFrames() > 0) ret act;
+    loop{
+      ^`action_t linkact;
+      while;
+    do:
+      linkact = self(lines, i=);
+      if(#linkact > 0){
+        int oldno = act~no;
+        act~copy(linkact<>=);
+        act~no = oldno;
+        break, break;
+      }
+      i++;
+    while i < #lines:
+    }
+    ret act;
+  }
+}
+
 public &Anim<frame_t>
 {
   public ^&.Sff sff;

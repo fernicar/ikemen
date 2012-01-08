@@ -29,6 +29,10 @@ public &Action
   {
     `ani.mask = 0;
   }
+  /index numFrames()
+  {
+    ret #`ani.frames;
+  }
   public void copy(`self a=)
   {
     `no = a.no;
@@ -45,7 +49,7 @@ public &Action
       bool defaul1 = true, defaul2 = true;
       while;
     do:
-      if(#`ani.frames > 0 && #lines[i] > 0 && lines[i][0] == '['){
+      if(#lines[i] > 0 && lines[i][0] == '['){
         i--;
         break, break;
       }
