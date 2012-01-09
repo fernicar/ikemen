@@ -4380,6 +4380,8 @@ public &Char
     if(`stVal.playerno != `playerno && p != `stVal.playerno){
       `enemyExplodsRemove(`stVal.playerno);
     }
+    `sysivar[.iBINDTIME] = 0;
+    `clearTargetBind();
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
@@ -4410,7 +4412,6 @@ public &Char
   }
   public void trChangeState2(int n, int p, int anim, int ctrl)
   {
-    if(n == .com.IERR) ret;
     if(anim >= 0) `trChangeAnim(anim);
     if(ctrl >= 0) `setCtrl(ctrl != 0);
     if(`changeState1kai(p, n)){
@@ -4424,14 +4425,10 @@ public &Char
   }
   public void trChangeState(int no, int anim, int ctrl)
   {
-    `sysivar[.iBINDTIME] = 0;
-    `clearTargetBind();
     `trChangeState2(no, `stVal.playerno, anim, ctrl);
   }
   public void trSelfState(int no, int anim, int ctrl)
   {
-    `sysivar[.iBINDTIME] = 0;
-    `clearTargetBind();
     `trChangeState2(no, `playerno, anim, ctrl);
   }
   public void trCommand(^/char name)
