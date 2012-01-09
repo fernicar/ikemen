@@ -1323,7 +1323,6 @@ const int lsBACKWCHANGE   = 0b00000000000010000000000000000000;
 const int lsFEDGECHANGE   = 0b00000000000100000000000000000000;
 const int lsBEDGECHANGE   = 0b00000000001000000000000000000000;
 const int lsGUARD         = 0b00000000010000000000000000000000;
-const int lsBindCancel    = 0b00000000100000000000000000000000;
 
 public uint specialFlag;
 const uint gsINTRO          = 0b00000000000000000000000000000001;
@@ -2248,9 +2247,19 @@ public &Char
   }
   public void byBindClear()
   {
-    if(`stVal.hb.byidMatch(`sysivar[.iBINDTOID])){
-      `setBindTime(0);
-      `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
+    if(`stVal.hb.byidMatch(`sysivar[.iBINDTOID])) `setBindTime(0);
+  }
+  public void clearTargetBind()
+  {
+    loop{
+      index i = 0;
+      ^`self c;
+      while;
+    do:
+      c = .players.get(`targets[i]);
+      if(#c > 0) c~byBindClear();
+      i++;
+    while i < #`targets:
     }
   }
   void enemyExplodsRemove(int enemy)
@@ -2779,20 +2788,6 @@ public &Char
   }
   public void releaseBinding()
   {
-    branch{
-      ^`self c = .players.get(`sysivar[.iBINDTOID]);
-      if(#c == 0) break;
-    cond c~isTarget(`id):
-      if(!.m.isnan(`sysfvar[.fBINDPOSX])){
-        `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
-      }
-      if(!.m.isnan(`sysfvar[.fBINDPOSY])) `setYV(c~sysfvar[.fVY]);
-    cond `isTarget(c~id):
-      if(!.m.isnan(`sysfvar[.fBINDPOSX])){
-        c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
-      }
-      if(!.m.isnan(`sysfvar[.fBINDPOSY])) c~setYV(`sysfvar[.fVY]);
-    }
     `sysivar[.iBINDTOID] = -1;
   }
   public void tickBind()
@@ -2803,7 +2798,6 @@ public &Char
   {
     if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
     if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
-    `sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
     `enemyn.new(0);
     if(`stVal.hitdefContact != 0){
       `stVal.hit.invalidate();
@@ -3323,7 +3317,7 @@ public &Char
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
-    if(#c == 0 || `destmp || (`isTarget(c~id) && c~ls(.lsBindCancel))){
+    if(#c == 0 || `destmp){
       `setBindTime(0);
       ret;
     }
@@ -3340,6 +3334,18 @@ public &Char
     if(#`sysivar[.iBINDFACING] == 1) branch{
     cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
     cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
+    }
+    branch{
+    cond c~isTarget(`id):
+      if(!.m.isnan(`sysfvar[.fBINDPOSX])){
+        `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
+      }
+      if(!.m.isnan(`sysfvar[.fBINDPOSY])) `setYV(c~sysfvar[.fVY]);
+    cond `isTarget(c~id):
+      if(!.m.isnan(`sysfvar[.fBINDPOSX])){
+        c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
+      }
+      if(!.m.isnan(`sysfvar[.fBINDPOSY])) c~setYV(`sysfvar[.fVY]);
     }
   }
   public void xScreenBound()
@@ -3762,18 +3768,10 @@ public &Char
   public void setXV(float xv)
   {
     `sysfvar[.fVX] = xv;
-    if(xv != 0.0){
-      `setBindTime(0);
-      `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
-    }
   }
   public void setYV(float yv)
   {
     `sysfvar[.fVY] = yv;
-    if(yv != 0.0){
-      `setBindTime(0);
-      `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
-    }
   }
   public void setAngle(float a)
   {
@@ -3853,12 +3851,8 @@ public &Char
   }
   public void setBindToId(`self to=)
   {
-    `sysivar[.iSPECIALFLAG] |= .lsBindCancel;
     `sysivar[.iBINDTOID] = to.id;
-    if(to.sysivar[.iBINDTOID] == `id){
-      to.sysivar[.iSPECIALFLAG] &= !.lsBindCancel;
-      to.setBindTime(0);
-    }
+    if(to.sysivar[.iBINDTOID] == `id) to.setBindTime(0);
     `sysivar[.iBINDFACING] = to.facing*2;
   }
   public void makeDust(float x, float y)
@@ -4430,10 +4424,14 @@ public &Char
   }
   public void trChangeState(int no, int anim, int ctrl)
   {
+    `sysivar[.iBINDTIME] = 0;
+    `clearTargetBind();
     `trChangeState2(no, `stVal.playerno, anim, ctrl);
   }
   public void trSelfState(int no, int anim, int ctrl)
   {
+    `sysivar[.iBINDTIME] = 0;
+    `clearTargetBind();
     `trChangeState2(no, `playerno, anim, ctrl);
   }
   public void trCommand(^/char name)
