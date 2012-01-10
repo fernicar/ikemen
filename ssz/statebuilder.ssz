@@ -5153,10 +5153,7 @@ public &StateBuilder
       switch(`state.ctrlList[-1].typ){
       case .CtrlTy::BindToParent, .CtrlTy::BindToRoot:
         `state.ctrlList[-1].task .=
-          "if(`sysivar[.iBINDTIME]==0)`sysivar[.iBINDTOID]=-1;";
-        if(`state.ctrlList[-1].typ == .CtrlTy::BindToRoot){
-          `state.ctrlList[-1].task .= "`bind();";
-        }
+          "if(`sysivar[.iBINDTIME]==0)`sysivar[.iBINDTOID]=-1;`bind();";
       case .CtrlTy::BindToTarget:
         `state.ctrlList[-1].task .= "`trBindToTarget(hmf);";
       }
