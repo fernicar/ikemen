@@ -5155,7 +5155,7 @@ public &StateBuilder
         `state.ctrlList[-1].task .=
           "if(`sysivar[.iBINDTIME]==0)`sysivar[.iBINDTOID]=-1;";
         if(`state.ctrlList[-1].typ == .CtrlTy::BindToRoot){
-          `state.ctrlList[-1].task .= "`bind();`tickBind();";
+          `state.ctrlList[-1].task .= "`bind();";
         }
       case .CtrlTy::BindToTarget:
         `state.ctrlList[-1].task .= "`trBindToTarget(hmf);";

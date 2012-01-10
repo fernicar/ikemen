@@ -2896,7 +2896,6 @@ public &Char
       if(`stVal.mctime > 0) `stVal.mctime++;
     comm:
       if(`sysivar[.iHITPAUSETIME] <= 0){
-        `tickBind();
         if(
           `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0 && (
             `cmd~buffer~Bb == 1 || `cmd~buffer~Db == 1
@@ -3233,7 +3232,10 @@ public &Char
               + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
           }
         }
-        if(!`isHitPaused()) `stVal.time++;
+        if(!`isHitPaused()){
+          `stVal.time++;
+          `tickBind();
+        }
       }
     }
     `minus = 1;
@@ -4718,7 +4720,6 @@ public &Char
       `sysfvar[.fBINDPOSY] += (float)c~sysivar[.iHEAD_POSY];
     }
     `bind();
-    `tickBind();
   }
   public void setBindFacing(int f)
   {
