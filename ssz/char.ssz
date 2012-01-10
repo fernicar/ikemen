@@ -2912,7 +2912,6 @@ public &Char
     }
     `minus = 11;
     `state_i1(::);
-    `minus = 2;
   }
   public void drawAnim()
   {
@@ -3062,6 +3061,7 @@ public &Char
           `defencemul *= .superp2defmul;
         }
       }
+      `minus = 2;
     }
   }
   public bool isKO()
@@ -4379,6 +4379,7 @@ public &Char
     if(`stVal.playerno != `playerno && p != `stVal.playerno){
       `enemyExplodsRemove(`stVal.playerno);
     }
+    if(`minus != 2) `sysivar[.iBINDTIME] = 0;
     `clearTargetBind();
     `stVal.no = n;
     `stVal.playerno = p;
