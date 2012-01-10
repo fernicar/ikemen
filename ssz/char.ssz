@@ -3133,7 +3133,7 @@ public &Char
         c~action();
         if(
           `destmp && c~stVal.playerno != c~playerno
-          && c~sysivar[.iBINDTIME] != 0 && c~sysivar[.iBINDTOID] == `id)
+          && c~sysivar[.iBINDTOID] == `id)
         {
           c~trSelfState(5050, -1, -1);
         }
@@ -3273,9 +3273,6 @@ public &Char
             && (`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0)))
       {
         `outTarget();
-      }
-      if(`sysivar[.iBINDTOID] >= 0 && `sysivar[.iBINDTIME] == 0){
-        `releaseBinding();
       }
       `ticOldX = `sysfvar[.fX];
       `ticNewX = `ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff;
