@@ -2859,7 +2859,6 @@ public &Char
             `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A
             ? `stVal.hb.snapy : 0.0/0.0;
           `bind();
-          `tickBind();
         }
       }
       if(!`cs1tmp) branch{
@@ -2976,73 +2975,6 @@ public &Char
     if(.com.tickNextFrame()){
       if(.roundState() == 4) `outTarget();
       if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
-      if(!`isHitPaused()){
-        `setFacing(`p1facing);
-        `p1facing = 0;
-      }
-      `changeState2();
-      if(`isActive()){
-        if(`keyctrl) branch{
-          branch{
-          cond `stVal.typ == .StTy::A:
-            if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
-          else:
-            `sysivar[.iAIRJUMP_CNT] = 0;
-            `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-          }
-        cond `ctrl() && (`key >= 0 || `helperindex == 0):
-          if(
-            `helperindex == 0 && `stVal.typ != .StTy::A
-            && !`ls(.lsNOAUTOTURN) && `trP2DistX()$.v.toF() <= -1.0)
-          {
-            `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
-            `setFacing(-`facing);
-          }
-          branch{
-          cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
-            if(`stVal.no != 10) `trSelfState(10, -1, -1);
-          cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
-            if(`stVal.no != 12) `trSelfState(12, -1, -1);
-          cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
-            if(`stVal.no != 40) `trSelfState(40, -1, -1);
-          cond
-            `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
-            && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
-            && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
-            && `cmd~buffer~U > 0
-            :
-            if(`stVal.no != 45){
-              `sysivar[.iAIRJUMP_CNT]++;
-              `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-              `trSelfState(45, -1, -1);
-            }
-          cond
-            !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
-              `cmd~buffer~F > 0 || (
-                (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
-            :
-            if(`stVal.no != 20) `trSelfState(20, -1, -1);
-          cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
-            `trSelfState(0, -1, -1);
-          }
-          if(
-            `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
-              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-            && `cmd~buffer~B > 0)
-          {
-            `trSelfState(120, -1, -1);
-          }
-        cond `sysivar[.iCTRL] != 0:
-          switch(`stVal.no){
-          case 11:
-            `trSelfState(12, -1, 1);
-          case 20:
-            `trSelfState(0, -1, 1);
-          }
-        }
-      }
       if(.pausetime < 0){
         if(
           (.pause > 0 || #`stVal.hb.byid > 0)
@@ -3203,8 +3135,73 @@ public &Char
           i++;
         while i < #`stVal.ho:
         }
+        `setFacing(`p1facing);
+        `p1facing = 0;
       }
       `bind();
+      `changeState2();
+      if(!`isHitPaused()){
+        if(`keyctrl) branch{
+          branch{
+          cond `stVal.typ == .StTy::A:
+            if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
+          else:
+            `sysivar[.iAIRJUMP_CNT] = 0;
+            `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
+          }
+        cond `ctrl() && (`key >= 0 || `helperindex == 0):
+          if(
+            `helperindex == 0 && `stVal.typ != .StTy::A
+            && !`ls(.lsNOAUTOTURN) && `trP2DistX()$.v.toF() <= -1.0)
+          {
+            `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
+            `setFacing(-`facing);
+          }
+          branch{
+          cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
+            if(`stVal.no != 10) `trSelfState(10, -1, -1);
+          cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
+            if(`stVal.no != 12) `trSelfState(12, -1, -1);
+          cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
+            if(`stVal.no != 40) `trSelfState(40, -1, -1);
+          cond
+            `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
+            && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
+            && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
+            && `cmd~buffer~U > 0
+            :
+            if(`stVal.no != 45){
+              `sysivar[.iAIRJUMP_CNT]++;
+              `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
+              `trSelfState(45, -1, -1);
+            }
+          cond
+            !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
+              `cmd~buffer~F > 0 || (
+                (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
+            :
+            if(`stVal.no != 20) `trSelfState(20, -1, -1);
+          cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
+            `trSelfState(0, -1, -1);
+          }
+          if(
+            `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
+              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
+            && `cmd~buffer~B > 0)
+          {
+            `trSelfState(120, -1, -1);
+          }
+        cond `sysivar[.iCTRL] != 0:
+          switch(`stVal.no){
+          case 11:
+            `trSelfState(12, -1, 1);
+          case 20:
+            `trSelfState(0, -1, 1);
+          }
+        }
+      }
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
       `minus = -2;
