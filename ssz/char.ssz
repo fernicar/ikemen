@@ -5623,20 +5623,21 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     pxmi = .com.xmin+pyr.fedge; pxma = .com.xmax-pyr.bedge;
   }
   bool foo(
-    int hitting=, `pyr.self by=, &.Hitdef hit=, float y, int pro, int hits)
+    int hitting=, `pyr.self by=, &.Hitdef hit=,
+    float x, float y, int pro, int hits)
   {
     ^&.Explod expreset(&.Char p1=, &.Char p2=, float y)
     {
       float x =
         (float)p1.facing * (
-          p2.sysfvar[.fX] - p1.sysfvar[.fX] + (float)p2.facing * (
-            (p1.facing < 0) ^ (p2.facing < 0)
-            ? p2.frontw : -p2.backw));
+         `pro != 0 ? `x
+          : p2.sysfvar[.fX] - p1.sysfvar[.fX] + (float)p2.facing * (
+            (p1.facing < 0) ^ (p2.facing < 0) ? p2.frontw : -p2.backw));
       index tmp;
       ^&.Explod e = `by.newExplod(tmp=);
       if(#e == 0) ret e;
       e~postype = 0;
-      e~offsetx = x - `hit.sparkx;
+      e~offsetx = x - `hit.sparkx * (`pro != 0 ? -(float)`pro : 1.0);
       e~offsety =
         y + `hit.sparky + (`by.id == p1.id ? 0.0 : p1.stVal.hit.sparky);
       e~relativef = 1;
@@ -5935,7 +5936,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         if(contact < 0) contact = 1;
         branch{
           int h;
-          if(!foo(h=, p~c<>=, p~c~stVal.hit=, 0.0, 0, 1)) break;
+          if(!foo(h=, p~c<>=, p~c~stVal.hit=, 0.0, 0.0, 0, 1)) break;
         cond #h == 1:
           p~c~stVal.mctyp = .MoveContact::Hit;
           if(p~c~stVal.hit.reversal_attr > 0){
@@ -6085,8 +6086,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if(
             foo(
               hit=, .chars[i][0]<>=, .projs[i][j].hit=,
-              .projs[i][j].y - .chars[i][0]~sysfvar[.fY], .projs[i][j].facing,
-              .projs[i][j].misstime <= 0 && (
+              .projs[i][j].x - .chars[i][0]~sysfvar[.fX],
+              .projs[i][j].y - .chars[i][0]~sysfvar[.fY],
+              .projs[i][j].facing, .projs[i][j].misstime <= 0 && (
                 #hit == 1 ? .projs[i][j].hit.pausetime
                 : .projs[i][j].hit.guard_pausetime) <= 0
               ? .projs[i][j].hits : 1))
