@@ -4458,7 +4458,7 @@ public &Char
   public void trP2DistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    .v.setF(.m.floor((float)`facing*(e~sysfvar[.fX] - `sysfvar[.fX])));
+    .v.setF((float)((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX])));
   }
   public void trP2DistY()
   {
@@ -4470,9 +4470,9 @@ public &Char
     ^`self e = .players.enemyNear(`=, 0);
     float dist = e~sysfvar[.fX] - `sysfvar[.fX];
     bool bar = dist == 0.0 || (dist < 0.0) ^ (e~facing < 0);
-    .v.setF()<, .m.floor(
-      (float)`facing*(
-        dist + (float)e~facing * (bar ? e~frontw : -e~backw)) - `frontw);
+    .v.setF()<, (float)(
+      (int)`facing*(int)(
+        (dist + (float)e~facing * (bar ? e~frontw : -e~backw)) - `frontw));
   }
   public void trRootDistX()
   {
@@ -4480,8 +4480,8 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF()<, .m.floor(
-      (float)`facing*(.chars[`playerno][0]~sysfvar[.fX] - `sysfvar[.fX]));
+    .v.setF()<, (float)(
+      (int)`facing*(int)(.chars[`playerno][0]~sysfvar[.fX] - `sysfvar[.fX]));
   }
   public void trRootDistY()
   {
@@ -4500,7 +4500,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF()<, .m.floor((float)`facing*(.c~sysfvar[.fX] - `sysfvar[.fX]));
+    .v.setF()<, (float)((int)`facing*(int)(.c~sysfvar[.fX] - `sysfvar[.fX]));
   }
   public void trParentDistY()
   {
