@@ -4471,8 +4471,9 @@ public &Char
     float dist = e~sysfvar[.fX] - `sysfvar[.fX];
     bool bar = dist == 0.0 || (dist < 0.0) ^ (e~facing < 0);
     .v.setF()<, (float)(
-      (int)`facing*(int)(
-        (dist + (float)e~facing * (bar ? e~frontw : -e~backw)) - `frontw));
+      (int)(
+        (float)`facing*(dist + (float)e~facing * (bar ? e~frontw : -e~backw))
+        - `frontw));
   }
   public void trRootDistX()
   {
