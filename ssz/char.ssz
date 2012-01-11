@@ -2859,6 +2859,7 @@ public &Char
             `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A
             ? `stVal.hb.snapy : 0.0/0.0;
           `bind();
+          `tickBind();
         }
       }
       if(!`cs1tmp) branch{
