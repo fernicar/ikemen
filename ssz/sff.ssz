@@ -699,23 +699,7 @@ public &FrameMethods<_t>
         if(ani.totaltime == -1 && ani.current == #ani.frames-1) break;
       while ani.frames[ani.current].time <= 0 && ani.current < #ani.frames:
       }
-      if(ani.current >= #ani.frames) loop{
-        bool foo = true;
-        continue;
-      do:
-        loop{while; do:
-          ani.current++;
-        while ani.frames[ani.current].time <= 0 && ani.current < #ani.frames:
-        }
-        if(ani.current < #ani.frames) break;
-        if(!!foo){
-          ani.current = #ani.frames-1;
-          break, break;
-        }
-      continue:
-        ani.current = @m.max!index?(0, ani.loopstart);
-      while true:
-      }
+      if(ani.current >= #ani.frames) ani.current = ani.loopstart;
     }
     if(ani.totaltime != -1 && ani.sumtime >= ani.totaltime){
       ani.sumtime = ani.totaltime - ani.looptime;
@@ -985,6 +969,28 @@ public &Anim<frame_t>
     `sumtime = 0;//animElemTime内で使用
     `sumtime = -`animElemTime(`current+1);
   }
+  public void animSeek(index elem)
+  {
+    loop{
+      bool foo = true;
+      continue;
+    do:
+      loop{while; do:
+        `current++;
+        if(`current == #`frames-1 && `frames[`current].time == -1) break;
+      while `frames[`current].time <= 0 && `current < #`frames:
+      }
+      if(`current < #`frames) break;
+      if(!!foo){
+        `current = #`frames-1;
+        break, break;
+      }
+    continue:
+      `current = .m.max!index?(0, elem);
+    while true:
+    }
+    .m.limRange!index?(`current=, 0, #`frames-1);
+  }
   public void updateSprite()
   {
     if(#`frames == 0) ret;
@@ -992,8 +998,9 @@ public &Anim<frame_t>
       if(`sumtime >= `totaltime){
         `time = 0;
         `newframe = true;
-        .m.limRange!index?((`current = `loopstart)=, 0, #`frames-1);
+        `current = `loopstart;
       }
+      `animSeek(`current);
       if(
         `nazotime < 0
         && (
