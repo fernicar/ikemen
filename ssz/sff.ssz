@@ -976,8 +976,8 @@ public &Anim<frame_t>
       continue;
     do:
       loop{while; do:
-        `current++;
         if(`current == #`frames-1 && `frames[`current].time == -1) break;
+        `current++;
       while `frames[`current].time <= 0 && `current < #`frames:
       }
       if(`current < #`frames) break;
