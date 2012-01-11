@@ -3141,7 +3141,7 @@ public &Char
       `bind();
       `changeState2();
       if(!`isHitPaused()){
-        if(`keyctrl) branch{
+        if(`keyctrl && #`cmd > 0) branch{
           branch{
           cond `stVal.typ == .StTy::A:
             if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
