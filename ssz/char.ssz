@@ -1814,7 +1814,6 @@ public &Projectile
       `hit.air_juggle = 0;
     }
     if(`hits <= 0) `hit.attr = -1;
-    if(`paused()) ret;
     branch{
     cond `anim >= 0:
       branch{
@@ -1847,6 +1846,7 @@ public &Projectile
         `id = !`id;
       }
     }
+    if(`paused()) ret;
     branch{
     cond `pctime > 0:
       `pctime++;
@@ -5260,7 +5260,7 @@ public void Explod::update()
     if(#c == 0) c = .players.get(`player);
     act = #c == 0 || c~acttmp%2 != -1;
   }
-  if(act && .com.tickNextFrame()){
+  if(.com.tickNextFrame()){
     if(`removeongethit != 0){
       if(#c == 0) c = .players.get(`player);
       if(#c == 0 || c~stVal.mov == .MovTy::H){
@@ -5270,7 +5270,7 @@ public void Explod::update()
     }
     if(
       `removetime == 0 || #`ani == 0
-      || (`removetime <= -2 && `ani~ani.loopend))
+      || (act && `removetime <= -2 && `ani~ani.loopend))
     {
       `id = .com.IERR;
       ret;
