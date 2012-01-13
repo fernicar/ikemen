@@ -1712,6 +1712,39 @@ public &Projectile
   public void update()
   {
     if(.com.tickFrame()){
+      branch{
+      cond `anim >= 0:
+        branch{
+        cond `prioritypoint <= 0 && `remove != 0:
+          `ani = .chars[`playerno][0]~getAction(`cancelanim);
+        cond `hits <= 0 && `remove != 0:
+          `ani = .chars[`playerno][0]~getAction(`hitanim);
+        cond
+          (
+            `x < .com.xmin-(float)`edgebound
+            || .com.xmax+(float)`edgebound < `x)
+          || (
+            `x < .com.scrxmin-(float)`stagebound
+            || .com.scrxmax+(float)`stagebound < `x)
+          || (`velocityy > 0.0 && `y > (float)`heightboundb)
+          || (`velocityy < 0.0 && `y < (float)`heightboundt)
+          || `removetime == 0
+          :
+          `ani = .chars[`playerno][0]~getAction(`remanim);
+        else:
+          break;
+        comm:
+          if(#`ani > 0 && `ani~ani.totaltime == -1) `ani.new(0);
+          `remvel();
+        }
+      else:
+        branch{
+        cond #`ani > 0 && `ani~ani.loopend:
+          `ani.new(0);
+        cond `id >= 0 && `hitpause == 0 && `removetime <= 0:
+          `id = !`id;
+        }
+      }
       `ticOldX = `x;
       `ticNewX = `x + `velocityx*(float)`facing;
       `ticOldY = `y;
@@ -1814,38 +1847,6 @@ public &Projectile
       `hit.air_juggle = 0;
     }
     if(`hits <= 0) `hit.attr = -1;
-    branch{
-    cond `anim >= 0:
-      branch{
-      cond `prioritypoint <= 0 && `remove != 0:
-        `ani = .chars[`playerno][0]~getAction(`cancelanim);
-      cond `hits <= 0 && `remove != 0:
-        `ani = .chars[`playerno][0]~getAction(`hitanim);
-      cond
-        (
-          `x < .com.xmin-(float)`edgebound || .com.xmax+(float)`edgebound < `x)
-        || (
-          `x < .com.scrxmin-(float)`stagebound
-          || .com.scrxmax+(float)`stagebound < `x)
-        || (`velocityy > 0.0 && `y > (float)`heightboundb)
-        || (`velocityy < 0.0 && `y < (float)`heightboundt)
-        || `removetime == 0
-        :
-        `ani = .chars[`playerno][0]~getAction(`remanim);
-      else:
-        break;
-      comm:
-        if(#`ani > 0 && `ani~ani.totaltime == -1) `ani.new(0);
-        `remvel();
-      }
-    else:
-      branch{
-      cond #`ani > 0 && `ani~ani.loopend:
-        `ani.new(0);
-      cond `id >= 0 && `hitpause == 0 && `removetime <= 0:
-        `id = !`id;
-      }
-    }
     if(`paused()) ret;
     branch{
     cond `pctime > 0:
@@ -5260,7 +5261,7 @@ public void Explod::update()
     if(#c == 0) c = .players.get(`player);
     act = #c == 0 || c~acttmp%2 != -1;
   }
-  if(.com.tickNextFrame()){
+  if(.com.tickFrame()){
     if(`removeongethit != 0){
       if(#c == 0) c = .players.get(`player);
       if(#c == 0 || c~stVal.mov == .MovTy::H){
