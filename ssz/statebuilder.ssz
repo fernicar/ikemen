@@ -5402,7 +5402,7 @@ public &StateBuilder
         `state.ctrlList[-1].task .=
           "index i;^&.Explod e=`newExplod(i=);if(#e==0)ret;"
           "int t=0;float rx=0.0,ry=0.0;"
-          "e~ontop=1;e~sprpriority=-5;e~ownpal=1;";
+          "e~ontop=1;e~sprpriority=.consts.int_t::MIN;e~ownpal=1;";
       case .CtrlTy::ModifyExplod:
         `state.ctrlList[-1].task .=
           "&.ModifyExplod m;int t=0;float rx=0.0,ry=0.0;";

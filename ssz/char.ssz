@@ -3859,8 +3859,8 @@ public &Char
     ^&.Explod e = `newExplod(i=);
     if(#e==0)ret;
     e~ani = .fight~getAction(120);
-    e~ontop = 1;
-    e~sprpriority = -5;
+    e~ontop = 0;
+    e~sprpriority = .consts.int_t::MAX;
     e~ownpal = 1;
     e~offsetx = x;
     e~offsety = y;
@@ -5646,7 +5646,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       e~player = `by.id;
       e~scalex = e~scaley = 1.0;
       e~ontop = 1;
-      e~sprpriority = 5;
+      e~sprpriority = .consts.int_t::MIN;
       e~ownpal = 1;
       e~supermovetime = e~pausemovetime = -1;
       p1.setPos!e<>.self?(e<>=, e~postype, e~offsetx, e~offsety, e~relativef);
@@ -6811,16 +6811,13 @@ public void draw(float x, float y, float scl)
     .stg~bgDraw(false, x, y, scl);
   }
   branch{
-  cond<envu> .envcol_time != 0 && .envcol_under != 0:
-    .com.screenFill(ecol);
-  cond<envt> .envcol_time != 0:
-    break;
-  comm:
+  cond .envcol_time != 0:
+    if(.envcol_under != 0) .com.screenFill(ecol);
+  else:
     if(!.gs(.gsGLOBALNOSHADOW)){
       if(.stg~reflection > 0) .drawReflection(x, y);
       if(.stg~sdw.intensity > 0) .drawShadowList(x, y);
     }
-  else:
     .fight~draw(0, lpl, names, .gs(.gsNOBARDISPLAY));
     .fight~ro.draw(0, .ko, winner);
   }

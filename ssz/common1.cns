@@ -1635,7 +1635,7 @@ void c.Char::s##_@@P()
         index idx;
         ^&.Explod e = `newExplod(idx=);
         if(#e > 0){
-          e~sprpriority = -5;
+          e~sprpriority = .consts.int_t::MIN;
           e~ownpal = 1;
           e~ani =
             .fight~getAction(
@@ -1762,7 +1762,7 @@ void c.Char::s##_@@P()
         index idx;
         ^&.Explod e = `newExplod(idx=);
         if(#e > 0){
-          e~sprpriority = -5;
+          e~sprpriority = .consts.int_t::MIN;
           e~ownpal = 1;
           e~ani =
             .fight~getAction(
@@ -1988,7 +1988,7 @@ void c.Char::s##_@@P()
         index idx;
         ^&.Explod e = `newExplod(idx=);
         if(#e > 0){
-          e~sprpriority = -5;
+          e~sprpriority = .consts.int_t::MIN;
           e~ownpal = 1;
           e~ani = .fight~getAction(60);
           e~offsetx = 0.0;

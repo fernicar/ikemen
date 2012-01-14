@@ -184,7 +184,7 @@ public &Stage
           .m.max!int?(0)<, .m.min!int?(255)<, .com.atoi(data);
       }
       if(#(data = sc.get("color")) > 0){
-        ^ubyte c = .com.csvToAry!c<>.self?(data);
+        ^ubyte c = .bg.csvToAry!c<>.self?(data);
         if(#c >= 3) `sdw.color = c[0]<<0d16 | c[1]<<0d8 | c[2];
         loop{index i = 0; do:
           `sdw.pal[i] = `sdw.color;
@@ -194,7 +194,7 @@ public &Stage
       if(#(data = sc.get("yscale")) > 0) `sdw.yscale = .com.atof(data);
       if(#(data = sc.get("reflect")) > 0) `reflect = .com.atoi(data) != 0;
       if(#(data = sc.get("fade.range")) > 0){
-        .com.readPair!int?(`sdw.fadeend=, `sdw.fadebgn=, data);
+        .bg.readPair!int?(`sdw.fadeend=, `sdw.fadebgn=, data);
       }
     }
     public void reflection(&.com.Section sc=)
@@ -230,7 +230,7 @@ public &Stage
       branch{
       cond #(data = sc.get("ctrlid")) > 0:
         {
-          ^int ids = .com.csvToAry!ids<>.self?(data);
+          ^int ids = .bg.csvToAry!ids<>.self?(data);
           if(#ids == 1 && ids[0] == -1) break, else;
           loop{index i = 0; while; do:
             loop{index j = 0; while; do:
@@ -256,7 +256,7 @@ public &Stage
       `bgctrlList[-1].looptime = `bgcdef.looptime;
       ^/char data;
       if(#(data = sc.get("ctrlid")) > 0){
-        ^int ids = .com.csvToAry!ids<>.self?(data);
+        ^int ids = .bg.csvToAry!ids<>.self?(data);
         `bgctrlList[-1].ctrlbg.new(0);
         branch{
         cond #ids == 1 && ids[0] == -1:

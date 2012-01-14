@@ -7,6 +7,48 @@ lib sff = "sff.ssz";
 lib cfg = "config.ssz";
 lib com = "common.ssz";
 
+public ^^/char splitParams(^/char paramStr)
+{
+  %^/char params;
+  loop{
+    ^/char tmp = paramStr;
+    index cidx, bidx;
+  do:
+    tmp = .s.trim(tmp);
+    cidx = .s.find(",", tmp);
+    bidx = .s.find(.s.blank, tmp);
+    if(bidx >= 0 && bidx < cidx){
+      params .= tmp[0..bidx];
+      break, break;
+    }
+    params .= .s.trim(tmp[0..cidx]);
+    if(cidx < 0) break;
+    tmp = tmp[cidx+1 .. -1];
+  while true:
+  }
+  ret params;
+}
+
+public ..csvToAry<_t>(^/char csv) ^_t
+{
+  ^^/char spl = .splitParams(csv);
+  ^_t ary.new(#spl);
+  loop{index i = 0; while; do:
+    ary[i] = (_t).com.atof(spl[i]);
+    i++;
+  while i < #ary:
+  }
+  ret ary;
+}
+
+public void readPair<_t>(_t x=, _t y=, ^/char data)
+{
+  ^_t xy = .csvToAry!_t?(data);
+  x = xy[0];
+  y = #xy >= 2 ? xy[1] : (_t)0;
+}
+
+
 public &Frame
 {
   public int time = -1;
@@ -150,7 +192,7 @@ public &BackGround
     ^/char data;
     if(#(data = sc.get("spriteno")) > 0){
       `anim.frames.new(1);
-      .com.readPair!short?(`anim.frames~group=, `anim.frames~number=, data);
+      .readPair!short?(`anim.frames~group=, `anim.frames~number=, data);
       `anim.frames[0].time = -1;
     }
     if(#(data = sc.get("actionno")) > 0){
@@ -168,7 +210,7 @@ public &BackGround
     }
     if(#(data = sc.get("layerno")) > 0) `toplayer = .com.atoi(data) != 0;
     if(#(data = sc.get("start")) > 0){
-      ^float xy = .com.csvToAry!float?(data);
+      ^float xy = .csvToAry!float?(data);
       float mul = hires ? 0.5 : 1.0;
       `startx = xy[0]*mul;
       branch{
@@ -179,15 +221,10 @@ public &BackGround
       }
     }
     if(#(data = sc.get("delta")) > 0){
-      ^float xy = .com.csvToAry!float?(data);
+      ^float xy = .csvToAry!float?(data);
       float mul = hires ? 0.5 : 1.0;
       `deltax = xy[0]*mul;
-      branch{
-      cond #xy >= 2:
-        `deltay = xy[1]*mul;
-      else:
-        `deltay = `deltax;
-      }
+      if(#xy >= 2) `deltay = xy[1]*mul;
     }
     if(#(data = sc.get("trans")) > 0){
       branch{
@@ -208,7 +245,7 @@ public &BackGround
       `anim.mask = 0;
     }
     if(#(data = sc.get("alpha")) > 0){
-      ^int sd = .com.csvToAry!int?(data);
+      ^int sd = .csvToAry!int?(data);
       if(#sd >= 2){
         `anim.salpha = sd[0];
         if(`anim.salpha > 255) `anim.salpha = 255;
@@ -226,18 +263,18 @@ public &BackGround
         }
     }
     if(#(data = sc.get("tile")) > 0){
-      .com.readPair!ushort?(`anim.tile.w=, `anim.tile.h=, data);
+      .readPair!ushort?(`anim.tile.w=, `anim.tile.h=, data);
     }
     if(#(data = sc.get("tilespacing")) > 0){
-      ^int xy = .com.csvToAry!int?(data);
+      ^int xy = .csvToAry!int?(data);
       `anim.tile.x = xy[0];
       `anim.tile.y = xy[1];
     }
     if(#(data = sc.get("width")) > 0){
-      .com.readPair!ushort?(`twidth=, `bwidth=, data);
+      .readPair!ushort?(`twidth=, `bwidth=, data);
     }
     if(#(data = sc.get("xscale")) > 0){
-      .com.readPair!float?(`rasterxtspeed=, `rasterxbspeed=, data);
+      .readPair!float?(`rasterxtspeed=, `rasterxbspeed=, data);
     }
     if(#(data = sc.get("yscalestart")) > 0){
       `yscalestart = 100.0 / .com.atof(data);
@@ -246,7 +283,7 @@ public &BackGround
       `yscaledelta = .com.atof(data);
     }
     if(#(data = sc.get("window")) > 0){
-      ^float ltrb = .com.csvToAry!float?(data);
+      ^float ltrb = .csvToAry!float?(data);
       float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
       float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
       if(#ltrb >= 4){
@@ -257,7 +294,7 @@ public &BackGround
       }
     }
     if(#(data = sc.get("windowdelta")) > 0){
-      ^float xy = .com.csvToAry!float?(data);
+      ^float xy = .csvToAry!float?(data);
       float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
       float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
       `windowdeltax = xy[0]*mulx;
@@ -270,7 +307,7 @@ public &BackGround
     }
     if(#(data = sc.get("id")) > 0) `id = .com.atoi(data);
     if(#(data = sc.get("velocity")) > 0){
-      ^float xy = .com.csvToAry!float?(data);
+      ^float xy = .csvToAry!float?(data);
       float mul = hires ? 0.5 : 1.0;
       `startvx = xy[0]*mul;
       branch{
@@ -281,7 +318,7 @@ public &BackGround
       }
     }
     if(#(data = sc.get("sin.x")) > 0){
-      ^float rp = .com.csvToAry!float?(data);
+      ^float rp = .csvToAry!float?(data);
       if(#rp < 2) break;
       `startxrad = `bga.xradius = rp[0];
       `startsinxlt = `bga.sinxlooptime = (int)rp[1];
@@ -293,7 +330,7 @@ public &BackGround
       }
     }
     if(#(data = sc.get("sin.y")) > 0){
-      ^float rp = .com.csvToAry!float?(data);
+      ^float rp = .csvToAry!float?(data);
       if(#rp < 2) break;
       `startyrad = `bga.yradius = rp[0];
       `startsinylt = `bga.sinylooptime = (int)rp[1];
@@ -418,7 +455,7 @@ public &BGCtrl
       }
     }
     if(#(data = sc.get("time")) > 0){
-      ^int times = .com.csvToAry!int?(data);
+      ^int times = .csvToAry!int?(data);
       if(#times < 1) break;
       `starttime = `endtime = times[0];
       if(#times < 2) break;
@@ -430,7 +467,7 @@ public &BGCtrl
       `positionlink = .com.atoi(data) != 0;
     }
     if(#(data = sc.get("value")) > 0){
-      ^float val = .com.csvToAry!float?(data);
+      ^float val = .csvToAry!float?(data);
       if(#val < 1) break;
       `x = val[0];
       if(#val < 2) break;
