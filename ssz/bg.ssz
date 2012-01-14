@@ -16,7 +16,7 @@ public ^^/char splitParams(^/char paramStr)
   do:
     tmp = .s.trim(tmp);
     cidx = .s.find(",", tmp);
-    bidx = .s.find(.s.blank, tmp);
+    bidx = .s.cFind(.s.blank, tmp);
     if(bidx >= 0 && bidx < cidx){
       params .= tmp[0..bidx];
       break, break;

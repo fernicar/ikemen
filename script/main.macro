@@ -74,6 +74,7 @@ p2Cmd#newCommand
   #`#=~p2Portrait
 
   #`0#=~stageNo
+  #`|0|#setStage
 #]#=init#!
 
 
