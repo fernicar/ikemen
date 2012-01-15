@@ -3121,21 +3121,6 @@ public &Char
         if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
       }
       if(!`isHitPaused()){
-        `sysivar[.iSPECIALFLAG] =
-          `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
-          ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH
-          : 0;
-        `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
-        `attackdist = (float)`sysivar[.iATTACK_DIST];
-        `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
-        `offsety = (float)`sysivar[.iDRAW_OFFSETY];
-        if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
-        if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
-        loop{index i = 0; while; do:
-          if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
-          i++;
-        while i < #`stVal.ho:
-        }
         `setFacing(`p1facing);
         `p1facing = 0;
       }
@@ -3201,6 +3186,23 @@ public &Char
           case 20:
             `trSelfState(0, -1, 1);
           }
+        }
+      }
+      if(!`isHitPaused()){
+        `sysivar[.iSPECIALFLAG] =
+          `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
+          ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH
+          : 0;
+        `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
+        `attackdist = (float)`sysivar[.iATTACK_DIST];
+        `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
+        `offsety = (float)`sysivar[.iDRAW_OFFSETY];
+        if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
+        if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
+        loop{index i = 0; while; do:
+          if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
+          i++;
+        while i < #`stVal.ho:
         }
       }
       `minus = -3;
