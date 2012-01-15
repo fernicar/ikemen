@@ -4003,10 +4003,6 @@ public &Char
   }
   public void trIfelse(&.Var b, &.Var v1, &.Var v2)
   {
-    if(b.isSF() || v1.isSF() || v2.isSF()){
-      .v.setSF();
-      ret;
-    }
     .v = b.isT() ? v1 : v2;
   }
   public void trBoolNot()
