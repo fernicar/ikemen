@@ -577,7 +577,7 @@ public &StateBuilder
     }
     ret rtn;
   }
-  bool attr(int flg=, ^/char text)
+  bool attr(int flg=, ^/char text, bool hitdef)
   {
     flg = 0;
     ^^/char hit = .s.split(",", text);
@@ -598,7 +598,10 @@ public &StateBuilder
           `lasterror = hit[0] + "が無効な値です";
           ret false;
         }
+        break, continue;
       }
+      if(hitdef) break;
+    continue:
       i++;
     while i < #foo:
     }
@@ -609,6 +612,7 @@ public &StateBuilder
       foo = .s.toLower()<, .s.trim(hit[i]);
       branch{
         ^/char tmp = .s.trim(foo[0..2]);
+        if(hitdef && i > 1) else;
       cond .s.equ(tmp, "na"): flg |= (int).chr.AtTy::NA;
       cond .s.equ(tmp, "nt"): flg |= (int).chr.AtTy::NT;
       cond .s.equ(tmp, "np"): flg |= (int).chr.AtTy::NP;
@@ -1540,7 +1544,7 @@ public &StateBuilder
         }
         int flg;
         index fi = .s.cFind(")]&|^", in);
-        if(!`attr(flg=, in[0..fi])) ret false;
+        if(!`attr(flg=, in[0..fi], false)) ret false;
         in = in[fi..-1];
         out .= obj .= "trHitDefAttr(" .= .s.iToS(flg) .= ")";
       }
@@ -3227,7 +3231,7 @@ public &StateBuilder
         ? "pr~hit" : "`stVal.hit";
       if(!`stateParam(param=, "attr", [`paraF_t(data=){
         int flg;
-        if(!`attr(flg=, data)) ret false;
+        if(!`attr(flg=, data, true)) ret false;
         `state.ctrlList[-1].task .= obj .= ".attr=" .= .s.iToS(flg) .= ';';
         ret true;
       }])) ret false;
@@ -3351,7 +3355,7 @@ public &StateBuilder
       case .CtrlTy::ReversalDef:
         if(!`stateParam(param=, "reversal.attr", [`paraF_t(data=){
           int flg;
-          if(!`attr(flg=, data)) ret false;
+          if(!`attr(flg=, data, false)) ret false;
           `state.ctrlList[-1].task .=
             obj .= ".reversal_attr=" .= .s.iToS(flg) .= ';';
           ret true;
@@ -4405,7 +4409,7 @@ public &StateBuilder
       `state.ctrlList[-1].task .= "int a=0,s=0,st=-1,t=1,f=0;";
       if(!`stateParam(param=, "attr", [`paraF_t(data=){
         int flg;
-        if(!`attr(flg=, data)) ret false;
+        if(!`attr(flg=, data, false)) ret false;
         `state.ctrlList[-1].task .= "a=" .= .s.iToS(flg) .= ';';
         ret true;
       }])) ret false;
@@ -4884,7 +4888,7 @@ public &StateBuilder
       bool val = false, ni = false;
       ~$bool(^/char) valset = [bool(^/char data){
         int flg;
-        if(!`attr(flg=, data)) ret false;
+        if(!`attr(flg=, data, false)) ret false;
         if(`state.ctrlList[-1].typ == .CtrlTy::NotHitBy) flg = !flg;
         `state.ctrlList[-1].task .=
           (ni ? "`stVal.hb.hitf2=" : "`stVal.hb.hitf1=")
