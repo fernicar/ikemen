@@ -51,8 +51,8 @@ public &EnvShake envShake;
 &Camera
 {
   public int startx = 0;
-  public int boundleft = -95, boundright = 95;
-  public int boundhigh = -25;
+  public int boundleft = 0, boundright = 0;
+  public int boundhigh = 0;
   public float verticalfollow = 0.2;
   public int tension = 50, floortension = 0;
 }

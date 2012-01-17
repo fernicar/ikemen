@@ -194,10 +194,11 @@ public &BackGround
     if(#(data = sc.get("type")) > 0){
       data = .s.toLower(data);
       branch{
-      cond .s.equ(data, "anim"):
+      cond .s.equ(data[0..4], "anim"):
         typ = 1;
-      cond .s.equ(data, "parallax"):
-        typ = 2;      }
+      cond .s.equ(data[0..8], "parallax"):
+        typ = 2;
+      }
     }
     if(typ != 1 && #(data = sc.get("spriteno")) > 0){
       `anim.frames.new(1);
