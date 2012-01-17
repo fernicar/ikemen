@@ -6816,7 +6816,7 @@ public void draw(float x, float y, float scl)
       float yofs =
         (.com.scale > 1.0 ? .com.zoffset : 240.0)*(1.0/.com.scale - 1.0) + bh;
       float yofs2 =
-        .com.scale > 1.0 ? (240.0 - .com.zoffset)*(1.0 - 1.0/.com.scale) : 1.0;
+        .com.scale > 1.0 ? (240.0 - .com.zoffset)*(1.0 - 1.0/.com.scale) : 0.0;
       *.com.scrrect.self rect = .com.scrrect;
     cond off < y + yofs:
       rect.h =
