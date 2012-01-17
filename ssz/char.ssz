@@ -6812,12 +6812,20 @@ public void draw(float x, float y, float scl)
       float off = .stage.envShake.getOffset();
       float bh = 
         .stg~cam.verticalfollow != 0.0
-        ? (float).m.max!int?(0, .stg~cam.boundhigh) : 0.0;
+        ? (float).m.min!int?(0, .stg~cam.boundhigh) : 0.0;
+      float yofs =
+        (.com.scale > 1.0 ? .com.zoffset : 240.0)*(1.0/.com.scale - 1.0) + bh;
+      float yofs2 =
+        .com.scale > 1.0 ? (240.0 - .com.zoffset)*(1.0 - 1.0/.com.scale) : 1.0;
       *.com.scrrect.self rect = .com.scrrect;
-    cond off < y + bh:
-      rect.h = ((uint)((y + bh) - off + 0.5)*.com.scrrect.h + 0d239) / 0d240;
-    cond off > -y:
-      rect.h = ((uint)(y + off + 0.5)*.com.scrrect.h + 0d239) / 0d240;
+    cond off < y + yofs:
+      rect.h =
+        ((uint)(((y + yofs) - off)*.com.scale + 0.5)*.com.scrrect.h + 0d239)
+        / 0d240;
+    cond off > -y + yofs2:
+      rect.h =
+        ((uint)(((y - yofs2) + off)*.com.scale + 0.5)*.com.scrrect.h + 0d239)
+        / 0d240;
       rect.y = (int)(.com.scrrect.h - rect.h);
     else:
       break;
