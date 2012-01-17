@@ -189,13 +189,22 @@ public &BackGround
   }
   public void read(&.com.Section sc=, bool hires, ^/`self link)
   {
+    int typ = 0;//0:normal, 1:anim, 2:parallax
     ^/char data;
-    if(#(data = sc.get("spriteno")) > 0){
+    if(#(data = sc.get("type")) > 0){
+      data = .s.toLower(data);
+      branch{
+      cond .s.equ(data, "anim"):
+        typ = 1;
+      cond .s.equ(data, "parallax"):
+        typ = 2;      }
+    }
+    if(typ != 1 && #(data = sc.get("spriteno")) > 0){
       `anim.frames.new(1);
       .readPair!short?(`anim.frames~group=, `anim.frames~number=, data);
       `anim.frames[0].time = -1;
     }
-    if(#(data = sc.get("actionno")) > 0){
+    if(typ == 1 && #(data = sc.get("actionno")) > 0){
       `actionno = .com.atoi(data);
       `anim.mask = 0;
     }
@@ -222,9 +231,8 @@ public &BackGround
     }
     if(#(data = sc.get("delta")) > 0){
       ^float xy = .csvToAry!float?(data);
-      float mul = hires ? 0.5 : 1.0;
-      `deltax = xy[0]*mul;
-      if(#xy >= 2) `deltay = xy[1]*mul;
+      `deltax = xy[0];
+      if(#xy >= 2) `deltay = xy[1];
     }
     if(#(data = sc.get("trans")) > 0){
       branch{
@@ -270,16 +278,16 @@ public &BackGround
       `anim.tile.x = xy[0];
       `anim.tile.y = xy[1];
     }
-    if(#(data = sc.get("width")) > 0){
+    if(typ == 2 && #(data = sc.get("width")) > 0){
       .readPair!ushort?(`twidth=, `bwidth=, data);
     }
-    if(#(data = sc.get("xscale")) > 0){
+    if(typ == 2 && #(data = sc.get("xscale")) > 0){
       .readPair!float?(`rasterxtspeed=, `rasterxbspeed=, data);
     }
-    if(#(data = sc.get("yscalestart")) > 0){
+    if(typ == 2 && #(data = sc.get("yscalestart")) > 0){
       `yscalestart = 100.0 / .com.atof(data);
     }
-    if(#(data = sc.get("yscaledelta")) > 0){
+    if(typ == 2 && #(data = sc.get("yscaledelta")) > 0){
       `yscaledelta = .com.atof(data);
     }
     if(#(data = sc.get("window")) > 0){
@@ -343,7 +351,8 @@ public &BackGround
     }
   }
   public void setup(
-    ^&.sff.Sff sf, bool hires, float camstartx, ~$void(^&.Action=, int) getact)
+    ^&.sff.Sff sf, bool hires, float camstartx, bool verticalfollow,
+    ~$void(^&.Action=, int) getact)
   {
     `camstartx = camstartx;
     ^&.sff.Sprite spr;
@@ -372,18 +381,24 @@ public &BackGround
         `anim.tile.y += (int)spr~rct.h;
       }
     }
+    if(!verticalfollow){
+      `deltay = 1.0;
+      `windowdeltay = `yscaledelta = 0.0;
+    }
     {
       float mul = hires ? 0.5 : 1.0;
       `xtscale *= mul;
       `xbscale *= mul;
       `yscalestart *= mul;
+      `deltax *= mul;
+      `deltay *= mul;
     }
     `anim.setup(sf);
   }
   public void draw(float posx, float posy, float scl, ^&.com.PalFX fx)
   {
-    float x = .cfg.Zoom ? posx : .m.ceil(posx);
-    float y = .cfg.Zoom ? posy : .m.ceil(posy);
+    float x = .cfg.Zoom ? posx : .m.ceil(posx-0.5);
+    float y = .cfg.Zoom ? posy : .m.ceil(posy-0.5);
     &.sdl.Rect rect;
     rect = `startrect;
     rect.x += -(short).m.floor((x+`camstartx) * `windowdeltax + 0.5);

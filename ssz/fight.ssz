@@ -534,8 +534,9 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     .layspr((float)`posx, (float)`posy, layerno, `face_spr, `face_lay=);
     loop{
-      index i = 0;
-      float x = (float)`teammate_posx, y = (float)`teammate_posy;
+      index i = #`teammate_face_spr-1;
+      float x = (float)(`teammate_posx+`teammate_spacingx*(i-1));
+      float y = (float)(`teammate_posy+`teammate_spacingy*(i-1));
       while;
     do:
       if(i == `numko) continue;
@@ -546,11 +547,11 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         .laydraw(
           .com.scrrect=, x, y, 1.0, layerno, `teammate_ko=, `teammate_ko_lay=);
       }
-      x += (float)`teammate_spacingx;
-      y += (float)`teammate_spacingy;
+      x -= (float)`teammate_spacingx;
+      y -= (float)`teammate_spacingy;
     continue:
-      i++;
-    while i < #`teammate_face_spr:
+      i--;
+    while i >= 0:
     }
   }
   public void setup(^&.sff.Sff sf)

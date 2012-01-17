@@ -349,8 +349,10 @@ public &Stage
       index i = 0, link = 0;
       int zofs = 0;
     while; do:
-      `bg[i].setup(`sf, `hires, (float)`cam.startx)<,
-        [void(^&.bg.Action act=, int n){act = `getAction(n);}];
+      `bg[i].setup(
+        `sf, `hires, (float)`cam.startx,
+        `cam.verticalfollow != 0.0 && `cam.boundhigh < 0,
+        [void(^&.bg.Action act=, int n){act = `getAction(n);}]);
       branch{
       cond `bg[i].positionlink && i > 0:
         `bg[i].startx += `bg[link].startx;

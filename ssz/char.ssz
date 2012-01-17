@@ -2945,9 +2945,15 @@ public &Char
       int sp = `sprpriority;
       int br = 256 >> (int)(
         .super > 0 && .superdarken != 0 && `playerno != .superplayer);
-      float an =
-        `ls(.lsANGLEDRAW)
-        ? (`sysfvar[.fANGLE] == 0.0 ? 360.0 : `sysfvar[.fANGLE]) : 0.0;
+      float an;
+      branch{
+      cond `ls(.lsANGLEDRAW):
+        an = `sysfvar[.fANGLE] == 0.0 ? 360.0 : `sysfvar[.fANGLE];
+        `angleset |= `sysfvar[.fANGLE] != 0.0;
+      else:
+        an = 0.0;
+        `angleset = false;
+      }
     cond !`ls(.lsINVISIBLE):
       if(`ls(.lsANGLEDRAW) && !`ls(.lsTRANS)){
         `sysivar[.iSPECIALFLAG] |= .lsTRANS;
@@ -6471,20 +6477,15 @@ public float action(
   }
   leftest -= x;
   rightest -= x;
-  if(.com.intro == rs4t && #(leftest + rightest)*.com.scale > 64.0){
-    float tmp;
-    branch{
-    cond leftest + rightest < 0.0:
-      tmp =
-        .m.max!float?(0.0, (.com.xmin - x - .com.screenleft) - leftest + 64.0);
-      tmp = -.m.sqrt(tmp * (1.0/16.0));
-    else:
-      tmp =
-        .m.max!float?(
-          0.0, rightest - (.com.xmax - x + .com.screenright) + 64.0);
-      tmp = .m.sqrt(tmp * (1.0/16.0));
-    }
-    cvx += tmp * .m.min!float?(1.0, .com.turbo);
+  if(.com.intro == rs4t && #(leftest + rightest)*.com.scale > 64.0) branch{
+  cond leftest + rightest < 0.0:
+    cvx -=
+      .m.min!float?(8.0)<,
+      .m.max!float?(0.0, (.com.xmin - x - .com.screenleft) - leftest + 64.0);
+  else:
+    cvx +=
+      .m.min!float?(8.0)<,
+      .m.max!float?(0.0, rightest - (.com.xmax - x + .com.screenright) + 64.0);
   }
   branch{
     float tmp = leftest + rightest;
@@ -6807,6 +6808,22 @@ public void draw(float x, float y, float scl)
   else:
     if(.stg~debugbg) .com.screenFill(0x00ff00ff);
     .stg~bgDraw(false, x, y, scl);
+    branch{
+      float off = .stage.envShake.getOffset();
+      float bh = 
+        .stg~cam.verticalfollow != 0.0
+        ? (float).m.max!int?(0, .stg~cam.boundhigh) : 0.0;
+      *.com.scrrect.self rect = .com.scrrect;
+    cond off < y + bh:
+      rect.h = ((uint)((y + bh) - off + 0.5)*.com.scrrect.h + 0d239) / 0d240;
+    cond off > -y:
+      rect.h = ((uint)(y + off + 0.5)*.com.scrrect.h + 0d239) / 0d240;
+      rect.y = (int)(.com.scrrect.h - rect.h);
+    else:
+      break;
+    comm:
+      fade(rect=, 255);
+    }
   }
   branch{
   cond .envcol_time != 0:
