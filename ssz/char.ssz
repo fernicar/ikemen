@@ -6480,11 +6480,11 @@ public float action(
   if(.com.intro == rs4t && #(leftest + rightest)*.com.scale > 64.0) branch{
   cond leftest + rightest < 0.0:
     cvx -=
-      .m.min!float?(8.0)<,
+      .m.min!float?(1.0, .com.turbo) * .m.min!float?(8.0)<,
       .m.max!float?(0.0, (.com.xmin - x - .com.screenleft) - leftest + 64.0);
   else:
     cvx +=
-      .m.min!float?(8.0)<,
+      .m.min!float?(1.0, .com.turbo) * .m.min!float?(8.0)<,
       .m.max!float?(0.0, rightest - (.com.xmax - x + .com.screenright) + 64.0);
   }
   branch{
