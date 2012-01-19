@@ -160,6 +160,9 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   public int shadowoffset;
   public int draw_offsetx;
   public int draw_offsety;
+  public int z_width;
+  public int attack_z_width_front;
+  public int attack_z_width_back;
   new()
   {
     `reset();
@@ -185,6 +188,9 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
     `shadowoffset = 0;
     `draw_offsetx = 0;
     `draw_offsety = 0;
+    `z_width = 3;
+    `attack_z_width_front = 4;
+    `attack_z_width_back = 4;
   }
 }
 &Velocity
@@ -217,30 +223,42 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   public float air_gethit_airrecover_fwd;
   public float air_gethit_airrecover_up;
   public float air_gethit_airrecover_down;
+  public float walk_up_x;
+  public float walk_down_x;
+  public float run_up_x;
+  public float run_up_y;
+  public float run_down_x;
+  public float run_down_y;
+  public float jump_up_x;
+  public float jump_down_x;
+  public float runjump_up_x;
+  public float runjump_down_x;
+  public float airjump_up_x;
+  public float airjump_down_x;
   new()
   {
     `reset();
   }
   public void reset()
   {
-    `walk_fwd = 2.4;
-    `walk_back = -2.2;
-    `run_fwdx = 4.6;
+    `walk_fwd = 0.0;
+    `walk_back = 0.0;
+    `run_fwdx = 0.0;
     `run_fwdy = 0.0;
-    `run_backx = -4.5;
-    `run_backy = -3.8;
+    `run_backx = 0.0;
+    `run_backy = 0.0;
     `jump_neux = 0.0;
-    `jump_neuy = -8.4;
-    `jump_back = -2.55;
-    `jump_fwd = 2.5;
-    `runjump_backx = -2.55;
-    `runjump_backy = -8.1;
-    `runjump_fwdx = 4.0;
-    `runjump_fwdy = -8.1;
+    `jump_neuy = 0.0;
+    `jump_back = 0.0;
+    `jump_fwd = 0.0;
+    `runjump_backx = 0.0;
+    `runjump_backy = 0.0;
+    `runjump_fwdx = 0.0;
+    `runjump_fwdy = 0.0;
     `airjump_neux = 0.0;
-    `airjump_neuy = -8.1;
-    `airjump_back = -2.55;
-    `airjump_fwd = 2.5;
+    `airjump_neuy = 0.0;
+    `airjump_back = 0.0;
+    `airjump_fwd = 0.0;
     `air_gethit_groundrecoverx = -0.15;
     `air_gethit_groundrecovery = -3.5;
     `air_gethit_airrecover_mulx = 0.5;
@@ -251,6 +269,18 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
     `air_gethit_airrecover_fwd = 0.0;
     `air_gethit_airrecover_up = -2.0;
     `air_gethit_airrecover_down = 1.5;
+    `walk_up_x = 0.0;
+    `walk_down_x = 0.0;
+    `run_up_x = 0.0;
+    `run_up_y = 0.0;
+    `run_down_x = 0.0;
+    `run_down_y = 0.0;
+    `jump_up_x = 0.0;
+    `jump_down_x = 0.0;
+    `runjump_up_x = 0.0;
+    `runjump_down_x = 0.0;
+    `airjump_up_x = 0.0;
+    `airjump_down_x = 0.0;
   }
 }
 &Movement
@@ -1256,6 +1286,12 @@ public &StateBuilder
         out .= ".v.setF(" .= obj .= "sysfvar[.fSTAND_FRICTION])";
       cond .s.equ("movement.crouch.friction", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fCROUCH_FRICTION])";
+      cond .s.equ("size.z.width", token):
+        out .= ".v.setF(" .= obj .= "sysivar[.iZ_WIDTH])";
+      cond .s.equ("size.attack.z.width.front", token):
+        out .= ".v.setF(" .= obj .= "sysivar[.iATTACK_Z_WIDTH_FRONT])";
+      cond .s.equ("size.attack.z.width.back", token):
+        out .= ".v.setF(" .= obj .= "sysivar[.iATTACK_Z_WIDTH_BACK])";
       cond .s.equ("velocity.air.gethit.groundrecover.x", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_GROUNDRECOVERX])";
       cond .s.equ("velocity.air.gethit.groundrecover.y", token):
@@ -1276,6 +1312,30 @@ public &StateBuilder
         out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_UP])";
       cond .s.equ("velocity.air.gethit.airrecover.down", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fAIR_GETHIT_AIRRECOVER_DOWN])";
+      cond .s.equ("velocity.walk.up.x", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fWALK_UP_X])";
+      cond .s.equ("velocity.walk.down.x", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fWALK_DOWN_X])";
+      cond .s.equ("velocity.run.up.x", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUN_UP_X])";
+      cond .s.equ("velocity.run.up.y", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUN_UP_Y])";
+      cond .s.equ("velocity.run.down.x", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUN_DOWN_X])";
+      cond .s.equ("velocity.run.down.y", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUN_DOWN_Y])";
+      cond .s.equ("velocity.jump.up.x", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fJUMP_UP_X])";
+      cond .s.equ("velocity.jump.down.x", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fJUMP_DOWN_X])";
+      cond .s.equ("velocity.runjump.up.x", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUNJUMP_UP_X])";
+      cond .s.equ("velocity.runjump.down.x", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fRUNJUMP_DOWN_X])";
+      cond .s.equ("velocity.airjump.up.x", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIRJUMP_UP_X])";
+      cond .s.equ("velocity.airjump.down.x", token):
+        out .= ".v.setF(" .= obj .= "sysfvar[.fAIRJUMP_DOWN_X])";
       cond .s.equ("movement.stand.friction.threshold", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fSTAND_FRICTION_THRESHOLD])";
       cond .s.equ("movement.crouch.friction.threshold", token):
@@ -1308,12 +1368,8 @@ public &StateBuilder
       cond .s.equ("movement.down.friction.threshold", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fDOWN_FRICTION_THRESHOLD])";
       else:
-        branch{
-        cond .cfg.IgnoreMostErrors:
-          out .= ".v.setSF()";
-        else:
-          break, break, else;
-        }
+        `lasterror = token + "が不正です";
+        ret false;
       }
       `skipBlank(in=);
       if(!.cfg.IgnoreMostErrors && (#in == 0 || in[0] != '(')){
@@ -1512,6 +1568,8 @@ public &StateBuilder
         out .= ".v.setF(" .= obj .= "stVal.hb.fall.yvelocity)";
       cond .s.equ("fall.recover", token):
         out .= ".v.setI(" .= obj .= "stVal.hb.fall.recover)";
+      cond .s.equ("fall.time", token):
+        out .= ".v.setI(" .= obj .= "stVal.fallTime)";
       cond .s.equ("fall.recovertime", token):
         out .= ".v.setI(" .= obj .= "stVal.hb.fall.recovertime)";
       cond .s.equ("fall.kill", token):
@@ -1524,14 +1582,13 @@ public &StateBuilder
         out .= ".v.setI(" .= obj .= "stVal.hb.fall.envshake_ampl)";
       cond .s.equ("fall.envshake.phase", token):
         out .= ".v.setF(" .= obj .= "stVal.hb.fall.envshake_phase)";
+      cond .s.equ("fall.envshake.dir", token):
+        out .= ".v.setI(0)";
       cond .s.equ("isbound", token):
         out .= ".v.setB(" .= obj .= "isBound())";
       else:
-        {
-          %char buf;
-          `lasterror = (buf .= token .= "が不正です");
-          ret false;
-        }
+        `lasterror = token + "が不正です";
+        ret false;
       }
       if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("hitdefattr", token):
@@ -1776,36 +1833,29 @@ public &StateBuilder
       token = `tokenizer(in=);
       if(!`kakkotojiru(in=)) ret false;
       branch{
+        ^/char param;
       cond .s.equ("info.name", token):
-        if(!eqneq(out=, in=)<, [bool(){
-          if(!.s.equ(\", `tokenizer(in=))){
-            `lasterror = "名前が"\""で囲まれていません";
-            ret false;
-          }
-          index fnd = .s.find(\", in);
-          token = in[0..fnd];
-          in = in[fnd+1..-1];
-          out .=
-            ".v.setB(.s.equ(.s.toLower(.stg~name)"
-            .= ","\" .= .s.toLower(token) .= \""))";
-          ret true;
-        }]) ret false;
+        param = "name";
+      cond .s.equ("info.displayname", token):
+        param = "displayname";
       cond .s.equ("info.author", token):
-        if(!eqneq(out=, in=)<, [bool(){
-          if(!.s.equ(\", `tokenizer(in=))){
-            `lasterror = "名前が"\""で囲まれていません";
-            ret false;
-          }
-          index fnd = .s.find(\", in);
-          token = in[0..fnd];
-          in = in[fnd+1..-1];
-          out .=
-            ".v.setB(.s.equ(.s.toLower(.stg~author)"
-            .= ","\" .= .s.toLower(token) .= \""))";
-          ret true;
-        }]) ret false;
+        param = "author";
       else:
         break, else;
+      comm:
+        if(!eqneq(out=, in=)<, [bool(){
+          if(!.s.equ(\", `tokenizer(in=))){
+            `lasterror = "名前が"\""で囲まれていません";
+            ret false;
+          }
+          index fnd = .s.find(\", in);
+          token = in[0..fnd];
+          in = in[fnd+1..-1];
+          out .=
+            ".v.setB(.s.equ(.s.toLower(.stg~".= param
+            .= "),"\" .= .s.toLower(token) .= \""))";
+          ret true;
+        }]) ret false;
       }
     cond .s.equ("playerid", token):
       if(!`expValue(out=, in=)) ret false;
@@ -1875,6 +1925,8 @@ public &StateBuilder
       out .= "(#.c>0?[._t(_=){";
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
       out .= ";}](:.c<>=:):.v.setSF())";
+    cond .s.equ("standby", token):
+      out .= ".v.setI(0)";
     cond
       .s.equ("=", token) || .s.equ("!=", token)
       || .s.equ(">", token) || .s.equ(">=", token)
@@ -7355,6 +7407,11 @@ public &StateBuilder
       if(#(data = sc.get("draw.offset")) > 0){
         .com.readPair!int?(`c.s.draw_offsetx=, `c.s.draw_offsety=, data);
       }
+      if(#(data = sc.get("z.width")) > 0) `c.s.z_width = .com.atoi(data);
+      if(#(data = sc.get("attack.z.width")) > 0){
+        .com.readPair!int?(
+          `c.s.attack_z_width_front=, `c.s.attack_z_width_back=, data);
+      }
       ret true;
     }
     bool velocity(&.com.Section sc=)
@@ -7414,6 +7471,30 @@ public &StateBuilder
       }
       if(#(data = sc.get("air.gethit.airrecover.down")) > 0){
         `c.v.air_gethit_airrecover_down = .com.atof(data);
+      }
+      if(#(data = sc.get("walk.up.x")) > 0) `c.v.walk_up_x = .com.atof(data);
+      if(#(data = sc.get("walk.down.x")) > 0){
+        `c.v.walk_down_x = .com.atof(data);
+      }
+      if(#(data = sc.get("run.up.x")) > 0) `c.v.run_up_x = .com.atof(data);
+      if(#(data = sc.get("run.up.y")) > 0) `c.v.run_up_y = .com.atof(data);
+      if(#(data = sc.get("run.down.x")) > 0) `c.v.run_down_x = .com.atof(data);
+      if(#(data = sc.get("run.down.y")) > 0) `c.v.run_down_y = .com.atof(data);
+      if(#(data = sc.get("jump.up.x")) > 0) `c.v.jump_up_x = .com.atof(data);
+      if(#(data = sc.get("jump.down.x")) > 0){
+        `c.v.jump_down_x = .com.atof(data);
+      }
+      if(#(data = sc.get("runjump.up.x")) > 0){
+        `c.v.runjump_up_x = .com.atof(data);
+      }
+      if(#(data = sc.get("runjump.down.x")) > 0){
+        `c.v.runjump_down_x = .com.atof(data);
+      }
+      if(#(data = sc.get("airjump.up.x")) > 0){
+        `c.v.airjump_up_x = .com.atof(data);
+      }
+      if(#(data = sc.get("airjump.down.x")) > 0){
+        `c.v.airjump_down_x = .com.atof(data);
       }
       ret true;
     }
@@ -7580,6 +7661,11 @@ public &StateBuilder
       \t"`sysivar[.iSHADOWOFFSET] = " .= .s.iToS(`c.s.shadowoffset) .= ";"\r\n
       \t"`sysivar[.iDRAW_OFFSETX] = " .= .s.iToS(`c.s.draw_offsetx) .= ";"\r\n
       \t"`sysivar[.iDRAW_OFFSETY] = " .= .s.iToS(`c.s.draw_offsety) .= ";"\r\n
+      \t"`sysivar[.iZ_WIDTH] = " .= .s.iToS(`c.s.z_width) .= ";"\r\n
+      \t"`sysivar[.iATTACK_Z_WIDTH_FRONT] = "
+      .= .s.iToS(`c.s.attack_z_width_front) .= ";"\r\n
+      \t"`sysivar[.iATTACK_Z_WIDTH_BACK] = "
+      .= .s.iToS(`c.s.attack_z_width_back) .= ";"\r\n
       \t"`sysfvar[.fWALK_FWD] = " .= `fToS(`c.v.walk_fwd) .= ";"\r\n
       \t"`sysfvar[.fWALK_BACK] = " .= `fToS(`c.v.walk_back) .= ";"\r\n
       \t"`sysfvar[.fRUN_FWDX] = " .= `fToS(`c.v.run_fwdx) .= ";"\r\n
@@ -7618,6 +7704,20 @@ public &StateBuilder
       .= `fToS(`c.v.air_gethit_airrecover_up) .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_DOWN] = "
       .= `fToS(`c.v.air_gethit_airrecover_down) .= ";"\r\n
+      \t"`sysfvar[.fWALK_UP_X] = " .= `fToS(`c.v.walk_up_x) .= ";"\r\n
+      \t"`sysfvar[.fWALK_DOWN_X] = " .= `fToS(`c.v.walk_down_x) .= ";"\r\n
+      \t"`sysfvar[.fRUN_UP_X] = " .= `fToS(`c.v.run_up_x) .= ";"\r\n
+      \t"`sysfvar[.fRUN_UP_Y] = " .= `fToS(`c.v.run_up_y) .= ";"\r\n
+      \t"`sysfvar[.fRUN_DOWN_X] = " .= `fToS(`c.v.run_down_x) .= ";"\r\n
+      \t"`sysfvar[.fRUN_DOWN_Y] = " .= `fToS(`c.v.run_down_y) .= ";"\r\n
+      \t"`sysfvar[.fJUMP_UP_X] = " .= `fToS(`c.v.jump_up_x) .= ";"\r\n
+      \t"`sysfvar[.fJUMP_DOWN_X] = " .= `fToS(`c.v.jump_down_x) .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_UP_X] = " .= `fToS(`c.v.runjump_up_x) .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_DOWN_X] = "
+      .= `fToS(`c.v.runjump_down_x) .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_UP_X] = " .= `fToS(`c.v.airjump_up_x) .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_DOWN_X] = "
+      .= `fToS(`c.v.airjump_down_x) .= ";"\r\n
       \t"`sysivar[.iAIRJUMP_CNT] = 0;"\r\n
       \t"`sysivar[.iAIRJUMP_NUM] = " .= .s.iToS(`c.m.airjump_num) .= ";"\r\n
       \t"`sysivar[.iAIRJUMP_HEIGHT] = "

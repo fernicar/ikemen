@@ -1069,7 +1069,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
   public ^&.HitOverride ho;
   public |.MoveContact mctyp;
   public int mctime;
-  public int fallRecoverTime;
+  public int fallTime;
   new()
   {
     `ho.new(8);
@@ -1092,7 +1092,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     loop{index i=0;do:`ho[i].clear();while ++i<#`ho:}
     `mctyp = .MoveContact::Hit;
     `mctime = 0;
-    `fallRecoverTime = 0;
+    `fallTime = 0;
   }
   public int hitCheck(&.Hitdef hit=, bool guard)
   {
@@ -1114,7 +1114,7 @@ void appendToClipboard(int p, ^/char text, ^&.Var vars)
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
     `hb.fall = hit.fall;
-    `fallRecoverTime = `hb.fall.recovertime;
+    `fallTime = 0;
     `hb.yaccel = hit.yaccel;
     `hb.p1getp2facing = hit.p1getp2facing;
     `hb.mindistx = hit.mindistx;
@@ -1238,7 +1238,9 @@ const index iRECOVERTIME       = 55;
 const index iWAITWIN           = 56;
 const index iSPECIALFLAG       = 57;
 const index iSYSFLAG           = 58;
-const index iSYSTEMP           = 59;
+const index iZ_WIDTH              = 59;
+const index iATTACK_Z_WIDTH_FRONT = 60;
+const index iATTACK_Z_WIDTH_BACK  = 61;
 
 const index fX                = 10;
 const index fY                = 11;
@@ -1298,6 +1300,18 @@ const index fDOWN_BOUNCE_OFFSETY                       = 64;
 const index fDOWN_BOUNCE_YACCEL                        = 65;
 const index fDOWN_BOUNCE_GROUNDLEVEL                   = 66;
 const index fDOWN_FRICTION_THRESHOLD                   = 67;
+const index fWALK_UP_X                                 = 68;
+const index fWALK_DOWN_X                               = 69;
+const index fRUN_UP_X                                  = 70;
+const index fRUN_UP_Y                                  = 71;
+const index fRUN_DOWN_X                                = 72;
+const index fRUN_DOWN_Y                                = 73;
+const index fJUMP_UP_X                                 = 74;
+const index fJUMP_DOWN_X                               = 75;
+const index fRUNJUMP_UP_X                              = 76;
+const index fRUNJUMP_DOWN_X                            = 77;
+const index fAIRJUMP_UP_X                              = 78;
+const index fAIRJUMP_DOWN_X                            = 79;
 
 
 const int lsINVISIBLE     = 0b00000000000000000000000000000001;
@@ -1953,9 +1967,9 @@ public &Char
   new()
   {
     `ivar.new(60);
-    `sysivar.new(60);
+    `sysivar.new(62);
     `fvar.new(40);
-    `sysfvar.new(70);
+    `sysfvar.new(80);
     `clearVal();
   }
   void copyParent(`self c=)
@@ -2344,7 +2358,12 @@ public &Char
     {
       ^/char data;
       if(#(data = sc.get("name")) > 0) `name = data;
-      if(#(data = sc.get("displayname")) > 0) `displayname = data;
+      branch{
+      cond #(data = sc.get("displayname")) > 0:
+        `displayname = data;
+      else:
+        `displayname = `name;
+      }
       if(#(data = sc.get("author")) > 0) `author = data;
       if(#(data = sc.get("authorname")) > 0) `author = data;
       if(#(data = sc.get("mugenversion")) > 0){
@@ -2513,7 +2532,6 @@ public &Char
       i++;
     while i < #lines:
     }
-    if(#`displayname == 0) `displayname = `name;
     `sf.new(1);
     if(
       !.com.loadFile(def, `sprite=)<,
@@ -3465,9 +3483,7 @@ public &Char
         if(`stVal.hb.hitshaketime <= 0 && `stVal.hb.hittime >= 0){
           `stVal.hb.hittime--;
         }
-        if(`stVal.hb.fallf != 0 && `stVal.fallRecoverTime > 0){
-          `stVal.fallRecoverTime--;
-        }
+        if(`stVal.hb.fallf != 0) `stVal.fallTime++;
       }
     }
     if(
@@ -5142,7 +5158,10 @@ public &Char
   }
   public void trCanRecover()
   {
-    .v.setI((int)(`stVal.hb.fall.recover != 0 && `stVal.fallRecoverTime <= 0));
+    .v.setI(
+      (int)(
+        `stVal.hb.fall.recover != 0
+        && `stVal.fallTime >= `stVal.hb.fall.recovertime));
   }
   public void trMoveContact()
   {

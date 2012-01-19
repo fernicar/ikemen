@@ -229,7 +229,7 @@ void addFunc(^/char name, func .sc.fsig_t f)
   branch{
   cond #c > 0:
     {
-      %char buf .= c~dname;
+      %char buf .= c~name;
       re = buf;
     }
   else:

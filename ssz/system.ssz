@@ -32,7 +32,6 @@ public &Select
   public &Char
   {
     public ^/char def;
-    public ^/char dname;
     public ^/char name;
     public ^/char sprite;
     public ^&.sff.Sprite sportrait;
@@ -87,8 +86,12 @@ public &Select
     public void info(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("displayname")) > 0) `charlist[-1].dname = data;
-      if(#(data = sc.get("name")) > 0) `charlist[-1].name = data;
+      branch{
+      cond #(data = sc.get("displayname")) > 0:
+        `charlist[-1].name = data;
+      cond #(data = sc.get("name")) > 0:
+        `charlist[-1].name = data;
+      }
     }
     public void files(&.com.Section sc=)
     {
@@ -118,7 +121,6 @@ public &Select
     `charlist.new[-1];
     if(.s.equ("randomselect")<, .s.toLower(defs[0])){
       `charlist[-1].def = "randomselect";
-      `charlist[-1].dname = "Random";
       `charlist[-1].name = "Random";
       ret true;
     }
@@ -144,7 +146,6 @@ public &Select
       i++;
     while i < #lines:
     }
-    if(#`charlist[-1].dname == 0) `charlist[-1].dname = `charlist[-1].name;
     .com.loadFile(`charlist[-1].def, `charlist[-1].sprite=)<, [bool(^/char f){
       ^&.sff.Sprite s;
       s.new(1);
@@ -166,7 +167,14 @@ public &Select
     public void info(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("name")) > 0) `stagelist[-1].name = data;
+      branch{
+      cond #(data = sc.get("displayname")) > 0:
+        `stagelist[-1].name = data;
+      cond #(data = sc.get("name")) > 0:
+        `stagelist[-1].name = data;
+      else:
+        `stagelist[-1].name = `stagelist[-1].def;
+      }
     }
     void section(%^/char lines, index i=)
     {

@@ -13,11 +13,11 @@
 [State -I1, KO Cond]
 type = VarSet
 trigger1 = 1
-sysvar(59) = !noko && life <= 0;SYSTEMP
+sysvar(9) = !noko && life <= 0;
 
 [State -I1, KO1]
 type = PlaySnd
-triggerall = sysvar(59);SYSTEMP
+triggerall = sysvar(9);
 triggerall = !nokosnd
 trigger1 = roundstate >= 2
 trigger1 = !(sysvar(58) & 4);SYSFLAG,KO
@@ -26,7 +26,7 @@ channel = 0
 
 [State -I1, KO2]
 type = VarSet
-trigger1 = sysvar(59);SYSTEMP
+trigger1 = sysvar(9);
 sysvar(58) = sysvar(58) | 4;SYSFLAG,KO
 
 [State -I1, KO3]

@@ -45,7 +45,7 @@ public void readPair<_t>(_t x=, _t y=, ^/char data)
 {
   ^_t xy = .csvToAry!_t?(data);
   x = xy[0];
-  y = #xy >= 2 ? xy[1] : (_t)0;
+  if(#xy >= 2) y = xy[1];
 }
 
 
@@ -231,9 +231,7 @@ public &BackGround
       }
     }
     if(#(data = sc.get("delta")) > 0){
-      ^float xy = .csvToAry!float?(data);
-      `deltax = xy[0];
-      if(#xy >= 2) `deltay = xy[1];
+      .readPair!float?(`deltax=, `deltay=, data);
     }
     if(#(data = sc.get("trans")) > 0){
       branch{

@@ -81,7 +81,7 @@ public &Stage
   public ^/char def;
   public ^/char spr;
   public ^/char bgmusic;
-  public ^/char name, author;
+  public ^/char name, displayname, author;
   public ^&.sff.Sff sf;
   public %&.bg.BackGround bg;
   public %&.bg.Action actionList;
@@ -127,7 +127,18 @@ public &Stage
     public void info(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("name")) > 0) `name = data;
+      branch{
+      cond #(data = sc.get("name")) > 0:
+        `name = data;
+      else:
+        `name = `def;
+      }
+      branch{
+      cond #(data = sc.get("displayname")) > 0:
+        `displayname = data;
+      else:
+        `displayname = `name;
+      }
       if(#(data = sc.get("author")) > 0) `author = data;
     }
     public void camera(&.com.Section sc=)

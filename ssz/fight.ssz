@@ -108,10 +108,10 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
 
 &Lifebar
 {
-  public int posx = 140;
-  public int posy = 12;
+  public int posx = 0;
+  public int posy = 0;
   public int range_xz = 0;
-  public int range_xm = -127;
+  public int range_xm = 0;
   public &.sff.Anim!&.bg.Frame? bg0;
   public &.com.Layout bg0_lay;
   public &.sff.Anim!&.bg.Frame? bg1;
@@ -257,10 +257,10 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
 
 &Powerbar
 {
-  public int posx = 140;
-  public int posy = 22;
+  public int posx = 0;
+  public int posy = 0;
   public int range_xz = 0;
-  public int range_xm = -107;
+  public int range_xm = 0;
   public &.sff.Anim!&.bg.Frame? bg0;
   public &.com.Layout bg0_lay;
   public &.sff.Anim!&.bg.Frame? bg1;
@@ -439,17 +439,17 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
 
 &Face
 {
-  public int posx = 2;
-  public int posy = 12;
+  public int posx = 0;
+  public int posy = 0;
   public &.sff.Anim!&.bg.Frame? bg;
   public &.com.Layout bg_lay;
   public int face_sprg = -1;
   public int face_spri = 0;
   public ^&.sff.Sprite face_spr;
   public &.com.Layout face_lay;
-  public int teammate_posx = 1;
-  public int teammate_posy = 49;
-  public int teammate_spacingx = 13;
+  public int teammate_posx = 0;
+  public int teammate_posy = 0;
+  public int teammate_spacingx = 0;
   public int teammate_spacingy = 0;
   public &.sff.Anim!&.bg.Frame? teammate_bg;
   public &.com.Layout teammate_bg_lay;
@@ -575,8 +575,8 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
 
 &Name
 {
-  public int posx = 14;
-  public int posy = 10;
+  public int posx = 0;
+  public int posy = 0;
   public int name_fontn = -1;
   public int name_fontb = 0;
   public int name_fonta = 0;
@@ -641,9 +641,9 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
 
 &Combo
 {
-  public int posx = 10;
-  public int posy = 80;
-  public float start_x = -40.0;
+  public int posx = 0;
+  public int posy = 0;
+  public float start_x = 0.0;
   public int counter_fontn = -1;
   public int counter_fontb = 0;
   public int counter_shake = 1;
@@ -1209,9 +1209,9 @@ public void setPerfect(|.WinTy wt=)
 }
 &WinIcon
 {
-  public int posx = 34;
-  public int posy = 43;
-  public int iconoffsetx = 12;
+  public int posx = 0;
+  public int posy = 0;
+  public int iconoffsetx = 0;
   public int iconoffsety = 0;
   public int useiconupto = 4;
   public int counter_fontn = -1;
@@ -1405,8 +1405,8 @@ public void setPerfect(|.WinTy wt=)
 
 &Time
 {
-  public int posx = 160;
-  public int posy = 23;
+  public int posx = 0;
+  public int posy = 0;
   public int counter_fontn = -1;
   public int counter_fontb = 0;
   public int counter_fonta = 0;
