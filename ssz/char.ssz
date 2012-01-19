@@ -1241,6 +1241,7 @@ const index iSYSFLAG           = 58;
 const index iZ_WIDTH              = 59;
 const index iATTACK_Z_WIDTH_FRONT = 60;
 const index iATTACK_Z_WIDTH_BACK  = 61;
+const index iSTANDBY  = 62;
 
 const index fX                = 10;
 const index fY                = 11;
@@ -1967,7 +1968,7 @@ public &Char
   new()
   {
     `ivar.new(60);
-    `sysivar.new(62);
+    `sysivar.new(63);
     `fvar.new(40);
     `sysfvar.new(80);
     `clearVal();
@@ -2018,6 +2019,7 @@ public &Char
     `sysivar[.iALPHAD] = 0;
     `sysivar[.iRECOVERTIME] = 0;
     `sysivar[.iSYSFLAG] = 0;
+    `sysivar[.iSTANDBY] = 0;
     `sprpriority = 0;
     `getcombo = 0;
     `veloff = 0.0;

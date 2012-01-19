@@ -52,6 +52,7 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   HitAdd,
   PlaySnd, StopSnd, SndPan,
   DisplayToClipboard, AppendToClipboard, ClearClipboard,
+  TagIn, TagOut,
   ForceFeedback,
   VictoryQuote,
   RemapPal,
@@ -1926,7 +1927,7 @@ public &StateBuilder
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
       out .= ";}](:.c<>=:):.v.setSF())";
     cond .s.equ("standby", token):
-      out .= ".v.setI(0)";
+      out .= ".v.setB(" .= obj .= "sysivar[.iSTANDBY]!=0)";
     cond
       .s.equ("=", token) || .s.equ("!=", token)
       || .s.equ(">", token) || .s.equ(">=", token)
@@ -2553,6 +2554,10 @@ public &StateBuilder
         if(!`displayToClipboard(am=)) ret false;
       case .CtrlTy::ClearClipboard:
         if(!`clearClipboard(am=)) ret false;
+      case .CtrlTy::TagIn:
+        if(!`tagIn(am=)) ret false;
+      case .CtrlTy::TagOut:
+        if(!`tagOut(am=)) ret false;
       default:
         {
           bool error = false;
@@ -6721,6 +6726,36 @@ public &StateBuilder
       ret true;
     }]);
   }
+  bool tagIn(&.tbl.NameTable!^/char? param=)
+  {
+    ret `stateSec(param=,[bool(){
+      `state.ctrlList[-1].task .=
+        "^`self p=`trPartner()$.c;if(#p==0)ret false;int sn=-1,psn=-1;";
+      if(!`stateParam(param=, "stateno", [`paraF_t(data=){
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "sn=", "$.v.toI();")) ret false;
+        ret true;
+      }])) ret false;
+      if(!`stateParam(param=, "partnerstateno", [`paraF_t(data=){
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "psn=", "$.v.toI();")) ret false;
+        ret true;
+      }])) ret false;
+      `state.ctrlList[-1].task .=
+        "if(psn<0)ret false;if(sn>=0)`trChangeState(sn,-1,-1);"
+        "p~sysivar[.iSTANDBY]=0;p~trChangeState(psn,-1,0);ret true;";
+      ret true;
+    }]);
+  }
+  bool tagOut(&.tbl.NameTable!^/char? param=)
+  {
+    ret `stateSec(param=,[bool(){
+      `state.ctrlList[-1].task .= "`sysivar[.iSTANDBY]=1;";
+      ret true;
+    }]);
+  }
   bool stateBulid(%char buf=, ^/char def, ^/char st=)
   {:<-
     public bool statedef(^/char sec, ^/char name, ^/char data)
@@ -6909,6 +6944,10 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::AppendToClipboard;
         cond .s.equ(s, "clearclipboard"):
           `state.ctrlList[-1].typ = .CtrlTy::ClearClipboard;
+        cond .s.equ(s, "tagin"):
+          `state.ctrlList[-1].typ = .CtrlTy::TagIn;
+        cond .s.equ(s, "tagout"):
+          `state.ctrlList[-1].typ = .CtrlTy::TagOut;
         cond .s.equ(s, "forcefeedback"):
           `state.ctrlList[-1].typ = .CtrlTy::ForceFeedback;
         cond .s.equ(s, "victoryquote"):
@@ -6919,12 +6958,8 @@ public &StateBuilder
         cond .s.equ(s, "null"):
           `state.ctrlList[-1].typ = .CtrlTy::Null;
         else:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
-          break;
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
       cond .s.equ(name, "triggerall"):
         if(#`state.ctrlList[-1].triggerall > 0){
@@ -7224,8 +7259,9 @@ public &StateBuilder
           item.new(1);
           item<> = tmp;
           tbl.set(dbuf, item);
+          cbuf .= `state.ctrlList[-1].typ == .CtrlTy::TagIn ? "bool" : "void";
           cbuf .=
-            "void c.Char::" .= item<> .= (
+            " c.Char::" .= item<> .= (
               `state.ctrlList[-1].typ == .CtrlTy::Explod
               ? "(int ih)" :  "()")
             .= \r\n"{"\r\n\t .= `okikae(dbuf) .= \r\n"}"\r\n;
@@ -7234,12 +7270,16 @@ public &StateBuilder
         cond<cs>
           `state.ctrlList[-1].typ == .CtrlTy::ChangeState
           || `state.ctrlList[-1].typ == .CtrlTy::SelfState
+          || `state.ctrlList[-1].typ == .CtrlTy::TagIn
+          || `state.ctrlList[-1].typ == .CtrlTy::TagOut
           :
           buf .= '{';
         comm:
+          if(`state.ctrlList[-1].typ == .CtrlTy::TagIn) buf .= "if(";
           buf .=
             '`' .= item<> .= (
-              `state.ctrlList[-1].typ == .CtrlTy::Explod ? "(ih);" : "();");
+              `state.ctrlList[-1].typ == .CtrlTy::Explod ? "(ih)" : "()");
+          buf .= `state.ctrlList[-1].typ == .CtrlTy::TagIn ? ')' : ';';
         diff<cs>:
            buf .= "ret;}";
         comm:
