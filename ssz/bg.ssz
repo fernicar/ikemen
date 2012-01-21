@@ -273,9 +273,7 @@ public &BackGround
       .readPair!ushort?(`anim.tile.w=, `anim.tile.h=, data);
     }
     if(#(data = sc.get("tilespacing")) > 0){
-      ^int xy = .csvToAry!int?(data);
-      `anim.tile.x = xy[0];
-      `anim.tile.y = xy[1];
+      `anim.tile.x = `anim.tile.y = .com.atoi(data);
     }
     if(typ == 2 && #(data = sc.get("width")) > 0){
       .readPair!ushort?(`twidth=, `bwidth=, data);

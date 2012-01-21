@@ -3498,7 +3498,7 @@ public &Char
       `makeDust(0.0, 0.0);
     }
     float cvx = 0.0;
-    if(`ls(.lsMOVECAMERAX)){
+    if(`ls(.lsSCREENBOUND) || `ls(.lsMOVECAMERAX)){
       if(`sysivar[.iBINDTIME] != 0) cvx = `sysfvar[.fX] - `oldx;
       leftest = .m.max!float?(.com.xmin)<, .m.min!float?(
         `sysfvar[.fX]-(`facing > 0 ? `bedge : `fedge), leftest);
