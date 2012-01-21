@@ -4596,25 +4596,29 @@ public &Char
   }
   public void trFrontEdgeDist()
   {
-    .v.setF(
-      (`facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin));
+    .v.setI(
+      (int)(
+        `facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin));
   }
   public void trFrontEdgeBodyDist()
   {
-    .v.setF(
-      (`facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
-      - `fedge);
+    .v.setI(
+      (int)(
+        (`facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
+        - `fedge));
   }
   public void trBackEdgeDist()
   {
-    .v.setF(
-      (`facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin));
+    .v.setI(
+      (int)(
+        `facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin));
   }
   public void trBackEdgeBodyDist()
   {
-    .v.setF(
-      (`facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
-      - `bedge);
+    .v.setI(
+      (int)(
+        (`facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
+        - `bedge));
   }
   public void trIsHelper()
   {
