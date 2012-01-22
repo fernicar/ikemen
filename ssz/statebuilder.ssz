@@ -6518,18 +6518,25 @@ public &StateBuilder
               "else:`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUND;}")) ret false;
         ret true;
       }])) ret false;
-      if(!val){
-        `state.ctrlList[-1].task .=
-          "`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUND;";
-      }
       bool mc = false;
       if(!`stateParam(param=, "movecamera", [`paraF_t(data=){
         mc = true;
         `state.ctrlList[-1].task .= "branch{cond ";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
         `state.ctrlList[-1].task .=
-          "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsMOVECAMERAX;"
-          "else:`sysivar[.iSPECIALFLAG]&=!.lsMOVECAMERAX;}";
+          "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsMOVECAMERAX;";
+        if(!val){
+          `state.ctrlList[-1].task .=
+            "`sysivar[.iSPECIALFLAG]|=.lsSCREENBOUND;";
+        }
+        `state.ctrlList[-1].task .=
+          "else:`sysivar[.iSPECIALFLAG]&=!.lsMOVECAMERAX;";
+        if(!val){
+          `state.ctrlList[-1].task .=
+            "`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUND;";
+        }
+        `state.ctrlList[-1].task .= '}';
+        val = true;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
@@ -6539,6 +6546,10 @@ public &StateBuilder
         }
         ret true;
       }])) ret false;
+      if(!val){
+        `state.ctrlList[-1].task .=
+          "`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUND;";
+      }
       if(!mc){
         `state.ctrlList[-1].task .=
           "`sysivar[.iSPECIALFLAG]&=!(.lsMOVECAMERAX|.lsMOVECAMERAY);";
