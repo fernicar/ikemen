@@ -616,10 +616,13 @@ public &StateBuilder
     loop{index i = 0; while; do:
       switch(foo[i]){
       case 'S', 's':
+        if(hitdef) flg = 0;
         flg |= (int).chr.StTy::S;
       case 'C', 'c':
+        if(hitdef) flg = 0;
         flg |= (int).chr.StTy::C;
       case 'A', 'a':
+        if(hitdef) flg = 0;
         flg |= (int).chr.StTy::A;
       case ' ', '\t':
         if(!.cfg.IgnoreMostErrors) default;
@@ -631,7 +634,6 @@ public &StateBuilder
         }
         break, continue;
       }
-      if(hitdef) break;
     continue:
       i++;
     while i < #foo:
