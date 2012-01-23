@@ -5358,9 +5358,9 @@ public void Explod::update()
     if(#`ani > 0) `ani~ani.action();
     if(`removetime > 0) `removetime--;
     branch{
-    cond .super > 1 || .supertime < -1:
+    cond .supertime != -1 && (.super > 1 || .supertime < 0):
       if(`supermovetime == 0) break;
-    cond .pause > 1 || .pausetime < -1:
+    cond .pausetime != -1 && (.pause > 1 || .pausetime < 0):
       if(`pausemovetime == 0) break;
     comm:
       if(`removetime == 0) `id = .com.IERR;
