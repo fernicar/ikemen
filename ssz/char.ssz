@@ -5347,7 +5347,6 @@ public void Explod::update()
     }
   }
   if(.com.tickNextFrame()){
-    if(#`ani > 0 && act) `ani~ani.action();
     if(p) break;
     branch{
     cond .super > 0:
@@ -5356,7 +5355,8 @@ public void Explod::update()
       if(`pausemovetime > 0) `pausemovetime--;
     }
     if(!act) break;
-    if(`removetime > 0) `removetime--;
+    if(#`ani > 0) `ani~ani.action();
+    if(`removetime > 0 && --`removetime == 0) `id = .com.IERR;
   }
   branch{
     type _t = $void(.anims.self=);
