@@ -541,7 +541,6 @@ public &Section
         if(#name > 0){
           ^/char data = .s.trim(line[f+1..-1]);
           if(#data == 0) break;
-          if(data[0] == '"') data = data[1...s.find(\", data[1..-1])+1];
           if(#`params.get(name) == 0) `params.set(name, .s.clone!char?(data));
         }
       }
@@ -553,6 +552,12 @@ public &Section
   public ^/char get(^/char name)
   {
     ret `params.get(name);
+  }
+  public ^/char getText(^/char name)
+  {
+    ^/char data = `params.get(name);
+    if(#data > 0 && data[0] == '"') data = data[1...s.find(\", data[1..-1])+1];
+    ret data;
   }
   public ^/char benri(^/char head, ^/char name)
   {

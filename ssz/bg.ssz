@@ -194,9 +194,9 @@ public &BackGround
     if(#(data = sc.get("type")) > 0){
       data = .s.toLower(data);
       branch{
-      cond .s.equ(data[0..4], "anim"):
+      cond .s.equ(data[0..1], "a"):
         typ = 1;
-      cond .s.equ(data[0..8], "parallax"):
+      cond .s.equ(data[0..1], "p"):
         typ = 2;
       }
     }

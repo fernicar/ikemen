@@ -2359,15 +2359,14 @@ public &Char
     public void info(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("name")) > 0) `name = data;
+      if(#(data = sc.getText("name")) > 0) `name = data;
       branch{
-      cond #(data = sc.get("displayname")) > 0:
+      cond #(data = sc.getText("displayname")) > 0:
         `displayname = data;
       else:
         `displayname = `name;
       }
-      if(#(data = sc.get("author")) > 0) `author = data;
-      if(#(data = sc.get("authorname")) > 0) `author = data;
+      if(#(data = sc.getText("author")) > 0) `author = data;
       if(#(data = sc.get("mugenversion")) > 0){
         ^short tmp = .s.svToAry!short?(".", data);
         `mver0 = tmp[0];
@@ -2497,7 +2496,7 @@ public &Char
       `cmd~ctmp~time = `cmd~defaultTime;
       `cmd~ctmp~buffertime = `cmd~defaultBufferTime;
       ^/char data;
-      if(#(data = sc.get("name")) > 0) `cmd~ctmp~name = data;
+      if(#(data = sc.getText("name")) > 0) `cmd~ctmp~name = data;
       if(#(data = sc.get("time")) > 0) `cmd~ctmp~time = .com.atoi(data);
       if(#(data = sc.get("buffer.time")) > 0){
         `cmd~ctmp~buffertime = .m.max!int?(1)<, .com.atoi(data);

@@ -128,18 +128,18 @@ public &Stage
     {
       ^/char data;
       branch{
-      cond #(data = sc.get("name")) > 0:
+      cond #(data = sc.getText("name")) > 0:
         `name = data;
       else:
         `name = `def;
       }
       branch{
-      cond #(data = sc.get("displayname")) > 0:
+      cond #(data = sc.getText("displayname")) > 0:
         `displayname = data;
       else:
         `displayname = `name;
       }
-      if(#(data = sc.get("author")) > 0) `author = data;
+      if(#(data = sc.getText("author")) > 0) `author = data;
     }
     public void camera(&.com.Section sc=)
     {
