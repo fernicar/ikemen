@@ -4509,22 +4509,17 @@ public &StateBuilder
   {
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .=
-        "int t;`sysivar[.iMOVETIMEPAUSE]=0;.pausebg=1;";
+        "int t=0,mt=0;.pausebg=1;";
       if(!`stateParam(param=, "time", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "t=", "$!.v.toI();")) ret false;
-        `state.ctrlList[-1].task .=
-          "if(.pauseplayer==" .= .s.iToS(`playerno)
-          .= "||t<.pausetime){.pausetime=t;.pauseplayer=`playerno;}";
+            `state.ctrlList[-1].task=, data=, "t=", "$!.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "movetime", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`sysivar[.iMOVETIMEPAUSE]=", "$.v.toI();")) ret false;
+            `state.ctrlList[-1].task=, data=, "mt=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pausebg", [`paraF_t(data=){
@@ -4534,9 +4529,7 @@ public &StateBuilder
             ".pausebg=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
-      `state.ctrlList[-1].task .=
-        "if(`sysivar[.iMOVETIMEPAUSE]<0"
-        "||`sysivar[.iMOVETIMEPAUSE]>!.pausetime)`sysivar[.iMOVETIMEPAUSE]=0;";
+      `state.ctrlList[-1].task .= "`setPauseTime(t,mt);";
       ret true;
     }]);
   }
@@ -4545,35 +4538,23 @@ public &StateBuilder
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .=
         .sndstart
-        .= "int t;.superanim=.fight~getAction(30);.superfacing=`facing;"
+        .= "int t=30,mt=0;"
+        ".superanim=.fight~getAction(30);.superfacing=`facing;"
         ".superposx=`sysfvar[.fX];.superposy=`sysfvar[.fY];"
-        "`sysivar[.iMOVETIMESUPER]=0;"
         ".superdarken=1;"
         ".superp2defmul=.cfg.Super_TargetDefenceMul;"
         ".superunhittable=1;"
         ".superpausebg=1;";
-      bool time = false;
       if(!`stateParam(param=, "time", [`paraF_t(data=){
-        time = true;
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "t=", "$!.v.toI();")) ret false;
-        `state.ctrlList[-1].task .=
-          "if(.superplayer==" .= .s.iToS(`playerno)
-          .= "||t<.supertime){.supertime=t;.superplayer=`playerno;}";
+            `state.ctrlList[-1].task=, data=, "t=", "$!.v.toI();")) ret false;
         ret true;
       }])) ret false;
-      if(!time){
-        `state.ctrlList[-1].task .=
-          "if(.superplayer==" .= .s.iToS(`playerno)
-          .= "||!30<.supertime){.supertime=!30;.superplayer=`playerno;}";
-      }
       if(!`stateParam(param=, "movetime", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`sysivar[.iMOVETIMESUPER]=", "$.v.toI();")) ret false;
+            `state.ctrlList[-1].task=, data=, "mt=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pausebg", [`paraF_t(data=){
@@ -4673,10 +4654,7 @@ public &StateBuilder
         }
         ret true;
       }])) ret false;
-      `state.ctrlList[-1].task .=
-        "if(`sysivar[.iMOVETIMESUPER]<0"
-        "||`sysivar[.iMOVETIMESUPER]>!.supertime)"
-        "`sysivar[.iMOVETIMESUPER]=0;" .= .sndend;
+      `state.ctrlList[-1].task .= "`setSuperPauseTime(t,mt);" .= .sndend;
       ret true;
     }]);
   }

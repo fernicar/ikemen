@@ -1224,24 +1224,22 @@ const index iAIRJUMP_HEIGHT    = 41;
 const index iCTRL              = 42;
 const index iHITCOUNT          = 43;
 const index iUNIQHITCOUNT      = 44;
-const index iMOVETIMEPAUSE     = 45;
-const index iMOVETIMESUPER     = 46;
-const index iPAUSEMOVETIME     = 47;
-const index iSUPERMOVETIME     = 48;
-const index iBINDTIME          = 49;
-const index iBINDTOID          = 50;
-const index iBINDFACING        = 51;
-const index iHITPAUSETIME      = 52;
-const index iALPHAS            = 53;
-const index iALPHAD            = 54;
-const index iRECOVERTIME       = 55;
-const index iWAITWIN           = 56;
-const index iSPECIALFLAG       = 57;
-const index iSYSFLAG           = 58;
-const index iZ_WIDTH              = 59;
-const index iATTACK_Z_WIDTH_FRONT = 60;
-const index iATTACK_Z_WIDTH_BACK  = 61;
-const index iSTANDBY  = 62;
+const index iPAUSEMOVETIME     = 45;
+const index iSUPERMOVETIME     = 46;
+const index iBINDTIME          = 47;
+const index iBINDTOID          = 48;
+const index iBINDFACING        = 49;
+const index iHITPAUSETIME      = 50;
+const index iALPHAS            = 51;
+const index iALPHAD            = 52;
+const index iRECOVERTIME       = 53;
+const index iWAITWIN           = 54;
+const index iSPECIALFLAG       = 55;
+const index iSYSFLAG           = 56;
+const index iZ_WIDTH              = 57;
+const index iATTACK_Z_WIDTH_FRONT = 58;
+const index iATTACK_Z_WIDTH_BACK  = 59;
+const index iSTANDBY              = 60;
 
 const index fX                = 10;
 const index fY                = 11;
@@ -1524,6 +1522,7 @@ public &Explod
   public int bindtime;
   public float scalex;
   public float scaley;
+  public int time;
   public int removeongethit;
   public int removetime;
   public float velocityx;
@@ -1564,6 +1563,7 @@ public &Explod
     `bindtime = 0;
     `scalex = 1.0;
     `scaley = 1.0;
+    `time = 0;
     `removeongethit = 0;
     `removetime = -2;
     `velocityx = 0.0;
@@ -1765,13 +1765,7 @@ public &Projectile
       `ticOldY = `y;
       `ticNewY = `y + `velocityy;
     }
-    branch{
-    cond .super > 0:
-      if(`supermovetime == 0) ret;
-    cond .pause > 0:
-      if(`pausemovetime == 0) ret;
-    }
-    if(`hitpause != 0) ret;
+    if(`paused() || `hitpause != 0) ret;
     float sp = .com.tickInterpola();
     `x = `ticNewX - (`ticNewX - `ticOldX) * (1.0 - sp);
     `y = `ticNewY - (`ticNewY - `ticOldY) * (1.0 - sp);
@@ -1900,12 +1894,12 @@ public &Projectile
       }
       if(`paused()) break;
       branch{
-      cond .super > 0:
+      cond `hitpause > 0:
+        `hitpause--;
+      else:
         if(`supermovetime > 0) `supermovetime--;
-      cond .pause > 0:
         if(`pausemovetime > 0) `pausemovetime--;
       }
-      if(`hitpause > 0) `hitpause--;
     }
     .addAnimList(
       .anims=, `ani, `sprpriority, `x, `y, .com.scale,
@@ -2005,8 +1999,6 @@ public &Char
     `sysivar[.iCTRL] = 0;
     `sysivar[.iHITCOUNT] = 0;
     `sysivar[.iUNIQHITCOUNT] = 0;
-    `sysivar[.iMOVETIMEPAUSE] = 0;
-    `sysivar[.iMOVETIMESUPER] = 0;
     `sysivar[.iPAUSEMOVETIME] = 0;
     `sysivar[.iSUPERMOVETIME] = 0;
     `sysivar[.iBINDTIME] = 0;
@@ -3001,21 +2993,7 @@ public &Char
     if(.com.tickNextFrame()){
       if(.roundState() == 4) `outTarget();
       if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
-      if(.pausetime < 0){
-        if(
-          (.pause > 0 || #`stVal.hb.byid > 0)
-          && `sysivar[.iMOVETIMEPAUSE] > 0)
-        {
-          `sysivar[.iMOVETIMEPAUSE]--;
-        }
-      }
       if(.supertime < 0){
-        if(
-          (.super > 0 || #`stVal.hb.byid > 0)
-          && `sysivar[.iMOVETIMESUPER] > 0)
-        {
-          `sysivar[.iMOVETIMESUPER]--;
-        }
         if((`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H){
           `defencemul *= .superp2defmul;
         }
@@ -3114,7 +3092,7 @@ public &Char
       ret
         .super > 0 && (
           !`isAlive() || (
-            `sysivar[.iSUPERMOVETIME] == 0 && `sysivar[.iMOVETIMESUPER] <= 0
+            `sysivar[.iSUPERMOVETIME] == 0
             && (`stVal.hb.hitshaketime <= 0 || .super == 1)));
     }
     bool isNormalPaused()
@@ -3122,7 +3100,7 @@ public &Char
       ret
         .super <= 0 && .pause > 0 && (
           !`isAlive() || (
-            `sysivar[.iPAUSEMOVETIME] == 0 && `sysivar[.iMOVETIMEPAUSE] <= 0
+            `sysivar[.iPAUSEMOVETIME] == 0
             && (`stVal.hb.hitshaketime <= 0 || .pause == 1)));
     }
     if(`minus != 2) ret;
@@ -3133,18 +3111,8 @@ public &Char
       p = false;
     }
     `acttmp = -(int)p * 2;
-    if(.super <= 0) `sysivar[.iMOVETIMESUPER] = 0;
-    if(.pause <= 0) `sysivar[.iMOVETIMEPAUSE] = 0;
     if(!p){
       bool lc = !`ls(.lsGETHIT) && `landCondition();
-      branch{
-      cond .super > 0:
-        if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
-        if(`sysivar[.iMOVETIMESUPER] > 0) `sysivar[.iMOVETIMESUPER]--;
-      cond .pause > 0:
-        if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
-        if(`sysivar[.iMOVETIMEPAUSE] > 0) `sysivar[.iMOVETIMEPAUSE]--;
-      }
       if(!`isHitPaused()){
         `setFacing(`p1facing);
         `p1facing = 0;
@@ -3212,13 +3180,11 @@ public &Char
             `trSelfState(0, -1, 1);
           }
         }
-      }
-      if(!`isHitPaused()){
         `sysivar[.iSPECIALFLAG] =
           `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
           ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH
           : 0;
-        `attackmul = (float)`sysivar[.iATTACK] * (1.0/100.0);
+        `attackmul = (float)`sysivar[.iATTACK] / 100.0;
         `attackdist = (float)`sysivar[.iATTACK_DIST];
         `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
         `offsety = (float)`sysivar[.iDRAW_OFFSETY];
@@ -3227,8 +3193,9 @@ public &Char
         loop{index i = 0; while; do:
           if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
           i++;
-        while i < #`stVal.ho:
-        }
+        while i < #`stVal.ho:}
+        if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
+        if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
       }
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
@@ -3413,6 +3380,8 @@ public &Char
         && `isActive() ? `stVal.no : -1;
       branch{
       cond `stVal.mov == .MovTy::H:
+        `sysivar[.iPAUSEMOVETIME] = 0;
+        `sysivar[.iSUPERMOVETIME] = 0;
         `hittmp =
           (int)(
             `stVal.hb.fallf != 0 && `hittmp > 0
@@ -3462,7 +3431,7 @@ public &Char
         }
       else:
         if(`hittmp > 0) `hittmp = 0;
-        `defencemul = (float)`sysivar[.iDEFENCE] * (1.0/100.0);
+        `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
         `stVal.hb.hittime = -1;
         `stVal.hb.hitshaketime = 0;
         `stVal.hb.fallf = 0;
@@ -3619,6 +3588,40 @@ public &Char
   {
     `bedge = b;
     `sysivar[.iSPECIALFLAG] |= .lsBEDGECHANGE;
+  }
+  void setPauseTime(int pausetime, int movetime)
+  {
+    if(
+      !pausetime < .supertime || `playerno != `stVal.playerno
+      || .superplayer == `playerno)
+    {
+      .supertime = !pausetime;
+      .superplayer = `playerno;
+    }
+    `sysivar[.iPAUSEMOVETIME] = .m.max!int?(0, movetime);
+    branch{
+    cond `sysivar[.iPAUSEMOVETIME] > pausetime:
+      `sysivar[.iPAUSEMOVETIME] = 0;
+    cond (.pause > 0 || #`stVal.hb.byid > 0) && `sysivar[.iPAUSEMOVETIME] > 0:
+      `sysivar[.iPAUSEMOVETIME]--;
+    }
+  }
+  void setSuperPauseTime(int pausetime, int movetime)
+  {
+    if(
+      !pausetime < .pausetime || `playerno != `stVal.playerno
+      || .pauseplayer == `playerno)
+    {
+      .pausetime = !pausetime;
+      .pauseplayer = `playerno;
+    }
+    `sysivar[.iSUPERMOVETIME] = .m.max!int?(0, movetime);
+    branch{
+    cond `sysivar[.iSUPERMOVETIME] > pausetime:
+      `sysivar[.iSUPERMOVETIME] = 0;
+    cond (.super > 0 || #`stVal.hb.byid > 0) && `sysivar[.iSUPERMOVETIME] > 0:
+      `sysivar[.iSUPERMOVETIME]--;
+    }
   }
   void setHitdefDefault(&.Hitdef h=, bool proj)
   {
@@ -5282,9 +5285,9 @@ public void Explod::update()
   bool p = false;
   branch{
   cond .super > 0:
-    p = `supermovetime == 0;
+    p = `supermovetime >= 0 && `time >= `supermovetime;
   cond .pause > 0:
-    p = `pausemovetime == 0;
+    p = `pausemovetime >= 0 && `time >= `pausemovetime;
   }
   bool act = !p && `ignorehitpause != 0;
   if(!p && !act){
@@ -5300,7 +5303,7 @@ public void Explod::update()
       }
     }
     if(
-      `removetime == 0 || #`ani == 0
+      (`removetime >= 0 && `time >= `removetime) || #`ani == 0
       || (act && `removetime <= -2 && `ani~ani.loopend))
     {
       `id = .com.IERR;
@@ -5347,23 +5350,9 @@ public void Explod::update()
   }
   if(.com.tickNextFrame()){
     if(p) break;
-    branch{
-    cond .super > 0:
-      if(`supermovetime > 0) `supermovetime--;
-    cond .pause > 0:
-      if(`pausemovetime > 0) `pausemovetime--;
-    }
     if(!act) break;
     if(#`ani > 0) `ani~ani.action();
-    if(`removetime > 0) `removetime--;
-    branch{
-    cond .supertime != -1 && (.super > 1 || .supertime < 0):
-      if(`supermovetime == 0) break;
-    cond .pausetime != -1 && (.pause > 1 || .pausetime < 0):
-      if(`pausemovetime == 0) break;
-    comm:
-      if(`removetime == 0) `id = .com.IERR;
-    }
+    `time++;
   }
   branch{
     type _t = $void(.anims.self=);

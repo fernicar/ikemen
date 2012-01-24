@@ -13,45 +13,45 @@
 [State -I1, KO Cond]
 type = VarSet
 trigger1 = 1
-sysvar(9) = !noko && life <= 0;
+sysvar(9) = !noko && life <= 0
 
 [State -I1, KO1]
 type = PlaySnd
-triggerall = sysvar(9);
+triggerall = sysvar(9)
 triggerall = !nokosnd
 trigger1 = roundstate >= 2
-trigger1 = !(sysvar(58) & 4);SYSFLAG,KO
+trigger1 = !(sysvar(56) & 4);SYSFLAG,KO
 value = 11, 0
 channel = 0
 
 [State -I1, KO2]
 type = VarSet
-trigger1 = sysvar(9);
-sysvar(58) = sysvar(58) | 4;SYSFLAG,KO
+trigger1 = sysvar(9)
+sysvar(56) = sysvar(56) | 4;SYSFLAG,KO
 
 [State -I1, KO3]
 type = VarSet
 trigger1 = roundstate < 2
-sysvar(58) = sysvar(58) & ~4;SYSFLAG,KO
+sysvar(56) = sysvar(56) & ~4;SYSFLAG,KO
 
 [State -I1, Getup1]
 type = VarSet
 trigger1 = movetype != H
-sysvar(55) = const(data.liedown.time);RECOVERTIME
+sysvar(53) = const(data.liedown.time);RECOVERTIME
 
 [State -I1, Getup2]
 type = VarAdd
 triggerall = Active
 trigger1 = StateNo = 5110
-trigger1 = sysvar(55) > 0
-sysvar(55) = -1;RECOVERTIME
+trigger1 = sysvar(53) > 0;RECOVERTIME
+sysvar(53) = -1;RECOVERTIME
 
 [State -I1, Win or Lose1]
 type = VarSet
 triggerall = alive
 trigger1 = RoundState < 3
-trigger1 = sysvar(56) := 900;WAITWIN
-sysvar(58) = sysvar(58) | 2;SYSFLAG,NOTOVER
+trigger1 = sysvar(54) := 900;WAITWIN
+sysvar(56) = sysvar(56) | 2;SYSFLAG,NOTOVER
 
 [State -I1, Win or Lose2]
 type = AssertSpecial
@@ -59,7 +59,7 @@ triggerall = roundstate >= 3
 triggerall = !ishelper
 triggerall = win
 triggerall = alive
-trigger1 = (sysvar(56) := sysvar(56)-1) >= 0;WAITWIN
+trigger1 = (sysvar(54) := sysvar(54)-1) >= 0;WAITWIN
 flag = roundnotover
 
 [State -I1, Win or Lose3]
@@ -68,7 +68,7 @@ triggerall = roundstate = 4
 triggerall = !ishelper
 triggerall = active
 triggerall = alive
-triggerall = sysvar(58) & 2;SYSFLAG,NOTOVER
+triggerall = sysvar(56) & 2;SYSFLAG,NOTOVER
 trigger1 = stateno < 130 || sysvar(42);CTRL
 trigger1 = statetype != a
 trigger1 = physics != a
