@@ -1962,7 +1962,7 @@ public &Char
   new()
   {
     `ivar.new(60);
-    `sysivar.new(63);
+    `sysivar.new(61);
     `fvar.new(40);
     `sysfvar.new(80);
     `clearVal();
@@ -3592,11 +3592,11 @@ public &Char
   void setPauseTime(int pausetime, int movetime)
   {
     if(
-      !pausetime < .supertime || `playerno != `stVal.playerno
-      || .superplayer == `playerno)
+      !pausetime < .pausetime || `playerno != `stVal.playerno
+      || .pauseplayer == `playerno)
     {
-      .supertime = !pausetime;
-      .superplayer = `playerno;
+      .pausetime = !pausetime;
+      .pauseplayer = `playerno;
     }
     `sysivar[.iPAUSEMOVETIME] = .m.max!int?(0, movetime);
     branch{
@@ -3609,11 +3609,11 @@ public &Char
   void setSuperPauseTime(int pausetime, int movetime)
   {
     if(
-      !pausetime < .pausetime || `playerno != `stVal.playerno
-      || .pauseplayer == `playerno)
+      !pausetime < .supertime || `playerno != `stVal.playerno
+      || .superplayer == `playerno)
     {
-      .pausetime = !pausetime;
-      .pauseplayer = `playerno;
+      .supertime = !pausetime;
+      .superplayer = `playerno;
     }
     `sysivar[.iSUPERMOVETIME] = .m.max!int?(0, movetime);
     branch{
@@ -5349,7 +5349,6 @@ public void Explod::update()
     }
   }
   if(.com.tickNextFrame()){
-    if(p) break;
     if(!act) break;
     if(#`ani > 0) `ani~ani.action();
     `time++;
