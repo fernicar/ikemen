@@ -292,8 +292,8 @@ public &BackGround
       float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
       float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
       if(#ltrb >= 4){
-        `startrect.x = (short)(ltrb[0]*mulx+(float)(.com.GameWidth-320)/2.0);
-        `startrect.y = (short)(ltrb[1]*muly+(float)(.com.GameHeight-240)/2.0);
+        `startrect.x = (short)((ltrb[0]+(float)(.com.GameWidth-320)/2.0)*mulx);
+        `startrect.y = (short)((ltrb[1]+(float)(.com.GameHeight-240)*muly));
         `startrect.w = (ushort)(((ltrb[2]+1.0)-ltrb[0])*mulx + 0.5);
         `startrect.h = (ushort)(((ltrb[3]+1.0)-ltrb[1])*muly + 0.5);
       }

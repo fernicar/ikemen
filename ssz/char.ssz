@@ -5318,7 +5318,7 @@ public void Explod::update()
     cscl = 1.0;
     `x = .com.camerax + `offsetx + (`postype == 4 ? -160.0 : 160.0);
     xofs = -.com.xoffset;
-    `y = .com.cameray + `offsety - .com.zoffset + (float)(.com.GameHeight-240);
+    `y = .com.cameray + `offsety - .com.zoffset;
     yofs = -.com.yoffset;
   else:
     {
@@ -6269,9 +6269,10 @@ void gSetNormal(float scl, float x, float y)
   .com.scrxmax =
     (float)(.stg~cam.boundright - .stg~cam.startx) + 160.0/.stg~ztopscale;
   .com.screenx = x - 160.0 / .com.scale;
-  .com.screeny = y - .com.zoffset / .com.scale;
+  .com.screeny =
+    y - (.com.zoffset - (float)(.com.GameHeight-240)*scl) / .com.scale;
   .com.camerax = x;
-  .com.cameray = y;
+  .com.cameray = y + (float)(.com.GameHeight-240);
   .com.screenleft = (float).stg~screenleft;
   .com.screenright = (float).stg~screenright;
 }
