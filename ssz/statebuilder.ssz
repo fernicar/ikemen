@@ -4513,7 +4513,7 @@ public &StateBuilder
       if(!`stateParam(param=, "time", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, "t=", "$!.v.toI();")) ret false;
+            `state.ctrlList[-1].task=, data=, "t=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "movetime", [`paraF_t(data=){
@@ -4548,7 +4548,7 @@ public &StateBuilder
       if(!`stateParam(param=, "time", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, "t=", "$!.v.toI();")) ret false;
+            `state.ctrlList[-1].task=, data=, "t=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "movetime", [`paraF_t(data=){
