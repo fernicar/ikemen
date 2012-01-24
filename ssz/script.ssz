@@ -157,7 +157,8 @@ public &Anim
   {
     if(.se.fskip) ret;
     `ani~draw(
-      `window=, `x, `y, 1.0, 1.0,
+      `window=, `x + (float)(.com.GameWidth-320)/2.0,
+      `y + (float)(.com.GameHeight-240), 1.0, 1.0,
       `xscl, `xscl, `yscl, 0.0, 0.0, .consts.null!&.com.PalFX?()); 
   }
   public void setPos(float x, float y)
@@ -191,8 +192,8 @@ public &Anim
   }
   public void setWindow(float x, float y, float w, float h)
   {
-    `window.x = (short)(x * .com.WidthScale);
-    `window.y = (short)(y * .com.HeightScale);
+    `window.x = (short)(x*.com.WidthScale+(float)(.com.GameWidth-320)/2.0);
+    `window.y = (short)(y*.com.HeightScale+(float)(.com.GameHeight-240)/2.0);
     `window.w = (ushort)(w * .com.WidthScale + 0.5);
     `window.h = (ushort)(h * .com.HeightScale + 0.5);
   }

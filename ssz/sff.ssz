@@ -522,8 +522,8 @@ public &Sprite
   {
     &.sdl.Rect tile;
     tile.set(0, 0, 0d0, 0d0);
-    float x2 = x - xscale*(float)`rct.x;
-    float y2 = y - yscale*(float)`rct.y;
+    float x2 = x - xscale*(float)`rct.x + (float)(.com.GameWidth-320)/2.0;
+    float y2 = y - yscale*(float)`rct.y + (float)(.com.GameHeight-240);
     if(xscale < 0.0) x2 *= -1.0;
     if(yscale < 0.0) y2 *= -1.0;
   /?/*.cfg.OpenGL:
@@ -1083,11 +1083,11 @@ public &Anim<frame_t>
     if(xs < 0.0){
       x2 *= -1.0;
       x2 += rx*2.0;
-      if(rx != 0.0) x2 += xs;
+      if(rx == (float).com.GameWidth/2.0) x2 += xs;
     }
     if(ys < 0.0){
       y2 *= -1.0;
-      if(rx != 0.0) y2 += ys;
+      if(rx == (float).com.GameWidth/2.0) y2 += ys;
     }
     if(`tile.w == 0x1){
       float tmp =
@@ -1122,7 +1122,7 @@ public &Anim<frame_t>
     float angle, bool angleset, float axscl, float ayscl, ^&.com.PalFX fx)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
-    float rx = x + 160.0;
+    float rx = x + (float).com.GameWidth/2.0;
     int h = `h*`frames[`drawidx].h;
     int v = `v*`frames[`drawidx].v;
     float xs = xscale * axscl, ys = yscale * ayscl;
@@ -1132,10 +1132,13 @@ public &Anim<frame_t>
     if(uagl == 0x0) branch{
     cond angleset:
       `draw(
-        .com.scrrect=, x+160.0 - xs*(float)(h*`frames[`drawidx].x), y,
+        .com.scrrect=, x+(float).com.GameWidth/2.0
+        - xs*(float)(h*`frames[`drawidx].x), y,
         1.0, 1.0, xs, xs, ys, 0.0, 0.0, fx);
     else:
-      `draw(.com.scrrect=, x, y, 1.0, 1.0, xs, xs, ys, 0.0, 160.0, fx);
+      `draw(
+        .com.scrrect=,
+        x, y, 1.0, 1.0, xs, xs, ys, 0.0, (float).com.GameWidth/2.0, fx);
     comm:
       ret;
     }

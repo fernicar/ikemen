@@ -330,10 +330,11 @@ void game()
     float bl = (float)(.chr.stg~cam.boundleft - .chr.stg~cam.startx);
     float br = (float)(.chr.stg~cam.boundright - .chr.stg~cam.startx);
     float bt = (float).chr.stg~cam.boundhigh;
-    float xminscl = 320.0 / (320.0+(float)(-bl + br));
-    float yminscl = 240.0 / (240.0-bt);
+    float xminscl = (float).com.GameWidth / (320.0+(float)(-bl + br));
+    float yminscl = (float).com.GameHeight / (240.0-bt);
     float minscl =
-      .m.max!float?(.cfg.MinScale)<, .m.max!float?(xminscl, yminscl);
+      .m.max!float?(.cfg.MinScale)<, .m.min!float?(.cfg.MaxScale)<,
+      .m.max!float?(xminscl, yminscl);
     float tmp;
   do:
     if(.com.keyDown(.com.KeyEvent::CtrlC)) .com.clsndraw!!;
@@ -454,14 +455,17 @@ void game()
     }
     tmp /= scl;
     x =
-      .m.max!float?(bl-160.0 + 160.0/scl)<,
-      .m.min!float?(br+160.0 - 160.0/scl)<,
+      (float).com.GameWidth > br - bl + 320.0
+      ? 0.0
+      : .m.max!float?(bl-160.0 + ((float).com.GameWidth/2.0)/scl)<,
+      .m.min!float?(br+160.0 - ((float).com.GameWidth/2.0)/scl)<,
       .m.min!float?(x + l + tmp)<, .m.max!float?(x + r - tmp)<, newx;
     tmp = .m.max!float?(0.0, 240.0 - (float).chr.stg~zoffset);
     y =
-      .m.max!float?(bt-240.0 + 240.0/scl)<,
-      .m.min!float?(0.0)<, .m.min!float?(tmp*(1.0/scl - 1.0))<, (
-        newy + 240.0*(1.0 - .m.min!float?(1.0, scl)));
+      .m.min!float?(0.0)<, 
+      .m.min!float?(tmp*(1.0/scl - 1.0))<,
+      .m.max!float?(bt-240.0 + (float).com.GameHeight/scl)<,
+      (newy + 240.0*(1.0 - .m.min!float?(1.0, scl)));
     if(
       .com.tickFrame() && (.chr.super <= 0 || .chr.superpausebg == 0)
       && (.chr.pause <= 0 || .chr.pausebg == 0)) 

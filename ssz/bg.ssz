@@ -292,8 +292,8 @@ public &BackGround
       float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
       float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
       if(#ltrb >= 4){
-        `startrect.x = (short)(ltrb[0]*mulx);
-        `startrect.y = (short)(ltrb[1]*muly);
+        `startrect.x = (short)(ltrb[0]*mulx+(float)(.com.GameWidth-320)/2.0);
+        `startrect.y = (short)(ltrb[1]*muly+(float)(.com.GameHeight-240)/2.0);
         `startrect.w = (ushort)(((ltrb[2]+1.0)-ltrb[0])*mulx + 0.5);
         `startrect.h = (ushort)(((ltrb[3]+1.0)-ltrb[1])*muly + 0.5);
       }
@@ -416,11 +416,13 @@ public &BackGround
       .m.max!float?(
         0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `deltay)));
     float x2 = `startx - ((x+`camstartx) * `deltax - `bga.xoffset);
-    float y2 = `starty - (y * `deltay - `bga.yoffset) + (1.0/scly - 1.0)*240.0;
+    float y2 =
+      `starty - (y * `deltay - `bga.yoffset) + (float)(.com.GameHeight - 240)
+      + (1.0/scly - 1.0)*(float).com.GameHeight;
     float ys = (`yscalestart - y * (scly/scl)*`yscaledelta*(1.0/100.0));
     `anim.draw(
       rect=, x2, y2, sclx, scly, `xtscale, xbs, ys, xras * x2
-      / (#ys*(float)`anim.spr~rct.h), 160.0, fx);
+      / (#ys*(float)`anim.spr~rct.h), (float).com.GameWidth/2.0, fx);
   }
 }
 

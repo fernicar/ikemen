@@ -274,8 +274,9 @@ public &Font
   {
     loop{
       index i = 0;
-      float dx = x + (float)`offsetx*xscl;
-      float dy = y + (float)(`offsety - (`sizey-1))*yscl;
+      float dx = x + (float)`offsetx*xscl + (float)(.com.GameWidth-320)/2.0;
+      float dy =
+        y + (float)(`offsety - (`sizey-1))*yscl + (float)(.com.GameHeight-240);
       branch{
       cond align == 0:
         dx -= (float)`textWidth(txt)*xscl*0.5;

@@ -31,9 +31,10 @@ public void laydraw(
 {
   if(l.layerno != ln) ret;
   a.draw(
-    r=, x+l.offset.x, y+l.offset.y, scl, scl,
+    r=, x+l.offset.x, y+l.offset.y+(float)(.com.GameHeight-240), scl, scl,
     l.scale.x*(float)l.facing, l.scale.x*(float)l.facing,
-    l.scale.y*(float)l.vfacing, 0.0, 0.0, .consts.null!&.com.PalFX?());
+    l.scale.y*(float)l.vfacing, 0.0, (float)(.com.GameWidth-320)/2.0,
+    .consts.null!&.com.PalFX?());
 }
 
 public void laytext(
@@ -53,9 +54,11 @@ public void layspr(
   &.sdl.Rect tile;
   tile.set(0, 0, 0x0, 0x0);
   float x2 =
-    x + l.offset.x - l.scale.x*(float)(spr~rct.x*l.facing);
+    x + l.offset.x - l.scale.x*(float)(spr~rct.x*l.facing)
+    + (float)(.com.GameWidth-320)/2.0;
   float y2 =
-    y + l.offset.y - l.scale.y*(float)(spr~rct.y*l.vfacing);
+    y + l.offset.y - l.scale.y*(float)(spr~rct.y*l.vfacing)
+    + (float)(.com.GameHeight-240);
   if(l.scale.x*(float)l.facing < 0.0) x2 *= -1.0;
   if(l.scale.y*(float)l.vfacing < 0.0) y2 *= -1.0;
   float xs = l.scale.x*(float)l.facing*.com.WidthScale;
@@ -214,13 +217,19 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     {
       branch{
       cond `range_xz < `range_xm:
-        r.x = (short)((float)(`posx + `range_xz)*.com.WidthScale + 0.5);
+        r.x =
+          (short)(
+            ((float)(`posx + `range_xz) + (float)(.com.GameWidth-320)/2.0)
+            * .com.WidthScale + 0.5);
         r.w =
           (ushort)((float)(`range_xm-`range_xz+1)*life*.com.WidthScale + 0.5);
       else:
         r.x =
-          (short)((float)(`posx + `range_xz+1)*.com.WidthScale + 0.5)
-          - (short)((float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
+          (short)(
+            ((float)(`posx + `range_xz+1) + (float)(.com.GameWidth-320)/2.0)
+            * .com.WidthScale + 0.5)
+          - (short)(
+            (float)(`range_xz-`range_xm+1) * life * .com.WidthScale + 0.5);
         r.w =
           (ushort)((float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
       }
@@ -387,13 +396,19 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     {
       branch{
       cond `range_xz < `range_xm:
-        r.x = (short)((float)(`posx + `range_xz)*.com.WidthScale + 0.5);
+        r.x =
+          (short)(
+            ((float)(`posx + `range_xz) + (float)(.com.GameWidth-320)/2.0)
+            * .com.WidthScale + 0.5);
         r.w =
           (ushort)((float)(`range_xm-`range_xz+1)*power*.com.WidthScale + 0.5);
       else:
         r.x =
-          (short)((float)(`posx + `range_xz+1)*.com.WidthScale + 0.5)
-          - (short)((float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
+          (short)(
+            ((float)(`posx + `range_xz+1) + (float)(.com.GameWidth-320)/2.0)
+            * .com.WidthScale + 0.5)
+          - (short)(
+            (float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
         r.w =
           (ushort)((float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
       }

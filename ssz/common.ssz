@@ -34,8 +34,12 @@ public float accel = 1.0;
 
 public bool autolevel = false;
 
-const float WidthScale = (float)cfg.Width / 320.0;
-const float HeightScale = (float)cfg.Height / 240.0;
+const int GameWidth =
+  cfg.Width*3 > cfg.Height*4 ? cfg.Width*3*320/(cfg.Height*4) : 320; 
+const int GameHeight =
+  cfg.Height*4 > cfg.Width*3 ? cfg.Height*4*240/(cfg.Width*3) : 240; 
+const float WidthScale = (float)cfg.Width / (float)GameWidth;
+const float HeightScale = (float)cfg.Height / (float)GameHeight;
 
 public &sdl.Rect scrrect;
 scrrect.set(0, 0, (ushort)cfg.Width, (ushort)cfg.Height);
