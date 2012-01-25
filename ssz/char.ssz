@@ -6871,7 +6871,9 @@ public void draw(float x, float y, float scl)
         .m.min!float?(x, (float)(.stg~cam.boundleft - .stg~cam.startx));
       float br =
         .m.max!float?(x, (float)(.stg~cam.boundright - .stg~cam.startx));
-      float xofs = (float)(.com.GameWidth-320)/(2.0*scl);
+      float xofs =
+        ((float).com.GameWidth*(1.0/scl - 1.0) + (float)(.com.GameWidth-320))
+        / 2.0;
       rect = .com.scrrect;
       if((x - xofs) < bl){
         rect.w =
