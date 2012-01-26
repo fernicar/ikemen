@@ -7365,18 +7365,6 @@ public &StateBuilder
       if(#(data = sc.get("stcommon")) > 0) `stcommon = f(data);
       ret true;
     }
-    void section(%^/char lines, index i=)
-    {
-      ^/char sec = lines[i];
-      ^/char secname = .com.sectionName(sec=);
-      if(#secname == 0) ret;
-      i++;
-      &.com.Section sc.parse(lines, i=);
-      branch{
-      cond .s.equ(secname, "files"):
-        `build:<-files(sc=);
-      }
-    }
     bool data(&.com.Section sc=)
     {
       ^/char data;
@@ -7586,8 +7574,22 @@ public &StateBuilder
       }
       ret true;
     }
-    void cns(%^/char lines, index i=)
-    {
+    bool filesflg = true;
+    ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      &.com.Section sc.parse(lines, i=);
+      branch{
+      cond .s.equ(secname, "files"):
+        if(filesflg) files(sc=);
+        filesflg = false;
+      }
+    }];
+    bool dataflg = true, sizeflg = true, velocityflg = true;
+    bool movementflg = true;
+    ~$void(^^/char, index=) cns = [void(^^/char lines, index i=){
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
@@ -7595,19 +7597,23 @@ public &StateBuilder
       &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "data"):
-        `build:<-data(sc=);
+        if(dataflg) data(sc=);
+        dataflg = false;
       cond .s.equ(secname, "size"):
-        `build:<-size(sc=);
+        if(sizeflg) size(sc=);
+        sizeflg = false;
         if(`c.s.proj_doscale != 0){
           `c.s.proj_xscale = `c.s.xscale;
           `c.s.proj_yscale = `c.s.yscale;
         }
       cond .s.equ(secname, "velocity"):
-        `build:<-velocity(sc=);
+        if(velocityflg) velocity(sc=);
+        velocityflg = false;
       cond .s.equ(secname, "movement"):
-        `build:<-movement(sc=);
+        if(movementflg) movement(sc=);
+        movementflg = false;
       }
-    }
+    }];
     `playerno = no;
     `cmd = "";
     `cns = "";
@@ -7617,7 +7623,7 @@ public &StateBuilder
     %^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     loop{index i = 0; while; do:
-      section(lines, i=);
+      section(:lines, i=:);
       i++;
     while i < #lines:
     }
@@ -7633,7 +7639,7 @@ public &StateBuilder
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `c.reset();
     loop{index i = 0; while; do:
-      cns(lines, i=);
+      cns(:lines, i=:);
       i++;
     while i < #lines:
     }

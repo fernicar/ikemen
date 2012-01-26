@@ -193,7 +193,7 @@ public &Anim
   public void setWindow(float x, float y, float w, float h)
   {
     `window.x = (short)((x+(float)(.com.GameWidth-320)/2.0)*.com.WidthScale);
-    `window.y = (short)((y+(float)(.com.GameHeight-240)*.com.HeightScale));
+    `window.y = (short)((y+(float)(.com.GameHeight-240))*.com.HeightScale);
     `window.w = (ushort)(w * .com.WidthScale + 0.5);
     `window.h = (ushort)(h * .com.HeightScale + 0.5);
   }

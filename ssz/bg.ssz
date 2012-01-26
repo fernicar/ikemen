@@ -172,7 +172,7 @@ public &BackGround
   public float windowdeltax = 0.0, windowdeltay = 0.0;
   new()
   {
-    `startrect.set(0, 0, (ushort).cfg.Width, (ushort).cfg.Height);
+    `startrect = .com.scrrect;
   }
   public void reset()
   {
@@ -292,8 +292,11 @@ public &BackGround
       float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
       float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
       if(#ltrb >= 4){
-        `startrect.x = (short)((ltrb[0]+(float)(.com.GameWidth-320)/2.0)*mulx);
-        `startrect.y = (short)((ltrb[1]+(float)(.com.GameHeight-240)*muly));
+        `startrect.x =
+          (short)(
+            ltrb[0]*mulx+.com.WidthScale*(float)(.com.GameWidth-320)/2.0);
+        `startrect.y =
+          (short)(ltrb[1]*muly+.com.HeightScale*(float)(.com.GameHeight-240));
         `startrect.w = (ushort)(((ltrb[2]+1.0)-ltrb[0])*mulx + 0.5);
         `startrect.h = (ushort)(((ltrb[3]+1.0)-ltrb[1])*muly + 0.5);
       }
