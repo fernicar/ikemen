@@ -2421,22 +2421,6 @@ public &Char
         `load:<-keymap(sc=);
       }
     }
-    void section(^^/char lines, index i=)
-    {
-      ^/char sec = lines[i];
-      ^/char secname = .com.sectionName(sec=);
-      if(#secname == 0) ret;
-      i++;
-      &.com.Section sc.parse(lines, i=);
-      branch{
-      cond .s.equ(secname, "info"):
-        `load:<-info(sc=);
-      cond .s.equ(secname, "files"):
-        `load:<-files(sc=);
-      cond .s.equ(secname, "palette"):
-        `load:<-palette(sec, sc=);
-      }
-    }
     public void remap(&.com.Section sc=)
     {
       ^/char data;
@@ -2501,8 +2485,27 @@ public &Char
       }
       `cmd~add(`cmd~ctmp<>=);
     }
-    void commandlist(^^/char lines, index i=)
-    {
+    bool infoflg = true, filesflg = true, paletteflg = true;
+    ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      &.com.Section sc.parse(lines, i=);
+      branch{
+      cond .s.equ(secname, "info"):
+        if(infoflg) info(sc=);
+        infoflg = false;
+      cond .s.equ(secname, "files"):
+        if(filesflg) files(sc=);
+        filesflg = false;
+      cond .s.equ(secname, "palette"):
+        if(paletteflg) palette(sec, sc=);
+        paletteflg = false;
+      }
+    }];
+    bool remapflg = true, defaultsflg = true;
+    ~$void(^^/char, index=) commandlist = [void(^^/char lines, index i=){
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
@@ -2510,20 +2513,22 @@ public &Char
       &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "remap"):
-        `load:<-remap(sc=);
+        if(remapflg) remap(sc=);
+        remapflg = false;
       cond .s.equ(secname, "defaults"):
-        `load:<-defaults(sc=);
+        if(defaultsflg) defaults(sc=);
+        defaultsflg = false;
       cond .s.equ(secname, "command"):
         `load:<-command(sc=);
       }
-    }
+    }];
     `def = def;
     ^char mainbuf = .file.loadAsciiText(def);
     ^^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `clearDef();
     loop{index i = 0; while; do:
-      section(lines, i=);
+      section(:lines, i=:);
       i++;
     while i < #lines:
     }
@@ -2562,7 +2567,7 @@ public &Char
     `cmd.new(1);
     `cmd~buffer.new(1);
     loop{index i = 0; while; do:
-      commandlist(lines, i=);
+      commandlist(:lines, i=:);
       i++;
     while i < #lines:
     }

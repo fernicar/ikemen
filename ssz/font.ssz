@@ -103,14 +103,15 @@ public &Font
       while i < #lines:
       }
     }
-    void section(^^/char lines, index i=)
-    {
+    bool mapflg = true;
+    ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
       i++;
       if(.s.equ(secname, "map")){
-        `loadFile:<-map(lines, i=);
+        if(mapflg) map(lines, i=);
+        mapflg = false;
         ret;
       }
       &.com.Section sc.parse(lines, i=);
@@ -118,7 +119,7 @@ public &Font
       cond .s.equ(secname, "def"):
         `loadFile:<-def(sc=);
       }
-    }
+    }];
     &.file.File f;
     if(!f.open(filename, "rb")) ret false;
     uint pcxDataOffset, pcxDataLenght;
@@ -171,7 +172,7 @@ public &Font
     ^^/char lines = .com.splitLines(buf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     loop{index i = 0; while; do:
-      section(lines, i=);
+      section(:lines, i=:);
       i++;
     while i < #lines:
     }

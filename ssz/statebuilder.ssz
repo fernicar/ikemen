@@ -2580,9 +2580,9 @@ public &StateBuilder
       bool typedeta = false;
       while;
     do:
-      line = lines[i][0.. .s.find(";", lines[i])];
+      line = .s.trim(lines[i][0.. .s.find(";", lines[i])]);
       if(#line > 0 && line[0] == '['){
-        if(.s.find("]", line) < 0) break, continue;
+        if(line[-1] != ']') break, continue;
         i--;
         break, break;
       }
@@ -7067,8 +7067,8 @@ public &StateBuilder
       ^/char line;
       while;
     do:
-      line = lines[i][0.. .s.find(";", lines[i])];
-      if(#line <= 0 || line[0] != '[' || .s.find("]", line) < 0) continue;
+      line = .s.trim(lines[i][0.. .s.find(";", lines[i])]);
+      if(#line <= 0 || line[0] != '[' || line[-1] != ']') continue;
       line = .s.toLower(line);
       if(!.s.equ("statedef ", line[1..10])) continue;
       line = .s.trim(line[10..-1]);
@@ -7134,7 +7134,8 @@ public &StateBuilder
           i++;
           if(
             #lines[i+1] > 0 && lines[i+1][0] == '['
-            && .s.find("]", lines[i+1]) >= 0) break, do;
+            && (lines[i+1] = .s.trim(lines[i+1][0.. .s.find(";", lines[i+1])]))
+            $ lines[i+1][-1] == ']') break, do;
         while i+1 < #lines && #lines[i+1] > 0:
           break, break;
         }
@@ -7278,7 +7279,8 @@ public &StateBuilder
         }
       while
         i+1 < #lines && #lines[i+1] > 0 && lines[i+1][0] == '['
-        && .s.find("]", lines[i+1][0.. .s.find(";", lines[i+1])]) >= 0
+        && (lines[i+1] = .s.trim(lines[i+1][0.. .s.find(";", lines[i+1])]))
+        $ lines[i+1][-1] == ']'
         :
       break:
         buf .= "}"\r\n .= cbuf;

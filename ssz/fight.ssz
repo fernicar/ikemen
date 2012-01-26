@@ -1579,40 +1579,6 @@ public &Fight
       `nm[0][0].read("p1.", sc=);
       `nm[0][1].read("p2.", sc=);
     }
-    public void simul(^/char sec, &.com.Section sc=)
-    {
-      branch{
-      cond .s.equ(.s.toLower(sec[0..7]), "lifebar"):
-        `lb[1][0].read("p1.", sc=);
-        `lb[1][1].read("p2.", sc=);
-        `lb[1][2].read("p3.", sc=);
-        `lb[1][3].read("p4.", sc=);
-      cond .s.equ(.s.toLower(sec[0..4]), "face"):
-        `fa[1][0].read("p1.", sc=);
-        `fa[1][1].read("p2.", sc=);
-        `fa[1][2].read("p3.", sc=);
-        `fa[1][3].read("p4.", sc=);
-      cond .s.equ(.s.toLower(sec[0..4]), "name"):
-        `nm[1][0].read("p1.", sc=);
-        `nm[1][1].read("p2.", sc=);
-        `nm[1][2].read("p3.", sc=);
-        `nm[1][3].read("p4.", sc=);
-      }
-    }
-    public void turns(^/char sec, &.com.Section sc=)
-    {
-      branch{
-      cond .s.equ(.s.toLower(sec[0..7]), "lifebar"):
-        `lb[2][0].read("p1.", sc=);
-        `lb[2][1].read("p2.", sc=);
-      cond .s.equ(.s.toLower(sec[0..4]), "face"):
-        `fa[2][0].read("p1.", sc=);
-        `fa[2][1].read("p2.", sc=);
-      cond .s.equ(.s.toLower(sec[0..4]), "name"):
-        `nm[2][0].read("p1.", sc=);
-        `nm[2][1].read("p2.", sc=);
-      }
-    }
     public void winicon(&.com.Section sc=)
     {
       `wi[0].read("p1.", sc=);
@@ -1630,8 +1596,66 @@ public &Fight
     {
       `ro.read(sc=);
     }
-    void section(^^/char lines, index i=)
+    bool slifebarflg = true, sfaceflg = true, snameflg = true;
+    ~$void(^/char, &.com.Section=) simul = [void(
+      ^/char sec, &.com.Section sc=)
     {
+      branch{
+      cond .s.equ(.s.toLower(sec[0..7]), "lifebar"):
+        if(slifebarflg){
+          `lb[1][0].read("p1.", sc=);
+          `lb[1][1].read("p2.", sc=);
+          `lb[1][2].read("p3.", sc=);
+          `lb[1][3].read("p4.", sc=);
+          slifebarflg = false;
+        }
+      cond .s.equ(.s.toLower(sec[0..4]), "face"):
+        if(sfaceflg){
+          `fa[1][0].read("p1.", sc=);
+          `fa[1][1].read("p2.", sc=);
+          `fa[1][2].read("p3.", sc=);
+          `fa[1][3].read("p4.", sc=);
+          sfaceflg = false;
+        }
+      cond .s.equ(.s.toLower(sec[0..4]), "name"):
+        if(snameflg){
+          `nm[1][0].read("p1.", sc=);
+          `nm[1][1].read("p2.", sc=);
+          `nm[1][2].read("p3.", sc=);
+          `nm[1][3].read("p4.", sc=);
+          snameflg = false;
+        }
+      }
+    }];
+    bool tlifebarflg = true, tfaceflg = true, tnameflg = true;
+    ~$void(^/char, &.com.Section=) turns = [void(
+      ^/char sec, &.com.Section sc=)
+    {
+      branch{
+      cond .s.equ(.s.toLower(sec[0..7]), "lifebar"):
+        if(tlifebarflg){
+          `lb[2][0].read("p1.", sc=);
+          `lb[2][1].read("p2.", sc=);
+          tlifebarflg = false;
+        }
+      cond .s.equ(.s.toLower(sec[0..4]), "face"):
+        if(tfaceflg){
+          `fa[2][0].read("p1.", sc=);
+          `fa[2][1].read("p2.", sc=);
+          tfaceflg = false;
+        }
+      cond .s.equ(.s.toLower(sec[0..4]), "name"):
+        if(tnameflg){
+          `nm[2][0].read("p1.", sc=);
+          `nm[2][1].read("p2.", sc=);
+          tnameflg = false;
+        }
+      }
+    }];
+    bool filesflg = true, lifebarflg = true, powerbarflg = true;
+    bool faceflg = true, nameflg = true, winiconflg = true, timeflg = true;
+    bool comboflg = true, roundflg = true;
+    ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0 || .s.equ(secname, "begin ")) ret;
@@ -1639,29 +1663,38 @@ public &Fight
       &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "files"):
-        `load:<-files(sc=);
+        if(filesflg) files(sc=);
+        filesflg = false;
       cond .s.equ(secname, "lifebar"):
-        `load:<-lifebar(sc=);
+        if(lifebarflg) lifebar(sc=);
+        lifebarflg = false;
       cond .s.equ(secname, "powerbar"):
-        `load:<-powerbar(sc=);
+        if(powerbarflg) powerbar(sc=);
+        powerbarflg = false;
       cond .s.equ(secname, "face"):
-        `load:<-face(sc=);
+        if(faceflg) face(sc=);
+        faceflg = false;
       cond .s.equ(secname, "name"):
-        `load:<-name(sc=);
+        if(nameflg) name(sc=);
+        nameflg = false;
       cond .s.equ(secname, "simul "):
-        `load:<-simul(sec, sc=);
+        simul(:sec, sc=:);
       cond .s.equ(secname, "turns "):
-        `load:<-turns(sec, sc=);
+        turns(:sec, sc=:);
       cond .s.equ(secname, "winicon"):
-        `load:<-winicon(sc=);
+        if(winiconflg) winicon(sc=);
+        winiconflg = false;
       cond .s.equ(secname, "time"):
-        `load:<-time(sc=);
+        if(timeflg) time(sc=);
+        timeflg = false;
       cond .s.equ(secname, "combo"):
-        `load:<-combo(sc=);
+        if(comboflg) combo(sc=);
+        comboflg = false;
       cond .s.equ(secname, "round"):
-        `load:<-round(sc=);
+        if(roundflg) round(sc=);
+        roundflg = false;
       }
-    }
+    }];
     ^char mainbuf;
     if(
       !.com.loadFile(sysdef, def=)<, [bool(^/char f){
@@ -1697,7 +1730,7 @@ public &Fight
     `ti.al.actionList = `al.actionList;
     `ro.al.actionList = `al.actionList;
     loop{index i = 0; while; do:
-      section(lines, i=);
+      section(:lines, i=:);
       i++;
     while i < #lines:
     }

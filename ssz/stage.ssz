@@ -298,7 +298,11 @@ public &Stage
         `bgctrlList[-1].positionlink |= `bgcdef.positionlink;
       }
     }
-    void section(^^/char lines, index i=, index link=)
+    bool infoflg = true, cameraflg = true, playerinfoflg = true;
+    bool scalingflg = true, boundflg = true, stageinfoflg = true;
+    bool shadowflg = true, reflectionflg = true, musicflg = true;
+    ~$void(^^/char, index=, index=) section = [void(
+      ^^/char lines, index i=, index link=)
     {
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
@@ -311,33 +315,42 @@ public &Stage
       &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "info"):
-        `load:<-info(sc=);
+        if(infoflg) info(sc=);
+        infoflg = false;
       cond .s.equ(secname, "camera"):
-        `load:<-camera(sc=);
+        if(cameraflg) camera(sc=);
+        cameraflg = false;
       cond .s.equ(secname, "playerinfo"):
-        `load:<-playerinfo(sc=);
+        if(playerinfoflg) playerinfo(sc=);
+        playerinfoflg = false;
       cond .s.equ(secname, "scaling"):
-        `load:<-scaling(sc=);
+        if(scalingflg) scaling(sc=);
+        scalingflg = false;
       cond .s.equ(secname, "bound"):
-        `load:<-bound(sc=);
+        if(boundflg) bound(sc=);
+        boundflg = false;
       cond .s.equ(secname, "stageinfo"):
-        `load:<-stageinfo(sc=);
+        if(stageinfoflg) stageinfo(sc=);
+        stageinfoflg = false;
       cond .s.equ(secname, "shadow"):
-        `load:<-shadow(sc=);
+        if(shadowflg) shadow(sc=);
+        shadowflg = false;
       cond .s.equ(secname, "reflection"):
-        `load:<-reflection(sc=);
+        if(reflectionflg) reflection(sc=);
+        reflectionflg = false;
       cond .s.equ(secname, "music"):
-        `load:<-music(sc=);
+        if(musicflg) music(sc=);
+        musicflg = false;
       cond .s.equ(secname, "bgdef"):
-        `load:<-bgdef(sc=);
+        bgdef(sc=);
       cond .s.equ(secname, "bg "):
-        `load:<-bg(sc=, link=);
+        bg(sc=, link=);
       cond .s.equ(secname, "bgctrldef "):
-        `load:<-bgctrldef(sc=);
+        bgctrldef(sc=);
       cond .s.equ(secname, "bgctrl "):
-        `load:<-bgctrl(sc=);
+        bgctrl(sc=);
       }
-    }
+    }];
     `def = def;
     ^char buf = .file.loadAsciiText(def);
     ^^/char lines = .com.splitLines(buf);
@@ -347,7 +360,7 @@ public &Stage
       index i = 0, link = -1;
       while;
     do:
-      section(lines, i=, link=);
+      section(:lines, i=, link=:);
       i++;
     while i < #lines:
     }

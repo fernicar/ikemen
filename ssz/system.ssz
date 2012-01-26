@@ -100,8 +100,8 @@ public &Select
         `charlist[-1].sprite = .com.readFileName(data);
       }
     }
-    void section(%^/char lines, index i=)
-    {
+    bool infoflg = true, filesflg = true;
+    ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
       if(#secname == 0) ret;
@@ -109,11 +109,13 @@ public &Select
       &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "info"):
-        `addChar:<-info(sc=);
+        if(infoflg) info(sc=);
+        infoflg = false;
       cond .s.equ(secname, "files"):
-        `addChar:<-files(sc=);
+        if(filesflg) files(sc=);
+        filesflg = false;
       }
-    }
+    }];
     ^^/char defs =
       .s.each!def.self?([void(def.self s=){s = .s.trim(s);}])<,
       .s.split(",", def);
@@ -142,7 +144,7 @@ public &Select
     %^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     loop{index i = 0; while; do:
-      section(lines, i=);
+      section(:lines, i=:);
       i++;
     while i < #lines:
     }
