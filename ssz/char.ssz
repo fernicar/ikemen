@@ -5722,40 +5722,42 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
       }
     }
-    `pyr.stVal.setHb(
-      hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
-    if(
-      (`pyr.facing < 0)
-      == ((pro != 0 ? pro : by.facing*(hit.p1facing < 0 ? -1 : 1)) < 0))
-    {
-      `pyr.stVal.hb.xvel *= -1.0;
-      `pyr.stVal.hb.fall.xvelocity *= -1.0;
-    }
-    if(hitting > 0){
-      if(!ho && p2s < 2 && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
-      `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
-    }
     if(pro == 0) by.sprpriority = hit.p1sprpriority;
     `pyr.sprpriority = hit.p2sprpriority;
-    if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
-      `pyr.stVal.typ = .StTy::S;
-    }
-    bool live = `pyr.sysivar[.iLIFE] > 0;
-    bool kill = #hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
-    `pyr.stVal.hb.damage +=
-      `pyr.getDamage(`pyr.stVal.hb.absdamage*hits, kill, false, by.attackmul);
-    if(`pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
-    cond kill || !live:
-      if(live && !.gs(.gsNOKO)){
-        `pyr.stVal.hb.fallf = 1;
-        if((int)`pyr.stVal.hb.fall.animtype < (int).AnimTy::Back){
-          `pyr.stVal.hb.fall.animtype = .AnimTy::Back;
-        }
-        `pyr.stVal.hb.yvel -= 6.0;
+    if(hitting > 0){
+      `pyr.stVal.setHb(
+        hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
+      if(`pyr.id == by.sysivar[.iBINDTOID]) by.setBindTime(0);
+      if(
+        (`pyr.facing < 0)
+        == ((pro != 0 ? pro : by.facing*(hit.p1facing < 0 ? -1 : 1)) < 0))
+      {
+        `pyr.stVal.hb.xvel *= -1.0;
+        `pyr.stVal.hb.fall.xvelocity *= -1.0;
       }
-      `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE];
-    else:
-      `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
+      if(!ho && p2s < 2 && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
+      `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
+      if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
+        `pyr.stVal.typ = .StTy::S;
+      }
+      bool live = `pyr.sysivar[.iLIFE] > 0;
+      bool kill = #hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
+      `pyr.stVal.hb.damage +=
+        `pyr.getDamage(
+          `pyr.stVal.hb.absdamage*hits, kill, false, by.attackmul);
+      if(`pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
+      cond kill || !live:
+        if(live && !.gs(.gsNOKO)){
+          `pyr.stVal.hb.fallf = 1;
+          if((int)`pyr.stVal.hb.fall.animtype < (int).AnimTy::Back){
+            `pyr.stVal.hb.fall.animtype = .AnimTy::Back;
+          }
+          `pyr.stVal.hb.yvel -= 6.0;
+        }
+        `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE];
+      else:
+        `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
+      }
     }
     branch{
       ^&.snd.Sound sou;
@@ -5771,8 +5773,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       else:
         e~ani = by.getAction(hit.sparkno);
       }
-      by.addPower(hit.hitgetpower);
-      `pyr.addPower(hit.hitgivepower);
       branch{
         if(hit.hitsoundg == .com.IERR) break;
         sou = by.newChannel(-1, false);
@@ -5789,6 +5789,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         sou~chrx = `pyr.sysfvar[.fX...fX+1];
         sou~setDefaultParameter();
       }
+      if(hitting > 0){
+        by.addPower(hit.hitgetpower);
+        `pyr.addPower(hit.hitgivepower);
+      }
     else:
       branch{
         if(hit.guard_sparkno == .com.IERR) break;
@@ -5801,8 +5805,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       else:
         e~ani = by.getAction(hit.guard_sparkno);
       }
-      by.addPower(hit.guardgetpower);
-      `pyr.addPower(hit.guardgivepower);
       branch{
         if(hit.guardsoundg == .com.IERR) break;
         sou = by.newChannel(-1, false);
@@ -5818,6 +5820,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       comm:
         sou~chrx = `pyr.sysfvar[.fX...fX+1];
         sou~setDefaultParameter();
+      }
+      if(hitting > 0){
+        by.addPower(hit.guardgetpower);
+        `pyr.addPower(hit.guardgivepower);
       }
     comm:
       if(ho) break;
@@ -5872,7 +5878,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       `pyr.getcombo += hit.numhits*hits;
       if(
-        pro == 0 && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
+        hitting > 0 && pro == 0 && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
           || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
         ) switch(`pyr.stVal.typ)
@@ -5896,7 +5902,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
     else:
       if(
-        pro == 0 && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
+        hitting > 0 && pro == 0 && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
           || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
         ) switch(`pyr.stVal.typ)

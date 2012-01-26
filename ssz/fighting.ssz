@@ -26,6 +26,12 @@ const double lvmul = 2.0**(1.0/12.0);
 {
   /^/char wincFN = "autolevel.txt";
   &.tbl.NameTable!int? winct;
+  ^int zeroAry(int sz)
+  {
+    ^int a.new(sz);
+    loop{index i = 0; while; do: a[i] = 0; i++; while i < sz:}
+    ret a;
+  }
   public void init()
   {
     if(!.com.autolevel) ret;
@@ -41,8 +47,9 @@ const double lvmul = 2.0**(1.0/12.0);
     do:
       tmp = .s.split(",", lines[i]);
       if(#tmp < 2) continue;
-      item.new(1);
-      item<> = .s.sToN!int?(tmp[1]);
+      item = .s.svToAry!int?(" ", .s.trim(tmp[1]));
+      item = item[0..12];
+      if(#item < 12) item = item + `zeroAry(12-#item);
       `winct.set(tmp[0], item);
     continue:
       i++;
@@ -70,7 +77,12 @@ const double lvmul = 2.0**(1.0/12.0);
     %char buf;
     buf .= '\xfeff';
     `winct.forEach()<, [void(^/char name, ^int cnt){
-      buf .= name .= ',' .= .s.iToS(cnt<>) .= \r\n;
+      buf .= name .= ',';
+      loop{index i = 0; while; do:
+        buf .= ' ' .= .s.iToS(cnt[i]);
+        i++;
+      while i < 12:}
+      buf .= \r\n;
     }];
     &.file.File f;
     f.open(`wincFN, "wb");
@@ -79,38 +91,29 @@ const double lvmul = 2.0**(1.0/12.0);
   ^int getItem(^/char name)
   {
     ^int item = `winct.get(name);
-    if(#item == 0){
-      item.new(1);
-      item<> = 0;
-    }
+    if(#item < 12) item = item + `zeroAry(12-#item);
     ret item;
   }
   void win(index i)
   {
-    %char buf .=
-      .chr.chars[i][0]~def .= ' ' .= .s.iToS(.chr.chars[i][0]~palno);
-    ^int item = `getItem(buf);
-    item<> +=
+    ^int item = `getItem(.chr.chars[i][0]~def);
+    item[.chr.chars[i][0]~palno-1] +=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
       && .com.tmode[i&1] != (int).com.TeamMode::Simul ? 2 : 1;
-    `winct.set(buf, item);
+    `winct.set(.chr.chars[i][0]~def, item);
   }
   void lose(index i)
   {
-    %char buf .=
-      .chr.chars[i][0]~def .= ' ' .= .s.iToS(.chr.chars[i][0]~palno);
-    ^int item = `getItem(buf);
-    item<> -=
+    ^int item = `getItem(.chr.chars[i][0]~def);
+    item[.chr.chars[i][0]~palno-1] -=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
       && .com.tmode[i&1] != (int).com.TeamMode::Simul ? 2 : 1;
-    `winct.set(buf, item);
+    `winct.set(.chr.chars[i][0]~def, item);
   }
   public int getLevel(index i)
   {
-    %char buf .=
-      .chr.chars[i][0]~def .= ' ' .= .s.iToS(.chr.chars[i][0]~palno);
-    ^int item = `getItem(buf);
-    ret item<>;
+    ^int item = `getItem(.chr.chars[i][0]~def);
+    ret item[.chr.chars[i][0]~palno-1];
   }
 }
 &WincntMgr wm;
