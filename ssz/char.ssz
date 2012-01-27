@@ -1746,6 +1746,7 @@ public &Projectile
           || (`velocityy > 0.0 && `y > (float)`heightboundb)
           || (`velocityy < 0.0 && `y < (float)`heightboundt)
           || `removetime == 0
+          || (`removetime <= -2 && (#`ani == 0 || `ani~ani.loopend))
           :
           `ani = .chars[`playerno][0]~getAction(`remanim);
         else:
