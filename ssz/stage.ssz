@@ -301,6 +301,7 @@ public &Stage
     bool infoflg = true, cameraflg = true, playerinfoflg = true;
     bool scalingflg = true, boundflg = true, stageinfoflg = true;
     bool shadowflg = true, reflectionflg = true, musicflg = true;
+    bool bgdefflg = true;
     ~$void(^^/char, index=, index=) section = [void(
       ^^/char lines, index i=, index link=)
     {
@@ -342,7 +343,8 @@ public &Stage
         if(musicflg) music(sc=);
         musicflg = false;
       cond .s.equ(secname, "bgdef"):
-        bgdef(sc=);
+        if(bgdefflg) bgdef(sc=);
+        bgdefflg = false;
       cond .s.equ(secname, "bg "):
         bg(sc=, link=);
       cond .s.equ(secname, "bgctrldef "):
