@@ -2174,9 +2174,11 @@ public &Char
   }
   public void insertExplod(index i)
   {
-    if(#.explods[`playerno][i].ani > 0){
-      .explods[`playerno][i].ani~ani.updateSprite();
+    if(#.explods[`playerno][i].ani == 0){
+      .explods[`playerno][i].id = .com.IERR;
+      ret;
     }
+    .explods[`playerno][i].ani~ani.updateSprite();
     branch{
     cond .explods[`playerno][i].ontop != 0:
       loop{
@@ -4684,6 +4686,11 @@ public &Char
   {
     `helproSetPos!p.self?(p=, pt, x, y, 1);
     p.ani = `getAction(p.anim);
+    if(#p.ani == 0 && #`ani > 0){
+      p.ani.new(1);
+      p.ani~copy(`ani<>=);
+      p.ani~ani.setAnimElem(1);
+    }
     if(#p.ani > 0) p.ani~ani.updateSprite();
     if(`sysivar[.iPROJ_DOSCALE] != 0){
       p.scalex *= `sysfvar[.fXSCALE];
@@ -5656,7 +5663,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     int hitting=, `pyr.self by=, &.Hitdef hit=,
     float x, float y, int pro, int hits)
   {
-    ^&.Explod expreset(&.Char p1=, &.Char p2=, float y)
+    void expreset(&.Char p1=, &.Char p2=, float y, ^&.act.Action ani)
     {
       float x =
         (float)p1.facing * (
@@ -5665,7 +5672,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             (p1.facing < 0) ^ (p2.facing < 0) ? p2.frontw : -p2.backw));
       index tmp;
       ^&.Explod e = `by.newExplod(tmp=);
-      if(#e == 0) ret e;
+      if(#e == 0) ret;
+      e~ani = ani;
       e~postype = 0;
       e~offsetx = x - `hit.sparkx * (`pro != 0 ? -(float)`pro : 1.0);
       e~offsety =
@@ -5679,7 +5687,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       e~supermovetime = e~pausemovetime = -1;
       p1.setPos!e<>.self?(e<>=, e~postype, e~offsetx, e~offsety, e~relativef);
       `by.insertExplod(tmp);
-      ret e;
     }
     bool guard =
       (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.ls(.lsGUARD);
@@ -5778,14 +5785,18 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     cond<hit> #hitting == 1:
       branch{
         if(hit.sparkno == .com.IERR) break;
-        ^&.Explod e = 
-          hit.reversal_attr > 0
-          ? expreset(`pyr=, by=, y) : expreset(by=, `pyr=, y);
-        if(#e == 0) break;
+        ^&.act.Action ani;
       cond hit.sparkno < 0:
-        e~ani = .fight~getAction(!hit.sparkno);
+        ani = .fight~getAction(!hit.sparkno);
       else:
-        e~ani = by.getAction(hit.sparkno);
+        ani = by.getAction(hit.sparkno);
+      comm:
+        branch{
+        cond hit.reversal_attr > 0:
+          expreset(`pyr=, by=, y, ani);
+        else:
+          expreset(by=, `pyr=, y, ani);
+        }
       }
       branch{
         if(hit.hitsoundg == .com.IERR) break;
@@ -5810,14 +5821,18 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     else:
       branch{
         if(hit.guard_sparkno == .com.IERR) break;
-        ^&.Explod e =
-          hit.reversal_attr > 0
-          ? expreset(`pyr=, by=, y) : expreset(by=, `pyr=, y);
-        if(#e == 0) break;
+        ^&.act.Action ani;
       cond hit.guard_sparkno < 0:
-        e~ani = .fight~getAction(!hit.guard_sparkno);
+        ani = .fight~getAction(!hit.guard_sparkno);
       else:
-        e~ani = by.getAction(hit.guard_sparkno);
+        ani = by.getAction(hit.guard_sparkno);
+      comm:
+        branch{
+        cond hit.reversal_attr > 0:
+          expreset(`pyr=, by=, y, ani);
+        else:
+          expreset(by=, `pyr=, y, ani);
+        }
       }
       branch{
         if(hit.guardsoundg == .com.IERR) break;
