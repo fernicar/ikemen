@@ -2261,7 +2261,7 @@ public &Char
   }
   public void byBindClear()
   {
-    if(`stVal.hb.byidMatch(`sysivar[.iBINDTOID])) `setBindTime(0);
+    if(`stVal.hb.byidMatch(`sysivar[.iBINDTOID])) `sysivar[.iBINDTIME] = 0;
   }
   public void clearTargetBind()
   {
@@ -3309,7 +3309,9 @@ public &Char
   }
   public void bind()
   {
-    if(`sysivar[.iBINDTIME] == 0) ret;
+    if(`sysivar[.iBINDTOID] < 0 || (`minus == 1 && `sysivar[.iBINDTIME] == 0)){
+      ret;
+    }
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     if(#c == 0 || `destmp){
       `setBindTime(0);
