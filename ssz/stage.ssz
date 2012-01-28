@@ -230,7 +230,7 @@ public &Stage
     {
       if(#`bg > 0 && !`bg[-1].positionlink) link = #`bg - 1;
       `bg.new[-1];
-      `bg[-1].read(sc=, `hires, `bg[link..link+1]);
+      `bg[-1].read(sc=, `bg[link..link+1]);
     }
     public void bgctrldef(&.com.Section sc=)
     {
@@ -531,7 +531,7 @@ public &Stage
       if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){
         `bg[i].draw(
           x, y + .envShake.getOffset(),
-          scl, .bgPalFX~time != 0 ? .bgPalFX : .com.allPalFX);
+          scl, .bgPalFX~time != 0 ? .bgPalFX : .com.allPalFX, `hires);
       }
       i++;
     while i < #`bg:

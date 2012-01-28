@@ -5728,13 +5728,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       `pyr.stVal.setHb(
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
       if(`pyr.id == by.sysivar[.iBINDTOID]) by.setBindTime(0);
-      if(
-        (`pyr.facing < 0)
-        == ((pro != 0 ? pro : by.facing*(hit.p1facing < 0 ? -1 : 1)) < 0))
-      {
-        `pyr.stVal.hb.xvel *= -1.0;
-        `pyr.stVal.hb.fall.xvelocity *= -1.0;
-      }
       if(!ho && p2s < 2 && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
       `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
       if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
@@ -5752,11 +5745,32 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if((int)`pyr.stVal.hb.fall.animtype < (int).AnimTy::Back){
             `pyr.stVal.hb.fall.animtype = .AnimTy::Back;
           }
-          `pyr.stVal.hb.yvel -= 6.0;
+          branch{
+          cond `pyr.stVal.typ == .StTy::A:
+            if(`pyr.stVal.hb.xvel < 0.0) `pyr.stVal.hb.xvel -= 2.0;
+            if(`pyr.stVal.hb.yvel <= 0.0){
+              `pyr.stVal.hb.yvel -= 2.0;
+              if(`pyr.stVal.hb.yvel > -3.0) `pyr.stVal.hb.yvel = -3.0;
+            }
+          else:
+            if(`pyr.stVal.hb.yvel == 0.0) `pyr.stVal.hb.xvel *= 0.66;
+            if(`pyr.stVal.hb.xvel < 0.0) `pyr.stVal.hb.xvel -= 2.5;
+            if(`pyr.stVal.hb.yvel <= 0.0){
+              `pyr.stVal.hb.yvel -= 2.0;
+              if(`pyr.stVal.hb.yvel > -6.0) `pyr.stVal.hb.yvel = -6.0;
+            }
+          }
         }
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE];
       else:
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
+      }
+      if(
+        (`pyr.facing < 0)
+        == ((pro != 0 ? pro : by.facing*(hit.p1facing < 0 ? -1 : 1)) < 0))
+      {
+        `pyr.stVal.hb.xvel *= -1.0;
+        `pyr.stVal.hb.fall.xvelocity *= -1.0;
       }
     }
     branch{

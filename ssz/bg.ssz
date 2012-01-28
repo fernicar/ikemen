@@ -172,7 +172,9 @@ public &BackGround
   public float windowdeltax = 0.0, windowdeltay = 0.0;
   new()
   {
-    `startrect = .com.scrrect;
+    `startrect.set(
+      -.com.GameWidth*2, -.com.GameHeight*2,
+      (ushort)(.com.GameWidth*4), (ushort)(.com.GameHeight*4));
   }
   public void reset()
   {
@@ -187,20 +189,25 @@ public &BackGround
     `bga.sinxlooptime = `startsinxlt;
     `bga.sinylooptime = `startsinylt;
   }
-  public void read(&.com.Section sc=, bool hires, ^/`self link)
+  public void read(&.com.Section sc=, ^/`self link)
   {
-    int typ = 0;//0:normal, 1:anim, 2:parallax
+    int typ = 0;//0:normal, 1:anim, 2:parallax, 3:dummy, 4:error
     ^/char data;
     if(#(data = sc.get("type")) > 0){
       data = .s.toLower(data);
       branch{
+      cond .s.equ(data[0..1], "n"):
+        typ = 0;
       cond .s.equ(data[0..1], "a"):
         typ = 1;
       cond .s.equ(data[0..1], "p"):
         typ = 2;
+      cond .s.equ(data[0..1], "d"):
+        typ = 3;
       }
     }
-    if(typ != 1 && #(data = sc.get("spriteno")) > 0){
+    if(typ == 4) ret;
+    if((typ == 0 || typ == 2) && #(data = sc.get("spriteno")) > 0){
       `anim.frames.new(1);
       .readPair!short?(`anim.frames~group=, `anim.frames~number=, data);
       `anim.frames[0].time = -1;
@@ -220,15 +227,7 @@ public &BackGround
     }
     if(#(data = sc.get("layerno")) > 0) `toplayer = .com.atoi(data) != 0;
     if(#(data = sc.get("start")) > 0){
-      ^float xy = .csvToAry!float?(data);
-      float mul = hires ? 0.5 : 1.0;
-      `startx = xy[0]*mul;
-      branch{
-      cond #xy >= 2:
-        `starty = xy[1]*mul;
-      else:
-        `starty = 0.0;
-      }
+      .readPair!float?(`startx=, `starty=, data);
     }
     if(#(data = sc.get("delta")) > 0){
       .readPair!float?(`deltax=, `deltay=, data);
@@ -288,42 +287,30 @@ public &BackGround
       `yscaledelta = .com.atof(data);
     }
     if(#(data = sc.get("window")) > 0){
-      ^float ltrb = .csvToAry!float?(data);
-      float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
-      float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
-      if(#ltrb >= 4){
-        `startrect.x =
-          (short)(
-            ltrb[0]*mulx+.com.WidthScale*(float)(.com.GameWidth-320)/2.0);
-        `startrect.y =
-          (short)(ltrb[1]*muly+.com.HeightScale*(float)(.com.GameHeight-240));
-        `startrect.w = (ushort)(((ltrb[2]+1.0)-ltrb[0])*mulx + 0.5);
-        `startrect.h = (ushort)(((ltrb[3]+1.0)-ltrb[1])*muly + 0.5);
-      }
+      ^int ltrb = .csvToAry!int?(data);
+      `startrect.x = .m.max!int?(-.com.GameWidth, .m.min!int?(32767, ltrb[0]));
+      if(#ltrb < 2) break;
+      `startrect.y =
+        .m.max!int?(-.com.GameHeight, .m.min!int?(32767, ltrb[1]));
+      if(#ltrb < 3) break;
+      `startrect.w =
+        .m.min!uint?(
+          (uint)(65535.0/.com.WidthScale),
+          (uint).m.max!int?(0, ltrb[2]+1 - `startrect.x));
+      if(#ltrb < 4) break;
+      `startrect.h =
+        .m.min!uint?(
+          (uint)(65535.0/.com.HeightScale),
+          (uint).m.max!int?(0, ltrb[3]+1 - `startrect.y));
     }
     if(#(data = sc.get("windowdelta")) > 0){
-      ^float xy = .csvToAry!float?(data);
-      float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
-      float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
-      `windowdeltax = xy[0]*mulx;
-      branch{
-      cond #xy >= 2:
-        `windowdeltay = xy[1]*muly;
-      else:
-        `windowdeltay = `windowdeltax;
-      }
+      .readPair!float?(`windowdeltax=, `windowdeltay=, data);
+      `windowdeltax *= .com.WidthScale;
+      `windowdeltay *= .com.HeightScale;
     }
     if(#(data = sc.get("id")) > 0) `id = .com.atoi(data);
     if(#(data = sc.get("velocity")) > 0){
-      ^float xy = .csvToAry!float?(data);
-      float mul = hires ? 0.5 : 1.0;
-      `startvx = xy[0]*mul;
-      branch{
-      cond #xy >= 2:
-        `startvy = xy[1]*mul;
-      else:
-        `startvy = 0.0;
-      }
+      .readPair!float?(`startvx=, `startvy=, data);
     }
     if(#(data = sc.get("sin.x")) > 0){
       ^float rp = .csvToAry!float?(data);
@@ -385,17 +372,35 @@ public &BackGround
       `deltay = 1.0;
       `windowdeltay = `yscaledelta = 0.0;
     }
-    {
-      float mul = hires ? 0.5 : 1.0;
-      `xtscale *= mul;
-      `xbscale *= mul;
-      `yscalestart *= mul;
-      `deltax *= mul;
-      `deltay *= mul;
+    if(hires){
+      `startx *= 0.5;
+      `starty *= 0.5;
+      `xtscale *= 0.5;
+      `xbscale *= 0.5;
+      `yscalestart *= 0.5;
+      `deltax *= 0.5;
+      `deltay *= 0.5;
+      `windowdeltax *= 0.5;
+      `windowdeltay *= 0.5;
+      `startvx *= 0.5;
+      `startvy *= 0.5;
     }
+    float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
+    float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
+    `startrect.x =
+      (short)(
+        (float)`startrect.x*mulx
+        + .com.WidthScale*(float)(.com.GameWidth-320)/2.0);
+    `startrect.y =
+      (short)(
+        (float)`startrect.y*muly
+        + .com.HeightScale*(float)(.com.GameHeight-240));
+    `startrect.w = (ushort)((float)`startrect.w*mulx + 0.5);
+    `startrect.h = (ushort)((float)`startrect.h*muly + 0.5);
     `anim.setup(sf);
   }
-  public void draw(float posx, float posy, float scl, ^&.com.PalFX fx)
+  public void draw(
+    float posx, float posy, float scl, ^&.com.PalFX fx, bool hires)
   {
     float x = .cfg.Zoom ? posx : .m.ceil(posx-0.5);
     float y = .cfg.Zoom ? posy : .m.ceil(posy-0.5);
@@ -422,6 +427,14 @@ public &BackGround
     float y2 =
       `starty - (y * `deltay - `bga.yoffset) + (float)(.com.GameHeight - 240)
       + (1.0/scly - 1.0)*(float).com.GameHeight;
+    if(!.cfg.Zoom) branch{
+    cond hires:
+      x2 = .m.ceil(x2*2.0 - 0.5) / 2.0;
+      y2 = .m.ceil(y2*2.0 - 0.5) / 2.0;
+    else:
+      x2 = .m.ceil(x2 - 0.5);
+      y2 = .m.ceil(y2 - 0.5);
+    }
     float ys = (`yscalestart - y * (scly/scl)*`yscaledelta*(1.0/100.0));
     `anim.draw(
       rect=, x2, y2, sclx, scly, `xtscale, xbs, ys, xras * x2
