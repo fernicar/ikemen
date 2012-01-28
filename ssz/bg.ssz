@@ -191,7 +191,7 @@ public &BackGround
   }
   public void read(&.com.Section sc=, ^/`self link)
   {
-    int typ = 0;//0:normal, 1:anim, 2:parallax, 3:dummy, 4:error
+    int typ = 4;//0:normal, 1:anim, 2:parallax, 3:dummy, 4:error
     ^/char data;
     if(#(data = sc.get("type")) > 0){
       data = .s.toLower(data);
