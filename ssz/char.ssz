@@ -5740,7 +5740,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           `pyr.stVal.hb.absdamage*hits, kill, false, by.attackmul);
       if(`pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
       cond kill || !live:
-        if(live && !.gs(.gsNOKO)){
+        if(!.gs(.gsNOKO)){
           `pyr.stVal.hb.fallf = 1;
           if((int)`pyr.stVal.hb.fall.animtype < (int).AnimTy::Back){
             `pyr.stVal.hb.fall.animtype = .AnimTy::Back;
