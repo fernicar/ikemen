@@ -4679,7 +4679,7 @@ public &Char
     h.sysfvar[.fVX] = 0.0;
     h.sysfvar[.fVY] = 0.0;
     if(ownpal != 0) h.palfx.new(1);
-    h.trChangeState2(st, `stVal.playerno, 0, 1);
+    h.trChangeState2(st, `minus == -2 ? `playerno : `stVal.playerno, 0, 1);
   }
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
   {
