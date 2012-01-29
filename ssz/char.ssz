@@ -1789,7 +1789,7 @@ public &Projectile
     if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
     if(#`ani == 0 || #`ani~ani.frames == 0) ret false;
     ^&.act.Frame frm;
-    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn1;
+    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn2;
     ^&.act.Rect clsn2 = `ani~ani.currentFrame()=>frm#frm~clsn2;
     &.ClsnHantei ch.set(
       pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
@@ -1816,10 +1816,7 @@ public &Projectile
             .projs[i][j].hit.affectteam != 0 && (
               (`playerno&1) != (i&1)) != (.projs[i][j].hit.affectteam > 0))
           ) continue;
-        if(
-          .projs[i][j].hit.attr >= 0
-          && `hitCheck(.projs[i][j]=) && .projs[i][j].hitCheck(`=))
-        {
+        if(.projs[i][j].hit.attr >= 0 && `hitCheck(.projs[i][j]=)){
           `prioritypoint -= .projs[i][j].priority;
         }
       continue:
