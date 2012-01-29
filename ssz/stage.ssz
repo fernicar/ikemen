@@ -293,7 +293,7 @@ public &Stage
           }
         }
       }
-      `bgctrlList[-1].read(sc=);
+      `bgctrlList[-1].read(sc=, #`bgctrlList);
       if(`bgctrlList[-1].ctrlbg == `bgcdef.ctrlbg){
         `bgctrlList[-1].positionlink |= `bgcdef.positionlink;
       }

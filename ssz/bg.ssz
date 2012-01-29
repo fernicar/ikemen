@@ -456,8 +456,10 @@ public &BGCtrl
   public int n = 0;
   public bool setx = false, sety = false;
   public bool positionlink = false, flag = false;
-  public void read(&.com.Section sc=)
+  /index idx = 0;
+  public void read(&.com.Section sc=, index idx)
   {
+    `idx = idx;
     ^/char data;
     if(#(data = sc.get("type")) > 0){
       branch{
@@ -532,7 +534,7 @@ public &ActiveCtrlList
       `top~bgc = bgc;
       ret;
     }
-    if(bgc~endtime-bgc~currenttime <= `top~bgc~endtime-`top~bgc~currenttime){
+    if(bgc~idx < `top~bgc~idx){
       ^&`Cell tmp;
       tmp.new(1);
       tmp~bgc = bgc;
@@ -545,7 +547,7 @@ public &ActiveCtrlList
       while;
     do:
       tmp = tmp~next;
-      if(bgc~endtime-bgc~currenttime <= tmp~bgc~endtime-tmp~bgc~currenttime){
+      if(bgc~idx < tmp~bgc~idx){
         ^&`Cell tmp2;
         tmp2.new(1);
         tmp2~bgc = tmp~bgc;
@@ -562,18 +564,28 @@ public &ActiveCtrlList
   public ^^&.BGCtrl act<_t>(_t s=)
   {
     %^&.BGCtrl endlist;
-    loop{while; do:
-      s.bgCtrl(`top~bgc<>=);
-      endlist.new[-1] = `top~bgc;
-      `top = `top~next;
-    while #`top > 0 && `top~bgc~currenttime >= `top~bgc~endtime:
-    }
     loop{
-      ^&`Cell tmp = `top;
+      ^&`Cell tmp = `top, pre;
       while;
     do:
       s.bgCtrl(tmp~bgc<>=);
-      tmp = tmp~next;
+      branch{
+      cond tmp~bgc~currenttime > tmp~bgc~endtime:
+        endlist.new[-1] = tmp~bgc;
+        branch{
+        cond tmp == `top:
+          `top = `top~next;
+          tmp = `top;
+          break, break;
+        else:
+          pre~next = tmp~next;
+          if(#pre == 0) break, break, break;
+         }
+      else:
+        pre = tmp;
+      comm:
+       tmp = pre~next;
+      }
     while #tmp > 0:
     }
     ret endlist;
