@@ -1235,13 +1235,12 @@ const index iHITPAUSETIME      = 50;
 const index iALPHAS            = 51;
 const index iALPHAD            = 52;
 const index iRECOVERTIME       = 53;
-const index iWAITWIN           = 54;
-const index iSPECIALFLAG       = 55;
-const index iSYSFLAG           = 56;
-const index iZ_WIDTH              = 57;
-const index iATTACK_Z_WIDTH_FRONT = 58;
-const index iATTACK_Z_WIDTH_BACK  = 59;
-const index iSTANDBY              = 60;
+const index iSPECIALFLAG       = 54;
+const index iSYSFLAG           = 55;
+const index iZ_WIDTH              = 56;
+const index iATTACK_Z_WIDTH_FRONT = 57;
+const index iATTACK_Z_WIDTH_BACK  = 58;
+const index iSTANDBY              = 59;
 
 const index fX                = 10;
 const index fY                = 11;
@@ -1418,9 +1417,7 @@ public int roundState()
     .com.intro > .fight~ro.ctrl_time+1 ? 0 : (
       .fight~ro.cur == 0 ? 1 : (
         !.roundEnd() ? 2 : (
-          .com.intro < -(
-            .fight~ro.over_hittime
-            + .fight~ro.over_waittime + .fight~ro.over_wintime)
+          .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime)
           ? 4 : 3)));
 }
 public bool roundEnd()
@@ -1962,7 +1959,7 @@ public &Char
   new()
   {
     `ivar.new(60);
-    `sysivar.new(61);
+    `sysivar.new(60);
     `fvar.new(40);
     `sysfvar.new(80);
     `clearVal();
@@ -3106,6 +3103,18 @@ public &Char
       `bind();
       `changeState2();
       if(!`isHitPaused()){
+        if(
+          .com.intro >= -(
+            .fight~ro.over_hittime
+            + .fight~ro.over_waittime + .fight~ro.over_wintime)
+          && `sysivar[.iCTRL] != 0 && `helperindex == 0
+          && `stVal.typ != .StTy::A  && !`ls(.lsNOAUTOTURN))
+        {
+          ^`self e = .players.enemyNear(`=, 0);
+          if((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX]) >= 0) break;
+          `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
+          `setFacing(-`facing);
+        }
         if(`keyctrl && #`cmd > 0) branch{
           branch{
           cond `stVal.typ == .StTy::A:
@@ -3115,13 +3124,6 @@ public &Char
             `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
           }
         cond `ctrl() && (`key >= 0 || `helperindex == 0):
-          if(
-            `helperindex == 0 && `stVal.typ != .StTy::A
-            && !`ls(.lsNOAUTOTURN) && `trP2DistX()$.v.toF() <= -1.0)
-          {
-            `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
-            `setFacing(-`facing);
-          }
           branch{
           cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
             if(`stVal.no != 10) `trSelfState(10, -1, -1);
@@ -3166,6 +3168,7 @@ public &Char
             `trSelfState(0, -1, 1);
           }
         }
+        if(!.roundEnd()) `sysivar[.iSYSFLAG] |= .sfNOTOVER;
         `sysivar[.iSPECIALFLAG] =
           `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
           ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH
@@ -4410,8 +4413,7 @@ public &Char
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
-    if(p == `playerno && ((n >= 170 && n < 190) || (n >= 5150 && n < 5160))){
-      if(`sysivar[.iWAITWIN] > 180) `sysivar[.iWAITWIN] = 180;
+    if((n >= 170 && n < 190) || (n >= 5150 && n < 5160)){
       `sysivar[.iSYSFLAG] &= !.sfNOTOVER;
     }
     `cs1tmp = true;
@@ -4486,6 +4488,16 @@ public &Char
   public void trP2DistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
+    if(`isWin()){
+      e~trP2DistX();
+      if(
+        .v.toF() > 0.0
+        && (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0 && .roundState() == 4)
+      {
+        .v.setF(0.0);
+      }
+      ret;
+    }
     .v.setF((float)((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX])));
   }
   public void trP2DistY()
@@ -4496,6 +4508,10 @@ public &Char
   public void trP2BodyDistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
+    if(`isWin()){
+      e~trP2BodyDistX();
+      ret;
+    }
     float dist = e~sysfvar[.fX] - `sysfvar[.fX];
     bool bar = dist == 0.0 || (dist < 0.0) ^ (e~facing < 0);
     .v.setF()<, (float)(
@@ -6433,10 +6449,7 @@ public float action(
   float cvx = 0.0;
   float highest = 0.0, lowest = .com.screeny;
   rightest = leftest = x;
-  int rs4t =
-    -(
-      .fight~ro.over_hittime
-      + .fight~ro.over_waittime + .fight~ro.over_wintime);
+  int rs4t = -(.fight~ro.over_hittime + .fight~ro.over_waittime);
   branch{
   cond .com.tickFrame():
     if(.waitdown > 0 && .com.intro == rs4t-1 && #(x - .oldx) >= 1.0){
@@ -6778,6 +6791,30 @@ public float action(
           i++;
         while i < #.chars:
         }
+        if(
+          .com.intro < -(
+            .fight~ro.over_hittime + .fight~ro.over_waittime
+            + (.com.time != 0 ? .fight~ro.over_wintime : 0))) loop
+        {
+          index i = 0;
+          while;
+        do:
+          if(
+            #.chars[i] > 0
+            && (.chars[i][0]~sysivar[.iSYSFLAG] & .sfNOTOVER) != 0
+            && (
+              .chars[i][0]~stVal.no < 130 || .chars[i][0]~sysivar[.iCTRL] != 0)
+            && .chars[i][0]~isActive() && !.chars[i][0]~isKO()
+            && .chars[i][0]~stVal.typ != .StTy::A
+            && .chars[i][0]~stVal.phy != .StTy::A)
+          {
+            .chars[i][0]~trSelfState(
+              .chars[i][0]~isWin() ? 180 : (.chars[i][0]~isLose() ? 170 : 175),
+              -1, 1);
+          }
+          i++;
+        while i < #.chars:
+        }
       }
     else:
       if(.com.intro < 0) .com.intro = 0;
@@ -7065,7 +7102,12 @@ public void nextRound()
 
 public bool roundOver()
 {
-  if(.roundState() == 4 && .cmd.anybutton()){
+  if(
+    .com.intro < -(
+      .fight~ro.over_hittime
+      + .fight~ro.over_waittime + .fight~ro.over_wintime)
+    && .cmd.anybutton())
+  {
     .com.intro =
       .m.min!int?(
         .com.intro,
