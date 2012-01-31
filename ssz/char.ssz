@@ -5555,8 +5555,8 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
             #(e~sysfvar[.fX] - `pyr.sysfvar[.fX]),
             #(`en[i]~sysfvar[.fX] - `pyr.sysfvar[.fX]), e~id, `en[i]~id)
           : `en[i]~isKO() && foo!int?(
-            `en[i]~sysivar[.iSYSFLAG] & .sfNOTOVER,
-            e~sysivar[.iSYSFLAG] & .sfNOTOVER, e~id, `en[i]~id)))
+            -(`en[i]~sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE),
+            -(e~sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE), e~id, `en[i]~id)))
       {
         self(`en[i], i+1);
         `en[i] = e;
