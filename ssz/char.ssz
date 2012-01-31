@@ -5247,6 +5247,13 @@ public &Char
   {
     ret .com.win >= 0 && (`playerno+1&1) == .com.win;
   }
+  public bool isOver()
+  {
+    ret
+      (`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0 || (
+        `ctrlOver() && `sysivar[.iCTRL] != 0
+        && `stVal.typ != .StTy::A && `stVal.phy != .StTy::A);
+  }
   public void trWin()
   {
     .v.setB(`isWin());
@@ -5690,7 +5697,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       if(#e == 0) ret;
       e~ani = ani;
       e~postype = 0;
-      e~offsetx = x - `hit.sparkx * (`pro != 0 ? -(float)`pro : 1.0);
+      e~offsetx =
+        x - `hit.sparkx * (`pro != 0 ? -(float)(`pro*p1.facing) : 1.0);
       e~offsety =
         y + `hit.sparky + (`by.id == p1.id ? 0.0 : p1.stVal.hit.sparky);
       e~relativef = 1;
@@ -6776,23 +6784,17 @@ public float action(
           }
         }
         .com.intro--;
-        if(.waitdown-- > 0 && .com.time != 0 && .com.intro == rs4t-1) loop{
+        if(.waitdown > 0 && .com.intro == rs4t-1) loop{
           index i = 0;
           while;
         do:
-          if(#.chars[i] > 0) branch{
-          cond .chars[i][0]~isWin():
-          cond
-            !.m.inRange!int?(5150, 5159, .chars[i][0]~stVal.no)
-            && .chars[i][0]~sysivar[.iCTRL] == 0
-            :
-            .com.intro = rs4t;
-          }
+          if(#.chars[i] > 0 && !.chars[i][0]~isOver()) .com.intro = rs4t;
           i++;
         while i < #.chars:
         }
         if(
-          .com.intro < -(
+          .waitdown <= 0
+          || .com.intro < -(
             .fight~ro.over_hittime + .fight~ro.over_waittime
             + (.com.time != 0 ? .fight~ro.over_wintime : 0))) loop
         {
@@ -6802,11 +6804,8 @@ public float action(
           if(
             #.chars[i] > 0
             && (.chars[i][0]~sysivar[.iSYSFLAG] & .sfNOTOVER) != 0
-            && (
-              .chars[i][0]~stVal.no < 130 || .chars[i][0]~sysivar[.iCTRL] != 0)
             && .chars[i][0]~isActive() && !.chars[i][0]~isKO()
-            && .chars[i][0]~stVal.typ != .StTy::A
-            && .chars[i][0]~stVal.phy != .StTy::A)
+            && (.chars[i][0]~isOver() || .waitdown <= 0))
           {
             .chars[i][0]~trSelfState(
               .chars[i][0]~isWin() ? 180 : (.chars[i][0]~isLose() ? 170 : 175),
@@ -6815,6 +6814,7 @@ public float action(
           i++;
         while i < #.chars:
         }
+        .waitdown--;
       }
     else:
       if(.com.intro < 0) .com.intro = 0;
