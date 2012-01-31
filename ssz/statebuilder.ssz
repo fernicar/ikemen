@@ -7646,12 +7646,11 @@ public &StateBuilder
     `stnoList.new(0);
     %char buf;
     buf .= \xfeff"lib c = "\""char.ssz"\"";"\r\n;
-    if(!`stateBulid(buf=, def, `cmd=)) ret false;
     loop{index i = 0; while; do:
       if(#`st[i] > 0 && !`stateBulid(buf=, def, `st[i]=)) ret false;
       i++;
-    while i < #`st:
-    }
+    while i < #`st:}
+    if(!`stateBulid(buf=, def, `cmd=)) ret false;
     if(#`stcommon > 0 && !`stateBulid(buf=, def, `stcommon=)) ret false;
     ^/char minus = "ssz/minus.cns";
     if(!`stateBulid(buf=, def, minus=)) ret false;
