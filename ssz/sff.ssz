@@ -202,7 +202,9 @@ public &Sprite
   {
     uint lenghtOfSubheader = loh;
     if(nsh > (uint)offset) lenghtOfSubheader = nsh - (uint)offset;//lohを無視
-    if(!f.read!bool?(palletSame=)) ret false;
+    byte ps;
+    if(!f.read!byte?(ps=)) ret false;
+    palletSame = ps != 0;
     if(#prev == 0) palletSame = false;
     if(!`readPcxHeader(f=, offset)) ret false;
     f.seek(offset + 128, .file.Seek::SET);
@@ -650,8 +652,11 @@ public &Sff
             !spriteList[i].read(
               f=, `head=, (long)(shofs + 0d32),
               size, misc, spriteList[prev..prev+1], ps=, `palList=,
-              chr && spriteList[i].imageGroup == 0
-              && spriteList[i].imageNumber == 0)) ret false;
+              chr && (
+                (
+                  spriteList[i].imageGroup == 0
+                  && spriteList[i].imageNumber == 0)
+                || prev < 0))) ret false;
         case 0d2:
           if(!spriteList[i].readV2(f=, (long)misc, size)) ret false;
         }

@@ -1355,9 +1355,10 @@ public bool gs(uint mask)
   ret (.specialFlag & mask) == mask;
 }
 
-const int sfAIRJUMP = 0b00000000000000000000000000000001;
-const int sfNOTOVER = 0b00000000000000000000000000000010;
-const int sfKO      = 0b00000000000000000000000000000100;
+const int sfAIRJUMP         = 0b00000000000000000000000000000001;
+const int sfNOTOVER         = 0b00000000000000000000000000000010;
+const int sfKO              = 0b00000000000000000000000000000100;
+const int sfKO_ROUND_MIDDLE = 0b00000000000000000000000000001000;
 
 &PlayerList<_t>
 {
@@ -3168,10 +3169,19 @@ public &Char
             `trSelfState(0, -1, 1);
           }
         }
-        if(!.roundEnd()) `sysivar[.iSYSFLAG] |= .sfNOTOVER;
+        if(!.roundEnd()){
+          if(!`isKO()) `sysivar[.iSYSFLAG] |= .sfNOTOVER;
+          if((`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0){
+            `sysivar[.iSYSFLAG] |= .sfKO_ROUND_MIDDLE;
+          }
+        }
         `sysivar[.iSPECIALFLAG] =
-          `player && (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
-          ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH
+          `player ? (
+            (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
+            ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH
+            : (
+              (`sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE) == 0
+              ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY : 0))
           : 0;
         `attackmul = (float)`sysivar[.iATTACK] / 100.0;
         `attackdist = (float)`sysivar[.iATTACK_DIST];
