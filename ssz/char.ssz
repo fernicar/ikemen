@@ -1412,15 +1412,6 @@ void resetNumenemy()
 resetNumenemy();
 
 public ^&.fgt.Fight fight;
-public int roundState()
-{
-  ret
-    .com.intro > .fight~ro.ctrl_time+1 ? 0 : (
-      .fight~ro.cur == 0 ? 1 : (
-        !.roundEnd() ? 2 : (
-          .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime)
-          ? 4 : 3)));
-}
 public bool roundEnd()
 {
   ret .com.intro < -.fight~ro.over_hittime;
@@ -2996,7 +2987,7 @@ public &Char
         an, `angleset, `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY]);
     }
     if(.com.tickNextFrame()){
-      if(.roundState() == 4) `outTarget();
+      if(`roundState() == 4) `outTarget();
       if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
       if(.supertime < 0){
         if((`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H){
@@ -3005,6 +2996,16 @@ public &Char
       }
       `minus = 2;
     }
+  }
+  public int roundState()
+  {
+    ret
+      .com.intro > .fight~ro.ctrl_time+1 ? 0 : (
+        .fight~ro.cur == 0 ? 1 : (
+          !.roundEnd() ? 2 : (
+            .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime)
+            && (`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0
+            ? 4 : 3)));
   }
   public bool isKO()
   {
@@ -3214,7 +3215,7 @@ public &Char
           }
         cond
           `helperid == 0 && !`isKO() && `sysivar[.iLIFE] <= 0
-          && `stVal.mov != .MovTy::H && .roundState() >= 2 && !.gs(.gsNOKO)
+          && `stVal.mov != .MovTy::H && `roundState() >= 2 && !.gs(.gsNOKO)
           :
           `trSelfState(5050, -1, -1);
         cond `stVal.no == 140:
@@ -3274,7 +3275,7 @@ public &Char
       if(
         `stVal.playerno == `playerno && (
           `stVal.mov != .MovTy::H || (
-            .roundState() == 2 && `isKO()
+            `roundState() == 2 && `isKO()
             && (`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0)))
       {
         `outTarget();
@@ -3541,7 +3542,7 @@ public &Char
   }
   public bool addLife(int l, bool kill, bool absolute)
   {
-    if(l == 0 || .roundState() == 3) ret false;
+    if(l == 0 || `roundState() == 3) ret false;
     bool foo = `sysivar[.iLIFE] > 0;
     `sysivar[.iLIFE] +=
       (int).m.max!double?((double)-`sysivar[.iLIFE])<,
@@ -4500,10 +4501,7 @@ public &Char
     ^`self e = .players.enemyNear(`=, 0);
     if(`isWin()){
       e~trP2DistX();
-      if(
-        .v.toF() > 0.0
-        && (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0 && .roundState() == 4)
-      {
+      if(.v.toF() > 0.0 && `roundState() == 3 && e~roundState() == 4){
         .v.setF(0.0);
       }
       ret;
@@ -5243,7 +5241,7 @@ public &Char
   }
   public void trRoundState()
   {
-    .v.setI(.roundState());
+    .v.setI(`roundState());
   }
   public void trRoundsExisted()
   {
@@ -5298,7 +5296,7 @@ public &Char
   }
   public void trDrawGame()
   {
-    .v.setB(.roundState() >= 3 && .com.win < 0);
+    .v.setB(`roundState() >= 3 && .com.win < 0);
   }
   public void trRemapPal(int sg, int sn, int dg, int dn)
   {
@@ -6392,7 +6390,7 @@ void commandUpdate()
       if(.chars[i][0]~key < 0) loop{
         index j = 0;
         index cc =
-          .roundState() == 2 && #.chars[i][j]~keyctrl
+          .chars[i][j]~roundState() == 2 && #.chars[i][j]~keyctrl
           && .m.rand(0, .com.com[i]+16) > 16
           ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
         while;
