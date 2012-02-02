@@ -3106,9 +3106,7 @@ public &Char
       `changeState2();
       if(!`isHitPaused()){
         if(
-          .com.intro >= -(
-            .fight~ro.over_hittime
-            + .fight~ro.over_waittime + .fight~ro.over_wintime)
+          (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0
           && `sysivar[.iCTRL] != 0 && `helperindex == 0
           && `stVal.typ != .StTy::A  && !`ls(.lsNOAUTOTURN))
         {
