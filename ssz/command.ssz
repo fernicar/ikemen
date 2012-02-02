@@ -13,11 +13,11 @@ lib cfg = "config.ssz";
 lib com = "common.ssz";
 
 
-const int max(int x, int y)
+public int max(int x, int y)
 {
   ret x > y ? x : y;
 }
-const int min(int x, int y)
+public int min(int x, int y)
 {
   ret x < y ? x : y;
 }
@@ -68,7 +68,7 @@ public &Buffer
     `a=-1; `b=-1; `c=-1;
     `x=-1; `y=-1; `z=-1; `s=-1; `esc=-1;
   }
-  const int keyState(|.Key k)
+  /int keyState(|.Key k)
   {
     switch(k){
     case .Key::B: ret .min(-.max(`Db, `Ub), `Bb);
@@ -137,7 +137,7 @@ public &Buffer
     }
     ret 0;
   }
-  const int keyState2(|.Key k)
+  /int keyState2(|.Key k)
   {
     int foo(int a, int b, int c)
     {
@@ -183,7 +183,7 @@ public &Buffer
     }
     ret `keyState(k);
   }
-  const int lastChangeTime()
+  /int lastChangeTime()
   {
     ret
       .min(#`Bb)<, .min(#`Db)<, .min(#`Fb)<, .min(#`Ub)<,

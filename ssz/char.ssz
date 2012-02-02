@@ -560,12 +560,12 @@ public &Var
   {
     `typ = .VarTy::SFalse;
   }
-  const bool isT()
+  /bool isT()
   {
     if(`isSF()) ret false;
     ret `typ == .VarTy::Int ? `i != 0 : `f != 0.0;
   }
-  const bool isSF()
+  /bool isSF()
   {
     ret `typ == .VarTy::SFalse;
   }
@@ -574,7 +574,7 @@ public &Var
     if(`isSF()) ret 0;
     ret `typ == .VarTy::Int ? `i : (int)`f;
   }
-  const double toF()
+  /double toF()
   {
     if(`isSF()) ret 0.0;
     ret `typ == .VarTy::Int ? (double)`i : `f;
@@ -3536,9 +3536,9 @@ public &Char
     if(damage == 0 || (!absolute && atkmul == 0.0)) ret 0;
     type _t = double;
     ret
-      (int).m.min!_t?((_t)(.m.max!int?(0, `sysivar[.iLIFE]-(int)!kill)))<,
-      .m.max!_t?((_t)(`sysivar[.iLIFE]-`sysivar[.iLIFEMAX]))<,
-      .m.ceil((_t)damage*(absolute ? 1.0 : atkmul/`defencemul));
+      (int).m.min!_t?((*_t)(.m.max!int?(0, `sysivar[.iLIFE]-(int)!kill)))<,
+      .m.max!_t?((*_t)(`sysivar[.iLIFE]-`sysivar[.iLIFEMAX]))<,
+      .m.ceil((*_t)damage*(absolute ? 1.0 : atkmul/`defencemul));
   }
   public bool addLife(int l, bool kill, bool absolute)
   {
@@ -6923,16 +6923,15 @@ public void draw(float x, float y, float scl)
         .stg~cam.verticalfollow != 0.0
         ? (float).m.min!int?(0, .stg~cam.boundhigh) : 0.0;
       float yofs =
-        (scl > 1.0 ? .com.zoffset : (float).com.GameHeight)*(1.0/scl - 1.0)
-        + bh;
+        (scl > 1.0 ? .com.zoffset : (float).com.GameHeight)*(1.0/scl - 1.0);
       float yofs2 =
         scl > 1.0
         ? ((float).com.GameHeight - .com.zoffset)*(1.0 - 1.0/scl) : 0.0;
       *.com.scrrect.self rect = .com.scrrect;
-      if(off < y + yofs){
+      if(off - bh < yofs - y){
         rect.h =
           (
-            (uint)(((y + yofs) - off)*scl + 0.5)*.com.scrrect.h
+            (uint)(((yofs - y) - (off - bh))*scl + 0.5)*.com.scrrect.h
             + (uint)(.com.GameHeight-1))
           / (uint).com.GameHeight;
         fade(rect=, 255);
@@ -6954,7 +6953,7 @@ public void draw(float x, float y, float scl)
         ((float).com.GameWidth*(1.0/scl - 1.0) + (float)(.com.GameWidth-320))
         / 2.0;
       rect = .com.scrrect;
-      if((x - xofs) < bl){
+      if(x - xofs < bl){
         rect.w =
           (
             (uint)((bl - (x - xofs))*scl + 0.5)*.com.scrrect.w

@@ -57,17 +57,17 @@ int oldTickCount = tickCount-1;
 float tickCountF = 0.0, lastTick = 0.0;
 float nextAddTime = Speed;
 
-const bool tickFrame()
+public bool tickFrame()
 {
   ret .oldTickCount < .tickCount;
 }
 
-const bool tickNextFrame()
+public bool tickNextFrame()
 {
   ret (int)(.tickCountF + .nextAddTime) > .tickCount;
 }
 
-const float tickInterpola()
+public float tickInterpola()
 {
   ret .tickNextFrame() ? 1.0 : .tickCountF - .lastTick + .nextAddTime;
 }
@@ -221,7 +221,7 @@ public ..csvToAry<_t>(^/char csv) ^_t
   ^^/char spl = .s.split(",", csv);
   ^_t ary.new(#spl);
   loop{index i = 0; while; do:
-    ary[i] = (_t).atof(spl[i]);
+    ary[i] = (*_t).atof(spl[i]);
     i++;
   while i < #ary:
   }

@@ -467,8 +467,10 @@ void game()
     y =
       .m.min!float?(0.0)<, 
       .m.min!float?(tmp*(1.0/scl - 1.0))<,
-      .m.max!float?(bt-240.0 + (float).com.GameHeight/scl)<,
-      (newy + 240.0*(1.0 - .m.min!float?(1.0, scl)));
+      .m.max!float?(
+        bt-240.0 + .m.max!float?(
+          (float).com.GameHeight/scl, tmp + (float).chr.stg~zoffset/scl),
+        newy + 240.0*(1.0 - .m.min!float?(1.0, scl)));
     if(
       .com.tickFrame() && (.chr.super <= 0 || .chr.superpausebg == 0)
       && (.chr.pause <= 0 || .chr.pausebg == 0)) 

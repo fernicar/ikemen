@@ -34,7 +34,7 @@ public ..csvToAry<_t>(^/char csv) ^_t
   ^^/char spl = .splitParams(csv);
   ^_t ary.new(#spl);
   loop{index i = 0; while; do:
-    ary[i] = (_t).com.atof(spl[i]);
+    ary[i] = (*_t).com.atof(spl[i]);
     i++;
   while i < #ary:
   }
