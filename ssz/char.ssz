@@ -3000,12 +3000,13 @@ public &Char
   public int roundState()
   {
     ret
-      .com.intro > .fight~ro.ctrl_time+1 ? 0 : (
-        .fight~ro.cur == 0 ? 1 : (
-          !.roundEnd() ? 2 : (
-            .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime)
-            && (`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0
-            ? 4 : 3)));
+      .com.intro > .fight~ro.ctrl_time+1 ? 0
+      : .fight~ro.cur == 0 ? 1
+      : !.roundEnd() ? 2
+      : (
+        .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime)
+        && ((`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0 || !`isAlive())
+        ? 4 : 3);
   }
   public bool isKO()
   {
