@@ -373,8 +373,6 @@ public &BackGround
       `windowdeltay = `yscaledelta = 0.0;
     }
     if(hires){
-      `deltax *= 0.5;
-      `deltay *= 0.5;
       `windowdeltax *= 0.5;
       `windowdeltay *= 0.5;
     }
@@ -403,7 +401,7 @@ public &BackGround
     rect.y += -(short).m.floor(y * `windowdeltay + 0.5);
     float xras = ((`rasterxbspeed-`rasterxtspeed) / `rasterxtspeed);
     float xbs = `xbscale;
-    float sclx = scl, scly = scl, dx = .m.max!float?(0.0, `deltax);
+    float sclx = scl, scly = scl, dx = .m.max!float?(0.0, `deltax*bgscl);
     sclx = .m.max!float?(0.0, scl + (1.0 - scl)*(1.0 - dx));
     if(sclx != 0.0){
       float tmp = 1.0 / sclx;
@@ -415,7 +413,7 @@ public &BackGround
     }
     scly =
       .m.max!float?(
-        0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `deltay)));
+        0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `deltay*bgscl)));
     float x2 = `startx - ((x+`camstartx) * `deltax - `bga.xoffset);
     float y2 =
       `starty - (y * `deltay - `bga.yoffset) + (float)(.com.GameHeight - 240)
