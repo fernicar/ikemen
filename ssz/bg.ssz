@@ -373,17 +373,10 @@ public &BackGround
       `windowdeltay = `yscaledelta = 0.0;
     }
     if(hires){
-      `startx *= 0.5;
-      `starty *= 0.5;
-      `xtscale *= 0.5;
-      `xbscale *= 0.5;
-      `yscalestart *= 0.5;
       `deltax *= 0.5;
       `deltay *= 0.5;
       `windowdeltax *= 0.5;
       `windowdeltay *= 0.5;
-      `startvx *= 0.5;
-      `startvy *= 0.5;
     }
     float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
     float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
@@ -400,7 +393,7 @@ public &BackGround
     `anim.setup(sf);
   }
   public void draw(
-    float posx, float posy, float scl, ^&.com.PalFX fx, bool hires)
+    float posx, float posy, float scl, ^&.com.PalFX fx, float bgscl)
   {
     float x = .cfg.Zoom ? posx : .m.ceil(posx-0.5);
     float y = .cfg.Zoom ? posy : .m.ceil(posy-0.5);
@@ -427,17 +420,16 @@ public &BackGround
     float y2 =
       `starty - (y * `deltay - `bga.yoffset) + (float)(.com.GameHeight - 240)
       + (1.0/scly - 1.0)*(float).com.GameHeight;
-    if(!.cfg.Zoom) branch{
-    cond hires:
-      x2 = .m.ceil(x2*2.0 - 0.5) / 2.0;
-      y2 = .m.ceil(y2*2.0 - 0.5) / 2.0;
-    else:
+    if(!.cfg.Zoom){
       x2 = .m.ceil(x2 - 0.5);
       y2 = .m.ceil(y2 - 0.5);
     }
     float ys = (`yscalestart - y * (scly/scl)*`yscaledelta*(1.0/100.0));
+    x2 *= bgscl;
+    y2 *= bgscl;
+    ys *= bgscl;
     `anim.draw(
-      rect=, x2, y2, sclx, scly, `xtscale, xbs, ys, xras * x2
+      rect=, x2, y2, sclx, scly, `xtscale*bgscl, xbs*bgscl, ys, xras * x2
       / (#ys*(float)`anim.spr~rct.h), (float).com.GameWidth/2.0, fx);
   }
 }
