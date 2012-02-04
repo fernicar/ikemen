@@ -236,6 +236,9 @@ public &BackGround
     if(#(data = sc.get("delta")) > 0){
       .readPair!float?(`deltax=, `deltay=, data);
     }
+    if(typ != 1 && #(data = sc.get("mask")) > 0){
+      `anim.mask = .com.atoi(data) != 0 ? 0 : -1;
+    }
     if(typ != 1 && #(data = sc.get("trans")) > 0){
       branch{
         ^char d = .s.toLower(data);
@@ -254,6 +257,7 @@ public &BackGround
             `anim.dalpha = sd[1];
             if(`anim.dalpha > 255) `anim.dalpha = 255;
             if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
+            `anim.mask = -1;
           }
         }
       cond .s.equ(d, "sub"):
@@ -262,14 +266,6 @@ public &BackGround
       cond .s.equ(d, "none"):
         `anim.salpha = -1;
         `anim.dalpha = 0;
-      }
-    }
-    if(#(data = sc.get("mask")) > 0){
-      if(`actionno < 0 && `anim.salpha < 0) branch{
-      cond (.com.atoi(data) != 0):
-        `anim.mask = 0;
-      else:
-        `anim.mask = -1;
       }
     }
     if(#(data = sc.get("tile")) > 0){
