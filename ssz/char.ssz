@@ -6745,7 +6745,10 @@ public float action(
       && (.pause <= 0 || .pausebg == 0)) .com.time--;
     branch{
     cond .roundEnd() || finish():
-      if(.winskipped || !.gs(.gsROUNDNOTOVER) || .com.intro >= rs4t){
+      if(
+        .winskipped || !.gs(.gsROUNDNOTOVER)
+        || .com.intro >= rs4t - .fight~ro.over_wintime)
+      {
         if(.ko == .fgt.KOTy::NotYet && .com.intro == rs4t){
           bool p1 = false, p2 = false;
           float l1 = 0.0, l2 = 0.0;
@@ -6791,7 +6794,9 @@ public float action(
           }
         }
         .com.intro--;
-        if(.waitdown > 0 && .com.intro == rs4t-1) loop{
+        if(.com.intro == rs4t-1) loop{
+          if(.com.time == 0) .com.intro -= .fight~ro.over_wintime;
+          if(.waitdown <= 0) break;
           index i = 0;
           while;
         do:
@@ -6799,12 +6804,7 @@ public float action(
           i++;
         while i < #.chars:
         }
-        if(
-          .waitdown <= 0
-          || .com.intro < -(
-            .fight~ro.over_hittime + .fight~ro.over_waittime
-            + (.com.time != 0 ? .fight~ro.over_wintime : 0))) loop
-        {
+        if(.waitdown <= 0 || .com.intro < rs4t - .fight~ro.over_wintime) loop{
           index i = 0;
           while;
         do:
