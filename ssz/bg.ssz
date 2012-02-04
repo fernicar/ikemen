@@ -207,6 +207,11 @@ public &BackGround
       }
     }
     if(typ == 4) ret;
+    if(#(data = sc.get("layerno")) > 0){
+      int ln = .com.atoi(data);
+      `toplayer = ln == 1;
+      if(ln < 0 || ln > 1) typ = 3;
+    }
     if((typ == 0 || typ == 2) && #(data = sc.get("spriteno")) > 0){
       `anim.frames.new(1);
       .readPair!short?(`anim.frames~group=, `anim.frames~number=, data);
@@ -225,7 +230,6 @@ public &BackGround
         `deltay = link~deltay;
       }
     }
-    if(#(data = sc.get("layerno")) > 0) `toplayer = .com.atoi(data) != 0;
     if(#(data = sc.get("start")) > 0){
       .readPair!float?(`startx=, `starty=, data);
     }
@@ -241,7 +245,7 @@ public &BackGround
       cond .s.equ(d, "add1"):
         `anim.salpha = 255;
         `anim.dalpha = 128;
-      cond .s.equ(d, "addddalpha"):
+      cond .s.equ(d, "addalpha"):
         if(#(data = sc.get("alpha")) > 0){
           ^int sd = .csvToAry!int?(data);
           if(#sd >= 2){
