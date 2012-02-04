@@ -527,12 +527,11 @@ public &Section
       ^/char line;
       while;
     do:
-      line = .s.trim(lines[i][0...s.find(";", lines[i])]);
-      if(#line > 0 && line[0] == '['){
-        if(line[-1] != ']') break, continue;
+      if(#lines[i] > 0 && lines[i][0] == '['){
         i--;
         break, break;
       }
+      line = lines[i][0...s.find(";", lines[i])];
       f = .s.find("=", line);
       if(f > 0){
         index foo = 0;
