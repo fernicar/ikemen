@@ -3098,6 +3098,17 @@ public &Char
             && (`stVal.hb.hitshaketime <= 0 || .pause == 1)));
     }
     if(`minus != 2) ret;
+    `minus = 3;
+    if(`parentindex >= 0) .chars[`playerno][`parentindex]~action();
+    loop{
+      index i = 0;
+      ^`self by;
+      while;
+    do:
+      if(#(by = .players.get(`stVal.hb.byid[i])) > 0) by~action();
+      i++;
+    while i < #`stVal.hb.byid:
+    }
     if(#`palfx > 0 && !`isPaused()) `palfx~step();
     bool p = isSuperPaused() || isNormalPaused();
     if(#`cmd == 0){
@@ -4430,7 +4441,7 @@ public &Char
     if(`stVal.playerno != `playerno && p != `stVal.playerno){
       `enemyExplodsRemove(`stVal.playerno);
     }
-    if(`minus != 2) `sysivar[.iBINDTIME] = 0;
+    if(`minus != 2 && `minus != 3) `sysivar[.iBINDTIME] = 0;
     `clearTargetBind();
     `stVal.no = n;
     `stVal.playerno = p;
@@ -5650,17 +5661,10 @@ public void PlayerList!&Char?::action(
     while;
   do:
     if(p~c~id < 0) p~c~id ^= -1;
-    branch{
-    cond #p~c~stVal.hb.byid == 0:
-      p~c~action();
-    else:
-      targets .= p~c;
-    }
-  continue:
+    p~c~action();
     p = p~next;
   while #p > 0:
   }
-  loop{index i = 0; while; do: targets[i]~action(); i++; while i < #targets:}
   .update(cvx=, highest=, lowest=, leftest=, rightest=);
   .com.gametime++;
   .rootAction();
