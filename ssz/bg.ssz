@@ -248,17 +248,26 @@ public &BackGround
       cond .s.equ(d, "add1"):
         `anim.salpha = 255;
         `anim.dalpha = 128;
+        if(#(data = sc.get("alpha")) > 0){
+          ^int sd = .csvToAry!int?(data);
+          if(#sd < 1) break;
+          `anim.salpha = sd[0];
+          if(`anim.salpha > 255) `anim.salpha = 255;
+          if(#sd < 2) break;
+          `anim.dalpha = sd[1];
+          if(`anim.dalpha > 255) `anim.dalpha = 255;
+          if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
+        }
       cond .s.equ(d, "addalpha"):
         if(#(data = sc.get("alpha")) > 0){
           ^int sd = .csvToAry!int?(data);
-          if(#sd >= 2){
-            `anim.salpha = sd[0];
-            if(`anim.salpha > 255) `anim.salpha = 255;
-            `anim.dalpha = sd[1];
-            if(`anim.dalpha > 255) `anim.dalpha = 255;
-            if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
-            `anim.mask = -1;
-          }
+          if(#sd < 1) break;
+          `anim.salpha = sd[0];
+          if(`anim.salpha > 255) `anim.salpha = 255;
+          if(#sd < 2) break;
+          `anim.dalpha = sd[1];
+          if(`anim.dalpha > 255) `anim.dalpha = 255;
+          if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
         }
       cond .s.equ(d, "sub"):
         `anim.salpha = 1;

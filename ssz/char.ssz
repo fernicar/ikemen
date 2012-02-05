@@ -89,7 +89,7 @@ void drawClsn()
 &ShadowList
 {
   public ^&.AnimList al;
-  public int color;
+  public int color, alpha;
   public float offsety = 0.0;
   public ^self next;
 }
@@ -100,7 +100,7 @@ public void addAnimList(
   ^&.AnimList al=, ^&.act.Action a, int p,
   float x, float y, float cs, float xs, float ys,
   float an, bool as, float ax, float ay,
-  int sa, int da, int b, ^&.com.PalFX fx, int sc, float so)
+  int sa, int da, int b, ^&.com.PalFX fx, int sc, int salp, float so)
 {
   void newdainyuu(^&.AnimList anl=)
   {
@@ -120,9 +120,7 @@ public void addAnimList(
     anl~dalpha = `da;
     anl~bright = `b;
     anl~fx = `fx;
-    if(`sc != 0){
-      .addShadowList(anl, `sc, `so);
-    }
+    if(`sc != 0) .addShadowList(anl, `sc, `so, `salp);
   }
   ^&.AnimList tmp = al;
   branch{
@@ -181,13 +179,14 @@ public void drawAnimList(^&.AnimList al=, float x, float y)
   }
 }
 
-public void addShadowList(^&.AnimList al, int sc, float so)
+public void addShadowList(^&.AnimList al, int sc, float so, int alpha)
 {
   void newdainyuu(^&.ShadowList shl=)
   {
     shl.new(1);
     shl~al = `al;
     shl~color = `sc;
+    shl~alpha = .m.max!int?(0, .m.min!int?(256, `alpha));
     shl~offsety = `so;
   }
   int p = al~priority;
@@ -228,7 +227,7 @@ public void drawShadowList(float x, float y)
     cond sl~color < 0:
       pal = .stg~sdw.pal;
       {
-        int inte = .stg~sdw.intensity;
+        int inte = .stg~sdw.intensity*sl~alpha >> 8;
         branch{
         cond sl~al~y < (float).stg~sdw.fadeend:
           break, break, break, continue;
@@ -243,7 +242,17 @@ public void drawShadowList(float x, float y)
       }
     else:
       pal = .com.tmppl;
-      loop{index i = 0; do: pal[i] = (uint)sl~color; while ++i < 256:}
+      loop{
+        index i = 0;
+        uint c =
+          (uint)(
+            (sl~color&255)*sl~alpha>>8 | (sl~color&255<<8)*sl~alpha>>8
+            | (sl~color&255<<16)*sl~alpha>>8)
+          & 0xffffff;
+      do:
+        pal[i] = c;
+      while ++i < 256:
+      }
       sl~al~anim~ani.salpha = 1;
       sl~al~anim~ani.dalpha = 255;
     }
@@ -295,14 +304,10 @@ public void drawReflection(float x, float y)
           (int)
             sl~al~anim~ani.frames[sl~al~anim~ani.drawidx].dalpha;
       }
-      sl~al~anim~ani.salpha =
-        (int)((float)sl~al~salpha*(float).stg~reflection / 255.0);
-      sl~al~anim~ani.dalpha =
-        .m.min!int?(255, sl~al~dalpha + (255-.stg~reflection));
-      if(
-        sl~al~anim~ani.salpha == 1
-        && sl~al~anim~ani.dalpha == 255)
-      {
+      int refl = .stg~reflection*sl~alpha >> 8;
+      sl~al~anim~ani.salpha = (int)((float)sl~al~salpha*(float)refl / 255.0);
+      sl~al~anim~ani.dalpha = .m.min!int?(255, sl~al~dalpha + (255-refl));
+      if(sl~al~anim~ani.salpha == 1 && sl~al~anim~ani.dalpha == 255){
         sl~al~anim~ani.salpha = 0;
       }
       branch{
@@ -471,7 +476,8 @@ public void drawReflection(float x, float y)
         `imgs[`imgidx-i&63].xscl, `imgs[`imgidx-i&63].yscl,
         `imgs[`imgidx-i&63].angle, `imgs[`imgidx-i&63].aset,
         `imgs[`imgidx-i&63].axscl, `imgs[`imgidx-i&63].ayscl,
-        `alphas, `alphad, br, `palfx[i/`framegap - 1 .. i/`framegap], 0, 0.0);
+        `alphas, `alphad, br, `palfx[i/`framegap - 1 .. i/`framegap],
+        0, 0, 0.0);
       i += `framegap;
     while i <= end:
     }
@@ -1896,7 +1902,7 @@ public &Projectile
       256 >> (int)(
         .super > 0 && .superdarken != 0 && `playerno != .superplayer),
       .consts.null!&.com.PalFX?(),
-      `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 0.0);
+      `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
   }
 }
 public &Char
@@ -2976,7 +2982,9 @@ public &Char
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
         `ls(.lsTRANS) ? `sysivar[.iALPHAS] : -1,
         `sysivar[.iALPHAD], br, `getPalfx(),
-        `ls(.lsNOSHADOW) ? 0 : -1, (float)`sysivar[.iSHADOWOFFSET]);
+        `ls(.lsNOSHADOW) ? 0 : -1,
+        `ls(.lsTRANS) ? `sysivar[.iALPHAS] : 256,
+        (float)`sysivar[.iSHADOWOFFSET]);
       `aimg.recAndAddAL(
         `ani<>=, sp, x, y, xs, ys,
         an, `angleset, `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
@@ -3193,8 +3201,12 @@ public &Char
           if(`stVal.ho[i].time > 0) `stVal.ho[i].time--;
           i++;
         while i < #`stVal.ho:}
-        if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
-        if(`sysivar[.iPAUSEMOVETIME] > 0) `sysivar[.iPAUSEMOVETIME]--;
+        branch{
+        cond .super > 0 && `sysivar[.iSUPERMOVETIME] > 0:
+          `sysivar[.iSUPERMOVETIME]--;
+        cond .pause > 0 && `sysivar[.iPAUSEMOVETIME] > 0:
+          `sysivar[.iPAUSEMOVETIME]--;
+        }
       }
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
@@ -5404,7 +5416,8 @@ public void Explod::update()
           && (#c > 0 || #(c = .players.get(`player)) > 0)
           && c~playerno != .superplayer),
         `ownpal == 0 ? c~getPalfx() : .consts.null!&.com.PalFX?(),
-        `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 0.0);
+        `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
+        `alphas < 0 ? 256 : `alphas, 0.0);
     }];
   cond `ontop != 0:
     aal(:.topanims=:);
@@ -6539,7 +6552,7 @@ public float action(
       .addAnimList(
         .topanims=, .superanim, 5, .superposx, .superposy, .com.scale,
         (float).superfacing, 1.0, 0.0, false, 1.0, 1.0, -1, 0, 256,
-        .consts.null!&.com.PalFX?(), 0, 0.0);
+        .consts.null!&.com.PalFX?(), 0, 0, 0.0);
       if(.superanim~ani.loopend) .superanim.new(0);
     }
     .anim();
