@@ -6404,7 +6404,7 @@ void commandUpdate()
     if(#.chars[i] > 0){
       .chars[i][0]~cmd~step(
         .chars[i][0]~key, .chars[i][0]~facing,
-        .chars[i][0]~key < 0, .chars[i][0]~isHitPaused());
+        .chars[i][0]~key < 0, .chars[i][0]~acttmp%2 == -1);
       if(.chars[i][0]~key < 0) loop{
         index j = 0;
         index cc =
