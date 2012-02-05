@@ -3189,7 +3189,9 @@ public &Char
           }
         }
         if(!.roundEnd()){
-          if(!`isKO()) `sysivar[.iSYSFLAG] |= .sfNOTOVER;
+          if(!`isKO() && `sysivar[.iLIFE] > 0){
+            `sysivar[.iSYSFLAG] |= .sfNOTOVER;
+          }
           if((`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0){
             `sysivar[.iSYSFLAG] |= .sfKO_ROUND_MIDDLE;
           }
