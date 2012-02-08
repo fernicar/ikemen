@@ -124,9 +124,12 @@ void game()
   f.loadFile(.cfg.debugfont);
   void put(float x, float y=, ^/char txt)
   {
+    int tmp = .sff.allPalFX~time;
+    .sff.allPalFX~time = 0;
     `f.drawText(
       x, y+=(float)`f.sizey/.com.HeightScale,
       1.0/.com.WidthScale,  1.0/.com.HeightScale, 0, 1, txt);
+    .sff.allPalFX~time = tmp;
   }
   void drawDebug()
   {:<-

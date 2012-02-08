@@ -162,14 +162,12 @@ public void drawAnimList(^&.AnimList al=, float x, float y)
         al~anim~ani.angleDraw(
           .com.xoffset-(x-al~x)*cs, .com.zoffset+.com.yoffset-(y-al~y)*cs,
           cs*al~xscl, cs*al~yscl, al~angle*(.m.PI/180.0),
-          al~aset, al~axscl, al~ayscl,
-          #al~fx != 0 && al~fx~time != 0 ? al~fx : .com.allPalFX);
+          al~aset, al~axscl, al~ayscl, al~fx);
       else:
         al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-al~x),
           (.com.zoffset+.com.yoffset)/cs - (y-al~y), cs, cs,
-          al~xscl, al~xscl, al~yscl, 0.0, (float).com.GameWidth/2.0,
-          #al~fx != 0 && al~fx~time != 0 ? al~fx : .com.allPalFX);
+          al~xscl, al~xscl, al~yscl, 0.0, (float).com.GameWidth/2.0, al~fx);
       break:
         .com.brightness = ob;
       }
@@ -271,16 +269,14 @@ public void drawShadowList(float x, float y)
             .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety*2.0)*cs,
             cs*sl~al~xscl * ss * (ss*syscl)**#.m.sin(agl),
             cs*-sl~al~yscl * ss * (ss*syscl)**#.m.cos(agl),
-            agl, sl~al~aset, sl~al~axscl, sl~al~ayscl,
-           .com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX);
+            agl, sl~al~aset, sl~al~axscl, sl~al~ayscl, .stage.bgPalFX);
         }
       else:
         sl~al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
           (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y*syscl-sl~offsety*2.0),
           cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl*syscl, 0.0,
-          (float).com.GameWidth/2.0,
-          .com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX);
+          (float).com.GameWidth/2.0, .stage.bgPalFX);
       }
     break:
       sl~al~anim~ani.spr~colorPallet = oldpal;
@@ -318,16 +314,14 @@ public void drawReflection(float x, float y)
           .com.zoffset+.com.yoffset-(y+sl~al~y-sl~offsety)*cs,
           cs*sl~al~xscl, cs*-sl~al~yscl, sl~al~angle*(.m.PI/180.0),
           sl~al~aset, sl~al~axscl, sl~al~ayscl,
-          #sl~al~fx > 0 && sl~al~fx~time != 0 ? sl~al~fx
-          : (.com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX));
+          #sl~al~fx > 0 && sl~al~fx~time != 0 ? sl~al~fx : .stage.bgPalFX);
       else:
         sl~al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
           (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y-sl~offsety),
           cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl, 0.0,
           (float).com.GameWidth/2.0,
-          #sl~al~fx != 0 && sl~al~fx~time > 0 ? sl~al~fx
-          : (.com.allPalFX~time != 0 ? .com.allPalFX : .stage.bgPalFX));
+          #sl~al~fx != 0 && sl~al~fx~time > 0 ? sl~al~fx : .stage.bgPalFX);
       }
     }
     sl = sl~next;
@@ -6495,7 +6489,7 @@ public float action(
     if(.com.xmin > .com.xmax){
       .com.xmin = .com.xmax = (.com.xmin + .com.xmax) * 0.5;
     }
-    .com.allPalFX~step();
+    .sff.allPalFX~step();
     .stage.bgPalFX~step();
     .stage.envShake.next();
     if(.envcol_time > 0) .envcol_time--;
@@ -6923,10 +6917,14 @@ public void draw(float x, float y, float scl)
     }
   }
   ^^/char names.new(4);
-  names[0] = .chars[0][0]~displayname;
-  names[1] = .chars[1][0]~displayname;
-  if(#.chars[2] > 0) names[2] = .chars[2][0]~displayname;
-  if(#.chars[3] > 0) names[3] = .chars[3][0]~displayname;
+  ^^&.com.PalFX facefx.new(4);
+  loop{index i = 0; while; do:
+    if(#.chars[i] > 0){
+      names[i] = .chars[i][0]~displayname;
+      facefx[i] = .chars[i][0]~getPalfx();
+    }
+    i++;
+  while i < #names:}
   int ob = .com.brightness;
   .com.brightness = 256 >> (int)(.super > 0 && .superdarken != 0);
   if(.envcol_time == 0) branch{
@@ -6998,7 +6996,7 @@ public void draw(float x, float y, float scl)
       if(.stg~reflection > 0) .drawReflection(x, y);
       if(.stg~sdw.intensity > 0) .drawShadowList(x, y);
     }
-    .fight~draw(0, lpl, names, .gs(.gsNOBARDISPLAY));
+    .fight~draw(0, lpl, names, .gs(.gsNOBARDISPLAY), facefx);
     .fight~ro.draw(0, .ko, winner);
   }
   if(.envcol_time == 0 || .envcol_under != 0){
@@ -7008,10 +7006,10 @@ public void draw(float x, float y, float scl)
   if(.envcol_time != 0 && .envcol_under == 0){
     .com.screenFill(ecol);
   }
-  .fight~draw(1, lpl, names, .gs(.gsNOBARDISPLAY));
+  .fight~draw(1, lpl, names, .gs(.gsNOBARDISPLAY), facefx);
   .fight~ro.draw(1, .ko, winner);
   .drawAnimList(.topanims=, x, y);
-  .fight~draw(2, lpl, names, .gs(.gsNOBARDISPLAY));
+  .fight~draw(2, lpl, names, .gs(.gsNOBARDISPLAY), facefx);
   .fight~ro.draw(2, .ko, winner);
   void fade(.com.scrrect.self rect=, int alpha)
   {
@@ -7044,7 +7042,7 @@ public void draw(float x, float y, float scl)
 
 void resetGblEffect()
 {
-  .com.allPalFX~clear();
+  .sff.allPalFX~clear();
   .stage.bgPalFX~clear();
   .stage.envShake.clear();
   .pause = 0;

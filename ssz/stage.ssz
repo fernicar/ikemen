@@ -530,9 +530,7 @@ public &Stage
     float bgscl = `hires ? 0.5 : 1.0;
     loop{index i = 0; while; do:
       if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){
-        `bg[i].draw(
-          x, y + .envShake.getOffset(),
-          scl, .bgPalFX~time != 0 ? .bgPalFX : .com.allPalFX, bgscl);
+        `bg[i].draw(x, y + .envShake.getOffset(), scl, .bgPalFX, bgscl);
       }
       i++;
     while i < #`bg:

@@ -478,9 +478,6 @@ public &PalFX
   }
 }
 
-public ^&PalFX allPalFX;
-allPalFX.new(1);
-
 
 public bool loadFile(^/char deffile, ^/char file=, ~$bool(^/char) load)
 {

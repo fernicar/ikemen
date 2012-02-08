@@ -6095,7 +6095,7 @@ public &StateBuilder
         `state.ctrlList[-1].task .=
           "^&.com.PalFX fx=`getPalfx();fx~clear();fx~player=`id;";
       case .CtrlTy::AllPalFX:
-        `state.ctrlList[-1].task .= ".com.allPalFX~clear();";
+        `state.ctrlList[-1].task .= ".sff.allPalFX~clear();";
       case .CtrlTy::BGPalFX:
         `state.ctrlList[-1].task .= ".stage.bgPalFX~clear();";
       }
@@ -6103,7 +6103,7 @@ public &StateBuilder
         `state.ctrlList[-1].typ == .CtrlTy::PalFX
         ? "fx~" : (
           `state.ctrlList[-1].typ == .CtrlTy::BGPalFX
-           ? ".stage.bgPalFX~" : ".com.allPalFX~");
+           ? ".stage.bgPalFX~" : ".sff.allPalFX~");
       if(!`stateParam(param=, "time", [`paraF_t(data=){
         `state.ctrlList[-1].task .= pf;
         if(

@@ -48,7 +48,8 @@ public void laytext(
 }
 
 public void layspr(
-  float x, float y, int ln, ^&.sff.Sprite spr, &.com.Layout l=)
+  float x, float y, int ln, ^&.sff.Sprite spr, &.com.Layout l=,
+  ^&.com.PalFX fx)
 {
   if(l.layerno != ln || #spr == 0) ret;
   &.sdl.Rect tile;
@@ -62,15 +63,18 @@ public void layspr(
   if(l.scale.x*(float)l.facing < 0.0) x2 *= -1.0;
   if(l.scale.y*(float)l.vfacing < 0.0) y2 *= -1.0;
   float xs = l.scale.x*(float)l.facing*.com.WidthScale;
+  ^uint pal = spr~colorPallet;
+  if(#fx > 0 && fx~time != 0) pal = fx~getFxPal(pal, false);
+  if(.sff.allPalFX~time != 0) pal = .sff.allPalFX~getFxPal(pal, false);
 /?/*.cfg.OpenGL:
   .sdl.RenderMugenGl(:
-    spr~pxl<>, spr~colorPallet<>=, 0, spr~rct=, -x2*.com.WidthScale,
+    spr~pxl<>, pal<>=, 0, spr~rct=, -x2*.com.WidthScale,
     -y2*.com.HeightScale, tile=,
     xs, xs, l.scale.y*(float)l.vfacing*.com.HeightScale,
     0.0, 0.0, 255, .com.scrrect=, 0.0, 0.0:);
 /*true:
   .sdl.screen.renderMugenZoom(
-    .com.scrrect=, 0.0, 0.0, spr~pxl, spr~colorPallet,
+    .com.scrrect=, 0.0, 0.0, spr~pxl, pal,
     0, spr~rct=, -x2*.com.WidthScale, -y2*.com.HeightScale, tile=,
     xs, xs, l.scale.y*(float)l.vfacing*.com.HeightScale,
     0.0, 0x0, 255, spr~rle, spr~pluginbuf=);
@@ -545,9 +549,9 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     .laydraw(
       .com.scrrect=, (float)`posx, (float)`posy, 1.0, layerno, `bg=, `bg_lay=);
   }
-  public void draw(int layerno)
+  public void draw(int layerno, ^&.com.PalFX fx)
   {
-    .layspr((float)`posx, (float)`posy, layerno, `face_spr, `face_lay=);
+    .layspr((float)`posx, (float)`posy, layerno, `face_spr, `face_lay=, fx);
     loop{
       index i = #`teammate_face_spr-1;
       float x = (float)(`teammate_posx+`teammate_spacingx*(i-1));
@@ -557,7 +561,9 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       if(i == `numko) continue;
       .laydraw(
         .com.scrrect=, x, y, 1.0, layerno, `teammate_bg=, `teammate_bg_lay=);
-      .layspr(x, y, layerno, `teammate_face_spr[i], `teammate_face_lay=);
+      .layspr(
+        x, y, layerno, `teammate_face_spr[i], `teammate_face_lay=,
+        .consts.null!&.com.PalFX?());
       if(i < `numko){
         .laydraw(
           .com.scrrect=, x, y, 1.0, layerno, `teammate_ko=, `teammate_ko_lay=);
@@ -1839,7 +1845,9 @@ public &Fight
     `ti.step();
     `co.step(combo);
   }
-  public void draw(int layerno, ^/&.LifePower life, ^/^/char name, bool nbd)
+  public void draw(
+    int layerno, ^/&.LifePower life, ^/^/char name, bool nbd,
+    ^^&.com.PalFX facefx)
   {
     int ob = .com.brightness;
     .com.brightness = 256;
@@ -1892,12 +1900,12 @@ public &Fight
       `pb[1].draw(
         layerno, life[1].p, life[.com.tmode[1] != 1 ? 1 : 3].lv, `fnt);
       loop{index i = #`fa[.com.tmode[0]]-2; while; do:
-        `fa[.com.tmode[0]][i].draw(layerno);
+        `fa[.com.tmode[0]][i].draw(layerno, facefx[i]);
         i -= 2;
       while i >= 0:
       }
       loop{index i = #`fa[.com.tmode[1]]-1; while; do:
-        `fa[.com.tmode[1]][i].draw(layerno);
+        `fa[.com.tmode[1]][i].draw(layerno, facefx[i]);
         i -= 2;
       while i >= 0:
       }

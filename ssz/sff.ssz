@@ -11,6 +11,9 @@ lib com = "common.ssz";
 
 const int NumCharPalletes = 12;
 
+public ^&com.PalFX allPalFX;
+allPalFX.new(1);
+
 public &SffHeader
 {
   public ubyte ver0, ver1, ver2, ver3;
@@ -1066,8 +1069,12 @@ public &Anim<frame_t>
   }
   ^uint palFoo(^&.com.PalFX fx)
   {
-    if(#fx == 0 || fx~time == 0) ret `spr~getPal(`sff~palList=);
-    ret fx~getFxPal(`spr~getPal(`sff~palList=), `alphaFoo() == -2);
+    ^uint pal = `spr~getPal(`sff~palList=);
+    if(#fx > 0 && fx~time != 0) pal = fx~getFxPal(pal, `alphaFoo() == -2);
+    if(.allPalFX~time != 0){
+      pal = .allPalFX~getFxPal(pal, `alphaFoo() == -2);
+    }
+    ret pal;
   }
   public void draw(
     &.sdl.Rect rect=, float x, float y, float cscalex, float cscaley,

@@ -428,8 +428,8 @@ public &BackGround
       `starty - (y * `deltay - `bga.yoffset) + (float)(.com.GameHeight - 240)
       + (1.0/scly - 1.0)*(float).com.GameHeight;
     if(!.cfg.Zoom){
-      x2 = .m.ceil(x2 - 0.5);
-      y2 = .m.ceil(y2 - 0.5);
+      x2 = .m.floor(x2);
+      y2 = .m.floor(y2);
     }
     float ys = (`yscalestart - y * (scly/scl)*`yscaledelta*(1.0/100.0));
     x2 *= bgscl;

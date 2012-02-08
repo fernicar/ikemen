@@ -249,7 +249,7 @@ public &Font
     ret m~img[bank..bank+1];
   }
   public float drawChar(
-    float x, float y, float xscl, float yscl, int bank, char ch)
+    float x, float y, float xscl, float yscl, int bank, char ch, ^uint pal)
   {
     if(ch == ' ') ret (float)`sizex * xscl;
     ^&.sff.Sprite spr = `getCharSpr(bank, ch);
@@ -257,7 +257,7 @@ public &Font
     &.sdl.Rect tile.set(0, 0, 0x0, 0x0);
   /?/*.cfg.OpenGL:
     .sdl.RenderMugenGl(:
-      spr~pxl<>, spr~colorPallet<>=, 0, spr~rct=, -x*.com.WidthScale,
+      spr~pxl<>, pal<>=, 0, spr~rct=, -x*.com.WidthScale,
       -y*.com.HeightScale, tile=, xscl*.com.WidthScale,
       xscl*.com.WidthScale, yscl*.com.HeightScale,
       0.0, 0.0, 255, .com.scrrect=, 0.0, 0.0:);
@@ -273,6 +273,7 @@ public &Font
   public void drawText(
     float x, float y, float xscl, float yscl, int bank, int align, ^/char txt)
   {
+    if(#`mpl == 0) ret;
     loop{
       index i = 0;
       float dx = x + (float)`offsetx*xscl + (float)(.com.GameWidth-320)/2.0;
@@ -284,10 +285,12 @@ public &Font
       cond align < 0:
         dx -= (float)`textWidth(txt)*xscl;
       }
+      ^uint pal = `mpl~img[bank].colorPallet;
+      if(.sff.allPalFX~time != 0) pal = .sff.allPalFX~getFxPal(pal, false);
       while;
     do:
       dx +=
-        `drawChar(dx, dy, xscl, yscl, bank, txt[i])
+        `drawChar(dx, dy, xscl, yscl, bank, txt[i], pal)
         + (float)`spacingx*xscl;
       i++;
     while i < #txt:
