@@ -6977,11 +6977,7 @@ public &StateBuilder
             buf .= "&&";
           }
           if(!`fullExpression(buf=, text=, "", "$.v.isT()")){
-            if(
-              !.cfg.IgnoreMostErrors || #`state.ctrlList[-1].trigger[idx] == 0)
-            {
-              ret false;
-            }
+            if(!.cfg.IgnoreMostErrors)  ret false;
             loop{index i = 0; while; do:
               if(#`state.ctrlList[-1].trigger[i] == 0) break;
               i++;

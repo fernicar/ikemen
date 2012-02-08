@@ -378,7 +378,7 @@ public &BackGround
       }
     }
     if(!verticalfollow){
-      `deltay = 1.0;
+      `deltay = hires ? 2.0 : 1.0;
       `windowdeltay = `yscaledelta = 0.0;
     }
     if(hires){
