@@ -260,13 +260,13 @@ public &Font
       spr~pxl<>, pal<>=, 0, spr~rct=, -x*.com.WidthScale,
       -y*.com.HeightScale, tile=, xscl*.com.WidthScale,
       xscl*.com.WidthScale, yscl*.com.HeightScale,
-      0.0, 0.0, 255, .com.scrrect=, 0.0, 0.0:);
+      0.0, 0.0, .com.brightness*255>>8 | 1<<9, .com.scrrect=, 0.0, 0.0:);
   /*true:
     .sdl.screen.renderMugenZoom(
-      .com.scrrect=, 0.0, 0.0, spr~pxl, spr~colorPallet, 0, spr~rct=,
+      .com.scrrect=, 0.0, 0.0, spr~pxl, pal, 0, spr~rct=,
       -x*.com.WidthScale, -y*.com.HeightScale, tile=,
       xscl*.com.WidthScale, xscl*.com.WidthScale, yscl*.com.HeightScale,
-      0.0, 0x0, 255, 0, spr~pluginbuf=);
+      0.0, 0x0, .com.brightness*255>>8 | 1<<9, 0, spr~pluginbuf=);
   /*?*/
     ret (float)spr~rct.w * xscl;
   }
