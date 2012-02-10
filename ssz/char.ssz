@@ -3272,22 +3272,23 @@ public &Char
   }
   public void posUpdate()
   {
-    `ticOldX = `sysfvar[.fX];
-    `sysfvar[.fX] = `ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff;
-    `ticOldY = `sysfvar[.fY];
-    `sysfvar[.fY] = `ticOldY + `sysfvar[.fVY];
+    `ticOldX = `drawX = `sysfvar[.fX];
+    `ticOldY = `drawY = `sysfvar[.fY];
     if(!`ls(.lsPOSFREEZEX)){
+      `sysfvar[.fX] = `ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff;
       `veloff *= `sysfvar[.fSTAND_FRICTION]**2.0;
       if(#`veloff < 1.0) `veloff = 0.0;
+      switch(`stVal.phy){
+      case .StTy::S:
+        `sysfvar[.fVX] *= `sysfvar[.fSTAND_FRICTION];
+        if(#`sysfvar[.fVX] < 1.0) `sysfvar[.fVX] = 0.0;
+      case .StTy::C:
+        `sysfvar[.fVX] *= `sysfvar[.fCROUCH_FRICTION];
+      }
     }
-    switch(`stVal.phy){
-    case .StTy::S:
-      if(!`ls(.lsPOSFREEZEX)) `sysfvar[.fVX] *= `sysfvar[.fSTAND_FRICTION];
-      if(#`sysfvar[.fVX] < 1.0) `sysfvar[.fVX] = 0.0;
-    case .StTy::C:
-      if(!`ls(.lsPOSFREEZEX)) `sysfvar[.fVX] *= `sysfvar[.fCROUCH_FRICTION];
-    case .StTy::A:
-      `gravity();
+    if(!`ls(.lsPOSFREEZEY)){
+      `sysfvar[.fY] = `ticOldY + `sysfvar[.fVY];
+      if(`stVal.phy == .StTy::A) `gravity();
     }
   }
   public void gravity()
@@ -5405,7 +5406,6 @@ public void Explod::update()
   }
   if(.com.tickFrame()){
     if(act && #`ani > 0) `ani~ani.updateSprite();
-    if(`bindtime > 0) `bindtime--;
     if(act && `bindtime == 0){
       `ticOldX = `x;
       `ticNewX = `x + `velocityx*(float)(`facing*`relativef);
@@ -5417,13 +5417,22 @@ public void Explod::update()
     float sp = .com.tickInterpola();
     `x = `ticNewX - (`ticNewX - `ticOldX) * (1.0 - sp);
     `y = `ticNewY - (`ticNewY - `ticOldY) * (1.0 - sp);
-    if(.com.tickNextFrame()){
+  }
+  if(.com.tickNextFrame()){
+    if(`bindtime > 0){
+      `bindtime--;
+      if(act && `bindtime == 0){
+        `x += `velocityx*(float)(`facing*`relativef);
+        `y += `velocityy;
+      }
+    }
+    if(!act) break;
+    if(`bindtime == 0){
+      `x += `velocityx*(float)(`facing*`relativef);
+      `y += `velocityy;
       `velocityx += `accelx;
       `velocityy += `accely;
     }
-  }
-  if(.com.tickNextFrame()){
-    if(!act) break;
     if(#`ani > 0) `ani~ani.action();
     `time++;
   }
