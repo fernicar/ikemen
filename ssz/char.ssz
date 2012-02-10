@@ -5428,8 +5428,6 @@ public void Explod::update()
     }
     if(!act) break;
     if(`bindtime == 0){
-      `x += `velocityx*(float)(`facing*`relativef);
-      `y += `velocityy;
       `velocityx += `accelx;
       `velocityy += `accely;
     }
