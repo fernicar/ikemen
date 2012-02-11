@@ -549,9 +549,12 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     .laydraw(
       .com.scrrect=, (float)`posx, (float)`posy, 1.0, layerno, `bg=, `bg_lay=);
   }
-  public void draw(int layerno, ^&.com.PalFX fx)
+  public void draw(int layerno, ^&.com.PalFX fx, bool superplayer)
   {
+    int ob = .com.brightness;
+    .com.brightness = superplayer ? 256 : ob;
     .layspr((float)`posx, (float)`posy, layerno, `face_spr, `face_lay=, fx);
+    .com.brightness = ob;
     loop{
       index i = #`teammate_face_spr-1;
       float x = (float)(`teammate_posx+`teammate_spacingx*(i-1));
@@ -1897,20 +1900,16 @@ public &Fight
         layerno, life[0].p, life[.com.tmode[0] != 1 ? 0 : 2].lv, `fnt);
       `pb[1].draw(
         layerno, life[1].p, life[.com.tmode[1] != 1 ? 1 : 3].lv, `fnt);
-      int ob = .com.brightness;
       loop{index i = #`fa[.com.tmode[0]]-2; while; do:
-        .com.brightness = i == superplayer ? 256 : ob;
-        `fa[.com.tmode[0]][i].draw(layerno, facefx[i]);
+        `fa[.com.tmode[0]][i].draw(layerno, facefx[i], i == superplayer);
         i -= 2;
       while i >= 0:
       }
       loop{index i = #`fa[.com.tmode[1]]-1; while; do:
-        .com.brightness = i == superplayer ? 256 : ob;
-        `fa[.com.tmode[1]][i].draw(layerno, facefx[i]);
+        `fa[.com.tmode[1]][i].draw(layerno, facefx[i], i == superplayer);
         i -= 2;
       while i >= 0:
       }
-      .com.brightness = ob;
       loop{index i = 0; while; do:
         `nm[.com.tmode[0]][i].draw(layerno, `fnt, name[i]);
         i += 2;

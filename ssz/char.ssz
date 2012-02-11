@@ -1376,12 +1376,9 @@ const int sfDEMO_HELPER     = 0b00000000000000000000000000010000;
   }
 }
 
-public ^%^&Char chars;
-/^%&Projectile projs;
-/^%&Explod explods;
-chars.new(4);
-projs.new(4);
-explods.new(4);
+public ^%^&Char chars.new(4);
+/^%&Projectile projs.new(4);
+/^%&Explod explods.new(4);
 
 
 ^%index expdrawlist.new(4), topexpdrawlist.new(4);
@@ -6853,16 +6850,16 @@ public float action(
           index i = 0;
           while;
         do:
-          if(
-            #.chars[i] > 0
-            && (.chars[i][0]~sysivar[.iSYSFLAG] & .sfNOTOVER) != 0
-            && .chars[i][0]~isActive() && !.chars[i][0]~isKO()
-            && (.chars[i][0]~isOver() || .waitdown <= 0))
-          {
-            .chars[i][0]~trSelfState(
-              .chars[i][0]~isWin() ? 180 : (.chars[i][0]~isLose() ? 170 : 175),
-              -1, 1);
-          }
+          if(#.chars[i] == 0) continue;
+          .chars[i][0]~[void(c=){
+            if(
+              (c.sysivar[.iSYSFLAG] & .sfNOTOVER) != 0
+              && c.isActive() && !c.isKO() && (c.isOver() || .waitdown <= 0))
+            {
+              c.trSelfState(c.isWin() ? 180 : (c.isLose() ? 170 : 175), -1, 1);
+            }
+          }];
+        continue:
           i++;
         while i < #.chars:
         }
@@ -7102,19 +7099,21 @@ void resetGbl()
 
 void charClear(int pn)
 {
-  loop{index j = 1; while; do:
-    .chars[pn][j]~destroySelf();
-    .chars[pn][j]~sounds.new(0);
-    j++;
-  while j < #.chars[pn]:
-  }
-  .projs[pn].new(0);
-  .explods[pn].new(0);
-  .expdrawlist[pn].new(0);
-  .topexpdrawlist[pn].new(0);
-  .chars[pn][0]~children.new(0);
-  .chars[pn][0]~targets.new(0);
-  .chars[pn][0]~sounds.new(0);
+  .chars[pn].[void(cs){
+    loop{index j = 1; while; do:
+      cs[j]~destroySelf();
+      cs[j]~sounds.new(0);
+      j++;
+    while j < #.chars[pn]:
+    }
+    .projs[pn].new(0);
+    .explods[pn].new(0);
+    .expdrawlist[pn].new(0);
+    .topexpdrawlist[pn].new(0);
+    cs[0]~children.new(0);
+    cs[0]~targets.new(0);
+    cs[0]~sounds.new(0);
+  }];
 }
 
 public void nextRound()
@@ -7127,18 +7126,18 @@ public void nextRound()
   .gSetNormal(1.0, 0.0, 0.0);
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
-    .id = .chars[i][0]~id + 1;
-    .charClear(i);
-    .chars[i][0]~posReset(
-      (float)(.stg~p1.startx - .stg~cam.startx),
-      (float)(.stg~p2.startx - .stg~cam.startx));
-    .chars[i][0]~setCtrl(false);
-    .chars[i][0]~stVal.clear();
-    .chars[i][0]~clearSpSysVar();
-    .chars[i][0]~rangeSetIVar(
-      0, .chars[i][0]~sysivar[.iINTPERSISTINDEX]-1, 0);
-    .chars[i][0]~rangeSetFVar(
-      0, .chars[i][0]~sysivar[.iFLOATPERSISTINDEX]-1, 0.0);
+    .chars[i][0]~[void(c=){
+      .id = c.id + 1;
+      .charClear(i);
+      c.posReset(
+        (float)(.stg~p1.startx - .stg~cam.startx),
+        (float)(.stg~p2.startx - .stg~cam.startx));
+      c.setCtrl(false);
+      c.stVal.clear();
+      c.clearSpSysVar();
+      c.rangeSetIVar(0, c.sysivar[.iINTPERSISTINDEX]-1, 0);
+      c.rangeSetFVar(0, c.sysivar[.iFLOATPERSISTINDEX]-1, 0.0);
+    }];
   continue:
     i++;
   while i < #.chars:
