@@ -2601,10 +2601,18 @@ public &Char
       }
       i++;
     while i < .sff.NumCharPalletes:
+      if(tmp == 0){
+        ^&.sff.Sprite spr = `sf~getSprite(9000, 0);
+        if(#spr > 0){
+          index i = spr~palidx;
+          spr = `sf~getSprite(0, 0);
+          if(#spr > 0) `sf~palList.remap(spr~palidx, i);
+        }
+      }
     }
     `palno = `palkeymap[no-1]+1;
     `drawpalno = `palno;
-    if(tmp == 0) ret false;
+    if(`sf~head.ver0 == 0d1 && tmp == 0) ret false;
     loop{
       index i = `palno-1;
     do:
