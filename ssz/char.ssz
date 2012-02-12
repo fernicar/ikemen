@@ -266,7 +266,7 @@ public void drawShadowList(float x, float y)
           float ss = syscl < 0.0 ? -1.0 : 1.0;//pow用
           sl~al~anim~ani.angleDraw(
             .com.xoffset-(x-sl~al~x)*cs,
-            .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety*2.0)*cs,
+            .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety*1.5)*cs,
             cs*sl~al~xscl * ss * (ss*syscl)**#.m.sin(agl),
             cs*-sl~al~yscl * ss * (ss*syscl)**#.m.cos(agl),
             agl, sl~al~aset, sl~al~axscl, sl~al~ayscl, .stage.bgPalFX);
@@ -274,7 +274,7 @@ public void drawShadowList(float x, float y)
       else:
         sl~al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
-          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y*syscl-sl~offsety*2.0),
+          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y*syscl-sl~offsety*1.5),
           cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl*syscl, 0.0,
           (float).com.GameWidth/2.0, .stage.bgPalFX);
       }
@@ -311,14 +311,14 @@ public void drawReflection(float x, float y)
       cond sl~al~angle != 0.0:
         sl~al~anim~ani.angleDraw(
           .com.xoffset-(x-sl~al~x)*cs,
-          .com.zoffset+.com.yoffset-(y+sl~al~y-sl~offsety)*cs,
+          .com.zoffset+.com.yoffset-(y+sl~al~y-sl~offsety*1.5)*cs,
           cs*sl~al~xscl, cs*-sl~al~yscl, sl~al~angle*(.m.PI/180.0),
           sl~al~aset, sl~al~axscl, sl~al~ayscl,
           #sl~al~fx > 0 && sl~al~fx~time != 0 ? sl~al~fx : .stage.bgPalFX);
       else:
         sl~al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
-          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y-sl~offsety),
+          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y-sl~offsety*1.5),
           cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl, 0.0,
           (float).com.GameWidth/2.0,
           #sl~al~fx != 0 && sl~al~fx~time > 0 ? sl~al~fx : .stage.bgPalFX);
@@ -2413,6 +2413,7 @@ public &Char
       ^/char data;
       void map(|.cmd.Key k=, |.cmd.Key nk=)
       {
+        `data = .s.toLower(`data);
         branch{
         cond .s.equ(`data, "x"):
           k  = .cmd.Key:: x;
@@ -2455,8 +2456,14 @@ public &Char
         `cmd~defaultBufferTime = .m.max!int?(1)<, .com.atoi(data);
       }
     }
-    public void command(&.com.Section sc=)
+    public void command(^^/char lines, index i=)
     {
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      &.com.Section sc.parse(lines, i=);
+      if(!.s.equ(secname, "command")) ret;
       `cmd~ctmp.new(1);
       `cmd~ctmp~time = `cmd~defaultTime;
       `cmd~ctmp~buffertime = `cmd~defaultBufferTime;
@@ -2505,8 +2512,6 @@ public &Char
       cond .s.equ(secname, "defaults"):
         if(defaultsflg) defaults(sc=);
         defaultsflg = false;
-      cond .s.equ(secname, "command"):
-        `load:<-command(sc=);
       }
     }];
     `def = def;
@@ -2555,6 +2560,11 @@ public &Char
     `cmd~buffer.new(1);
     loop{index i = 0; while; do:
       commandlist(:lines, i=:);
+      i++;
+    while i < #lines:
+    }
+    loop{index i = 0; while; do:
+      command(lines, i=);
       i++;
     while i < #lines:
     }

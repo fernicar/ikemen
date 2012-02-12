@@ -7121,11 +7121,10 @@ public &StateBuilder
         line = .s.trim(lines[i][0.. .s.find(";", lines[i])]);
         if(#line <= 0 || line[0] != '[' || line[-1] != ']') continue;
         line = .s.toLower(line);
-        if(.s.equ("statedef ", line[1..10])){
+        if(!.s.equ("state ", line[1..7])){
           i--;
           break, break;
         }
-        if(!.s.equ("state ", line[1..7])) continue;
         `state.tmpreset();
         `state.ctrlList.new[-1];
         i++;
