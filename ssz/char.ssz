@@ -2709,7 +2709,7 @@ public &Char
     }
     if(hit.attr <= 0) ret false;
     if((hit.hitflag & (int)`stVal.typ) == 0) ret false;
-    if((hit.hitflag & (int).StTy::N) == 0 && `hittmp > 2) ret false;
+    if((hit.hitflag & (int).StTy::N) == 0 && `hittmp >= 2) ret false;
     if((hit.hitflag & (int).MovTy::I) != 0 && `hittmp > 0) ret false;
     if((hit.hitflag & (int).MovTy::H) != 0 && `hittmp <= 0) ret false;
     if(hit.chainid < 0){
@@ -3067,7 +3067,7 @@ public &Char
   }
   public bool isFall()
   {
-    ret `stVal.hb.fallf != 0 && `stVal.hb.hittime < 0;
+    ret `stVal.hb.fallf != 0;
   }
   public float getHeight()
   {
@@ -3440,9 +3440,8 @@ public &Char
         `sysivar[.iSUPERMOVETIME] = 0;
         `hittmp =
           (int)(
-            `stVal.hb.fallf != 0 && `hittmp > 0
-            && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
-          * ((int)`isFall() + 1) + 1;
+            `isFall() && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
+          + 1;
         if(
           `isActive()
           && (`stVal.no == 5100 || `stVal.no == 5070) && `stVal.time == 1)
@@ -4863,7 +4862,7 @@ public &Char
     cond (keepone || id < 0) && #tmp > 0:
       `targets.new(0);
       loop{
-        index i = 0, r = keepone ? .m.rand(0, #tmp-1) : -1;
+        index i = 0, r = keepone && id >= 0 ? .m.rand(0, #tmp-1) : -1;
         while;
       do:
         branch{
