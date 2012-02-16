@@ -4549,20 +4549,13 @@ public &Char
   }
   public void trTurn()
   {
-    if(`roundState() >= 3){
-      ^`self e = .players.enemyNear(`=, 0);
-      if(!e~isAlive() && (`sysivar[.iSYSFLAG] & .sfDEMO_HELPER) == 0) ret;
-    }
     `setFacing(-`facing);
   }
   public void trP2DistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(!e~isAlive() && (`sysivar[.iSYSFLAG] & .sfDEMO_HELPER) == 0){
-      e~trP2DistX();
-      if(.v.toF() > 0.0 && `roundState() == 3 && e~roundState() == 4){
-        .v.setF(0.0);
-      }
+    if(!e~isAlive() && e~roundState() == 4){
+      .v.setF(0.0);
       ret;
     }
     .v.setF((float)((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX])));
@@ -4575,8 +4568,8 @@ public &Char
   public void trP2BodyDistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(!e~isAlive() && (`sysivar[.iSYSFLAG] & .sfDEMO_HELPER) == 0){
-      e~trP2BodyDistX();
+    if(!e~isAlive() && e~roundState() == 4){
+      .v.setF(0.0);
       ret;
     }
     float dist = e~sysfvar[.fX] - `sysfvar[.fX];
