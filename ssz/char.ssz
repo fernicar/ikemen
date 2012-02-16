@@ -1359,7 +1359,6 @@ const int sfAIRJUMP         = 0b00000000000000000000000000000001;
 const int sfNOTOVER         = 0b00000000000000000000000000000010;
 const int sfKO              = 0b00000000000000000000000000000100;
 const int sfKO_ROUND_MIDDLE = 0b00000000000000000000000000001000;
-const int sfDEMO_HELPER     = 0b00000000000000000000000000010000;
 
 &PlayerList<_t>
 {
@@ -4755,7 +4754,6 @@ public &Char
     h.sysfvar[.fVX] = 0.0;
     h.sysfvar[.fVY] = 0.0;
     if(ownpal != 0) h.palfx.new(1);
-    if(`roundState() >= 3) h.sysivar[.iSYSFLAG] |= .sfDEMO_HELPER;
     h.trChangeState2(st, `minus == -2 ? `playerno : `stVal.playerno, 0, 1);
   }
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
