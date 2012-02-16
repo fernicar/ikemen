@@ -4547,10 +4547,18 @@ public &Char
     ^`self e = .players.enemyNear(`=, 0);
     .v.setI(e~sysivar[.iLIFE]);
   }
+  public void trTurn()
+  {
+    if(`roundState() >= 3){
+      ^`self e = .players.enemyNear(`=, 0);
+      if(!e~isAlive() && (`sysivar[.iSYSFLAG] & .sfDEMO_HELPER) == 0) ret;
+    }
+    `setFacing(-`facing);
+  }
   public void trP2DistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(`isWin() && (`sysivar[.iSYSFLAG] & .sfDEMO_HELPER) == 0){
+    if(!e~isAlive() && (`sysivar[.iSYSFLAG] & .sfDEMO_HELPER) == 0){
       e~trP2DistX();
       if(.v.toF() > 0.0 && `roundState() == 3 && e~roundState() == 4){
         .v.setF(0.0);
@@ -4567,7 +4575,7 @@ public &Char
   public void trP2BodyDistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(`isWin() && (`sysivar[.iSYSFLAG] & .sfDEMO_HELPER) == 0){
+    if(!e~isAlive() && (`sysivar[.iSYSFLAG] & .sfDEMO_HELPER) == 0){
       e~trP2BodyDistX();
       ret;
     }

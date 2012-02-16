@@ -3150,7 +3150,7 @@ public &StateBuilder
   bool turn(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
-      `state.ctrlList[-1].task .= "`setFacing(-`facing);";
+      `state.ctrlList[-1].task .= "`trTurn();";
       ret true;
     }]);
   }
