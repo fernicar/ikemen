@@ -433,8 +433,7 @@ public &BackGround
     x2 *= bgscl;
     y2 *= bgscl;
     ys *= bgscl;
-    y2 +=
-      (float)(.com.GameHeight - 240) + (1.0/scly - 1.0)*(float).com.GameHeight;
+    y2 += (float).com.GameHeight / scly - 240.0;
     `anim.draw(
       rect=, x2, y2, sclx, scly, `xtscale*bgscl, xbs*bgscl, ys, xras * x2
       / (#ys*(float)`anim.spr~rct.h), (float).com.GameWidth/2.0, fx);
