@@ -424,9 +424,7 @@ public &BackGround
       .m.max!float?(
         0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `deltay*bgscl)));
     float x2 = `startx - ((x+`camstartx) * `deltax - `bga.xoffset);
-    float y2 =
-      `starty - (y * `deltay - `bga.yoffset) + (float)(.com.GameHeight - 240)
-      + (1.0/scly - 1.0)*(float).com.GameHeight;
+    float y2 = `starty - (y * `deltay - `bga.yoffset);
     if(!.cfg.Zoom){
       x2 = .m.floor(x2);
       y2 = .m.floor(y2);
@@ -435,6 +433,8 @@ public &BackGround
     x2 *= bgscl;
     y2 *= bgscl;
     ys *= bgscl;
+    y2 +=
+      (float)(.com.GameHeight - 240) + (1.0/scly - 1.0)*(float).com.GameHeight;
     `anim.draw(
       rect=, x2, y2, sclx, scly, `xtscale*bgscl, xbs*bgscl, ys, xras * x2
       / (#ys*(float)`anim.spr~rct.h), (float).com.GameWidth/2.0, fx);

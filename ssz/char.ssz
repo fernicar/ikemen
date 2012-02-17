@@ -6981,13 +6981,17 @@ public void draw(float x, float y, float scl)
     {
       float off = .stage.envShake.getOffset();
       float bh = 
-        .stg~cam.verticalfollow != 0.0
-        ? (float).m.min!int?(0, .stg~cam.boundhigh) : 0.0;
+        (
+          .stg~cam.verticalfollow != 0.0
+          ? (float).m.min!int?(0, .stg~cam.boundhigh) : 0.0)
+        + ((float).com.GameHeight - 240.0);
       float yofs =
-        (scl > 1.0 ? .com.zoffset : (float).com.GameHeight)*(1.0/scl - 1.0);
+        (
+          scl > 1.0 ? (float)(.stg~zoffset + (.com.GameHeight - 240))
+          : (float).com.GameHeight)
+        * (1.0/scl - 1.0);
       float yofs2 =
-        scl > 1.0
-        ? ((float).com.GameHeight - .com.zoffset)*(1.0 - 1.0/scl) : 0.0;
+        scl > 1.0 ? (240.0 - (float).stg~zoffset)*(1.0 - 1.0/scl) : 0.0;
       *.com.scrrect.self rect = .com.scrrect;
       if(off - bh < yofs - y){
         rect.h =
