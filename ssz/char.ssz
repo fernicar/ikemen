@@ -3981,6 +3981,10 @@ public &Char
   }
   public void trRoot()
   {
+    if(`helperindex == 0){
+      .c.new(0);
+      ret;
+    }
     .c = .chars[`playerno][0];
   }
   public void trParent()
