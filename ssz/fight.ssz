@@ -34,7 +34,7 @@ public void laydraw(
     r=, x+l.offset.x, y+l.offset.y+(float)(.com.GameHeight-240), scl, scl,
     l.scale.x*(float)l.facing, l.scale.x*(float)l.facing,
     l.scale.y*(float)l.vfacing, 0.0, (float)(.com.GameWidth-320)/2.0,
-    .consts.null!&.com.PalFX?());
+    .consts.null!&.com.PalFX?(), false);
 }
 
 public void laytext(

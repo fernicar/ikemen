@@ -436,7 +436,7 @@ public &BackGround
     y2 += (float).com.GameHeight / scly - 240.0;
     `anim.draw(
       rect=, x2, y2, sclx, scly, `xtscale*bgscl, xbs*bgscl, ys, xras * x2
-      / (#ys*(float)`anim.spr~rct.h), (float).com.GameWidth/2.0, fx);
+      / (#ys*(float)`anim.spr~rct.h), (float).com.GameWidth/2.0, fx, true);
   }
 }
 

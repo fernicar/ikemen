@@ -1079,7 +1079,7 @@ public &Anim<frame_t>
   public void draw(
     &.sdl.Rect rect=, float x, float y, float cscalex, float cscaley,
     float xtscale, float xbscale, float yscale, float rasterxadd,
-    float rx, ^&.com.PalFX fx)
+    float rx, ^&.com.PalFX fx, bool oVer)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
     int h = `h*`frames[`drawidx].h, v = `v*`frames[`drawidx].v;
@@ -1095,11 +1095,11 @@ public &Anim<frame_t>
     if(xs < 0.0){
       x2 *= -1.0;
       x2 += rx*2.0;
-      if(rx == (float).com.GameWidth/2.0) x2 += xs;
+      if(oVer) x2 += xs;
     }
     if(ys < 0.0){
       y2 *= -1.0;
-      if(rx == (float).com.GameWidth/2.0) y2 += ys;
+      if(oVer) y2 += ys;
     }
     if(`tile.w == 0x1){
       float tmp =
@@ -1130,8 +1130,8 @@ public &Anim<frame_t>
   /*?*/
   }
   public void angleDraw(
-    float x, float y, float xscale, float yscale,
-    float angle, bool angleset, float axscl, float ayscl, ^&.com.PalFX fx)
+    float x, float y, float xscale, float yscale, float angle, bool angleset,
+    float axscl, float ayscl, ^&.com.PalFX fx, bool oVer)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
     float rx = x + (float).com.GameWidth/2.0;
@@ -1144,13 +1144,12 @@ public &Anim<frame_t>
     if(uagl == 0x0) branch{
     cond angleset:
       `draw(
-        .com.scrrect=, x+(float).com.GameWidth/2.0
-        - xs*(float)(h*`frames[`drawidx].x), y,
-        1.0, 1.0, xs, xs, ys, 0.0, 0.0, fx);
+        .com.scrrect=, x - xs*(float)(h*`frames[`drawidx].x), y,
+        1.0, 1.0, xs, xs, ys, 0.0, (float).com.GameWidth/2.0, fx, false);
     else:
       `draw(
         .com.scrrect=,
-        x, y, 1.0, 1.0, xs, xs, ys, 0.0, (float).com.GameWidth/2.0, fx);
+        x, y, 1.0, 1.0, xs, xs, ys, 0.0, (float).com.GameWidth/2.0, fx, oVer);
     comm:
       ret;
     }

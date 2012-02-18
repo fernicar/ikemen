@@ -159,7 +159,7 @@ public &Anim
     `ani~draw(
       `window=, `x + (float)(.com.GameWidth-320)/2.0,
       `y + (float)(.com.GameHeight-240), 1.0, 1.0,
-      `xscl, `xscl, `yscl, 0.0, 0.0, .consts.null!&.com.PalFX?()); 
+      `xscl, `xscl, `yscl, 0.0, 0.0, .consts.null!&.com.PalFX?(), false); 
   }
   public void setPos(float x, float y)
   {
