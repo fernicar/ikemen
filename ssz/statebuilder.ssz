@@ -1798,9 +1798,9 @@ public &StateBuilder
       if(!`expValue(out=, in=)) ret false;
       out .= "$`trDiv(.v,.v.setF(4.0)$.v)";
     cond .s.equ("gamewidth", token):
-      out .= ".v.setI(320)";
+      out .= ".v.setF((float).com.GameWidth)";
     cond .s.equ("gameheight", token):
-      out .= ".v.setI(240)";
+      out .= ".v.setF(240.0)";
     cond .s.equ("cond", token):
       out .= '(';
       if(!.s.equ("(", `tokenizer(in=))){

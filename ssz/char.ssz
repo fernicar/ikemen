@@ -3908,7 +3908,9 @@ public &Char
     case 2, 3://front, back
       if(!.m.isnan(x)) branch{
       cond (`facing > 0 && pt == 2) || (`facing < 0 && pt == 3):
-        o.setX(.com.screenx + (320.0 - x*(pt == 2 ? -1.0 : 1.0))/.com.scale);
+        o.setX(
+          .com.screenx
+          + ((float).com.GameWidth - x*(pt == 2 ? -1.0 : 1.0))/.com.scale);
       else:
         o.setX(.com.screenx + x*(pt == 2 ? -1.0 : 1.0)/.com.scale);
       }
@@ -3918,7 +3920,9 @@ public &Char
       if(!.m.isnan(x)) o.setX(.com.screenx + x/.com.scale);
       if(!.m.isnan(y)) o.setY(.com.screeny + y/.com.scale);
     case 5://right
-      if(!.m.isnan(x)) o.setX(.com.screenx + (320.0 + x)/.com.scale);
+      if(!.m.isnan(x)){
+        o.setX(.com.screenx + ((float).com.GameWidth + x)/.com.scale);
+      }
       if(!.m.isnan(y)) o.setY(.com.screeny + y/.com.scale);
     }
   }
@@ -4757,7 +4761,9 @@ public &Char
       if(facing < 0) obj.facing *= -1;
       branch{
       cond (`facing > 0 && pt == 2) || (`facing < 0 && pt == 3):
-        obj.setX(.com.screenx + 320.0/.com.scale - x*(pt == 2 ? -1.0 : 1.0));
+        obj.setX(
+          .com.screenx + (float).com.GameWidth/.com.scale
+          - x*(pt == 2 ? -1.0 : 1.0));
       else:
         obj.setX(.com.screenx + x*(pt == 2 ? -1.0 : 1.0));
       }
@@ -4769,7 +4775,7 @@ public &Char
       obj.setY(y);
     case 5://right
       if(facing < 0) obj.facing *= -1;
-      obj.setX(.com.screenx + 320.0/.com.scale + x);
+      obj.setX(.com.screenx + (float).com.GameWidth/.com.scale + x);
       obj.setY(y);
     default:
       `setPos!_t?(obj=, pt, x, y, facing);
@@ -5430,7 +5436,10 @@ public void Explod::update(bool oVer)
   if(`bindtime != 0) branch{
   cond `postype >= 4:
     cscl = 1.0;
-    `x = .com.camerax + `offsetx + (`postype == 4 ? -160.0 : 160.0);
+    `x =
+      .com.camerax + `offsetx + (
+        `postype == 4
+        ? -(float).com.GameWidth/2.0 : (float).com.GameWidth/2.0);
     xofs = -.com.xoffset;
     `y = .com.cameray + `offsety - .com.zoffset;
     yofs = -.com.yoffset;
@@ -6418,10 +6427,12 @@ void gSetNormal(float scl, float x, float y)
   .com.yoffset = (.stg~bga.yoffset-.stage.envShake.getOffset())*scl;
   .com.xoffset = .stg~bga.xoffset*scl;
   .com.scrxmin =
-    (float)(.stg~cam.boundleft - .stg~cam.startx) - 160.0/.stg~ztopscale;
+    (float)(.stg~cam.boundleft - .stg~cam.startx)
+    - ((float).com.GameWidth/2.0)/.stg~ztopscale;
   .com.scrxmax =
-    (float)(.stg~cam.boundright - .stg~cam.startx) + 160.0/.stg~ztopscale;
-  .com.screenx = x - 160.0 / .com.scale;
+    (float)(.stg~cam.boundright - .stg~cam.startx)
+    + ((float).com.GameWidth/2.0)/.stg~ztopscale;
+  .com.screenx = x - ((float).com.GameWidth/2.0) / .com.scale;
   .com.screeny =
     y - (.com.zoffset - (float)(.com.GameHeight-240)*scl) / .com.scale;
   .com.camerax = x;
@@ -6560,7 +6571,8 @@ public float action(
     }
     .oldx = x;
     .com.xmin = .com.screenx + .com.screenleft;
-    .com.xmax = .com.screenx + (320.0 / .com.scale) - .com.screenright;
+    .com.xmax =
+      .com.screenx + ((float).com.GameWidth / .com.scale) - .com.screenright;
     if(.com.xmin > .com.xmax){
       .com.xmin = .com.xmax = (.com.xmin + .com.xmax) * 0.5;
     }
@@ -6671,10 +6683,12 @@ public float action(
   branch{
     float tmp = leftest + rightest;
   cond cvx < 0.0:
-    tmp = .m.max!float?(leftest - (-160.0/.com.scale + tension), tmp);
+    tmp = .m.max!float?(
+      leftest - (-((float).com.GameWidth/2.0)/.com.scale + tension), tmp);
     if(cvx < tmp) cvx = .m.min!float?(0.0, tmp);
   else:
-    tmp = .m.min!float?(rightest - (160.0/.com.scale - tension), tmp);
+    tmp = .m.min!float?(
+      rightest - (((float).com.GameWidth/2.0)/.com.scale - tension), tmp);
     if(cvx > tmp) cvx = .m.max!float?(0.0, tmp);
   }
   x += cvx;
@@ -6783,12 +6797,12 @@ public float action(
       `leftest =
         .m.max!float?(
           (float).m.min!int?(.stg~p1.startx, .stg~p2.startx),
-          -160.0/.com.scale + .com.screenleft)
+          -((float).com.GameWidth/2.0)/.com.scale + .com.screenleft)
         - ox;
       `rightest =
         .m.min!float?(
           (float).m.max!int?(.stg~p1.startx, .stg~p2.startx),
-          160.0/.com.scale - .com.screenright)
+          ((float).com.GameWidth/2.0)/.com.scale - .com.screenright)
         - ox;
     }
   }
