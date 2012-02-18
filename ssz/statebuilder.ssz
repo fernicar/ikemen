@@ -1862,13 +1862,13 @@ public &StateBuilder
       }
     cond .s.equ("playerid", token):
       if(!`expValue(out=, in=)) ret false;
-      out .= '$' .= obj .= "trPlayerID()$(#.c>0?[._t(_=){";
+      out .= '$' .= obj .= "trPlayerID()$.rd([._t(_=){";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
       }
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
-      out .= ";}](:.c<>=:):.v.setSF())";
+      out .= ";}])";
     cond
       .s.equ("enemy", token) || .s.equ("enemynear", token)
       || .s.equ("helper", token) || .s.equ("target", token)
@@ -1908,24 +1908,24 @@ public &StateBuilder
         `lasterror = ",がありません";
         ret false;
       }
-      out .= "$(#.c>0?[._t(_=){";
+      out .= "$.rd([._t(_=){";
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
-      out .= ";}](:.c<>=:):.v.setSF())";
+      out .= ";}])";
     cond
       .s.equ("root", token)
       || .s.equ("partner", token) || .s.equ("parent", token)
       :
       out .= obj .=
-        token[0] == 'r' ? "trRoot()$"
-        : token[3] == 't' ? "trPartner()$"
-        : "trParent()$";
+        token[0] == 'r' ? "trRoot()"
+        : token[3] == 't' ? "trPartner()"
+        : "trParent()";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;
       }
-      out .= "(#.c>0?[._t(_=){";
+      out .= "$.rd([._t(_=){";
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
-      out .= ";}](:.c<>=:):.v.setSF())";
+      out .= ";}])";
     cond .s.equ("standby", token):
       out .= ".v.setB(" .= obj .= "sysivar[.iSTANDBY]!=0)";
     cond

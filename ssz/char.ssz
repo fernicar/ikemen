@@ -589,6 +589,14 @@ public &Var
 public &Var v;//work
 public ^&Char c;//work
 type _t = $void(&Char=);
+void rd(~$void(&.Char=) f)
+{
+  if(#.c == 0){
+    .v.setSF();
+    ret;
+  }
+  f(:.c<>=:);
+}
 
 void appendToClipboard(int p, ^/char text, ^&.Var vars)
 {
