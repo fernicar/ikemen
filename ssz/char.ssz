@@ -3636,7 +3636,6 @@ public &Char
       `facing *= -1;
       `sysfvar[.fVX] *= -1.0;
       `stVal.hb.xvel *= -1.0;
-      `stVal.hb.fall.xvelocity *= -1.0;
     }
   }
   void setFWidth(float f)
@@ -5896,7 +5895,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         == ((pro != 0 ? pro : by.facing*(hit.p1facing < 0 ? -1 : 1)) < 0))
       {
         `pyr.stVal.hb.xvel *= -1.0;
-        `pyr.stVal.hb.fall.xvelocity *= -1.0;
       }
     }
     branch{

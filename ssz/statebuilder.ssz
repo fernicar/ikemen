@@ -370,6 +370,7 @@ public &StateBuilder
   public ^/char lasterror, errorexp;
   public &.Const c;
   public int playerno = 0;
+  public short mver0 = 0, mver1 = 0;
   *.s.ptn_t pt2, pt3;
   int kakko = 0;
   type paraF_t = $bool(^/char=);
@@ -1595,18 +1596,27 @@ public &StateBuilder
       }
       if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("hitdefattr", token):
-      {
-        bool not;
-        if(!`kyuushiki(not=, out=, in=)){
-          if(!.cfg.IgnoreMostErrors) ret false;
-          out .= ".v.setI(0)";
-          break, break;
+      branch{
+        ~$bool() f = [bool(){
+          int flg;
+          index fi = .s.cFind(")]&|^", in);
+          if(!`attr(flg=, in[0..fi], false)) ret false;
+          in = in[fi..-1];
+          out .= obj .= "trHitDefAttr(" .= .s.iToS(flg) .= ")";
+          ret true;
+        }];
+      cond `mver0 == 1:
+        if(!eqneq(out=, in=, f)) ret false;
+      else:
+        {
+          bool not;
+          if(!`kyuushiki(not=, out=, in=)){
+            if(!.cfg.IgnoreMostErrors) ret false;
+            out .= ".v.setI(0)";
+            break, break;
+          }
+          f(::);
         }
-        int flg;
-        index fi = .s.cFind(")]&|^", in);
-        if(!`attr(flg=, in[0..fi], false)) ret false;
-        in = in[fi..-1];
-        out .= obj .= "trHitDefAttr(" .= .s.iToS(flg) .= ")";
       }
     cond
       .s.equ("numhelper", token) || .s.equ("numexplod", token)
@@ -7321,7 +7331,7 @@ public &StateBuilder
   }
   public bool build(int no, ^/char def)
   {:<-
-    bool files(&.com.Section sc=)
+    void files(&.com.Section sc=)
     {
       ^/char f(^/char str)
       {
@@ -7344,9 +7354,17 @@ public &StateBuilder
       if(#(data = sc.get("st8")) > 0) `st.new[9] = f(data);
       if(#(data = sc.get("st9")) > 0) `st.new[10] = f(data);
       if(#(data = sc.get("stcommon")) > 0) `stcommon = f(data);
-      ret true;
     }
-    bool data(&.com.Section sc=)
+    void info(&.com.Section sc=)
+    {
+      ^/char data;
+      if(#(data = sc.get("mugenversion")) > 0){
+        ^short tmp = .s.svToAry!short?(".", data);
+        `mver0 = tmp[0];
+        if(#tmp >= 2) `mver1 = tmp[1];
+      }
+    }
+    void data(&.com.Section sc=)
     {
       ^/char data;
       if(#(data = sc.get("life")) > 0) `c.d.life = .com.atoi(data);
@@ -7372,9 +7390,8 @@ public &StateBuilder
       if(#(data = sc.get("floatpersistindex")) > 0){
         `c.d.floatpersistindex = .com.atoi(data);
       }
-      ret true;
     }
-    bool size(&.com.Section sc=)
+    void size(&.com.Section sc=)
     {
       ^/char data;
       if(#(data = sc.get("xscale")) > 0) `c.s.xscale = .com.atof(data);
@@ -7414,9 +7431,8 @@ public &StateBuilder
         .com.readPair!int?(
           `c.s.attack_z_width_front=, `c.s.attack_z_width_back=, data);
       }
-      ret true;
     }
-    bool velocity(&.com.Section sc=)
+    void velocity(&.com.Section sc=)
     {
       ^/char data;
       if(#(data = sc.get("walk.fwd")) > 0) `c.v.walk_fwd = .com.atof(data);
@@ -7498,9 +7514,8 @@ public &StateBuilder
       if(#(data = sc.get("airjump.down.x")) > 0){
         `c.v.airjump_down_x = .com.atof(data);
       }
-      ret true;
     }
-    bool movement(&.com.Section sc=)
+    void movement(&.com.Section sc=)
     {
       ^/char data;
       if(#(data = sc.get("airjump.num")) > 0){
@@ -7553,9 +7568,8 @@ public &StateBuilder
       if(#(data = sc.get("down.friction.threshold")) > 0){
         `c.m.down_friction_threshold = .com.atof(data);
       }
-      ret true;
     }
-    bool filesflg = true;
+    bool filesflg = true, infoflg = true;
     ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
@@ -7566,6 +7580,9 @@ public &StateBuilder
       cond .s.equ(secname, "files"):
         if(filesflg) files(sc=);
         filesflg = false;
+      cond .s.equ(secname, "info"):
+        if(infoflg) info(sc=);
+        infoflg = false;
       }
     }];
     bool dataflg = true, sizeflg = true, velocityflg = true;
