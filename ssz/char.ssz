@@ -3805,14 +3805,6 @@ public &Char
       `sysivar[.iCTRL] != 0 && !`isKO()
       && (`helperindex != 0 || .com.intro <= 0) && !`ctrlOver();
   }
-  public float bindX()
-  {
-    ret `minus == 1 ? `drawX : `sysfvar[.fX];
-  }
-  public float bindY()
-  {
-    ret `minus == 1 ? `drawY : `sysfvar[.fY];
-  }
   public void setCtrl(bool c)
   {
     `sysivar[.iCTRL] = (int)c;
@@ -3897,15 +3889,15 @@ public &Char
     }
     switch(pt){
     case 0://p1
-      if(!.m.isnan(x)) o.setX(`bindX() + (float)`facing*x);
-      if(!.m.isnan(y)) o.setY(`bindY() + y);
+      if(!.m.isnan(x)) o.setX(`sysfvar[.fX] + (float)`facing*x);
+      if(!.m.isnan(y)) o.setY(`sysfvar[.fY] + y);
       o.facing *= `facing;
     case 1://p2
       {
         ^`self c = .players.enemyNear(`=, 0);
         if(#c == 0) break;
-        if(!.m.isnan(x)) o.setX(c~bindX() + (float)c~facing*x);
-        if(!.m.isnan(y)) o.setY(c~bindY() + y);
+        if(!.m.isnan(x)) o.setX(c~sysfvar[.fX] + (float)c~facing*x);
+        if(!.m.isnan(y)) o.setY(c~sysfvar[.fY] + y);
         o.facing *= c~facing;
       }
     case 2, 3://front, back
@@ -5453,8 +5445,8 @@ public void Explod::update(bool oVer)
         `bindtime = 0;
         break, break;
       }
-      if(!.m.isnan(`offsetx)) `setX(bc~bindX() + `offsetx);
-      if(!.m.isnan(`offsety)) `setY(bc~bindY() + `offsety);
+      if(!.m.isnan(`offsetx)) `setX(bc~drawX + `offsetx);
+      if(!.m.isnan(`offsety)) `setY(bc~drawY + `offsety);
     }
   }
   if(.com.tickFrame()){
@@ -5518,8 +5510,8 @@ public void Explod::setPos(&.Char c=)
     `bindid = c.id;
     `facing = c.facing*`relativef;
     `offsetx *= (float)c.facing;
-    if(!.m.isnan(`offsetx)) `setX(c.bindX() + `offsetx);
-    if(!.m.isnan(`offsety)) `setY(c.bindY() + `offsety);
+    if(!.m.isnan(`offsetx)) `setX(c.sysfvar[.fX] + `offsetx);
+    if(!.m.isnan(`offsety)) `setY(c.sysfvar[.fY] + `offsety);
     if(`bindtime == 0) `bindtime = 1;
   case 1:
     {
@@ -5528,8 +5520,8 @@ public void Explod::setPos(&.Char c=)
       `bindid = bc~id;
       `facing *= bc~facing*`relativef;
       `offsetx *= (float)bc~facing;
-      if(!.m.isnan(`offsetx)) `setX(bc~bindX() + `offsetx);
-      if(!.m.isnan(`offsety)) `setY(bc~bindY() + `offsety);
+      if(!.m.isnan(`offsetx)) `setX(bc~sysfvar[.fX] + `offsetx);
+      if(!.m.isnan(`offsety)) `setY(bc~sysfvar[.fY] + `offsety);
       if(`bindtime == 0) `bindtime = 1;
     }
   case 2, 3:
