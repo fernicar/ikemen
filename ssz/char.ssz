@@ -2262,7 +2262,7 @@ public &Char
   }
   public void byBindClear()
   {
-    if(`stVal.hb.byidMatch(`sysivar[.iBINDTOID])) `sysivar[.iBINDTIME] = 0;
+    if(`stVal.hb.byidMatch(`sysivar[.iBINDTOID])) `setBindTime(0);
   }
   public void clearTargetBind()
   {
@@ -3381,7 +3381,7 @@ public &Char
   }
   public void bind()
   {
-    if(`sysivar[.iBINDTIME] == 0) ret;
+    if(`sysivar[.iBINDTOID] < 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     if(#c == 0 || `destmp){
       `setBindTime(0);
@@ -3391,16 +3391,16 @@ public &Char
       float f =
         (float)(
           #`sysivar[.iBINDFACING] == 2 ? `sysivar[.iBINDFACING]/2 : c~facing);
-      `setX(c~sysfvar[.fX] + f*`sysfvar[.fBINDPOSX]);
+      `setX(c~drawX + f*`sysfvar[.fBINDPOSX]);
     }
     if(!.m.isnan(`sysfvar[.fBINDPOSY])){
-      `setY(c~sysfvar[.fY] + `sysfvar[.fBINDPOSY]);
+      `setY(c~drawY + `sysfvar[.fBINDPOSY]);
     }
     if(#`sysivar[.iBINDFACING] == 1) branch{
     cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
     cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
     }
-    branch{
+    if(`sysivar[.iBINDTIME] != 0) branch{
     cond c~isTarget(`id):
       if(!.m.isnan(`sysfvar[.fBINDPOSX])){
         `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
@@ -3427,7 +3427,7 @@ public &Char
       }
       float oldx = `drawX;
       .m.limRange!float?(`drawX=, min, max);
-      if(oldx != `drawX && `sysivar[.iBINDTIME] != 0){
+      if(oldx != `drawX && `sysivar[.iBINDTOID] >= 0){
         ^`self c = .players.get(`sysivar[.iBINDTOID]);
         if(#c == 0) break;
         if(!`isTarget(c~id)){
