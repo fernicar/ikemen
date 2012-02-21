@@ -3151,6 +3151,7 @@ public &Char
       if(!`isHitPaused()){
         `setFacing(`p1facing);
         `p1facing = 0;
+        if(#`stVal.hb.byid > 0) `posUpdate();
       }
       `bind();
       `changeState2();
@@ -3283,7 +3284,7 @@ public &Char
         if(!`isHitPaused()){
           `stVal.time++;
           `tickBind();
-          `posUpdate();
+          if(#`stVal.hb.byid == 0) `posUpdate();
         }
       }
     }
@@ -3380,9 +3381,7 @@ public &Char
   }
   public void bind()
   {
-    if(`sysivar[.iBINDTOID] < 0){
-      ret;
-    }
+    if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     if(#c == 0 || `destmp){
       `setBindTime(0);
@@ -3392,16 +3391,16 @@ public &Char
       float f =
         (float)(
           #`sysivar[.iBINDFACING] == 2 ? `sysivar[.iBINDFACING]/2 : c~facing);
-      `setX(c~bindX() + f*`sysfvar[.fBINDPOSX]);
+      `setX(c~sysfvar[.fX] + f*`sysfvar[.fBINDPOSX]);
     }
     if(!.m.isnan(`sysfvar[.fBINDPOSY])){
-      `setY(c~bindY() + `sysfvar[.fBINDPOSY]);
+      `setY(c~sysfvar[.fY] + `sysfvar[.fBINDPOSY]);
     }
     if(#`sysivar[.iBINDFACING] == 1) branch{
     cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
     cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
     }
-    if(`sysivar[.iBINDTIME] != 0) branch{
+    branch{
     cond c~isTarget(`id):
       if(!.m.isnan(`sysfvar[.fBINDPOSX])){
         `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
