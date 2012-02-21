@@ -1951,7 +1951,7 @@ public &Char
   public float attackmul, defencemul, attackdist;
   public float offsetx, offsety;
   public float veloff;
-  public float oldx, ticOldX, drawX, ticOldY, drawY;
+  public float ticOldX, drawX, ticOldY, drawY;
   public int atktmp, hittmp, acttmp, minus;
   public %&.RdCacheInfo enemyn;
   public ^&.act.Frame curFrame;
@@ -2019,7 +2019,7 @@ public &Char
     `sprpriority = 0;
     `getcombo = 0;
     `veloff = 0.0;
-    `oldx = `ticOldX = `drawX = `sysfvar[.fX];
+    `ticOldX = `drawX = `sysfvar[.fX];
     `ticOldY = `drawY = `sysfvar[.fY];
     `palfx.new(0);
     `aimg.timegap = -1;
@@ -3151,7 +3151,6 @@ public &Char
       if(!`isHitPaused()){
         `setFacing(`p1facing);
         `p1facing = 0;
-        if(#`stVal.hb.byid > 0) `posUpdate();
       }
       `bind();
       `changeState2();
@@ -3283,8 +3282,8 @@ public &Char
         }
         if(!`isHitPaused()){
           `stVal.time++;
+          `posUpdate();
           `tickBind();
-          if(#`stVal.hb.byid == 0) `posUpdate();
         }
       }
     }
@@ -3305,10 +3304,14 @@ public &Char
   }
   public void posUpdate()
   {
-    `ticOldX = `drawX = `sysfvar[.fX];
-    `ticOldY = `drawY = `sysfvar[.fY];
+    bool nobindx = `sysivar[.iBINDTIME] == 0 || .m.isnan(`sysfvar[.fBINDPOSX]);
+    bool nobindy = `sysivar[.iBINDTIME] == 0 || .m.isnan(`sysfvar[.fBINDPOSY]);
+    if(nobindx) `ticOldX = `drawX = `sysfvar[.fX];
+    if(nobindy) `ticOldY = `drawY = `sysfvar[.fY];
     if(!`ls(.lsPOSFREEZEX)){
-      `sysfvar[.fX] = `ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff;
+      if(nobindx){
+        `sysfvar[.fX] = `ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff;
+      }
       `veloff *= `sysfvar[.fSTAND_FRICTION]**2.0;
       if(#`veloff < 1.0) `veloff = 0.0;
       switch(`stVal.phy){
@@ -3320,15 +3323,16 @@ public &Char
       }
     }
     if(!`ls(.lsPOSFREEZEY)){
-      `sysfvar[.fY] = `ticOldY + `sysfvar[.fVY];
+      if(nobindy) `sysfvar[.fY] = `ticOldY + `sysfvar[.fVY];
       if(`stVal.phy == .StTy::A) `gravity();
     }
+    `xScreenBound();
   }
   public void gravity()
   {
     if(!`ls(.lsPOSFREEZEY)) `sysfvar[.fVY] += `sysfvar[.fYACCEL];
   }
-  public float move()
+  public void move()
   {
     if(.com.tickFrame()){
       if(`destmp){
@@ -3348,7 +3352,7 @@ public &Char
         while i < #`targets:
         }
         `destroySelf();
-        ret 0.0;
+        ret;
       }
       if(
         `stVal.playerno == `playerno && (
@@ -3368,20 +3372,15 @@ public &Char
         `drawY = `sysfvar[.fY] - (`sysfvar[.fY] - `ticOldY) * (1.0 - sp);
       }
     }
-    float cvx = 0.0;
-    if(`ls(.lsMOVECAMERAX) && `sysivar[.iBINDTIME] == 0){
-      cvx = `drawX - `oldx;
-    }
     if(`ls(.lsSCREENBOUND)){
       .m.limRange!float?(
         `drawX=, .com.xmin+(`facing > 0 ? `bedge : `fedge),
         .com.xmax-(`facing > 0 ? `fedge : `bedge));
     }
-    ret cvx;
   }
   public void bind()
   {
-    if(`sysivar[.iBINDTOID] < 0) ret;
+    if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     if(#c == 0 || `destmp){
       `setBindTime(0);
@@ -3391,16 +3390,20 @@ public &Char
       float f =
         (float)(
           #`sysivar[.iBINDFACING] == 2 ? `sysivar[.iBINDFACING]/2 : c~facing);
-      `setX(c~drawX + f*`sysfvar[.fBINDPOSX]);
+      `setX(c~sysfvar[.fX] + f*`sysfvar[.fBINDPOSX]);
+      `drawX += c~drawX - c~sysfvar[.fX];
+      `ticOldX += c~ticOldX - c~sysfvar[.fX];
     }
     if(!.m.isnan(`sysfvar[.fBINDPOSY])){
-      `setY(c~drawY + `sysfvar[.fBINDPOSY]);
+      `setY(c~sysfvar[.fY] + `sysfvar[.fBINDPOSY]);
+      `drawY += c~drawY - c~sysfvar[.fY];
+      `ticOldY += c~ticOldY - c~sysfvar[.fY];
     }
     if(#`sysivar[.iBINDFACING] == 1) branch{
     cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
     cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
     }
-    if(`sysivar[.iBINDTIME] != 0) branch{
+    branch{
     cond c~isTarget(`id):
       if(!.m.isnan(`sysfvar[.fBINDPOSX])){
         `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
@@ -3425,22 +3428,22 @@ public &Char
         min = .com.xmin + `fedge;
         max = .com.xmax - `bedge;
       }
-      float oldx = `drawX;
-      .m.limRange!float?(`drawX=, min, max);
-      if(oldx != `drawX && `sysivar[.iBINDTOID] >= 0){
+      float oldx = `sysfvar[.fX];
+      .m.limRange!float?(`sysfvar[.fX]=, min, max);
+      if(oldx != `sysfvar[.fX] && `sysivar[.iBINDTIME] != 0){
         ^`self c = .players.get(`sysivar[.iBINDTOID]);
         if(#c == 0) break;
         if(!`isTarget(c~id)){
-          `drawX = oldx;
+          `sysfvar[.fX] = oldx;
           break, break;
         }
-        c~drawX += `drawX - oldx;
+        c~sysfvar[.fX] += `sysfvar[.fX] - oldx;
         c~xScreenBound();
       }
     }
     .m.limRange!float?(`drawX=, (float).stg~leftbound, (float).stg~rightbound);
   }
-  public float update(
+  public void update(
     float highest=, float lowest=, float leftest=, float rightest=)
   {
     `bind();
@@ -3529,9 +3532,7 @@ public &Char
         if(`stVal.hb.fallf != 0) `stVal.fallTime++;
       }
     }
-    float cvx = 0.0;
     if(`ls(.lsMOVECAMERAX)){
-      if(`sysivar[.iBINDTIME] != 0) cvx = `drawX - `oldx;
       leftest = .m.max!float?(.com.xmin)<, .m.min!float?(
         `drawX-(`facing > 0 ? `bedge : `fedge), leftest);
       rightest = .m.min!float?(.com.xmax)<, .m.max!float?(
@@ -3541,7 +3542,6 @@ public &Char
       highest = .m.min!float?(`drawY, highest);
       lowest = .m.min!float?(0.0)<, .m.max!float?(`drawY, lowest);
     }
-    `oldx = `drawX;
     if(.com.tickNextFrame()){
       if(
         `stVal.mov == .MovTy::H && `isActive() && `sysfvar[.fY] == 0.0
@@ -3552,7 +3552,6 @@ public &Char
       `sysfvar[.fX] = `drawX;
       `sysfvar[.fY] = `drawY;
     }
-    ret cvx;
   }
   public void posReset(float p1x, float p2x)
   {
@@ -3850,7 +3849,7 @@ public &Char
   }
   public void setX(float x)
   {
-    `sysfvar[.fX] = `oldx = `ticOldX = `drawX = x;
+    `sysfvar[.fX] = `ticOldX = `drawX = x;
     `enemyn.new(0);
     if(`player) loop{index i = (`playerno+1) & 1; while; do:
       loop{index j = 0; while; do:
@@ -4302,10 +4301,7 @@ public &Char
   }
   public void trAddX()
   {
-    float x = .v.toF();
-    float tmp = `oldx;
-    `setX(`sysfvar[.fX] + (float)`facing*x);
-    `oldx = tmp;
+    `setX(`sysfvar[.fX] + (float)`facing*.v.toF());
   }
   public void trAddY()
   {
@@ -5718,8 +5714,7 @@ public void PlayerList!&Char?::destroy(int id)
   }
 }
 public void PlayerList!&Char?::action(
-  float x, float cvx=,
-  float highest=, float lowest=, float leftest=, float rightest=)
+  float x, float highest=, float lowest=, float leftest=, float rightest=)
 {
   .commandUpdate();
   %`top<>.c.self targets;
@@ -5732,32 +5727,32 @@ public void PlayerList!&Char?::action(
     p = p~next;
   while #p > 0:
   }
-  .update(cvx=, highest=, lowest=, leftest=, rightest=);
+  .update(highest=, lowest=, leftest=, rightest=);
   .com.gametime++;
   .rootAction();
 }
-public void PlayerList!&Char?::move(float cvx=)
+public void PlayerList!&Char?::move()
 {
   loop{
     *`top.self p = `top;
     while;
   do:
     if(p~c~id < 0) continue;
-    cvx += p~c~move();
+    p~c~move();
   continue:
     p = p~next;
   while #p > 0:
   }
 }
 public void PlayerList!&Char?::update(
-  float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
+  float highest=, float lowest=, float leftest=, float rightest=)
 {
   loop{
     *`top.self p = `top;
     while;
   do:
     if(p~c~id < 0) continue;
-    cvx += p~c~update(highest=, lowest=, leftest=, rightest=);
+    p~c~update(highest=, lowest=, leftest=, rightest=);
   continue:
     p = p~next;
   while #p > 0:
@@ -6456,11 +6451,10 @@ void gSetNormal(float scl, float x, float y)
   ret lpl;
 }
 
-void update(
-  float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
+void update(float highest=, float lowest=, float leftest=, float rightest=)
 {
-  .players.move(cvx=);
-  .players.update(cvx=, highest=, lowest=, leftest=, rightest=);
+  .players.move();
+  .players.update(highest=, lowest=, leftest=, rightest=);
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
       if(.projs[i][j].id >= 0) .projs[i][j].update();
@@ -6554,15 +6548,11 @@ public float action(
   .resetDrawnClsnList();
   .gSetNormal(scl, x, y);
   float tension = (float).stg~cam.tension / .com.scale;
-  float cvx = 0.0;
   float highest = 0.0, lowest = .com.screeny;
   rightest = leftest = x;
   int rs4t = -(.fight~ro.over_hittime + .fight~ro.over_waittime);
   branch{
   cond .com.tickFrame():
-    if(.waitdown > 0 && .com.intro == rs4t-1 && #(x - .oldx) >= 1.0){
-      .com.intro = rs4t;
-    }
     .oldx = x;
     .com.xmin = .com.screenx + .com.screenleft;
     .com.xmax =
@@ -6595,9 +6585,9 @@ public float action(
       .specialFlag &= !.gsROUNDNOTOVER;
     }
     if(#.superanim > 0) .superanim~ani.action();
-    .players.action(x, cvx=, highest=, lowest=, leftest=, rightest=);
+    .players.action(x, highest=, lowest=, leftest=, rightest=);
   else:
-    .update(cvx=, highest=, lowest=, leftest=, rightest=);
+    .update(highest=, lowest=, leftest=, rightest=);
     .rootAction();
   }
   %bool hbuf;
@@ -6663,19 +6653,10 @@ public float action(
   }
   leftest -= x;
   rightest -= x;
-  if(.com.intro == rs4t && #(leftest + rightest)*.com.scale > 64.0) branch{
-    float vel = .m.min!float?(1.0, .com.turbo) * 5.0;
-  cond leftest + rightest < 0.0:
-    cvx -=
-      .m.min!float?(vel)<,
-      .m.max!float?(0.0, (.com.xmin - x - .com.screenleft) - leftest + 64.0);
-  else:
-    cvx +=
-      .m.min!float?(vel)<,
-      .m.max!float?(0.0, rightest - (.com.xmax - x + .com.screenright) + 64.0);
-  }
   branch{
+    float vel = .m.min!float?(1.0, .com.turbo) * 5.0;
     float tmp = leftest + rightest;
+    float cvx = tmp < 0.0 ? -vel : vel;
   cond cvx < 0.0:
     tmp = .m.max!float?(
       leftest - (-((float).com.GameWidth/2.0)/.com.scale + tension), tmp);
@@ -6684,8 +6665,9 @@ public float action(
     tmp = .m.min!float?(
       rightest - (((float).com.GameWidth/2.0)/.com.scale - tension), tmp);
     if(cvx > tmp) cvx = .m.max!float?(0.0, tmp);
+  comm:
+    x += cvx;
   }
-  x += cvx;
   if(lowest >= highest) branch{
   cond highest < (float)-.stg~cam.floortension / .com.scale:
     y =
