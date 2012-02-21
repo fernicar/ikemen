@@ -1352,6 +1352,10 @@ const int lsFEDGECHANGE   = 0b00000000000100000000000000000000;
 const int lsBEDGECHANGE   = 0b00000000001000000000000000000000;
 const int lsGUARD         = 0b00000000010000000000000000000000;
 
+const int lasMask =
+  lsNOAUTOTURN | lsNOWALK | lsNOSTANDGUARD | lsNOCROUCHGUARD | lsNOAIRGUARD
+  | lsNOSHADOW | lsINVISIBLE | lsUNGUARDABLE | lsNOJUGGLECHECK;
+
 public uint specialFlag;
 const uint gsINTRO          = 0b00000000000000000000000000000001;
 const uint gsROUNDNOTOVER   = 0b00000000000000000000000000000010;
@@ -3150,6 +3154,7 @@ public &Char
       }
       `bind();
       `changeState2();
+      if(`mver0 == 1) `sysivar[.iSPECIALFLAG] &= !.lasMask;
       if(!`isHitPaused()){
         if(
           (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0
@@ -4517,7 +4522,7 @@ public &Char
   }
   public void changeState2()
   {
-    if(`cs1tmp && !`isHitPaused()){
+    if(`cs1tmp && (!`isHitPaused() || `mver0 == 1)){
       %char buf .=
         "`s" .= .s.iToS(`stVal.no) .= '_'
         .= .s.iToS(`stVal.playerno) .= "PInit";
@@ -5044,7 +5049,7 @@ public &Char
       .v.setF(-32760.0);
       ret;
     }
-    .v.setF(`stVal.hb.fall.xvelocity * (float)`facing);
+    .v.setF(`stVal.hb.fall.xvelocity);
   }
   public void trHitFallSet(int f, float vx, float vy)
   {

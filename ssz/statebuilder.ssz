@@ -5048,8 +5048,6 @@ public &StateBuilder
             "`sysivar[.iSPECIALFLAG]|=.lsNOJUGGLECHECK;";
         cond .s.equ(text, "noko"):
           `state.ctrlList[-1].task .= ".specialFlag|=.gsNOKO;";
-        cond .s.equ(text, "guard"):
-          `state.ctrlList[-1].task .= "`sysivar[.iSPECIALFLAG]|=.lsGUARD;";
         else:
           if(!.cfg.IgnoreMostErrors){
             %char buf;
