@@ -3441,7 +3441,8 @@ public &Char
         c~xScreenBound();
       }
     }
-    .m.limRange!float?(`drawX=, (float).stg~leftbound, (float).stg~rightbound);
+    .m.limRange!float?(
+      `sysfvar[.fX]=, (float).stg~leftbound, (float).stg~rightbound);
   }
   public void update(
     float highest=, float lowest=, float leftest=, float rightest=)
@@ -3532,6 +3533,15 @@ public &Char
         if(`stVal.hb.fallf != 0) `stVal.fallTime++;
       }
     }
+    if(.com.tickNextFrame()){
+      if(
+        `stVal.mov == .MovTy::H && `isActive() && `sysfvar[.fY] == 0.0
+        && #(`sysfvar[.fX]-`ticOldX) >= 1.0 && `stVal.time % 3 == 0)
+      {
+        `makeDust(0.0, 0.0);
+      }
+      `drawX = `sysfvar[.fX];
+    }
     if(`ls(.lsMOVECAMERAX)){
       leftest = .m.max!float?(.com.xmin)<, .m.min!float?(
         `drawX-(`facing > 0 ? `bedge : `fedge), leftest);
@@ -3541,16 +3551,6 @@ public &Char
     if(`ls(.lsMOVECAMERAY)){
       highest = .m.min!float?(`drawY, highest);
       lowest = .m.min!float?(0.0)<, .m.max!float?(`drawY, lowest);
-    }
-    if(.com.tickNextFrame()){
-      if(
-        `stVal.mov == .MovTy::H && `isActive() && `sysfvar[.fY] == 0.0
-        && #(`drawX-`ticOldX) >= 1.0 && `stVal.time % 3 == 0)
-      {
-        `makeDust(0.0, 0.0);
-      }
-      `sysfvar[.fX] = `drawX;
-      `sysfvar[.fY] = `drawY;
     }
   }
   public void posReset(float p1x, float p2x)

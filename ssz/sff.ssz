@@ -588,6 +588,7 @@ public &Sff
        ushort group, item, link, dummy;
        uint ofs, siz;
        ^index idx;
+       `palList.clear();
        while;
     do:
       f.seek((long)`head.firstPaletteHeaderOffset + 16*i, .file.Seek::SET);
