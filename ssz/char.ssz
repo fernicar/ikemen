@@ -3287,6 +3287,7 @@ public &Char
         }
       }
     }
+    `xScreenBound();
     `minus = 1;
     `acttmp += (int)`isActive() - (int)`isHitPaused();
     if(`acttmp > 0) branch{
@@ -3326,7 +3327,6 @@ public &Char
       if(nobindy) `sysfvar[.fY] = `ticOldY + `sysfvar[.fVY];
       if(`stVal.phy == .StTy::A) `gravity();
     }
-    `xScreenBound();
   }
   public void gravity()
   {

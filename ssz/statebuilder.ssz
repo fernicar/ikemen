@@ -6436,18 +6436,14 @@ public &StateBuilder
       bool val = false;
       if(!`stateParam(param=, "edge", [`paraF_t(data=){
         val = true;
-        `state.ctrlList[-1].task .= "float f=";
+        `state.ctrlList[-1].task .= "`setFEdge(";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toF();";
-        branch{
-        cond .s.equ(",")<, `tokenizer(data=):
+        `state.ctrlList[-1].task .= "$.v.toF());";
+        if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(`state.ctrlList[-1].task=, data=,
-              "float b=", "$.v.toF();")) ret false;
-        else:
-          `state.ctrlList[-1].task .= "float b=f;";
+              "`setBEdge(", "$.v.toF());")) ret false;
         }
-        `state.ctrlList[-1].task .= "`setFEdge(f);`setBEdge(b);";
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "player", [`paraF_t(data=){
@@ -6467,17 +6463,12 @@ public &StateBuilder
         val = true;
         `state.ctrlList[-1].task .= "float f=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toF();";
-        branch{
-        cond .s.equ(",")<, `tokenizer(data=):
+        `state.ctrlList[-1].task .= "$.v.toF();`setFEdge(f);`setFWidth(f);";
+        if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(`state.ctrlList[-1].task=, data=,
-              "float b=", "$.v.toF();")) ret false;
-        else:
-          `state.ctrlList[-1].task .= "float b=f;";
+              "float b=", "$.v.toF();`setBEdge(b);`setBWidth(b);")) ret false;
         }
-        `state.ctrlList[-1].task .=
-          "`setFEdge(f);`setBEdge(b);`setFWidth(f);`setBWidth(b);";
         ret true;
       }])) ret false;
       ret true;
