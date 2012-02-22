@@ -6655,7 +6655,7 @@ public float action(
   rightest -= x;
   branch{
     float vel = .m.min!float?(1.0, .com.turbo) * 5.0;
-    float tmp = leftest + rightest;
+    float tmp = (leftest + rightest) / 2.0;
     float cvx = tmp < 0.0 ? -vel : vel;
   cond cvx < 0.0:
     tmp = .m.max!float?(
