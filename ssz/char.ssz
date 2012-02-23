@@ -4714,7 +4714,8 @@ public &Char
   {
     .v.setI(
       (int)(
-        `facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin));
+        (`facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
+        - `getEdge(0.0)));
   }
   public void trFrontEdgeBodyDist()
   {
@@ -4727,7 +4728,8 @@ public &Char
   {
     .v.setI(
       (int)(
-        `facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin));
+        (`facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
+        - `getEdge(0.0)));
   }
   public void trBackEdgeBodyDist()
   {
