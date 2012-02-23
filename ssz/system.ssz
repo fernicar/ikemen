@@ -93,13 +93,14 @@ public &Select
         `charlist[-1].name = data;
       }
     }
-    public void files(&.com.Section sc=)
+    public void files(&.com.Section sc=, bool unicode)
     {
       ^/char data;
       if(#(data = sc.get("sprite")) > 0){
-        `charlist[-1].sprite = .com.readFileName(data);
+        `charlist[-1].sprite = .com.readFileName(data, unicode);
       }
     }
+    bool unicode = false;
     bool infoflg = true, filesflg = true;
     ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
       ^/char sec = lines[i];
@@ -112,7 +113,7 @@ public &Select
         if(infoflg) info(sc=);
         infoflg = false;
       cond .s.equ(secname, "files"):
-        if(filesflg) files(sc=);
+        if(filesflg) files(sc=, unicode);
         filesflg = false;
       }
     }];
@@ -130,13 +131,13 @@ public &Select
     {
       if(
         .com.loadFile("chars/", d=)<, [bool(^/char f){
-          ret (mainbuf = .file.loadAsciiText(f))$#mainbuf > 0;
+          ret (mainbuf = .com.loadText(f, unicode=))$#mainbuf > 0;
         }]) break;
       %char buf;
       d = (buf .= d .= '/' .= d .= ".def");
       if(
         .com.loadFile("chars/", d=)<, [bool(^/char f){
-          ret (mainbuf = .file.loadAsciiText(f))$#mainbuf > 0;
+          ret (mainbuf = .com.loadText(f, unicode=))$#mainbuf > 0;
         }]) break;
       ret true;
     }

@@ -2365,18 +2365,14 @@ public &Char
         `displayname = `name;
       }
       if(#(data = sc.getText("author")) > 0) `author = data;
-      if(#(data = sc.get("mugenversion")) > 0){
-        ^short tmp = .s.svToAry!short?(".", data);
-        `mver0 = tmp[0];
-        if(#tmp >= 2) `mver1 = tmp[1];
-      }
     }
-    public void files(&.com.Section sc=)
+    public void files(&.com.Section sc=, bool unicode)
     {
+      bool oVer = `mver0 != 1;
       ^/char f(^/char str)
       {
-        ^/char s = .com.readFileName(str);
-        s = s[0...s.cFind(" "\t, s)];
+        ^/char s = .com.readFileName(str, `unicode);
+        if(`oVer) s = s[0...s.cFind(" "\t, s)];
         ret s;
       }
       ^/char data;
@@ -2496,6 +2492,7 @@ public &Char
       }
       `cmd~add(`cmd~ctmp<>=);
     }
+    bool unicode = false;
     bool infoflg = true, filesflg = true, paletteflg = true;
     ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
       ^/char sec = lines[i];
@@ -2508,7 +2505,7 @@ public &Char
         if(infoflg) info(sc=);
         infoflg = false;
       cond .s.equ(secname, "files"):
-        if(filesflg) files(sc=);
+        if(filesflg) files(sc=, unicode);
         filesflg = false;
       cond .s.equ(secname, "palette"):
         if(paletteflg) palette(sec, sc=);
@@ -2532,9 +2529,10 @@ public &Char
       }
     }];
     `def = def;
-    ^char mainbuf = .file.loadAsciiText(def);
+    ^char mainbuf = .com.loadText(def, unicode=);
     ^^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
+    .com.mugenversion(lines, `mver0=, `mver1=);
     `clearDef();
     loop{index i = 0; while; do:
       section(:lines, i=:);
@@ -2547,7 +2545,7 @@ public &Char
        [bool(^/char f){ret `sf~loadFile(f, true);}]) ret false;
     if(
       !.com.loadFile(def, `anim=)<, [bool(^/char f){
-        ret #(mainbuf = .file.loadAsciiText(f)) > 0;
+        ret #(mainbuf = .com.loadText(f, unicode=)) > 0;
       }]) ret false;
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
@@ -2568,7 +2566,7 @@ public &Char
       [bool(^/char f){ret `sn~loadFile(f);}]) ret false;
     if(
       !.com.loadFile(def, `command=)<, [bool(^/char f){
-        ret #(mainbuf = .file.loadAsciiText(f)) > 0;
+        ret #(mainbuf = .com.loadText(f, unicode=)) > 0;
       }]) ret false;
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
@@ -3089,6 +3087,15 @@ public &Char
   {
     ret (float)`sysivar[.iHEIGHT];
   }
+  public float getEdge(float base)
+  {
+    ret
+      base + (
+        `mver0 == 1 ? 0.0
+        : `stVal.typ == .StTy::A ? 1.0
+        : `stVal.typ == .StTy::L ? 2.0
+        : 0.0);
+  }
   public float defFW()
   {
     ret
@@ -3374,8 +3381,8 @@ public &Char
     }
     if(`ls(.lsSCREENBOUND)){
       .m.limRange!float?(
-        `drawX=, .com.xmin+(`facing > 0 ? `bedge : `fedge),
-        .com.xmax-(`facing > 0 ? `fedge : `bedge));
+        `drawX=, .com.xmin+`getEdge(`facing > 0 ? `bedge : `fedge),
+        .com.xmax-`getEdge(`facing > 0 ? `fedge : `bedge));
     }
   }
   public void bind()
@@ -3422,11 +3429,11 @@ public &Char
       float min, max;
       branch{
       cond `facing > 0:
-        min = .com.xmin + `bedge;
-        max = .com.xmax - `fedge;
+        min = .com.xmin + `getEdge(`bedge);
+        max = .com.xmax - `getEdge(`fedge);
       else:
-        min = .com.xmin + `fedge;
-        max = .com.xmax - `bedge;
+        min = .com.xmin + `getEdge(`fedge);
+        max = .com.xmax - `getEdge(`bedge);
       }
       float oldx = `sysfvar[.fX];
       .m.limRange!float?(`sysfvar[.fX]=, min, max);
@@ -3445,7 +3452,7 @@ public &Char
       `sysfvar[.fX]=, (float).stg~leftbound, (float).stg~rightbound);
   }
   public void update(
-    float highest=, float lowest=, float leftest=, float rightest=)
+    float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
   {
     `bind();
     `xScreenBound();
@@ -3544,9 +3551,15 @@ public &Char
     }
     if(`ls(.lsMOVECAMERAX)){
       leftest = .m.max!float?(.com.xmin)<, .m.min!float?(
-        `drawX-(`facing > 0 ? `bedge : `fedge), leftest);
+        `drawX-`getEdge(`facing > 0 ? `bedge : `fedge), leftest);
       rightest = .m.min!float?(.com.xmax)<, .m.max!float?(
-        `drawX+(`facing > 0 ? `fedge : `bedge), rightest);
+        `drawX+`getEdge(`facing > 0 ? `fedge : `bedge), rightest);
+      if(
+        `isActive() && !`ls(.lsPOSFREEZEX)
+        && (`sysivar[.iBINDTIME] == 0 || .m.isnan(`sysfvar[.fBINDPOSX])))
+      {
+        cvx += `sysfvar[.fVX];
+      }
     }
     if(`ls(.lsMOVECAMERAY)){
       highest = .m.min!float?(`drawY, highest);
@@ -4706,7 +4719,7 @@ public &Char
     .v.setI(
       (int)(
         (`facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
-        - `fedge));
+        - `getEdge(`fedge)));
   }
   public void trBackEdgeDist()
   {
@@ -4719,7 +4732,7 @@ public &Char
     .v.setI(
       (int)(
         (`facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
-        - `bedge));
+        - `getEdge(`bedge)));
   }
   public void trIsHelper()
   {
@@ -5714,7 +5727,8 @@ public void PlayerList!&Char?::destroy(int id)
   }
 }
 public void PlayerList!&Char?::action(
-  float x, float highest=, float lowest=, float leftest=, float rightest=)
+  float x,
+  float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
 {
   .commandUpdate();
   %`top<>.c.self targets;
@@ -5727,7 +5741,7 @@ public void PlayerList!&Char?::action(
     p = p~next;
   while #p > 0:
   }
-  .update(highest=, lowest=, leftest=, rightest=);
+  .update(cvx=, highest=, lowest=, leftest=, rightest=);
   .com.gametime++;
   .rootAction();
 }
@@ -5745,14 +5759,14 @@ public void PlayerList!&Char?::move()
   }
 }
 public void PlayerList!&Char?::update(
-  float highest=, float lowest=, float leftest=, float rightest=)
+  float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
 {
   loop{
     *`top.self p = `top;
     while;
   do:
     if(p~c~id < 0) continue;
-    p~c~update(highest=, lowest=, leftest=, rightest=);
+    p~c~update(cvx=, highest=, lowest=, leftest=, rightest=);
   continue:
     p = p~next;
   while #p > 0:
@@ -5763,9 +5777,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
   float pxmi, pxma;
   branch{
   cond pyr.facing > 0:
-    pxmi = .com.xmin+pyr.bedge; pxma = .com.xmax-pyr.fedge;
+    pxmi = .com.xmin + pyr.getEdge(pyr.bedge);
+    pxma = .com.xmax - pyr.getEdge(pyr.fedge);
   else:
-    pxmi = .com.xmin+pyr.fedge; pxma = .com.xmax-pyr.bedge;
+    pxmi = .com.xmin + pyr.getEdge(pyr.fedge);
+    pxma = .com.xmax - pyr.getEdge(pyr.bedge);
   }
   bool foo(
     int hitting=, `pyr.self by=, &.Hitdef hit=,
@@ -6060,7 +6076,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
   pyr.sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
   loop{
     *`top.self p = `top;
-    float pl, pr, pv;
+    float pl, pr;
     int contact = 0;
     branch{
     cond pyr.facing > 0:
@@ -6070,7 +6086,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       pl = pyr.sysfvar[.fX] - pyr.frontw;
       pr = pyr.sysfvar[.fX] + pyr.backw;
     }
-    pv = pyr.acttmp > 0 ? pyr.sysfvar[.fVX] : 0.0;
     while;
   do:
     if(p~c~id < 0) continue;
@@ -6161,7 +6176,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         el = p~c~sysfvar[.fX] - p~c~frontw;
         er = p~c~sysfvar[.fX] + p~c~backw;
       }
-      float ev = p~c~acttmp > 0 ? p~c~sysfvar[.fVX] : 0.0;
       if(
         pl < er && el < pr
         && (contact > 0 || pyr.clsnCheck(p~c<>=, false, false)))
@@ -6177,7 +6191,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           p~c~sysfvar[.fX] -= (er - pl) * foo;
         cond pyr.sysfvar[.fY] > p~c~sysfvar[.fY]:
           branch{
-          cond pyr.facing < 0 ? pv > 0.0 : pv <= 0.0:
+          cond pyr.facing > 0:
             pyr.sysfvar[.fX] -= (pr - el) * foo;
             p~c~sysfvar[.fX] += (pr - el) * foo;
           else:
@@ -6186,7 +6200,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           }
         else:
           branch{
-          cond p~c~facing < 0 ? ev > 0.0 : ev <= 0.0:
+          cond p~c~facing > 0:
             pyr.sysfvar[.fX] += (er - pl) * foo;
             p~c~sysfvar[.fX] -= (er - pl) * foo;
           else:
@@ -6201,9 +6215,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           float l, r, x = p~c~sysfvar[.fX];
           branch{
           cond p~c~facing > 0:
-            l = .com.xmin+p~c~bedge; r = .com.xmax-p~c~fedge;
+            l = .com.xmin + p~c~getEdge(p~c~bedge);
+            r = .com.xmax - p~c~getEdge(p~c~fedge);
           else:
-            l = .com.xmin+p~c~fedge; r = .com.xmax-p~c~bedge;
+            l = .com.xmin + p~c~getEdge(p~c~fedge);
+            r = .com.xmax - p~c~getEdge(p~c~bedge);
           }
           .m.limRange!float?(p~c~sysfvar[.fX]=, l, r);
         }
@@ -6451,19 +6467,18 @@ void gSetNormal(float scl, float x, float y)
   ret lpl;
 }
 
-void update(float highest=, float lowest=, float leftest=, float rightest=)
+void update(
+  float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
 {
   .players.move();
-  .players.update(highest=, lowest=, leftest=, rightest=);
+  .players.update(cvx=, highest=, lowest=, leftest=, rightest=);
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
       if(.projs[i][j].id >= 0) .projs[i][j].update();
       j++;
-    while j < #.projs[i]:
-    }
+    while j < #.projs[i]:}
     i++;
-  while i < #.projs:
-  }
+  while i < #.projs:}
 }
 
 void commandUpdate()
@@ -6547,7 +6562,7 @@ public float action(
   .shadows.new(0);
   .resetDrawnClsnList();
   .gSetNormal(scl, x, y);
-  float tension = (float).stg~cam.tension / .com.scale;
+  float cvx = 0.0;
   float highest = 0.0, lowest = .com.screeny;
   rightest = leftest = x;
   int rs4t = -(.fight~ro.over_hittime + .fight~ro.over_waittime);
@@ -6585,9 +6600,9 @@ public float action(
       .specialFlag &= !.gsROUNDNOTOVER;
     }
     if(#.superanim > 0) .superanim~ani.action();
-    .players.action(x, highest=, lowest=, leftest=, rightest=);
+    .players.action(x, cvx=, highest=, lowest=, leftest=, rightest=);
   else:
-    .update(highest=, lowest=, leftest=, rightest=);
+    .update(cvx=, highest=, lowest=, leftest=, rightest=);
     .rootAction();
   }
   %bool hbuf;
@@ -6654,16 +6669,21 @@ public float action(
   leftest -= x;
   rightest -= x;
   branch{
-    float vel = .m.min!float?(1.0, .com.turbo) * 5.0;
+    float tension = (float).stg~cam.tension;
+    float tleft = -(float).com.GameWidth/2.0 + tension;
+    float tright = (float).com.GameWidth/2.0 - tension;
+    if(leftest >= tleft && rightest <= tright) break;
+    if(tension < 60.0) tension = 60.0;
     float tmp = (leftest + rightest) / 2.0;
-    float cvx = tmp < 0.0 ? -vel : vel;
+    cvx += (.super > 0 || .pause > 0 ? 2.0 : 3.0) * (tmp < 0.0 ? -1.0 : 1.0);
+    cvx *= .m.min!float?(1.0, .com.turbo);
   cond cvx < 0.0:
     tmp = .m.max!float?(
-      leftest - (-((float).com.GameWidth/2.0)/.com.scale + tension), tmp);
+      leftest - (-(float).com.GameWidth/2.0 + tension), tmp);
     if(cvx < tmp) cvx = .m.min!float?(0.0, tmp);
   else:
     tmp = .m.min!float?(
-      rightest - (((float).com.GameWidth/2.0)/.com.scale - tension), tmp);
+      rightest - (((float).com.GameWidth/2.0) - tension), tmp);
     if(cvx > tmp) cvx = .m.max!float?(0.0, tmp);
   comm:
     x += cvx;

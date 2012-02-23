@@ -215,15 +215,17 @@ public &Stage
         `reflection = .m.max!int?(0)<, .m.min!int?(255)<, .com.atoi(data);
       }
     }
-    public void music(&.com.Section sc=)
+    public void music(&.com.Section sc=, bool unicode)
     {
       ^/char data;
-      if(#(data = sc.get("bgmusic")) > 0) `bgmusic = .com.readFileName(data);
+      if(#(data = sc.get("bgmusic")) > 0){
+        `bgmusic = .com.readFileName(data, unicode);
+      }
     }
-    public void bgdef(&.com.Section sc=)
+    public void bgdef(&.com.Section sc=, bool unicode)
     {
       ^/char data;
-      if(#(data = sc.get("spr")) > 0) `spr = .com.readFileName(data);
+      if(#(data = sc.get("spr")) > 0) `spr = .com.readFileName(data, unicode);
       if(#(data = sc.get("debugbg")) > 0) `debugbg = .com.atoi(data) != 0;
     }
     public void bg(&.com.Section sc=, index link=)
@@ -298,6 +300,7 @@ public &Stage
         `bgctrlList[-1].positionlink |= `bgcdef.positionlink;
       }
     }
+    bool unicode = false;
     bool infoflg = true, cameraflg = true, playerinfoflg = true;
     bool scalingflg = true, boundflg = true, stageinfoflg = true;
     bool shadowflg = true, reflectionflg = true, musicflg = true;
@@ -340,10 +343,10 @@ public &Stage
         if(reflectionflg) reflection(sc=);
         reflectionflg = false;
       cond .s.equ(secname, "music"):
-        if(musicflg) music(sc=);
+        if(musicflg) music(sc=, unicode);
         musicflg = false;
       cond .s.equ(secname, "bgdef"):
-        if(bgdefflg) bgdef(sc=);
+        if(bgdefflg) bgdef(sc=, unicode);
         bgdefflg = false;
       cond .s.equ(secname, "bg "):
         bg(sc=, link=);
@@ -354,7 +357,7 @@ public &Stage
       }
     }];
     `def = def;
-    ^char buf = .file.loadAsciiText(def);
+    ^char buf = .com.loadText(def, unicode=);
     ^^/char lines = .com.splitLines(buf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `clear();

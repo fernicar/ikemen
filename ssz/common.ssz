@@ -300,8 +300,32 @@ public &Layout
   }
 }
 
-public ^char readFileName(^/char f)
+public ^char loadText(^/char filename,  bool unicode=)
 {
+  ^ubyte buf = .file.readAll!ubyte?(filename);
+  ^char text;
+  branch{
+  cond #buf >= 3 && buf[0] == 0xef  && buf[1] == 0xbb && buf[2] == 0xbf:
+    unicode = true;
+    buf = buf[3..-1];
+    text = .s.u8ToS(buf);
+  else:
+    unicode = false;
+    loop{
+      index i = 0;
+      text.new(#buf);
+      while;
+    do:
+      text[i] = (char)buf[i];
+      i++;
+    while i < #buf:}
+  }
+  ret text;
+}
+
+public ^/char readFileName(^/char f, bool unicode)
+{
+  if(unicode) ret f;
   ^char tmp;
   .mes.AsciiToLocal(:tmp=, f:);
   ret tmp;
@@ -577,6 +601,29 @@ public ^/char sectionName(^/char sec=)
   ^/char name = .s.toLower(sec[0..fnd+1]);
   sec = sec[fnd+1..-1];
   ret name;
+}
+
+public void mugenversion(^^/char lines, short mver0=, short mver1=)
+{
+  mver0 = mver1 = 0;
+  loop{index i = 0; while; do:
+    {
+      ^/char sec = lines[i];
+      ^/char secname = .sectionName(sec=);
+      if(#secname == 0) break;
+      i++;
+      &.Section sc.parse(lines, i=);
+      if(!.s.equ(secname, "info")) break;
+      ^/char data;
+      if(#(data = sc.get("mugenversion")) > 0){
+        ^short tmp = .s.svToAry!short?(".", data);
+        mver0 = tmp[0];
+        if(#tmp >= 2) mver1 = tmp[1];
+      }
+      ret;
+    }
+    i++;
+  while i < #lines:}
 }
 
 

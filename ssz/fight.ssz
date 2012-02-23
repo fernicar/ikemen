@@ -1548,25 +1548,26 @@ public &Fight
   }
   public bool load(^/char sysdef, ^/char def=)
   {:<-
-    public void files(&.com.Section sc=)
+    public void files(&.com.Section sc=, bool unicode)
     {
-      type _t = .com.readFileName;
+      ~$^/char(^/char) f =
+        [^/char(^/char s){ret .com.readFileName(s, unicode);}];
       ^/char data;
-      if(#(data = sc.get("sff")) > 0) `sff = _t(data);
-      if(#(data = sc.get("snd")) > 0) `snd = _t(data);
-      if(#(data = sc.get("fightfx.sff")) > 0) `fightfx_sff = _t(data);
-      if(#(data = sc.get("fightfx.air")) > 0) `fightfx_air = _t(data);
-      if(#(data = sc.get("common.snd")) > 0) `common_snd = _t(data);
-      if(#(data = sc.get("font0")) > 0) `font.new[0] = _t(data);
-      if(#(data = sc.get("font1")) > 0) `font.new[1] = _t(data);
-      if(#(data = sc.get("font2")) > 0) `font.new[2] = _t(data);
-      if(#(data = sc.get("font3")) > 0) `font.new[3] = _t(data);
-      if(#(data = sc.get("font4")) > 0) `font.new[4] = _t(data);
-      if(#(data = sc.get("font5")) > 0) `font.new[5] = _t(data);
-      if(#(data = sc.get("font6")) > 0) `font.new[6] = _t(data);
-      if(#(data = sc.get("font7")) > 0) `font.new[7] = _t(data);
-      if(#(data = sc.get("font8")) > 0) `font.new[8] = _t(data);
-      if(#(data = sc.get("font9")) > 0) `font.new[9] = _t(data);
+      if(#(data = sc.get("sff")) > 0) `sff = f(:data:);
+      if(#(data = sc.get("snd")) > 0) `snd = f(:data:);
+      if(#(data = sc.get("fightfx.sff")) > 0) `fightfx_sff = f(:data:);
+      if(#(data = sc.get("fightfx.air")) > 0) `fightfx_air = f(:data:);
+      if(#(data = sc.get("common.snd")) > 0) `common_snd = f(:data:);
+      if(#(data = sc.get("font0")) > 0) `font.new[0] = f(:data:);
+      if(#(data = sc.get("font1")) > 0) `font.new[1] = f(:data:);
+      if(#(data = sc.get("font2")) > 0) `font.new[2] = f(:data:);
+      if(#(data = sc.get("font3")) > 0) `font.new[3] = f(:data:);
+      if(#(data = sc.get("font4")) > 0) `font.new[4] = f(:data:);
+      if(#(data = sc.get("font5")) > 0) `font.new[5] = f(:data:);
+      if(#(data = sc.get("font6")) > 0) `font.new[6] = f(:data:);
+      if(#(data = sc.get("font7")) > 0) `font.new[7] = f(:data:);
+      if(#(data = sc.get("font8")) > 0) `font.new[8] = f(:data:);
+      if(#(data = sc.get("font9")) > 0) `font.new[9] = f(:data:);
     }
     public void lifebar(&.com.Section sc=)
     {
@@ -1661,6 +1662,7 @@ public &Fight
         }
       }
     }];
+    bool unicode = false;
     bool filesflg = true, lifebarflg = true, powerbarflg = true;
     bool faceflg = true, nameflg = true, winiconflg = true, timeflg = true;
     bool comboflg = true, roundflg = true;
@@ -1672,7 +1674,7 @@ public &Fight
       &.com.Section sc.parse(lines, i=);
       branch{
       cond .s.equ(secname, "files"):
-        if(filesflg) files(sc=);
+        if(filesflg) files(sc=, unicode);
         filesflg = false;
       cond .s.equ(secname, "lifebar"):
         if(lifebarflg) lifebar(sc=);
@@ -1707,7 +1709,7 @@ public &Fight
     ^char mainbuf;
     if(
       !.com.loadFile(sysdef, def=)<, [bool(^/char f){
-        ret #(mainbuf = .file.loadAsciiText(f)) > 0;
+        ret #(mainbuf = .com.loadText(f, unicode=)) > 0;
       }]) ret false;
     ^^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
@@ -1754,7 +1756,7 @@ public &Fight
     if(
       !.com.loadFile(def, `fightfx_air=)<, [bool(^/char f){
         ret
-          (mainbuf = .file.loadAsciiText(f)) $ #mainbuf > 0;
+          (mainbuf = .com.loadText(f, unicode=)) $ #mainbuf > 0;
       }]) ret false;
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);

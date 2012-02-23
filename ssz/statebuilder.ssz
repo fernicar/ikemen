@@ -7036,9 +7036,10 @@ public &StateBuilder
       ret true;
     }
     ^char mainbuf;
+    bool unicode = false;
     if(
       !.com.loadFile(def, st=)<, [bool(^/char f){
-        ret #(mainbuf = .file.loadAsciiText(f)) > 0;
+        ret #(mainbuf = .com.loadText(f, unicode=)) > 0;
       }])
     {
       if(.cfg.IgnoreMostErrors) ret true;
@@ -7320,12 +7321,13 @@ public &StateBuilder
   }
   public bool build(int no, ^/char def)
   {:<-
-    void files(^^/char lines)
-    {:<-
+    void files(^^/char lines, bool unicode)
+    {
+      bool oVer = `mver0 != 1;
       ^/char f(^/char str)
       {
-        ^/char s = .com.readFileName(str);
-        if(`mver0 != 1) s = s[0...s.cFind(" "\t, s)];
+        ^/char s = .com.readFileName(str, `unicode);
+        if(`oVer) s = s[0...s.cFind(" "\t, s)];
         ret s;
       }
       loop{index i = 0; while; do:
@@ -7351,27 +7353,6 @@ public &StateBuilder
           if(#(data = sc.get("st8")) > 0) `st.new[9] = f(data);
           if(#(data = sc.get("st9")) > 0) `st.new[10] = f(data);
           if(#(data = sc.get("stcommon")) > 0) `stcommon = f(data);
-          ret;
-        }
-        i++;
-      while i < #lines:}
-    }
-    void mugenversion(^^/char lines)
-    {
-      loop{index i = 0; while; do:
-        {
-          ^/char sec = lines[i];
-          ^/char secname = .com.sectionName(sec=);
-          if(#secname == 0) break;
-          i++;
-          &.com.Section sc.parse(lines, i=);
-          if(!.s.equ(secname, "info")) break;
-          ^/char data;
-          if(#(data = sc.get("mugenversion")) > 0){
-            ^short tmp = .s.svToAry!short?(".", data);
-            `mver0 = tmp[0];
-            if(#tmp >= 2) `mver1 = tmp[1];
-          }
           ret;
         }
         i++;
@@ -7582,6 +7563,7 @@ public &StateBuilder
         `c.m.down_friction_threshold = .com.atof(data);
       }
     }
+    bool unicode = false;
     bool dataflg = true, sizeflg = true, velocityflg = true;
     bool movementflg = true;
     ~$void(^^/char, index=) cns = [void(^^/char lines, index i=){
@@ -7614,14 +7596,14 @@ public &StateBuilder
     `cns = "";
     `st.new(0);
     `stcommon = "";
-    ^char mainbuf = .file.loadAsciiText(def);
+    ^char mainbuf = .com.loadText(def, unicode=);
     %^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
-    mugenversion(lines);
-    files(lines);
+    .com.mugenversion(lines, `mver0=, `mver1=);
+    files(lines, unicode);
     if(
       !.com.loadFile(def, `cns=)<, [bool(^/char f){
-        ret (mainbuf = .file.loadAsciiText(f))$#mainbuf > 0;}])
+        ret (mainbuf = .com.loadText(f, unicode=))$#mainbuf > 0;}])
     {
       %char buf;
       .com.error!.self?(buf .= `cns .= "を読み込めません");
