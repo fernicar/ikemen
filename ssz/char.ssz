@@ -6671,11 +6671,8 @@ public float action(
   leftest -= x;
   rightest -= x;
   branch{
-    float tension = (float).stg~cam.tension;
-    float tleft = -((float).com.GameWidth/2.0 - tension)/.com.scale;
-    float tright = ((float).com.GameWidth/2.0 - tension)/.com.scale;
-    if(leftest >= tleft && rightest <= tright) break;
-    if(tension < 60.0) tension = 60.0;
+    float tension =
+      ((float).com.GameWidth/2.0 - (float).stg~cam.tension)/.com.scale;
     float tmp = (leftest + rightest) / 2.0;
     float vel =
       .com.intro > .fight~ro.ctrl_time+1 ? (float).com.GameWidth/2.0
@@ -6684,12 +6681,10 @@ public float action(
     cvx += vel * (tmp < 0.0 ? -1.0 : 1.0);
     cvx *= .m.min!float?(1.0, .com.turbo);
   cond cvx < 0.0:
-    tmp = .m.max!float?(
-      leftest + ((float).com.GameWidth/2.0 - tension)/.com.scale, tmp);
+    tmp = .m.max!float?(leftest + tension, tmp);
     if(cvx < tmp) cvx = .m.min!float?(0.0, tmp);
   else:
-    tmp = .m.min!float?(
-      rightest - ((float).com.GameWidth/2.0 - tension)/.com.scale, tmp);
+    tmp = .m.min!float?(rightest - tension, tmp);
     if(cvx > tmp) cvx = .m.max!float?(0.0, tmp);
   comm:
     x += cvx;
