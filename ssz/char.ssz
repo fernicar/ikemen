@@ -187,7 +187,7 @@ public void addShadowList(^&.AnimList al, int sc, float so, int alpha)
     shl~al = `al;
     shl~color = `sc;
     shl~alpha = .m.max!int?(0, .m.min!int?(256, `alpha));
-    shl~offsety = `so;
+    shl~offsety = `so * (`al~oVer ? 1.5 : 1.0);
   }
   int p = al~priority;
   ^&.ShadowList tmp = .shadows;
@@ -268,7 +268,7 @@ public void drawShadowList(float x, float y)
           float ss = syscl < 0.0 ? -1.0 : 1.0;//pow用
           sl~al~anim~ani.angleDraw(
             .com.xoffset-(x-sl~al~x)*cs,
-            .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety*1.5)*cs,
+            .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety)*cs,
             cs*sl~al~xscl * ss * (ss*syscl)**#.m.sin(agl),
             cs*-sl~al~yscl * ss * (ss*syscl)**#.m.cos(agl), agl, sl~al~aset,
             sl~al~axscl, sl~al~ayscl, .stage.bgPalFX, sl~al~oVer);
@@ -276,7 +276,7 @@ public void drawShadowList(float x, float y)
       else:
         sl~al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
-          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y*syscl-sl~offsety*1.5),
+          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y*syscl-sl~offsety),
           cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl*syscl, 0.0,
           (float).com.GameWidth/2.0, .stage.bgPalFX, sl~al~oVer);
       }
@@ -313,7 +313,7 @@ public void drawReflection(float x, float y)
       cond sl~al~angle != 0.0:
         sl~al~anim~ani.angleDraw(
           .com.xoffset-(x-sl~al~x)*cs,
-          .com.zoffset+.com.yoffset-(y+sl~al~y-sl~offsety*1.5)*cs,
+          .com.zoffset+.com.yoffset-(y+sl~al~y-sl~offsety)*cs,
           cs*sl~al~xscl, cs*-sl~al~yscl, sl~al~angle*(.m.PI/180.0),
           sl~al~aset, sl~al~axscl, sl~al~ayscl,
           #sl~al~fx > 0 && sl~al~fx~time != 0 ? sl~al~fx : .stage.bgPalFX,
@@ -321,7 +321,7 @@ public void drawReflection(float x, float y)
       else:
         sl~al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
-          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y-sl~offsety*1.5),
+          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y-sl~offsety),
           cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl, 0.0,
           (float).com.GameWidth/2.0,
           #sl~al~fx != 0 && sl~al~fx~time > 0 ? sl~al~fx : .stage.bgPalFX,

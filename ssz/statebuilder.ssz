@@ -7320,38 +7320,62 @@ public &StateBuilder
   }
   public bool build(int no, ^/char def)
   {:<-
-    void files(&.com.Section sc=)
-    {
+    void files(^^/char lines)
+    {:<-
       ^/char f(^/char str)
       {
         ^/char s = .com.readFileName(str);
-        s = s[0...s.cFind(" "\t, s)];
+        if(`mver0 != 1) s = s[0...s.cFind(" "\t, s)];
         ret s;
       }
-      ^/char data;
-      if(#(data = sc.get("cmd")) > 0) `cmd = f(data);
-      if(#(data = sc.get("cns")) > 0) `cns = f(data);
-      if(#(data = sc.get("st")) > 0) `st.new[0] = f(data);
-      if(#(data = sc.get("st0")) > 0) `st.new[1] = f(data);
-      if(#(data = sc.get("st1")) > 0) `st.new[2] = f(data);
-      if(#(data = sc.get("st2")) > 0) `st.new[3] = f(data);
-      if(#(data = sc.get("st3")) > 0) `st.new[4] = f(data);
-      if(#(data = sc.get("st4")) > 0) `st.new[5] = f(data);
-      if(#(data = sc.get("st5")) > 0) `st.new[6] = f(data);
-      if(#(data = sc.get("st6")) > 0) `st.new[7] = f(data);
-      if(#(data = sc.get("st7")) > 0) `st.new[8] = f(data);
-      if(#(data = sc.get("st8")) > 0) `st.new[9] = f(data);
-      if(#(data = sc.get("st9")) > 0) `st.new[10] = f(data);
-      if(#(data = sc.get("stcommon")) > 0) `stcommon = f(data);
+      loop{index i = 0; while; do:
+        {
+          ^/char sec = lines[i];
+          ^/char secname = .com.sectionName(sec=);
+          if(#secname == 0) break;
+          i++;
+          &.com.Section sc.parse(lines, i=);
+          if(!.s.equ(secname, "files")) break;
+          ^/char data;
+          if(#(data = sc.get("cmd")) > 0) `cmd = f(data);
+          if(#(data = sc.get("cns")) > 0) `cns = f(data);
+          if(#(data = sc.get("st")) > 0) `st.new[0] = f(data);
+          if(#(data = sc.get("st0")) > 0) `st.new[1] = f(data);
+          if(#(data = sc.get("st1")) > 0) `st.new[2] = f(data);
+          if(#(data = sc.get("st2")) > 0) `st.new[3] = f(data);
+          if(#(data = sc.get("st3")) > 0) `st.new[4] = f(data);
+          if(#(data = sc.get("st4")) > 0) `st.new[5] = f(data);
+          if(#(data = sc.get("st5")) > 0) `st.new[6] = f(data);
+          if(#(data = sc.get("st6")) > 0) `st.new[7] = f(data);
+          if(#(data = sc.get("st7")) > 0) `st.new[8] = f(data);
+          if(#(data = sc.get("st8")) > 0) `st.new[9] = f(data);
+          if(#(data = sc.get("st9")) > 0) `st.new[10] = f(data);
+          if(#(data = sc.get("stcommon")) > 0) `stcommon = f(data);
+          ret;
+        }
+        i++;
+      while i < #lines:}
     }
-    void info(&.com.Section sc=)
+    void mugenversion(^^/char lines)
     {
-      ^/char data;
-      if(#(data = sc.get("mugenversion")) > 0){
-        ^short tmp = .s.svToAry!short?(".", data);
-        `mver0 = tmp[0];
-        if(#tmp >= 2) `mver1 = tmp[1];
-      }
+      loop{index i = 0; while; do:
+        {
+          ^/char sec = lines[i];
+          ^/char secname = .com.sectionName(sec=);
+          if(#secname == 0) break;
+          i++;
+          &.com.Section sc.parse(lines, i=);
+          if(!.s.equ(secname, "info")) break;
+          ^/char data;
+          if(#(data = sc.get("mugenversion")) > 0){
+            ^short tmp = .s.svToAry!short?(".", data);
+            `mver0 = tmp[0];
+            if(#tmp >= 2) `mver1 = tmp[1];
+          }
+          ret;
+        }
+        i++;
+      while i < #lines:}
     }
     void data(&.com.Section sc=)
     {
@@ -7558,22 +7582,6 @@ public &StateBuilder
         `c.m.down_friction_threshold = .com.atof(data);
       }
     }
-    bool filesflg = true, infoflg = true;
-    ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
-      ^/char sec = lines[i];
-      ^/char secname = .com.sectionName(sec=);
-      if(#secname == 0) ret;
-      i++;
-      &.com.Section sc.parse(lines, i=);
-      branch{
-      cond .s.equ(secname, "files"):
-        if(filesflg) files(sc=);
-        filesflg = false;
-      cond .s.equ(secname, "info"):
-        if(infoflg) info(sc=);
-        infoflg = false;
-      }
-    }];
     bool dataflg = true, sizeflg = true, velocityflg = true;
     bool movementflg = true;
     ~$void(^^/char, index=) cns = [void(^^/char lines, index i=){
@@ -7609,11 +7617,8 @@ public &StateBuilder
     ^char mainbuf = .file.loadAsciiText(def);
     %^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
-    loop{index i = 0; while; do:
-      section(:lines, i=:);
-      i++;
-    while i < #lines:
-    }
+    mugenversion(lines);
+    files(lines);
     if(
       !.com.loadFile(def, `cns=)<, [bool(^/char f){
         ret (mainbuf = .file.loadAsciiText(f))$#mainbuf > 0;}])
