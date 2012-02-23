@@ -3560,7 +3560,7 @@ public &Char
         `isActive() && !`ls(.lsPOSFREEZEX)
         && (`sysivar[.iBINDTIME] == 0 || .m.isnan(`sysfvar[.fBINDPOSX])))
       {
-        cvx += `sysfvar[.fVX];
+        cvx += `sysfvar[.fVX]*(float)`facing;
       }
     }
     if(`ls(.lsMOVECAMERAY)){
