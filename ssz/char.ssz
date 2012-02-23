@@ -3237,7 +3237,9 @@ public &Char
         `sysivar[.iSPECIALFLAG] =
           `player ? (
             (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
-            ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY | .lsPLAYERPUSH
+            ? (
+              .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY
+              | (`roundState() > 0 ? .lsPLAYERPUSH : 0))
             : (
               (`sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE) == 0
               ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY : 0))
@@ -6675,7 +6677,11 @@ public float action(
     if(leftest >= tleft && rightest <= tright) break;
     if(tension < 60.0) tension = 60.0;
     float tmp = (leftest + rightest) / 2.0;
-    cvx += (.super > 0 || .pause > 0 ? 2.0 : 3.0) * (tmp < 0.0 ? -1.0 : 1.0);
+    float vel =
+      .com.intro > .fight~ro.ctrl_time+1 ? (float).com.GameWidth/2.0
+      : .super > 0 || .pause > 0 ? 2.0
+      : 3.0;
+    cvx += vel * (tmp < 0.0 ? -1.0 : 1.0);
     cvx *= .m.min!float?(1.0, .com.turbo);
   cond cvx < 0.0:
     tmp = .m.max!float?(
