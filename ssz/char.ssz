@@ -6672,7 +6672,7 @@ public float action(
   rightest -= x;
   branch{
     float tension = (float).stg~cam.tension;
-    float tleft = -((float).com.GameWidth/2.0 + tension)/.com.scale;
+    float tleft = -((float).com.GameWidth/2.0 - tension)/.com.scale;
     float tright = ((float).com.GameWidth/2.0 - tension)/.com.scale;
     if(leftest >= tleft && rightest <= tright) break;
     if(tension < 60.0) tension = 60.0;
@@ -6685,7 +6685,7 @@ public float action(
     cvx *= .m.min!float?(1.0, .com.turbo);
   cond cvx < 0.0:
     tmp = .m.max!float?(
-      leftest + ((float).com.GameWidth/2.0 + tension)/.com.scale, tmp);
+      leftest + ((float).com.GameWidth/2.0 - tension)/.com.scale, tmp);
     if(cvx < tmp) cvx = .m.min!float?(0.0, tmp);
   else:
     tmp = .m.min!float?(
