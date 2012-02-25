@@ -269,8 +269,8 @@ public void drawShadowList(float x, float y)
           sl~al~anim~ani.angleDraw(
             .com.xoffset-(x-sl~al~x)*cs,
             .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety)*cs,
-            cs*sl~al~xscl * ss * (ss*syscl)**#.m.sin(agl),
-            cs*-sl~al~yscl * ss * (ss*syscl)**#.m.cos(agl), agl, sl~al~aset,
+            cs*sl~al~xscl * #syscl**#.m.sin(agl),
+            cs*-sl~al~yscl * ss * #syscl**#.m.cos(agl), agl, sl~al~aset,
             sl~al~axscl, sl~al~ayscl, .stage.bgPalFX, sl~al~oVer);
         }
       else:

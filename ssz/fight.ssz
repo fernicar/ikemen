@@ -240,6 +240,8 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     }
     setLifeWidth(lrct=, #`mid.frames > 0 ? life : `midlife);
     setLifeWidth(mrct=, `midlife);
+    if(`range_xz < `range_xm) mrct.x += (int)lrct.w;
+    mrct.w -= .m.min!uint?(mrct.w, lrct.w);
     .laydraw(
       mrct=, (float)`posx, (float)`posy, 1.0, layerno, `mid=, `mid_lay=);
     .laydraw(
@@ -419,6 +421,8 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     }
     setPowerWidth(lrct=, power);
     setPowerWidth(mrct=, `midpower);
+    if(`range_xz < `range_xm) mrct.x += (int)lrct.w;
+    mrct.w -= .m.min!uint?(mrct.w, lrct.w);
     .laydraw(
       mrct=, (float)`posx, (float)`posy, 1.0, layerno, `mid=, `mid_lay=);
     .laydraw(
