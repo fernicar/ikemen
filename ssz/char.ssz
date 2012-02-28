@@ -1374,7 +1374,7 @@ public bool gs(uint mask)
 }
 
 const int sfAIRJUMP         = 0b00000000000000000000000000000001;
-const int sfNOTOVER         = 0b00000000000000000000000000000010;
+const int sfOVER            = 0b00000000000000000000000000000010;
 const int sfKO              = 0b00000000000000000000000000000100;
 const int sfKO_ROUND_MIDDLE = 0b00000000000000000000000000001000;
 
@@ -3041,7 +3041,7 @@ public &Char
       : !.roundEnd() ? 2
       : (
         .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime)
-        && ((`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0 || !`isAlive())
+        && ((`sysivar[.iSYSFLAG] & .sfOVER) != 0 || !`isAlive())
         ? 4 : 3);
   }
   public bool isKO()
@@ -3164,7 +3164,7 @@ public &Char
       if(`mver0 == 1) `sysivar[.iSPECIALFLAG] &= !.lasMask;
       if(!`isHitPaused()){
         if(
-          (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0
+          (`sysivar[.iSYSFLAG] & .sfOVER) == 0
           && `sysivar[.iCTRL] != 0 && `helperindex == 0
           && `stVal.typ != .StTy::A  && !`ls(.lsNOAUTOTURN))
         {
@@ -3228,15 +3228,15 @@ public &Char
         }
         if(!.roundEnd()){
           if(!`isKO() && `sysivar[.iLIFE] > 0){
-            `sysivar[.iSYSFLAG] |= .sfNOTOVER;
+            `sysivar[.iSYSFLAG] &= !.sfOVER;
           }
-          if((`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0){
+          if((`sysivar[.iSYSFLAG] & .sfOVER) != 0){
             `sysivar[.iSYSFLAG] |= .sfKO_ROUND_MIDDLE;
           }
         }
         `sysivar[.iSPECIALFLAG] =
           `player ? (
-            (!`isKO() || (`sysivar[.iSYSFLAG] & .sfNOTOVER) != 0)
+            (!`isKO() || (`sysivar[.iSYSFLAG] & .sfOVER) == 0)
             ? (
               .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY
               | (`roundState() > 0 ? .lsPLAYERPUSH : 0))
@@ -3367,7 +3367,7 @@ public &Char
         `stVal.playerno == `playerno && (
           `stVal.mov != .MovTy::H || (
             `roundState() == 2 && `isKO()
-            && (`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0)))
+            && (`sysivar[.iSYSFLAG] & .sfOVER) != 0)))
       {
         `outTarget();
       }
@@ -3454,7 +3454,8 @@ public &Char
       `sysfvar[.fX]=, (float).stg~leftbound, (float).stg~rightbound);
   }
   public void update(
-    float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
+    float cvmin=, float cvmax=,
+    float highest=, float lowest=, float leftest=, float rightest=)
   {
     `bind();
     `xScreenBound();
@@ -3560,7 +3561,8 @@ public &Char
         `isActive() && !`ls(.lsPOSFREEZEX)
         && (`sysivar[.iBINDTIME] == 0 || .m.isnan(`sysfvar[.fBINDPOSX])))
       {
-        cvx += `sysfvar[.fVX]*(float)`facing;
+        cvmin = .m.min!float?(cvmin, `sysfvar[.fVX]*(float)`facing);
+        cvmax = .m.max!float?(cvmax, `sysfvar[.fVX]*(float)`facing);
       }
     }
     if(`ls(.lsMOVECAMERAY)){
@@ -4513,7 +4515,7 @@ public &Char
     `stVal.playerno = p;
     `stVal.time = 0;
     if((n >= 170 && n < 190) || (n >= 5150 && n < 5160)){
-      `sysivar[.iSYSFLAG] &= !.sfNOTOVER;
+      `sysivar[.iSYSFLAG] |= .sfOVER;
     }
     `cs1tmp = true;
     ret true;
@@ -5349,7 +5351,7 @@ public &Char
   public bool isOver()
   {
     ret
-      (`sysivar[.iSYSFLAG] & .sfNOTOVER) == 0 || (
+      (`sysivar[.iSYSFLAG] & .sfOVER) != 0 || (
         `ctrlOver() && `sysivar[.iCTRL] != 0
         && `stVal.typ != .StTy::A && `stVal.phy != .StTy::A);
   }
@@ -5729,8 +5731,8 @@ public void PlayerList!&Char?::destroy(int id)
   }
 }
 public void PlayerList!&Char?::action(
-  float x,
-  float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
+  float x, float cvmin=, float cvmax=,
+  float highest=, float lowest=, float leftest=, float rightest=)
 {
   .commandUpdate();
   %`top<>.c.self targets;
@@ -5743,7 +5745,7 @@ public void PlayerList!&Char?::action(
     p = p~next;
   while #p > 0:
   }
-  .update(cvx=, highest=, lowest=, leftest=, rightest=);
+  .update(cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
   .com.gametime++;
   .rootAction();
 }
@@ -5761,14 +5763,15 @@ public void PlayerList!&Char?::move()
   }
 }
 public void PlayerList!&Char?::update(
-  float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
+  float cvmin=, float cvmax=,
+  float highest=, float lowest=, float leftest=, float rightest=)
 {
   loop{
     *`top.self p = `top;
     while;
   do:
     if(p~c~id < 0) continue;
-    p~c~update(cvx=, highest=, lowest=, leftest=, rightest=);
+    p~c~update(cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
   continue:
     p = p~next;
   while #p > 0:
@@ -6470,10 +6473,11 @@ void gSetNormal(float scl, float x, float y)
 }
 
 void update(
-  float cvx=, float highest=, float lowest=, float leftest=, float rightest=)
+  float cvmin=, float cvmax=,
+  float highest=, float lowest=, float leftest=, float rightest=)
 {
   .players.move();
-  .players.update(cvx=, highest=, lowest=, leftest=, rightest=);
+  .players.update(cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
       if(.projs[i][j].id >= 0) .projs[i][j].update();
@@ -6564,7 +6568,7 @@ public float action(
   .shadows.new(0);
   .resetDrawnClsnList();
   .gSetNormal(scl, x, y);
-  float cvx = 0.0;
+  float cvmin = 0.0, cvmax = 0.0;
   float highest = 0.0, lowest = .com.screeny;
   rightest = leftest = x;
   int rs4t = -(.fight~ro.over_hittime + .fight~ro.over_waittime);
@@ -6602,9 +6606,9 @@ public float action(
       .specialFlag &= !.gsROUNDNOTOVER;
     }
     if(#.superanim > 0) .superanim~ani.action();
-    .players.action(x, cvx=, highest=, lowest=, leftest=, rightest=);
+    .players.action(x, cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
   else:
-    .update(cvx=, highest=, lowest=, leftest=, rightest=);
+    .update(cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
     .rootAction();
   }
   %bool hbuf;
@@ -6613,7 +6617,7 @@ public float action(
     cond #.chars[i] > 0:
       hbuf .=
         (.chars[i][0]~getcombo != 0 || .chars[i][0]~stVal.mov == .MovTy::H)
-        && (.chars[i][0]~sysivar[.iSYSFLAG] & .sfNOTOVER) != 0;
+        && (.chars[i][0]~sysivar[.iSYSFLAG] & .sfOVER) == 0;
     else:
       hbuf .= false;
     }
@@ -6674,11 +6678,14 @@ public float action(
     float tension =
       ((float).com.GameWidth/2.0 - (float).stg~cam.tension)/.com.scale;
     float tmp = (leftest + rightest) / 2.0;
-    float vel =
-      .com.intro > .fight~ro.ctrl_time+1 ? (float).com.GameWidth/2.0
-      : .super > 0 || .pause > 0 ? 2.0
-      : 3.0;
-    cvx += vel * (tmp < 0.0 ? -1.0 : 1.0);
+    float cvx = cvmin + cvmax;
+    if(cvx == 0.0 || (cvx < 0.0) == (tmp < 0.0)){
+      float vel =
+        .com.intro > .fight~ro.ctrl_time+1 ? (float).com.GameWidth/2.0
+        : .super > 0 || .pause > 0 ? 2.0
+        : 3.0;
+      cvx += vel * (tmp < 0.0 ? -1.0 : 1.0);
+    }
     cvx *= .m.min!float?(1.0, .com.turbo);
   cond cvx < 0.0:
     tmp = .m.max!float?(leftest + tension, tmp);
@@ -6911,7 +6918,7 @@ public float action(
           if(#.chars[i] == 0) continue;
           .chars[i][0]~[void(c=){
             if(
-              (c.sysivar[.iSYSFLAG] & .sfNOTOVER) != 0
+              (c.sysivar[.iSYSFLAG] & .sfOVER) == 0
               && c.isActive() && !c.isKO() && (c.isOver() || .waitdown <= 0))
             {
               c.trSelfState(c.isWin() ? 180 : (c.isLose() ? 170 : 175), -1, 1);
