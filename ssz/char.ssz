@@ -3464,8 +3464,7 @@ public &Char
       `atktmp =
         (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
         && `isActive() ? `stVal.no : -1;
-      branch{
-      cond `stVal.mov == .MovTy::H:
+      if(`stVal.mov == .MovTy::H){
         `sysivar[.iPAUSEMOVETIME] = 0;
         `sysivar[.iSUPERMOVETIME] = 0;
         `hittmp =
@@ -3514,17 +3513,8 @@ public &Char
             `setEnemyWinty();
           }
         }
-      else:
-        if(`hittmp > 0) `hittmp = 0;
-        `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
-        `stVal.hb.hittime = -1;
-        `stVal.hb.hitshaketime = 0;
-        `stVal.hb.fallf = 0;
-        `stVal.hb.fallcount = 0;
-        `stVal.hb.juggle = 0;
-        `getcombo = 0;
+        `stVal.hb.damage = 0;
       }
-      `stVal.hb.damage = 0;
       if(
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
@@ -3536,6 +3526,17 @@ public &Char
         `sysivar[.iSPECIALFLAG] |= .lsGUARD;
       }
       if(`isActive()){
+        if(`stVal.mov != .MovTy::H){
+          if(`hittmp > 0) `hittmp = 0;
+          `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
+          `stVal.hb.damage = 0;
+          `stVal.hb.hittime = -1;
+          `stVal.hb.hitshaketime = 0;
+          `stVal.hb.fallf = 0;
+          `stVal.hb.fallcount = 0;
+          `stVal.hb.juggle = 0;
+          `getcombo = 0;
+        }
         if(`stVal.hb.hitshaketime > 0) `stVal.hb.hitshaketime--;
         if(`stVal.hb.hitshaketime <= 0 && `stVal.hb.hittime >= 0){
           `stVal.hb.hittime--;
