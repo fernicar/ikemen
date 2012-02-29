@@ -2264,19 +2264,6 @@ public &Char
   {
     if(`stVal.hb.byidMatch(`sysivar[.iBINDTOID])) `setBindTime(0);
   }
-  public void clearTargetBind()
-  {
-    loop{
-      index i = 0;
-      ^`self c;
-      while;
-    do:
-      c = .players.get(`targets[i]);
-      if(#c > 0) c~byBindClear();
-      i++;
-    while i < #`targets:
-    }
-  }
   void enemyExplodsRemove(int enemy)
   {
     void enemyExpRemove(^%index drawlist=, bool delI, int id)
@@ -4510,8 +4497,6 @@ public &Char
     if(`stVal.playerno != `playerno && p != `stVal.playerno){
       `enemyExplodsRemove(`stVal.playerno);
     }
-    if(`minus != 2 && `minus != 3) `sysivar[.iBINDTIME] = 0;
-    `clearTargetBind();
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
