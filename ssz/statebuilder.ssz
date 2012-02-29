@@ -6502,19 +6502,8 @@ public &StateBuilder
         `state.ctrlList[-1].task .= "branch{cond ";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
         `state.ctrlList[-1].task .=
-          "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsMOVECAMERAX;";
-        if(!val){
-          `state.ctrlList[-1].task .=
-            "`sysivar[.iSPECIALFLAG]|=.lsSCREENBOUND;";
-        }
-        `state.ctrlList[-1].task .=
-          "else:`sysivar[.iSPECIALFLAG]&=!.lsMOVECAMERAX;";
-        if(!val){
-          `state.ctrlList[-1].task .=
-            "`sysivar[.iSPECIALFLAG]&=!.lsSCREENBOUND;";
-        }
-        `state.ctrlList[-1].task .= '}';
-        val = true;
+          "$.v.isT():`sysivar[.iSPECIALFLAG]|=.lsMOVECAMERAX;"
+          "else:`sysivar[.iSPECIALFLAG]&=!.lsMOVECAMERAX;}";
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
             !`fullExpression(
