@@ -3027,8 +3027,9 @@ public &Char
       : .fight~ro.cur == 0 ? 1
       : !.roundEnd() ? 2
       : (
-        .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime)
-        && ((`sysivar[.iSYSFLAG] & .sfOVER) != 0 || !`isAlive())
+        .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime) && (
+          (.chars[`playerno]<>~sysivar[.iSYSFLAG] & .sfOVER) != 0
+          || !.chars[`playerno]<>~isAlive())
         ? 4 : 3);
   }
   public bool isKO()
