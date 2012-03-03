@@ -2341,7 +2341,7 @@ public &Char
   }
   public bool load(^/char def)
   {:<-
-    public void info(&.com.Section sc=)
+    void info(&.com.Section sc=)
     {
       ^/char data;
       if(#(data = sc.getText("name")) > 0) `name = data;
@@ -2353,7 +2353,7 @@ public &Char
       }
       if(#(data = sc.getText("author")) > 0) `author = data;
     }
-    public void files(&.com.Section sc=, bool unicode)
+    void files(&.com.Section sc=, bool unicode)
     {
       bool oVer = `mver0 != 1;
       ^/char f(^/char str)
@@ -2380,12 +2380,14 @@ public &Char
       if(#(data = sc.get("pal11")) > 0) `pal[10] = f(data);
       if(#(data = sc.get("pal12")) > 0) `pal[11] = f(data);
     }
-    public void keymap(&.com.Section sc=)
+    void keymap(&.com.Section sc=)
     {:<-
       void foo(index k, ^/char p)
       {
         `palkeymap[k] = .com.atoi(p)-1;
-        .m.limRange!index?(`palkeymap[k]=, 0, .sff.NumCharPalletes-1);
+        if(!.m.inRange!index?(0, .sff.NumCharPalletes-1, `palkeymap[k])){
+          `palkeymap[k] = 0;
+        }
       }
       ^/char data;
       if(#(data = sc.get("a")) > 0) foo(0, data);
@@ -2401,14 +2403,15 @@ public &Char
       if(#(data = sc.get("y2")) > 0) foo(10, data);
       if(#(data = sc.get("z2")) > 0) foo(11, data);
     }
-    public void palette(^/char sec, &.com.Section sc=)
-    {
+    bool keymapflg = true;
+    ~$void(^/char, &.com.Section=) palette = [palette.signature(sec, sc=){
       branch{
       cond .s.equ(.s.toLower(sec[0..6]), "keymap"):
-        `load:<-keymap(sc=);
+        if(keymapflg) keymap(sc=);
+        keymapflg = false;
       }
-    }
-    public void remap(&.com.Section sc=)
+    }];
+    void remap(&.com.Section sc=)
     {
       ^/char data;
       void map(|.cmd.Key k=, |.cmd.Key nk=)
@@ -2446,7 +2449,7 @@ public &Char
       if(#(data = sc.get("c")) > 0) map(.cmd.c=, .cmd.nc=);
       if(#(data = sc.get("s")) > 0) map(.cmd.s=, .cmd.ns=);
     }
-    public void defaults(&.com.Section sc=)
+    void defaults(&.com.Section sc=)
     {
       ^/char data;
       if(#(data = sc.get("command.time")) > 0){
@@ -2456,7 +2459,7 @@ public &Char
         `cmd~defaultBufferTime = .m.max!int?(1)<, .com.atoi(data);
       }
     }
-    public void command(^^/char lines, index i=)
+    void command(^^/char lines, index i=)
     {
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
@@ -2480,7 +2483,7 @@ public &Char
       `cmd~add(`cmd~ctmp<>=);
     }
     bool unicode = false;
-    bool infoflg = true, filesflg = true, paletteflg = true;
+    bool infoflg = true, filesflg = true;
     ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
       ^/char sec = lines[i];
       ^/char secname = .com.sectionName(sec=);
@@ -2494,9 +2497,8 @@ public &Char
       cond .s.equ(secname, "files"):
         if(filesflg) files(sc=, unicode);
         filesflg = false;
-      cond .s.equ(secname, "palette"):
-        if(paletteflg) palette(sec, sc=);
-        paletteflg = false;
+      cond .s.equ(secname, "palette "):
+        palette(:sec, sc=:);
       }
     }];
     bool remapflg = true, defaultsflg = true;
