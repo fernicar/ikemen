@@ -3379,7 +3379,7 @@ public &Char
   }
   public void bind()
   {
-    if(`sysivar[.iBINDTIME] == 0) ret;
+    if(`sysivar[.iBINDTIME] == 0 && !`isTarget(`sysivar[.iBINDTOID])) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     if(#c == 0 || `destmp){
       `setBindTime(0);
@@ -3429,13 +3429,9 @@ public &Char
       }
       float oldx = `sysfvar[.fX];
       .m.limRange!float?(`sysfvar[.fX]=, min, max);
-      if(oldx != `sysfvar[.fX] && `sysivar[.iBINDTIME] != 0){
+      if(oldx != `sysfvar[.fX] && `isTarget(`sysivar[.iBINDTOID])){
         ^`self c = .players.get(`sysivar[.iBINDTOID]);
         if(#c == 0) break;
-        if(!`isTarget(c~id)){
-          `sysfvar[.fX] = oldx;
-          break, break;
-        }
         c~sysfvar[.fX] += `sysfvar[.fX] - oldx;
         c~xScreenBound();
       }
