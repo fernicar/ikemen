@@ -3400,7 +3400,7 @@ public &Char
     cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
     cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
     }
-    if(cond c~isTarget(`id)){
+    if(c~isTarget(`id)){
       if(!.m.isnan(`sysfvar[.fBINDPOSX])){
         `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
       }
