@@ -1862,46 +1862,21 @@ public &Fight
       loop{index i = 0; while; do:
         `lb[.com.tmode[0]][i].bgDraw(layerno);
         i += 2;
-      while i < #`lb[.com.tmode[0]]:
-      }
+      while i < #`lb[.com.tmode[0]]:}
       loop{index i = 1; while; do:
         `lb[.com.tmode[1]][i].bgDraw(layerno);
         i += 2;
-      while i < #`lb[.com.tmode[1]]:
-      }
-      `pb[0].bgDraw(layerno);
-      `pb[1].bgDraw(layerno);
-      loop{index i = #`fa[.com.tmode[0]]-2; while; do:
-        `fa[.com.tmode[0]][i].bgDraw(layerno);
-        i -= 2;
-      while i >= 0:
-      }
-      loop{index i = #`fa[.com.tmode[1]]-1; while; do:
-        `fa[.com.tmode[1]][i].bgDraw(layerno);
-        i -= 2;
-      while i >= 0:
-      }
-      loop{index i = 0; while; do:
-        `nm[.com.tmode[0]][i].bgDraw(layerno);
-        i += 2;
-      while i < #`nm[.com.tmode[0]]:
-      }
-      loop{index i = 1; while; do:
-        `nm[.com.tmode[1]][i].bgDraw(layerno);
-        i += 2;
-      while i < #`nm[.com.tmode[1]]:
-      }
-      `ti.bgDraw(layerno);
+      while i < #`lb[.com.tmode[1]]:}
       loop{index i = 0; while; do:
         `lb[.com.tmode[0]][i].draw(layerno, life[i].l);
         i += 2;
-      while i < #`lb[.com.tmode[0]]:
-      }
+      while i < #`lb[.com.tmode[0]]:}
       loop{index i = 1; while; do:
         `lb[.com.tmode[1]][i].draw(layerno, life[i].l);
         i += 2;
-      while i < #`lb[.com.tmode[1]]:
-      }
+      while i < #`lb[.com.tmode[1]]:}
+      `pb[0].bgDraw(layerno);
+      `pb[1].bgDraw(layerno);
       `pb[0].draw(
         layerno, life[0].p, life[.com.tmode[0] != 1 ? 0 : 2].lv, `fnt);
       `pb[1].draw(
@@ -1909,26 +1884,39 @@ public &Fight
       loop{index i = #`fa[.com.tmode[0]]-2; while; do:
         `fa[.com.tmode[0]][i].draw(layerno, facefx[i], i == superplayer);
         i -= 2;
-      while i >= 0:
-      }
+      while i >= 0:}
+      loop{index i = #`fa[.com.tmode[0]]-2; while; do:
+        `fa[.com.tmode[0]][i].bgDraw(layerno);
+        i -= 2;
+      while i >= 0:}
+      loop{index i = #`fa[.com.tmode[1]]-1; while; do:
+        `fa[.com.tmode[1]][i].bgDraw(layerno);
+        i -= 2;
+      while i >= 0:}
       loop{index i = #`fa[.com.tmode[1]]-1; while; do:
         `fa[.com.tmode[1]][i].draw(layerno, facefx[i], i == superplayer);
         i -= 2;
-      while i >= 0:
-      }
+      while i >= 0:}
+      loop{index i = 0; while; do:
+        `nm[.com.tmode[0]][i].bgDraw(layerno);
+        i += 2;
+      while i < #`nm[.com.tmode[0]]:}
+      loop{index i = 1; while; do:
+        `nm[.com.tmode[1]][i].bgDraw(layerno);
+        i += 2;
+      while i < #`nm[.com.tmode[1]]:}
       loop{index i = 0; while; do:
         `nm[.com.tmode[0]][i].draw(layerno, `fnt, name[i]);
         i += 2;
-      while i < #`nm[.com.tmode[0]]:
-      }
+      while i < #`nm[.com.tmode[0]]:}
       loop{index i = 1; while; do:
         `nm[.com.tmode[1]][i].draw(layerno, `fnt, name[i]);
         i += 2;
-      while i < #`nm[.com.tmode[1]]:
-      }
+      while i < #`nm[.com.tmode[1]]:}
+      `ti.bgDraw(layerno);
+      `ti.draw(layerno, .com.time, `fnt);
       `wi[0].draw(layerno, `fnt);
       `wi[1].draw(layerno, `fnt);
-      `ti.draw(layerno, .com.time, `fnt);
     }
     `co.draw(layerno, `fnt);
   }

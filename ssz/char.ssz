@@ -6773,12 +6773,12 @@ public float action(
         `leftest =
           .m.max!float?(
             (float).m.min!int?(.stg~p1.startx, .stg~p2.startx),
-            -((float).com.GameWidth/2.0)/.com.scale + .com.screenleft)
+            -((float).com.GameWidth/2.0)/.stg~ztopscale + .com.screenleft)
           - ox;
         `rightest =
           .m.min!float?(
             (float).m.max!int?(.stg~p1.startx, .stg~p2.startx),
-            ((float).com.GameWidth/2.0)/.com.scale - .com.screenright)
+            ((float).com.GameWidth/2.0)/.stg~ztopscale - .com.screenright)
           - ox;
         `zoomReset = true;
       }
