@@ -3329,52 +3329,6 @@ public &Char
   {
     if(!`ls(.lsPOSFREEZEY)) `sysfvar[.fVY] += `sysfvar[.fYACCEL];
   }
-  public void move()
-  {
-    if(.com.tickFrame()){
-      if(`destmp){
-        loop{
-          index i = 0;
-          ^`self c;
-          while;
-        do:
-          c = .players.get(`targets[i]);
-          if(
-            #c > 0 && c~stVal.playerno != c~playerno
-            && c~sysivar[.iBINDTOID] == `id)
-          {
-            c~trSelfState(5050, -1, -1);
-          }
-          i++;
-        while i < #`targets:
-        }
-        `destroySelf();
-        ret;
-      }
-      if(
-        `stVal.playerno == `playerno && (
-          `stVal.mov != .MovTy::H || (
-            `roundState() == 2 && `isKO()
-            && (`sysivar[.iSYSFLAG] & .sfOVER) != 0)))
-      {
-        `outTarget();
-      }
-    }
-    if(`acttmp > 0){
-      float sp = .com.tickInterpola();
-      if(!`ls(.lsPOSFREEZEX)){
-        `drawX = `sysfvar[.fX] - (`sysfvar[.fX] - `ticOldX) * (1.0 - sp);
-      }
-      if(!`ls(.lsPOSFREEZEY)){
-        `drawY = `sysfvar[.fY] - (`sysfvar[.fY] - `ticOldY) * (1.0 - sp);
-      }
-    }
-    if(`ls(.lsSCREENBOUND)){
-      .m.limRange!float?(
-        `drawX=, .com.xmin+`getEdge(`facing > 0 ? `bedge : `fedge),
-        .com.xmax-`getEdge(`facing > 0 ? `fedge : `bedge));
-    }
-  }
   public void bind()
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
@@ -3429,6 +3383,33 @@ public &Char
     float highest=, float lowest=, float leftest=, float rightest=)
   {
     if(.com.tickFrame()){
+      if(`destmp){
+        loop{
+          index i = 0;
+          ^`self c;
+          while;
+        do:
+          c = .players.get(`targets[i]);
+          if(
+            #c > 0 && c~stVal.playerno != c~playerno
+            && c~sysivar[.iBINDTOID] == `id)
+          {
+            c~trSelfState(5050, -1, -1);
+          }
+          i++;
+        while i < #`targets:
+        }
+        `destroySelf();
+        ret;
+      }
+      if(
+        `stVal.playerno == `playerno && (
+          `stVal.mov != .MovTy::H || (
+            `roundState() == 2 && `isKO()
+            && (`sysivar[.iSYSFLAG] & .sfOVER) != 0)))
+      {
+        `outTarget();
+      }
       if(`acttmp > 0 && #`ani > 0) `ani~ani.updateSprite();
       `atktmp =
         (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
@@ -3466,13 +3447,16 @@ public &Char
             .winty[(`playerno+1)&1] = .fgt.WinTy::C;
           }
         else:
-          if(`addLife(-`stVal.hb.damage, true, true)) branch{
+          if(
+            `addLife(-`stVal.hb.damage, true, true)
+            && `helperindex == 0) branch
+          {
             ^`self by;
             if(#`stVal.hb.byid == 0) else;
             by = .players.get(`stVal.hb.byid[-1]);
             if(#by == 0) else;
           cond (by~playerno&1) == (`playerno&1):
-            if(`helperindex == 0) branch{
+            branch{
             cond by~playerno == `playerno:
               .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
             else:
@@ -3511,16 +3495,22 @@ public &Char
           `stVal.hb.hittime--;
         }
         if(`stVal.hb.fallf != 0) `stVal.fallTime++;
+        if(
+          `stVal.mov == .MovTy::H && `sysfvar[.fY] == 0.0
+          && #(`sysfvar[.fX]-`ticOldX) >= 1.0 && `stVal.time % 3 == 0)
+        {
+          `makeDust(0.0, 0.0);
+        }
       }
     }
-    if(.com.tickNextFrame()){
-      if(
-        `stVal.mov == .MovTy::H && `isActive() && `sysfvar[.fY] == 0.0
-        && #(`sysfvar[.fX]-`ticOldX) >= 1.0 && `stVal.time % 3 == 0)
-      {
-        `makeDust(0.0, 0.0);
+    if(`acttmp > 0){
+      float sp = .com.tickInterpola();
+      if(!`ls(.lsPOSFREEZEX)){
+        `drawX = `sysfvar[.fX] - (`sysfvar[.fX] - `ticOldX) * (1.0 - sp);
       }
-      `drawX = `sysfvar[.fX];
+      if(!`ls(.lsPOSFREEZEY)){
+        `drawY = `sysfvar[.fY] - (`sysfvar[.fY] - `ticOldY) * (1.0 - sp);
+      }
     }
     if(`ls(.lsMOVECAMERAX)){
       leftest = .m.max!float?(.com.xmin)<, .m.min!float?(
@@ -5720,19 +5710,6 @@ public void PlayerList!&Char?::action(
   .com.gametime++;
   .rootAction();
 }
-public void PlayerList!&Char?::move()
-{
-  loop{
-    *`top.self p = `top;
-    while;
-  do:
-    if(p~c~id < 0) continue;
-    p~c~move();
-  continue:
-    p = p~next;
-  while #p > 0:
-  }
-}
 public void PlayerList!&Char?::update(
   float cvmin=, float cvmax=,
   float highest=, float lowest=, float leftest=, float rightest=)
@@ -6446,7 +6423,6 @@ void update(
   float cvmin=, float cvmax=,
   float highest=, float lowest=, float leftest=, float rightest=)
 {
-  .players.move();
   .players.update(cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:

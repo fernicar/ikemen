@@ -1882,15 +1882,15 @@ public &Fight
       `pb[1].draw(
         layerno, life[1].p, life[.com.tmode[1] != 1 ? 1 : 3].lv, `fnt);
       loop{index i = #`fa[.com.tmode[0]]-2; while; do:
-        `fa[.com.tmode[0]][i].draw(layerno, facefx[i], i == superplayer);
-        i -= 2;
-      while i >= 0:}
-      loop{index i = #`fa[.com.tmode[0]]-2; while; do:
         `fa[.com.tmode[0]][i].bgDraw(layerno);
         i -= 2;
       while i >= 0:}
       loop{index i = #`fa[.com.tmode[1]]-1; while; do:
         `fa[.com.tmode[1]][i].bgDraw(layerno);
+        i -= 2;
+      while i >= 0:}
+      loop{index i = #`fa[.com.tmode[0]]-2; while; do:
+        `fa[.com.tmode[0]][i].draw(layerno, facefx[i], i == superplayer);
         i -= 2;
       while i >= 0:}
       loop{index i = #`fa[.com.tmode[1]]-1; while; do:
