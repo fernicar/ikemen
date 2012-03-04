@@ -2821,6 +2821,7 @@ public &Char
   public void tickBind()
   {
     if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
+    if(`sysivar[.iBINDTIME] == 0) `sysivar[.iBINDTOID] = -1;
   }
   public void tick()
   {
@@ -3399,17 +3400,11 @@ public &Char
     cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
     cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
     }
-    branch{
-    cond c~isTarget(`id):
+    if(cond c~isTarget(`id)){
       if(!.m.isnan(`sysfvar[.fBINDPOSX])){
         `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
       }
       if(!.m.isnan(`sysfvar[.fBINDPOSY])) `setYV(c~sysfvar[.fVY]);
-    cond `isTarget(c~id):
-      if(!.m.isnan(`sysfvar[.fBINDPOSX])){
-        c~setXV((float)(`facing*c~facing)*`sysfvar[.fVX]);
-      }
-      if(!.m.isnan(`sysfvar[.fBINDPOSY])) c~setYV(`sysfvar[.fVY]);
     }
   }
   public void xScreenBound()
