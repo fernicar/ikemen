@@ -2878,7 +2878,7 @@ public &Char
               (c~sysfvar[.fY] + `stVal.hb.maxdisty);
           }
         }
-        if(`stVal.hb.snapt != 0 && c~sysivar[.iBINDTOID] != `id){
+        if(`stVal.hb.snapt != 0){
           `setBindToId(c<>=);
           `setBindTime(`stVal.hb.snapt);
           `sysivar[.iBINDFACING] = 0;
@@ -2886,7 +2886,6 @@ public &Char
           `sysfvar[.fBINDPOSY] =
             `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A
             ? `stVal.hb.snapy : 0.0/0.0;
-          `bind();
         }
       }
       if(!`cs1tmp) branch{
@@ -3062,8 +3061,6 @@ public &Char
       while;
     do:
       if(`sysivar[.iBINDTOID] == `stVal.hb.byid[i]) ret true;
-      by = .players.get(`stVal.hb.byid[i]);
-      if(#by > 0 && by~sysivar[.iBINDTOID] == `id) ret true;
       i++;
     while i < #`stVal.hb.byid:
     }
@@ -3379,7 +3376,7 @@ public &Char
   }
   public void bind()
   {
-    if(`sysivar[.iBINDTIME] == 0 && !`isTarget(`sysivar[.iBINDTOID])) ret;
+    if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     if(#c == 0 || `destmp){
       `setBindTime(0);
@@ -3427,14 +3424,7 @@ public &Char
         min = .com.xmin + `getEdge(`fedge);
         max = .com.xmax - `getEdge(`bedge);
       }
-      float oldx = `sysfvar[.fX];
       .m.limRange!float?(`sysfvar[.fX]=, min, max);
-      if(oldx != `sysfvar[.fX] && `isTarget(`sysivar[.iBINDTOID])){
-        ^`self c = .players.get(`sysivar[.iBINDTOID]);
-        if(#c == 0) break;
-        c~sysfvar[.fX] += `sysfvar[.fX] - oldx;
-        c~xScreenBound();
-      }
     }
     .m.limRange!float?(
       `sysfvar[.fX]=, (float).stg~leftbound, (float).stg~rightbound);
@@ -3443,8 +3433,6 @@ public &Char
     float cvmin=, float cvmax=,
     float highest=, float lowest=, float leftest=, float rightest=)
   {
-    `bind();
-    `xScreenBound();
     if(.com.tickFrame()){
       if(`acttmp > 0 && #`ani > 0) `ani~ani.updateSprite();
       `atktmp =
@@ -4839,23 +4827,25 @@ public &Char
     while i < #tar:
     }
   }
-  public void trBindToTarget(int hmf)
+  public void trBindToTarget(^/int tar, int time, float x, float y, int hmf)
   {
-    if(`sysivar[.iBINDTIME] == 0){
-      `sysivar[.iBINDTOID] = -1;
-      ret;
-    }
-    ^`self c = .players.get(`sysivar[.iBINDTOID]);
+    if(#tar == 0) ret;
+    ^`self c = .players.get(tar<>);
     if(#c == 0) ret;
+    float bx = x, by = y;
     switch(hmf){
     case 1:
-      `sysfvar[.fBINDPOSX] += (float)c~sysivar[.iMID_POSX];
-      `sysfvar[.fBINDPOSY] += (float)c~sysivar[.iMID_POSY];
+      bx += (float)c~sysivar[.iMID_POSX];
+      by += (float)c~sysivar[.iMID_POSY];
     case 2:
-      `sysfvar[.fBINDPOSX] += (float)c~sysivar[.iHEAD_POSX];
-      `sysfvar[.fBINDPOSY] += (float)c~sysivar[.iHEAD_POSY];
+      bx += (float)c~sysivar[.iHEAD_POSX];
+      by += (float)c~sysivar[.iHEAD_POSY];
     }
-    `bind();
+    if(!.m.isnan(bx)) `setX(c~sysfvar[.fX] + (float)c~facing*bx);
+    if(!.m.isnan(by)) `setY(c~sysfvar[.fY] + by);
+    `trTargetBind(
+      tar[0..1], time, (float)`facing*(c~sysfvar[.fX] - `sysfvar[.fX]),
+      c~sysfvar[.fY] - `sysfvar[.fY]);
   }
   public void setBindFacing(int f)
   {
@@ -5850,7 +5840,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(hitting > 0){
       `pyr.stVal.setHb(
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
-      if(`pyr.id == by.sysivar[.iBINDTOID]) by.setBindTime(0);
       if(!ho && p2s < 2 && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
       `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
       if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
@@ -6558,6 +6547,7 @@ public float action(
   float highest = 0.0, lowest = .com.screeny;
   rightest = leftest = x;
   int rs4t = -(.fight~ro.over_hittime + .fight~ro.over_waittime);
+  bool zoomReset = false;
   branch{
   cond .com.tickFrame():
     .oldx = x;
@@ -6783,17 +6773,20 @@ public float action(
       }
       i++;
     while i < #.chars:
-      `x = 0.0;
-      `leftest =
-        .m.max!float?(
-          (float).m.min!int?(.stg~p1.startx, .stg~p2.startx),
-          -((float).com.GameWidth/2.0)/.com.scale + .com.screenleft)
-        - ox;
-      `rightest =
-        .m.min!float?(
-          (float).m.max!int?(.stg~p1.startx, .stg~p2.startx),
-          ((float).com.GameWidth/2.0)/.com.scale - .com.screenright)
-        - ox;
+      if(.gs(.gsINTRO)){
+        `x = 0.0;
+        `leftest =
+          .m.max!float?(
+            (float).m.min!int?(.stg~p1.startx, .stg~p2.startx),
+            -((float).com.GameWidth/2.0)/.com.scale + .com.screenleft)
+          - ox;
+        `rightest =
+          .m.min!float?(
+            (float).m.max!int?(.stg~p1.startx, .stg~p2.startx),
+            ((float).com.GameWidth/2.0)/.com.scale - .com.screenright)
+          - ox;
+        `zoomReset = true;
+      }
     }
   }
   int slowfade = .fight~ro.slow_time * 2 / 5;
@@ -6963,6 +6956,8 @@ public float action(
       .m.min!float?(129.0/128.0)<, ((2.0**barbaz+3.0)/2.0**barbaz - tmp)**64.0;
   }
   branch{
+  cond zoomReset:
+    tmp = 1.0 / scl;
   cond .super > 0 || .pause > 0:
     tmp = 1.0;
   cond tmp > 1.0:

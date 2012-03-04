@@ -31,13 +31,13 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
   HitOverride,
   Pause, SuperPause,
   LifeAdd, LifeSet, PowerAdd, PowerSet,
-  TargetLifeAdd, TargetBind, TargetState,
+  TargetLifeAdd, TargetBind, BindToTarget, TargetState,
   TargetVelSet, TargetVelAdd, TargetFacing,
   TargetPowerAdd, TargetDrop,
   HitBy, NotHitBy, AttackMulSet, DefenceMulSet,
   MoveHitReset,
   AssertSpecial, PosFreeze, PlayerPush, Gravity,
-  BindToParent, BindToRoot, BindToTarget,
+  BindToParent, BindToRoot,
   Helper,
   DestroySelf,
   Explod, GameMakeAnim, ModifyExplod, ExplodBindTime, RemoveExplod,
@@ -2478,7 +2478,7 @@ public &StateBuilder
         if(!`powerSet(am=)) ret false;
       case .CtrlTy::TargetLifeAdd:
         if(!`targetLifeAdd(am=)) ret false;
-      case .CtrlTy::TargetBind:
+      case .CtrlTy::TargetBind, .CtrlTy::BindToTarget:
         if(!`targetBind(am=)) ret false;
       case .CtrlTy::TargetState:
         if(!`targetState(am=)) ret false;
@@ -2506,7 +2506,7 @@ public &StateBuilder
         if(!`playerPush(am=)) ret false;
       case .CtrlTy::Gravity:
         if(!`gravity(am=)) ret false;
-      case .CtrlTy::BindToParent, .CtrlTy::BindToRoot, .CtrlTy::BindToTarget:
+      case .CtrlTy::BindToParent, .CtrlTy::BindToRoot:
         if(!`bindTo(am=)) ret false;
       case .CtrlTy::Helper:
         if(!`helper(am=)) ret false;
@@ -4769,6 +4769,9 @@ public &StateBuilder
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .=
         "%int tar=`getTarget(-1);if(#tar==0)ret;int t=1;float x=0.0,y=0.0;";
+      if(`state.ctrlList[-1].typ == .CtrlTy::BindToTarget){
+        `state.ctrlList[-1].task .= "int hmf=0;";
+      }
       if(!`stateParam(param=, "id", [`paraF_t(data=){
         if(
           !`fullExpression(
@@ -4793,10 +4796,30 @@ public &StateBuilder
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
               "y=", "$.v.toF();")) ret false;
+          if(
+            .s.equ(",")<, `tokenizer(data=)
+            && `state.ctrlList[-1].typ == .CtrlTy::BindToTarget)
+          {
+            ^/char t = `tokenizer(data=);
+            if(#t == 0) break;
+            switch(.s.toLowerChar(t[0])){
+            case 'h':
+              `state.ctrlList[-1].task .= "hmf=2;";
+            case 'm':
+              `state.ctrlList[-1].task .= "hmf=1;";
+            case 'f':
+              `state.ctrlList[-1].task .= "hmf=0;";
+            }
+          }
         }
         ret true;
       }])) ret false;
-      `state.ctrlList[-1].task .= "`trTargetBind(tar,t,x,y);";
+      switch(`state.ctrlList[-1].typ){
+      case .CtrlTy::TargetBind:
+        `state.ctrlList[-1].task .= "`trTargetBind(tar,t,x,y);";
+      case .CtrlTy::BindToTarget:
+        `state.ctrlList[-1].task .= "`trBindToTarget(tar,t,x,y,hmf);";
+      }
       ret true;
     }]);
   }
@@ -5134,25 +5157,6 @@ public &StateBuilder
           "`sysivar[.iBINDTIME]=1;"
           "`sysfvar[.fBINDPOSX]=0.0;`sysfvar[.fBINDPOSY]=0.0;"
           "`setBindToId(.c<>=);";
-      case .CtrlTy::BindToTarget:
-        {
-          bool id = false;
-          if(!`stateParam(param=, "id", [`paraF_t(data=){
-            id = true;
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=, "",
-                "$`trTarget();if(#.c==0)ret;`setBindToId(.c<>=);")) ret false;
-            ret true;
-          }])) ret false;
-          if(!id){
-            `state.ctrlList[-1].task .=
-              ".v.setI(-1)$`trTarget();if(#.c==0)ret;`setBindToId(.c<>=);";
-          }
-        }
-        `state.ctrlList[-1].task .=
-          "int hmf=0;`sysivar[.iBINDTIME]=1;"
-          "`sysfvar[.fBINDPOSX]=0.0;`sysfvar[.fBINDPOSY]=0.0;";
       }
       if(!`stateParam(param=, "time", [`paraF_t(data=){
         if(
@@ -5161,18 +5165,16 @@ public &StateBuilder
             "`sysivar[.iBINDTIME]=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
-      if(`state.ctrlList[-1].typ != .CtrlTy::BindToTarget){
-        if(!`stateParam(param=, "facing", [`paraF_t(data=){
-          if(
-            !`fullExpression(
-              `state.ctrlList[-1].task=, data=,
-              "`setBindFacing(", "$.v.toI());"))
-          {
-            ret false;
-          }
-          ret true;
-        }])) ret false;
-      }
+      if(!`stateParam(param=, "facing", [`paraF_t(data=){
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            "`setBindFacing(", "$.v.toI());"))
+        {
+          ret false;
+        }
+        ret true;
+      }])) ret false;
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
         `state.ctrlList[-1].task .= "`sysfvar[.fBINDPOSX]=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
@@ -5181,31 +5183,11 @@ public &StateBuilder
           `state.ctrlList[-1].task .= "`sysfvar[.fBINDPOSY]=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
           `state.ctrlList[-1].task .= "$.v.toF();";
-          if(
-            .s.equ(",")<, `tokenizer(data=)
-            && `state.ctrlList[-1].typ == .CtrlTy::BindToTarget)
-          {
-            ^/char t = `tokenizer(data=);
-            if(#t == 0) break;
-            switch(.s.toLowerChar(t[0])){
-            case 'h':
-              `state.ctrlList[-1].task .= "hmf=2;";
-            case 'm':
-              `state.ctrlList[-1].task .= "hmf=1;";
-            case 'f':
-              `state.ctrlList[-1].task .= "hmf=0;";
-            }
-          }
         }
         ret true;
       }])) ret false;
-      switch(`state.ctrlList[-1].typ){
-      case .CtrlTy::BindToParent, .CtrlTy::BindToRoot:
-        `state.ctrlList[-1].task .=
-          "if(`sysivar[.iBINDTIME]==0)`sysivar[.iBINDTOID]=-1;`bind();";
-      case .CtrlTy::BindToTarget:
-        `state.ctrlList[-1].task .= "`trBindToTarget(hmf);";
-      }
+      `state.ctrlList[-1].task .=
+        "if(`sysivar[.iBINDTIME]==0)`sysivar[.iBINDTOID]=-1;`bind();";
       ret true;
     }]);
   }
