@@ -242,11 +242,11 @@ public void drawShadowList(float x, float y)
         intensity = (int)((float)intensity * fade);
       }
     cond color < 0:
+      color = (int).stg~sdw.color;
       if(alpha >= 255){
         pal = . stg~sdw.pal;
         break, break;
       }
-      color = (int).stg~sdw.color;
     comm:
       pal = .com.tmppl;
       loop{
