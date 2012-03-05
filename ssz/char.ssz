@@ -247,6 +247,8 @@ public void drawShadowList(float x, float y)
         pal = . stg~sdw.pal;
         break, break;
       }
+    else:
+      intensity = 0;
     comm:
       pal = .com.tmppl;
       loop{
