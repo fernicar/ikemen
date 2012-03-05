@@ -221,41 +221,40 @@ public void drawShadowList(float x, float y)
   ^&.ShadowList sl = .shadows;
   ^uint pal, oldpal;
   loop{while; do:
-    if(
-      #sl~al~anim == 0 || #sl~al~anim~ani.spr == 0) continue;
+    if(#sl~al~anim == 0 || #sl~al~anim~ani.spr == 0) continue;
     branch{
-    cond sl~color < 0:
-      pal = .stg~sdw.pal;
-      {
-        int inte = .stg~sdw.intensity*sl~alpha >> 8;
-        branch{
-        cond sl~al~y < (float).stg~sdw.fadeend:
-          break, break, break, continue;
-        cond sl~al~y < (float).stg~sdw.fadebgn:
-          inte =
-            (int)(
-              (float)inte * ((float).stg~sdw.fadeend - sl~al~y)
-              / ((float).stg~sdw.fadeend - (float).stg~sdw.fadebgn));
-        }
-        sl~al~anim~ani.salpha = inte;
-        sl~al~anim~ani.dalpha = 255 - inte;
+      int color = sl~color, alpha = sl~alpha;
+      branch{
+      cond sl~al~y < (float).stg~sdw.fadeend:
+        break, break, continue;
+      cond sl~al~y < (float).stg~sdw.fadebgn:
+        alpha =
+          (int)(
+            (float)alpha * ((float).stg~sdw.fadeend - sl~al~y)
+            / ((float).stg~sdw.fadeend - (float).stg~sdw.fadebgn));
       }
-    else:
+    cond color < 0:
+      if(alpha >= 255){
+        pal = . stg~sdw.pal;
+        break, break;
+      }
+      color = (int).stg~sdw.color;
+    comm:
       pal = .com.tmppl;
       loop{
         index i = 0;
         uint c =
           (uint)(
-            (sl~color&255)*sl~alpha>>8 | (sl~color&255<<8)*sl~alpha>>8
-            | (sl~color&255<<16)*sl~alpha>>8)
+            (color&255)*alpha>>8 | (color&255<<8)*alpha>>8
+            | (color&255<<16)*alpha>>8)
           & 0xffffff;
       do:
         pal[i] = c;
       while ++i < 256:
       }
-      sl~al~anim~ani.salpha = 1;
-      sl~al~anim~ani.dalpha = 255;
     }
+    sl~al~anim~ani.salpha = 1;
+    sl~al~anim~ani.dalpha = 255;
     {
       oldpal = sl~al~anim~ani.spr~colorPallet;
       sl~al~anim~ani.spr~colorPallet = pal;
@@ -2814,10 +2813,6 @@ public &Char
     while i < #clsn1:}
     ret false;
   }
-  public void releaseBinding()
-  {
-    `sysivar[.iBINDTOID] = -1;
-  }
   public void tickBind()
   {
     if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
@@ -2825,7 +2820,10 @@ public &Char
   }
   public void tick()
   {
-    if(#`ani > 0 && `acttmp > 0) `ani~ani.action();
+    if(`acttmp > 0){
+      if(#`ani > 0) `ani~ani.action();
+      `tickBind();
+    }
     if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
     `enemyn.new(0);
     if(`stVal.hitdefContact != 0){
@@ -3013,7 +3011,6 @@ public &Char
     }
     if(.com.tickNextFrame()){
       if(`roundState() == 4) `outTarget();
-      if(`sysivar[.iBINDTIME] == 0) `releaseBinding();
       if(.supertime < 0){
         if((`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H){
           `defencemul *= .superp2defmul;
@@ -3280,7 +3277,6 @@ public &Char
         if(!`isHitPaused()){
           `stVal.time++;
           `posUpdate();
-          `tickBind();
         }
       }
     }
@@ -7044,7 +7040,7 @@ public void draw(float x, float y, float scl)
   else:
     if(!.gs(.gsGLOBALNOSHADOW)){
       if(.stg~reflection > 0) .drawReflection(x, y);
-      if(.stg~sdw.intensity > 0) .drawShadowList(x, y);
+      .drawShadowList(x, y);
     }
     .fight~draw(0, lpl, names, .gs(.gsNOBARDISPLAY), facefx, .superplayer);
     .fight~ro.draw(0, .ko, winner);

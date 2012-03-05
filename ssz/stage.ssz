@@ -65,8 +65,7 @@ public &EnvShake envShake;
 &Shadow
 {
   public ^uint pal;
-  public int intensity = 128;
-  public uint color = 0x0;
+  public uint color = 0x808080;
   public float yscale = 0.4;
   public int fadeend = .consts.int_t::MIN, fadebgn = .consts.int_t::MIN;
   new()
@@ -190,18 +189,25 @@ public &Stage
     public void shadow(&.com.Section sc=)
     {
       ^/char data;
+      int intensity = 128, r = 0, g = 0, b = 0;
       if(#(data = sc.get("intensity")) > 0){
-        `sdw.intensity =
-          .m.max!int?(0)<, .m.min!int?(255)<, .com.atoi(data);
+        intensity = .m.max!int?(0)<, .m.min!int?(255)<, .com.atoi(data);
       }
       if(#(data = sc.get("color")) > 0){
-        ^ubyte c = .bg.csvToAry!c<>.self?(data);
-        if(#c >= 3) `sdw.color = c[0]<<0d16 | c[1]<<0d8 | c[2];
-        loop{index i = 0; do:
-          `sdw.pal[i] = `sdw.color;
-        while ++i < 256:
-        }
+        ^int c = .bg.csvToAry!c<>.self?(data);
+        r = c[0];
+        if(#c < 2) break;
+        g = c[1];
+        if(#c < 3) break;
+        b = c[2];
       }
+      r = .m.max!int?(0, .m.min!int?(255, r+intensity));
+      g = .m.max!int?(0, .m.min!int?(255, g+intensity));
+      b = .m.max!int?(0, .m.min!int?(255, b+intensity));
+      `sdw.color = (uint)(r<<16 | g<<8 | b);
+      loop{index i = 0; do:
+        `sdw.pal[i] = `sdw.color;
+      while ++i < 256:}
       if(#(data = sc.get("yscale")) > 0) `sdw.yscale = .com.atof(data);
       if(#(data = sc.get("reflect")) > 0) `reflect = .com.atoi(data) != 0;
       if(#(data = sc.get("fade.range")) > 0){
