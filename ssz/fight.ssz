@@ -747,6 +747,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       index i = 0;
       float x;
       ^/char t;
+      &.s.Format fm.set(`text_text);
     while; do:
       if(`slidetime[i] == 0) continue;
       x =
@@ -759,7 +760,8 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
           `start_x > 0.0 ? 0.0 
           : -`start_x*((float)(15-`slidetime[i])/15.0 + 1.0))
         - (float)`posx + 320.0;
-      t = .s.join(.s.iToS(`cur[i]))<, .s.split("%i")<, `text_text;
+      fm.d(`cur[i]);
+      t = fm.out;
       if(`text_fontn >= 0 && #f > `text_fontn){
         branch{
         cond (i&1) == 0:
@@ -1113,17 +1115,19 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       if(`wt >= 0 || .com.intro > `ctrl_time) break;
       branch{
         ^/char tmp;
+        &.s.Format fm;
       cond .com.round <= #`round:
         tmp = `round[.com.round-1].text;
-        `round[.com.round-1].text =
-          .s.join(.s.iToS(.com.round))<,
-          .s.split("%i")<, `round[.com.round-1].text;
+        fm.set(`round[.com.round-1].text);
+        fm.d(.com.round);
+        `round[.com.round-1].text = fm.out;
         `round[.com.round-1].draw((float)`posx, (float)`posy, layerno, `fnt);
         `round[.com.round-1].text = tmp;
       else:
         tmp = `round_default.text;
-        `round_default.text =
-          .s.join(.s.iToS(.com.round))<, .s.split("%i")<, `round_default.text;
+        fm.set(`round_default.text);
+        fm.d(.com.round);
+        `round_default.text = fm.out;
         `round_default.draw((float)`posx, (float)`posy, layerno, `fnt);
         `round_default.text = tmp;
       }
@@ -1141,28 +1145,24 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       }
       if(`wt2 < 0) branch{
         ^/char tmp;
+        &.s.Format fm;
       cond ko == .KOTy::DKO || ko == .KOTy::TODraw:
         `drawn.draw((float)`posx, (float)`posy, layerno, `fnt);
       cond #name >= 2:
         tmp = `win2.text;
-        loop{
-          ^^/char sp = .s.split("%s", `win2.text);
-          %char buf;
-          buf .= sp[0];
-          index i = 1;
-          while;
-        do:
-          buf .= name[(i-1) % #name];
-          buf .= sp[i];
+        fm.set(`win2.text);
+        loop{index i = 0; while; do:
+          fm.s(name[i]);
           i++;
-        while i < #sp:
-          `win2.text = buf;
-        }
+        while i < #name:}
+        `win2.text = fm.out;
         `win2.draw((float)`posx, (float)`posy, layerno, `fnt);
         `win2.text = tmp;
       else:
         tmp = `win.text;
-        `win.text = .s.join(name[0])<, .s.split("%s")<, `win.text;
+        fm.set(`win2.text);
+        fm.s(name[0]);
+        `win.text = fm.out;
         `win.draw((float)`posx, (float)`posy, layerno, `fnt);
         `win.text = tmp;
       }

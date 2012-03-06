@@ -7083,7 +7083,7 @@ public &StateBuilder
         cond `state.no < 0:
           {
             ^char tmp;
-            fname .= "s_" .= .s.iToS(`state.no)=>tmp#tmp[1..-1];
+            fname .= "s_" .= .s.iToS(`state.no)=>tmp$tmp[1..-1];
           }
         else:
           fname .= 's' .= .s.iToS(`state.no);

@@ -231,15 +231,13 @@ public void drawShadowList(float x, float y)
       int alpha = sl~alpha;
       
       branch{
-        float fade;
       cond sl~al~y < (float).stg~sdw.fadeend:
         break, break, continue;
       cond sl~al~y < (float).stg~sdw.fadebgn:
-        fade =
-          ((float).stg~sdw.fadeend - sl~al~y)
-          / ((float).stg~sdw.fadeend - (float).stg~sdw.fadebgn);
-        alpha = (int)((float)alpha * fade);
-        intensity = (int)((float)intensity * fade);
+        alpha =
+          (int)(
+            (float)alpha * ((float).stg~sdw.fadeend - sl~al~y)
+            / ((float).stg~sdw.fadeend - (float).stg~sdw.fadebgn));
       }
     cond color < 0:
       color = (int).stg~sdw.color;
@@ -247,6 +245,7 @@ public void drawShadowList(float x, float y)
         pal = . stg~sdw.pal;
         break, break;
       }
+      intensity = intensity * alpha >> 8;
     else:
       intensity = 0;
     comm:
@@ -617,57 +616,53 @@ void rd(~$void(&.Char=) f)
   f(:.c<>=:);
 }
 
-void appendToClipboard(int p, ^/char text, ^&.Var vars)
+void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
 {
-  loop{
-    index i = 0, vi = 0;
-    .com.clipboardText[p].new[-1];
-    if(#.com.clipboardText[p] > 40){
-      ^%char tmp = .com.clipboardText[p][#.com.clipboardText[p]-40..-1];
-      .com.clipboardText[p].new(0);
-      .com.clipboardText[p] .= tmp;
-    }
-    ^%char line = .com.clipboardText[p][#.com.clipboardText[p]-1..-1];
-    while;
-  do:
-    switch(text[i]){
-    case '%':
-      switch(text[++i]){
-      case '%':
-        line<> .= '%';
-      case 'd':
-        if(#vars > 0) line<> .= .s.iToS(vars[vi++].toI());
-      case 'f':
-        if(#vars > 0){
-          ^char tmp;
-          .mes.DoubleToStr(:tmp=, vars[vi++].toF():);
-          line<> .= tmp;
-        }
-      default:
-        line<> .= '%' .= text[i];
+  .com.clipboardText[p].[void(cb=){
+    loop{
+      index i = 0, vi = 0;
+      if(#cb == 0) cb.new(1);
+      if(#cb > 10){
+        ^%char tmp = cb[#cb-10..-1];
+        cb.new(0);
+        cb .= tmp;
       }
-    case '\\':
-      switch(text[++i]){
+      ^%char line = cb[#cb-1..-1];
+      &.s.Format fm.set(formatText);
+      loop{index j = 0; while; do:
+        branch{
+        cond vars[j].typ == .VarTy::Float:
+          fm.f(vars[j].toF());
+        else:
+          fm.d(vars[j].toI());
+        }
+        j++;
+      while j < #vars:}
+      ^char text = fm.out;
+      while;
+    do:
+      switch(text[i]){
       case '\\':
-        line<> .= '\\';
-      case 'n':
-        .com.clipboardText[p].new[-1];
-        line = .com.clipboardText[p][#.com.clipboardText[p]-1..-1];
-      case 't':
-        loop{index j = 0, n = 8 - #line<>%8; do:
-          line<> .= ' ';
-          j++;
-        while j < n:
+        switch(text[++i]){
+        case '\\':
+          line<> .= '\\';
+        case 'n':
+          cb.new[-1];
+          line = cb[#cb-1..-1];
+        case 't':
+          loop{index j = 0, n = 8 - #line<>%8; do:
+            line<> .= ' ';
+            j++;
+          while j < n:}
+        default:
+          line<> .= '\\' .= text[i];
         }
       default:
-        line<> .= '\\' .= text[i];
+        line<> .= text[i];
       }
-    default:
-      line<> .= text[i];
-    }
-    i++;
-  while i < #text:
-  }
+      i++;
+    while i < #text:}
+  }];
 }
 
 |StTy
@@ -1812,8 +1807,8 @@ public &Projectile
     if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
     if(#`ani == 0 || #`ani~ani.frames == 0) ret false;
     ^&.act.Frame frm;
-    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn2;
-    ^&.act.Rect clsn2 = `ani~ani.currentFrame()=>frm#frm~clsn2;
+    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn2;
+    ^&.act.Rect clsn2 = `ani~ani.currentFrame()=>frm$frm~clsn2;
     &.ClsnHantei ch.set(
       pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
       `scalex, `scaley, `x, `y, `facing > 0 ? .pLrSet : .mLrSet);
@@ -2795,7 +2790,7 @@ public &Char
     if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
     if(#`ani == 0 || #`curFrame == 0) ret false;
     ^&.act.Frame frm;
-    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn1;
+    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn1;
     ^&.act.Rect clsn2 = `curFrame~clsn2;
     &.ClsnHantei ch.set(
       pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
@@ -2816,7 +2811,7 @@ public &Char
     if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
     if(#`ani == 0 || #`curFrame == 0) ret false;
     ^&.act.Frame frm;
-    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm#frm~clsn2;
+    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn2;
     if(`stVal.hit.reversal_attr > 0) clsn1 = frm~clsn1;
     ^&.act.Rect clsn2 = `curFrame~clsn1;
     &.ClsnHantei ch.set(
