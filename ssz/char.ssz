@@ -4480,7 +4480,7 @@ public &Char
     if(`stVal.playerno != `playerno && p != `stVal.playerno){
       `enemyExplodsRemove(`stVal.playerno);
     }
-    if(`sysivar[.iBINDTIME] < 0) `setBindTime(0);
+    if(`sysivar[.iBINDTIME] < 0) `byBindClear();
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
