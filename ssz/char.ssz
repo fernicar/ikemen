@@ -4480,7 +4480,6 @@ public &Char
     if(`stVal.playerno != `playerno && p != `stVal.playerno){
       `enemyExplodsRemove(`stVal.playerno);
     }
-    if(`sysivar[.iBINDTIME] < 0) `byBindClear();
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
@@ -5825,6 +5824,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
       if(!ho && p2s < 2 && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
       `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
+      if(`pyr.sysivar[.iBINDTOID] == by.id) `pyr.setBindTime(0);
       if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
         `pyr.stVal.typ = .StTy::S;
       }
