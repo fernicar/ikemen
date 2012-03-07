@@ -288,14 +288,14 @@ public void drawShadowList(float x, float y)
             (float).com.GameWidth/2.0, .stage.bgPalFX, sl~al~oVer);
         }
       }];
-      if(intensity > 0){
-        sl~al~anim~ani.salpha = 0;
-        sl~al~anim~ani.dalpha = 255-intensity;
-        draw(::);
-      }
       if(color > 0){
         sl~al~anim~ani.salpha = 1;
         sl~al~anim~ani.dalpha = 255;
+        draw(::);
+      }
+      if(intensity > 0){
+        sl~al~anim~ani.salpha = 0;
+        sl~al~anim~ani.dalpha = 255-intensity;
         draw(::);
       }
     break:
