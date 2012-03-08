@@ -23,7 +23,7 @@ public &Font
   ushort ver, ver2;
   /int sizex = 6;
   /int sizey = 8;
-  int spacingx = 0, spacingy = 0;
+  /int spacingx = 0, spacingy = 0;
   int colors = 255;
   int offsetx = 0, offsety = 0;
   public bool loadFile(^/char filename)
@@ -297,4 +297,6 @@ public &Font
     }
   }
 }
+
+public &Font debugFont;
 

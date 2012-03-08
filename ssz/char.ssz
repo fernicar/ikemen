@@ -14,6 +14,7 @@ lib snd = "sound.ssz";
 lib fgt = "fight.ssz";
 lib act = "action.ssz";
 lib mes = <alpha/mesdialog.ssz>;
+lib fnt = "font.ssz";
 
 
 int changeStateNest = 0;
@@ -620,13 +621,8 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
 {
   .com.clipboardText[p].[void(cb=){
     loop{
-      index i = 0, vi = 0;
+      index i = 0;
       if(#cb == 0) cb.new(1);
-      if(#cb > 10){
-        ^%char tmp = cb[#cb-10..-1];
-        cb.new(0);
-        cb .= tmp;
-      }
       ^%char line = cb[#cb-1..-1];
       &.s.Format fm.set(formatText);
       loop{index j = 0; while; do:
@@ -639,29 +635,47 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
         j++;
       while j < #vars:}
       ^char text = fm.out;
+      int w = .fnt.debugFont.textWidth(line<>);
+      ~$void(char) appendChar = [void(char c){
+        w += .fnt.debugFont.charWidth(c) + .fnt.debugFont.spacingx;
+        if(w > .cfg.Width){
+          w = .fnt.debugFont.charWidth(c) + .fnt.debugFont.spacingx;
+          cb.new[-1];
+          line = cb[#cb-1..-1];
+        }
+        line<> .= c;
+      }];
       while;
     do:
       switch(text[i]){
       case '\\':
         switch(text[++i]){
         case '\\':
-          line<> .= '\\';
+          appendChar(:'\\':);
         case 'n':
           cb.new[-1];
           line = cb[#cb-1..-1];
+          w = 0;
         case 't':
           loop{index j = 0, n = 8 - #line<>%8; do:
             line<> .= ' ';
+            w += .fnt.debugFont.sizex + .fnt.debugFont.spacingx;
             j++;
           while j < n:}
         default:
-          line<> .= '\\' .= text[i];
+          appendChar(:'\\':);
+          appendChar(:text[i]:);
         }
       default:
-        line<> .= text[i];
+        appendChar(:text[i]:);
       }
       i++;
     while i < #text:}
+    if(#cb > 10){
+      ^%char tmp = cb[#cb-10..-1];
+      cb.new(0);
+      cb .= tmp;
+    }
   }];
 }
 
