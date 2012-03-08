@@ -3306,6 +3306,8 @@ public &StateBuilder
           case 'F', 'f': flg |= (int).chr.StTy::N;
           case 'D', 'd': flg |= (int).chr.StTy::L;
           case 'P', 'p': flg |= (int).chr.StTy::U;
+          case '-':      flg |= (int).chr.MovTy::I;
+          case '+':      flg |= (int).chr.MovTy::H;
           }
           i++;
         while i < #data:
