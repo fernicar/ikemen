@@ -18,6 +18,7 @@ lib sff = "sff.ssz";
 lib sc = "script.ssz";
 lib cmd = "command.ssz";
 lib snd = "sound.ssz";
+lib fnt = "font.ssz";
 
 
 ^&sc.Script script = sc.newRoot();
@@ -355,6 +356,8 @@ bool init()
     .com.error!.self?("system初期化に失敗");
     ret false;
   }
+  .fnt.debugFont.new(1);
+  .fnt.debugFont~loadFile(.cfg.debugfont);
   .addFunc("game", .scGame);
   .addFunc("addChar", .scAddChar);
   .addFunc("addStage", .scAddStage);

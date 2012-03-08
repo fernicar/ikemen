@@ -635,11 +635,11 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
         j++;
       while j < #vars:}
       ^char text = fm.out;
-      int w = .fnt.debugFont.textWidth(line<>);
+      int w = .fnt.debugFont~textWidth(line<>);
       ~$void(char) appendChar = [void(char c){
-        w += .fnt.debugFont.charWidth(c) + .fnt.debugFont.spacingx;
+        w += .fnt.debugFont~charWidth(c) + .fnt.debugFont~spacingx;
         if(w > .cfg.Width){
-          w = .fnt.debugFont.charWidth(c) + .fnt.debugFont.spacingx;
+          w = .fnt.debugFont~charWidth(c) + .fnt.debugFont~spacingx;
           cb.new[-1];
           line = cb[#cb-1..-1];
         }
@@ -659,7 +659,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
         case 't':
           loop{index j = 0, n = 8 - #line<>%8; do:
             line<> .= ' ';
-            w += .fnt.debugFont.sizex + .fnt.debugFont.spacingx;
+            w += .fnt.debugFont~sizex + .fnt.debugFont~spacingx;
             j++;
           while j < n:}
         default:

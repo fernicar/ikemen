@@ -298,5 +298,5 @@ public &Font
   }
 }
 
-public &Font debugFont;
+public ^&Font debugFont;
 

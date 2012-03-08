@@ -120,13 +120,12 @@ const double lvmul = 2.0**(1.0/12.0);
 
 void game()
 {
-  .fnt.debugFont.loadFile(.cfg.debugfont);
   void put(float x, float y=, ^/char txt)
   {
     int tmp = .sff.allPalFX~time;
     .sff.allPalFX~time = 0;
-    .fnt.debugFont.drawText(
-      x, y+=(float).fnt.debugFont.sizey/.com.HeightScale,
+    .fnt.debugFont~drawText(
+      x, y+=(float).fnt.debugFont~sizey/.com.HeightScale,
       1.0/.com.WidthScale,  1.0/.com.HeightScale, 0, 1, txt);
     .sff.allPalFX~time = tmp;
   }
@@ -165,7 +164,7 @@ void game()
         while j < #.com.clipboardText[i]:
         }
       }
-      y+=(float).fnt.debugFont.sizey/.com.HeightScale;
+      y+=(float).fnt.debugFont~sizey/.com.HeightScale;
       i++;
     while i < #.chr.chars:
     }
