@@ -1885,7 +1885,6 @@ public &Projectile
       else:
         `hits--;
       }
-      `hit.air_juggle = 0;
     }
     if(`hits <= 0) `hit.attr = -1;
     if(`paused()) ret;
