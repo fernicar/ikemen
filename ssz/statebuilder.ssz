@@ -6295,7 +6295,7 @@ public &StateBuilder
             `state.ctrlList[-1].task=, data=, "f=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
-      `state.ctrlList[-1].task .= "if(#`stVal.hb.byid==0)ret;";
+      `state.ctrlList[-1].task .= "if(#`stVal.hb.by==0)ret;";
       if(!`stateParam(param=, "xvel", [`paraF_t(data=){
          if(
            !`fullExpression(

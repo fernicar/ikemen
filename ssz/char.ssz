@@ -962,7 +962,17 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
 }
 &HitBy
 {
-  public %int byid;
+  public &ByData
+  {
+    public int id;
+    public int juggle;
+    public void set(int id, int juggle)
+    {
+      `id = id;
+      `juggle = juggle;
+    }
+  }
+  public %&ByData by;
   public int hitf1;
   public int hitt1;
   public int hitf2;
@@ -987,7 +997,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public int hitid;
   public int guarded;
   public int fallf;
-  public int juggle;
   public int p1getp2facing;
   public float mindistx;
   public float maxdistx;
@@ -1000,7 +1009,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public &.Fall fall;
   public void clear()
   {
-    `byid.new(0);
+    `by.new(0);
     `hitf1 = 0;
     `hitt1 = 0;
     `hitf2 = 0;
@@ -1025,7 +1034,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `hitid = -1;
     `guarded = 0;
     `fallf = 0;
-    `juggle = 0;
     `p1getp2facing = 0;
     `mindistx = 0.0/0.0;
     `maxdistx = 0.0/0.0;
@@ -1044,28 +1052,38 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   /bool byidMatch(int id)
   {
     loop{index i = 0; while; do:
-      if(`byid[i] == id) ret true;
+      if(`by[i].id == id) ret true;
       i++;
-    while i < #`byid:
+    while i < #`by:
     }
     ret false;
+  }
+  /int getJuggle(int id, int defval)
+  {
+    loop{index i = 0; while; do:
+      if(`by[i].id == id) ret `by[i].juggle;
+      i++;
+    while i < #`by:
+    }
+    ret defval;
   }
   public void dropByid(int id)
   {
     loop{index i = 0; while; do:
-      if(`byid[i] == id){
-        %int tmp .= `byid[0..i] .= `byid[i+1..-1];
-        `byid = tmp;
+      if(`by[i].id == id){
+        %&`ByData tmp .= `by[0..i] .= `by[i+1..-1];
+        `by = tmp;
         ret ;
       }
       i++;
-    while i < #`byid:
+    while i < #`by:
     }
   }
-  public void addByid(int id)
+  public void addByid(int id, int juggle)
   {
+    int jgl = `getJuggle(id, juggle);
     `dropByid(id);
-    `byid .= id;
+    `by.new[-1].set(id, juggle);
   }
 }
 &HitOverride
@@ -1130,7 +1148,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `typ = .StTy::S;
     `phy = .StTy::N;
     `mov = .MovTy::I;
-    `juggle = 0;
     `hit.clear();
     `hb.clear();
     loop{index i=0;do:`ho[i].clear();while ++i<#`ho:}
@@ -1150,11 +1167,9 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   {
     bool cmb = combo && `hb.guarded == 0;
     int fall = `hb.fallf, hc = `hb.hitcount, fc = `hb.fallcount;
-    %int bi = `hb.byid;
-    int jgl = `hb.juggle;
+    %&`hb.ByData bi = `hb.by;
     `hb.clear();
-    `hb.byid = bi;
-    `hb.juggle = jgl;
+    `hb.by = bi;
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
     `hb.fall = hit.fall;
@@ -2329,17 +2344,17 @@ public &Char
         ^`self c;
         while;
       do:
-        c = .players.get(`stVal.hb.byid[i]);
+        c = .players.get(`stVal.hb.by[i].id);
         if(#c > 0){
           c~removeTarget(`id);
           `enemyExplodsRemove(c~playerno);
         }
         i++;
-      while i < #`stVal.hb.byid:
+      while i < #`stVal.hb.by:
       }
       `byBindClear();
     }
-    `stVal.hb.byid.new(0);
+    `stVal.hb.by.new(0);
   }
   void addChild(int hidx)
   {
@@ -2726,7 +2741,7 @@ public &Char
       .super > 0 && .superunhittable != 0
       && `playerno == .superplayer) ret false;
     if(hit.chainid >= 0 && `stVal.hb.hitid != hit.chainid) ret false;
-    if(#`stVal.hb.byid > 0 && `stVal.hb.byid[-1] == cid){
+    if(#`stVal.hb.by > 0 && `stVal.hb.by[-1].id == cid){
       if(
         hit.nochainid1 >= 0 && `stVal.hb.hitid == hit.nochainid1) ret false;
       if(
@@ -2861,7 +2876,6 @@ public &Char
     if(`stVal.mctime < 0){
       `stVal.mctime = 1;
       if(`stVal.mctyp == .MoveContact::Hit){
-        `stVal.juggle = 0;
         `sysivar[.iHITCOUNT] += `stVal.hit.numhits;
       }
     }
@@ -2869,7 +2883,7 @@ public &Char
       `sysivar[.iHITPAUSETIME] = 0;
       `p1facing = 0;
       ^`self c;
-      if(#`stVal.hb.byid > 0 && #(c = .players.get(`stVal.hb.byid[-1])) > 0){
+      if(#`stVal.hb.by > 0 && #(c = .players.get(`stVal.hb.by[-1].id)) > 0){
         if(`stVal.hb.p1getp2facing != 0){
           c~setFacing(`facing*`stVal.hb.p1getp2facing);
         }
@@ -3086,9 +3100,9 @@ public &Char
       ^`self by;
       while;
     do:
-      if(`sysivar[.iBINDTOID] == `stVal.hb.byid[i]) ret true;
+      if(`sysivar[.iBINDTOID] == `stVal.hb.by[i].id) ret true;
       i++;
-    while i < #`stVal.hb.byid:
+    while i < #`stVal.hb.by:
     }
     ret false;
   }
@@ -3155,9 +3169,9 @@ public &Char
       ^`self by;
       while;
     do:
-      if(#(by = .players.get(`stVal.hb.byid[i])) > 0) by~action();
+      if(#(by = .players.get(`stVal.hb.by[i].id)) > 0) by~action();
       i++;
-    while i < #`stVal.hb.byid:
+    while i < #`stVal.hb.by:
     }
     if(#`palfx > 0 && !`isPaused()) `palfx~step();
     bool p = isSuperPaused() || isNormalPaused();
@@ -3460,8 +3474,8 @@ public &Char
             && `helperindex == 0) branch
           {
             ^`self by;
-            if(#`stVal.hb.byid == 0) else;
-            by = .players.get(`stVal.hb.byid[-1]);
+            if(#`stVal.hb.by == 0) else;
+            by = .players.get(`stVal.hb.by[-1].id);
             if(#by == 0) else;
           cond by~playerno == `playerno:
             .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
@@ -3476,8 +3490,8 @@ public &Char
             && `helperindex == 0) branch
           {
             ^`self by;
-            if(#`stVal.hb.byid == 0) else;
-            by = .players.get(`stVal.hb.byid[-1]);
+            if(#`stVal.hb.by == 0) else;
+            by = .players.get(`stVal.hb.by[-1].id);
             if(#by == 0) else;
           cond (by~playerno&1) == (`playerno&1):
             branch{
@@ -3511,7 +3525,6 @@ public &Char
           `stVal.hb.hitshaketime = 0;
           `stVal.hb.fallf = 0;
           `stVal.hb.fallcount = 0;
-          `stVal.hb.juggle = 0;
           `getcombo = 0;
         }
         if(`stVal.hb.hitshaketime > 0) `stVal.hb.hitshaketime--;
@@ -3675,7 +3688,7 @@ public &Char
     branch{
     cond `sysivar[.iPAUSEMOVETIME] > pausetime:
       `sysivar[.iPAUSEMOVETIME] = 0;
-    cond (.pause > 0 || #`stVal.hb.byid > 0) && `sysivar[.iPAUSEMOVETIME] > 0:
+    cond (.pause > 0 || #`stVal.hb.by > 0) && `sysivar[.iPAUSEMOVETIME] > 0:
       `sysivar[.iPAUSEMOVETIME]--;
     }
   }
@@ -3692,7 +3705,7 @@ public &Char
     branch{
     cond `sysivar[.iSUPERMOVETIME] > pausetime:
       `sysivar[.iSUPERMOVETIME] = 0;
-    cond (.super > 0 || #`stVal.hb.byid > 0) && `sysivar[.iSUPERMOVETIME] > 0:
+    cond (.super > 0 || #`stVal.hb.by > 0) && `sysivar[.iSUPERMOVETIME] > 0:
       `sysivar[.iSUPERMOVETIME]--;
     }
   }
@@ -5980,7 +5993,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         by.setCtrl(false);
       }
       by.addTarget(`pyr.id);
-      `pyr.stVal.hb.addByid(by.id);
+      `pyr.stVal.hb.addByid(by.id, by.sysivar[.iAIRJUGGLE]);
+      if(`pyr.hittmp < 2){
+        `pyr.stVal.hb.by[-1].juggle = by.sysivar[.iAIRJUGGLE];
+      }
+      if(#hitting == 1 && !by.ls(.lsNOJUGGLECHECK)){
+        `pyr.stVal.hb.by[-1].juggle -=
+          pro != 0 ? by.stVal.hit.air_juggle : by.stVal.juggle;
+      }
     diff<hit>:
       if(hit.palfx_time > 0){
         ^&.com.PalFX fx = `pyr.getPalfx();
@@ -6022,16 +6042,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         by.veloff = by.stVal.hit.air_cornerpush_veloff * (float)by.facing;
       case .StTy::L:
         by.veloff = by.stVal.hit.down_cornerpush_veloff * (float)by.facing;
-      }
-      if(
-        `pyr.hittmp < 2
-        || #`pyr.stVal.hb.byid == 0 || `pyr.stVal.hb.byid[-1] != by.id)
-      {
-        `pyr.stVal.hb.juggle = by.sysivar[.iAIRJUGGLE];
-      }
-      if(!by.ls(.lsNOJUGGLECHECK)){
-        `pyr.stVal.hb.juggle -=
-          pro != 0 ? by.stVal.hit.air_juggle : by.stVal.juggle;
       }
     else:
       if(
@@ -6085,9 +6095,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(
       p~c~stVal.hit.hitonce >= 0 && (
         pyr.hittmp < 2
-        || #pyr.stVal.hb.byid == 0 || pyr.stVal.hb.byid[-1] != p~c~id
         || p~c~ls(.lsNOJUGGLECHECK)
-        || juggcheck(pyr.stVal.hb.juggle, p~c~stVal.juggle))
+        || juggcheck(
+          pyr.stVal.hb.getJuggle(p~c~id, p~c~sysivar[.iAIRJUGGLE]),
+          p~c~stVal.juggle))
       && pyr.hittable(
         p~c~stVal.hit=, p~c~id, [bool(&.Hitdef h=){
           ret p~c~attrCheck(h=, pyr.id)&&p~c~hitCheck(pyr=);}]))
@@ -6237,10 +6248,12 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       hoge = true;
       if(
         .projs[i][j].hit.hitonce >= 0 && (
-          pyr.hittmp < 2 || #pyr.stVal.hb.byid == 0
-          || pyr.stVal.hb.byid[-1] != .chars[i][0]~id
+          pyr.hittmp < 2
           || .chars[i][0]~ls(.lsNOJUGGLECHECK)
-          || juggcheck(pyr.stVal.hb.juggle, .projs[i][j].hit.air_juggle))
+          || juggcheck(
+            pyr.stVal.hb.getJuggle(
+              .chars[i][0]~id, .chars[i][0]~sysivar[.iAIRJUGGLE]),
+            .projs[i][j].hit.air_juggle))
         && .projs[i][j].timemiss <= 0
         && .projs[i][j].hitpause <= 0 && pyr.hittable(
           .projs[i][j].hit=, .chars[i][0]~id, [bool(&.Hitdef h=){
