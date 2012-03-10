@@ -1229,7 +1229,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
       cond hit.down_velocityy != 0.0 || hit.down_bounce == 0:
         `hb.yvel = hit.down_velocityy;
       else:
-        if(!.m.isnan(hit.fall.xvelocity)) `hb.xvel = hit.fall.xvelocity;
         `hb.yvel = hit.fall.yvelocity;
       }
       `hb.fallf = 1;
