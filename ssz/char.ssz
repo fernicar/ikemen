@@ -1083,7 +1083,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   {
     int jgl = `getJuggle(id, juggle);
     `dropByid(id);
-    `by.new[-1].set(id, juggle);
+    `by.new[-1].set(id, jgl);
   }
 }
 &HitOverride
