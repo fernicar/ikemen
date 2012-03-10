@@ -1882,10 +1882,12 @@ public &StateBuilder
     cond
       .s.equ("enemy", token) || .s.equ("enemynear", token)
       || .s.equ("helper", token) || .s.equ("target", token)
+      || .s.equ("partner", token)
       :
       branch{
         bool h = token[0] == 'h';
         bool t = token[0] == 't';
+        bool p = token[0] == 'p';
         bool n = token[5] == 'n';
         token = `tokenizer(in=);
       cond .s.equ("(", token):
@@ -1896,6 +1898,8 @@ public &StateBuilder
           out .= '$' .= obj .= "trHelper()";
         cond t:
           out .= '$' .= obj .= "trTarget()";
+        cond p:
+          out .= '$' .= obj .= "trPartner()";
         cond n:
           out .= '$' .= obj .= "trEnemyNear()";
         else:
@@ -1909,6 +1913,8 @@ public &StateBuilder
           out .= ".v.setI(-1)$" .= obj .= "trHelper()";
         cond t:
           out .= ".v.setI(-1)$" .= obj .= "trTarget()";
+        cond p:
+          out .= ".v.setI(0)$" .= obj .= "trPartner()";
         cond n:
           out .= ".v.setI(0)$" .= obj .= "trEnemyNear()";
         else:
@@ -1921,14 +1927,8 @@ public &StateBuilder
       out .= "$.rd([._t(_=){";
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
       out .= ";}])";
-    cond
-      .s.equ("root", token)
-      || .s.equ("partner", token) || .s.equ("parent", token)
-      :
-      out .= obj .=
-        token[0] == 'r' ? "trRoot()"
-        : token[3] == 't' ? "trPartner()"
-        : "trParent()";
+    cond .s.equ("root", token) || .s.equ("parent", token):
+      out .= obj .= token[0] == 'r' ? "trRoot()" : "trParent()";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret false;

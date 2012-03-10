@@ -4005,6 +4005,10 @@ public &Char
   }
   public void trPartner()
   {
+    if(.v.toI() > 0){
+      .c.new(0);
+      ret;
+    }
     .c =
       #.chars[`playerno+2 & 3] > 0
       ? .chars[`playerno+2 & 3][0] : .consts.null!`self?();
