@@ -911,7 +911,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `ground_fall = 0;
     `air_fall = .com.IERR;
     `down_velocityx = 0.0/0.0;
-    `down_velocityy = 0.0/0.0;
+    `down_velocityy = -4.5;
     `down_hittime = 0;
     `down_bounce = 0;
     `id = 0;
@@ -1225,13 +1225,11 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
       `hb.hittime = hit.down_hittime;
       `hb.ctrltime = hit.down_hittime;
       `hb.xvel = hit.down_velocityx;
-      branch{
-      cond hit.down_velocityy != 0.0 || hit.down_bounce == 0:
-        `hb.yvel = hit.down_velocityy;
-      else:
-        `hb.yvel = hit.fall.yvelocity;
+      `hb.yvel = hit.down_velocityy;
+      if(hit.down_bounce == 0){
+        `hb.fall.xvelocity = 0.0;
+        `hb.fall.yvelocity = 0.0;
       }
-      `hb.fallf = 1;
     else:
       `hb.hittime = hit.ground_hittime;
       `hb.ctrltime = hit.ground_hittime;
@@ -3196,7 +3194,9 @@ public &Char
         {
           ^`self e = .players.enemyNear(`=, 0);
           if((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX]) >= 0) break;
-          `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
+          if(`stVal.typ != .StTy::L){
+            `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
+          }
           `setFacing(-`facing);
         }
         if(`keyctrl && #`cmd > 0) branch{
@@ -3449,15 +3449,14 @@ public &Char
       }
       if(`acttmp > 0 && #`ani > 0) `ani~ani.updateSprite();
       `atktmp =
-        (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
+        (
+          (`stVal.typ != .StTy::L && `stVal.mov != .MovTy::I)
+          || `stVal.hit.reversal_attr > 0)
         && `isActive() ? `stVal.no : -1;
       if(`stVal.mov == .MovTy::H){
         `sysivar[.iPAUSEMOVETIME] = 0;
         `sysivar[.iSUPERMOVETIME] = 0;
-        `hittmp =
-          (int)(
-            `isFall() && (`stVal.typ == .StTy::A || `stVal.typ == .StTy::L))
-          + 1;
+        `hittmp = (int)`isFall() + 1;
         if(
           `isActive()
           && (`stVal.no == 5100 || `stVal.no == 5070) && `stVal.time == 1)
@@ -3736,7 +3735,6 @@ public &Char
       h.airguard_velocityy = h.air_velocityy*0.5;
     }
     if(.m.isnan(h.down_velocityx)) h.down_velocityx = h.air_velocityx;
-    if(.m.isnan(h.down_velocityy)) h.down_velocityy = h.air_velocityy;
     if(h.air_fall == .com.IERR) h.air_fall = h.ground_fall;
     if(h.fall.animtype == .AnimTy::Unknown) branch{
     cond h.air_animtype != .AnimTy::Unknown:
