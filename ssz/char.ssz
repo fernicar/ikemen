@@ -1227,7 +1227,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
       `hb.xvel = hit.down_velocityx;
       `hb.yvel = hit.down_velocityy;
       if(hit.down_bounce == 0){
-        `hb.fall.xvelocity = 0.0;
+        `hb.fall.xvelocity = 0.0/0.0;
         `hb.fall.yvelocity = 0.0;
       }
     else:
@@ -1897,6 +1897,7 @@ public &Projectile
       else:
         `hits--;
       }
+      `hit.air_juggle = 0;
     }
     if(`hits <= 0) `hit.attr = -1;
     if(`paused()) ret;
@@ -2873,6 +2874,7 @@ public &Char
     if(`stVal.mctime < 0){
       `stVal.mctime = 1;
       if(`stVal.mctyp == .MoveContact::Hit){
+        `stVal.juggle = 0;
         `sysivar[.iHITCOUNT] += `stVal.hit.numhits;
       }
     }
@@ -6057,7 +6059,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
   }
   bool juggcheck(int h, int a)
   {
-    ret a <= 0 || a <= h;
+    ret a <= h;
   }
   pyr.inguarddist = false;
   pyr.sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
@@ -6245,8 +6247,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       hoge = true;
       if(
         .projs[i][j].hit.hitonce >= 0 && (
-          pyr.hittmp < 2
-          || .chars[i][0]~ls(.lsNOJUGGLECHECK)
+          .chars[i][0]~ls(.lsNOJUGGLECHECK)
           || juggcheck(
             pyr.stVal.hb.getJuggle(
               .chars[i][0]~id, .chars[i][0]~sysivar[.iAIRJUGGLE]),
