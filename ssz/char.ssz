@@ -5996,7 +5996,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       if(`pyr.hittmp < 2){
         `pyr.stVal.hb.by[-1].juggle = by.sysivar[.iAIRJUGGLE];
       }
-      if(#hitting == 1 && !by.ls(.lsNOJUGGLECHECK)){
+      if(`pyr.isFall() && #hitting == 1 && !by.ls(.lsNOJUGGLECHECK)){
         `pyr.stVal.hb.by[-1].juggle -=
           pro != 0 ? by.stVal.hit.air_juggle : by.stVal.juggle;
       }
@@ -6260,6 +6260,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               && pyr.hitProjCheck(.projs[i][j]=);
           }]))
       {
+        int oldhittmp = pyr.hittmp;
+        if(pyr.ls(.lsGETHIT)) pyr.hittmp = (int)pyr.isFall() + 1;
         hoge = false;
         if(
           .m.inRange!float?(
@@ -6297,6 +6299,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             if(.projs[i][j].hit.hitonce > 0) .projs[i][j].hit.hitonce = -1;
           }
         }
+      break:
+        pyr.hittmp = oldhittmp;
       }
       if(
         .projs[i][j].prioritypoint > 0 && pyr.atktmp >= 0
@@ -7007,6 +7011,11 @@ public void draw(float x, float y, float scl)
     if(#.chars[i] > 0){
       names[i] = .chars[i][0]~displayname;
       facefx[i] = .chars[i][0]~getPalfx();
+      .fight~fa[.com.tmode[i&1]][i].face_spr.[void(fs){
+        if(#fs == 0) ret;
+        fs~colorPallet.new(0);
+        fs~colorPallet = fs~getPal(.chars[i][0]~sf~palList=);
+      }];
     }
     i++;
   while i < #names:}
@@ -7076,15 +7085,15 @@ public void draw(float x, float y, float scl)
         fade(rect=, 255);
       }
     }
+    if(!.gs(.gsGLOBALNOSHADOW)){
+      if(.stg~reflection > 0) .drawReflection(x, y);
+      .drawShadowList(x, y);
+    }
   }
   branch{
   cond .envcol_time != 0:
     if(.envcol_under != 0) .com.screenFill(ecol);
   else:
-    if(!.gs(.gsGLOBALNOSHADOW)){
-      if(.stg~reflection > 0) .drawReflection(x, y);
-      .drawShadowList(x, y);
-    }
     .fight~draw(0, lpl, names, .gs(.gsNOBARDISPLAY), facefx, .superplayer);
     .fight~ro.draw(0, .ko, winner);
   }

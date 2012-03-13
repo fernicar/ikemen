@@ -4770,9 +4770,12 @@ public &StateBuilder
   {
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .=
-        "%int tar=`getTarget(-1);if(#tar==0)ret;int t=1;float x=0.0,y=0.0;";
-      if(`state.ctrlList[-1].typ == .CtrlTy::BindToTarget){
-        `state.ctrlList[-1].task .= "int hmf=0;";
+        "%int tar=`getTarget(-1);if(#tar==0)ret;int t=1;float x=0.0,";
+      switch(`state.ctrlList[-1].typ){
+      case .CtrlTy::TargetBind:
+        `state.ctrlList[-1].task .= "y=0.0;";
+      case .CtrlTy::BindToTarget:
+        `state.ctrlList[-1].task .= "y=0.0/0.0;int hmf=0;";
       }
       if(!`stateParam(param=, "id", [`paraF_t(data=){
         if(
