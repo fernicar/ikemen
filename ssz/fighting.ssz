@@ -207,8 +207,8 @@ void game()
     .com.scale = .chr.stg~ztopscale;
     .com.screenleft = (float).chr.stg~screenleft;
     .com.screenright = (float).chr.stg~screenright;
-    .com.xmin = -160.0/.com.scale + .com.screenleft;
-    .com.xmax = 160.0/.com.scale - .com.screenright;
+    .com.xmin = -((float).com.GameWidth/2.0)/.com.scale + .com.screenleft;
+    .com.xmax = ((float).com.GameWidth/2.0)/.com.scale - .com.screenright;
   }
   loop{
     int stagetime;
@@ -443,10 +443,6 @@ void game()
       }
       break, break;
     }
-    tmp =
-      #((l + r)*scl - (newx - x)*2.0) < 80.0
-      ? 160.0 : .m.max!float?(0.0)<, .m.min!float?(160.0)<,
-      .m.max!float?(-(l*scl-(newx-x)), r*scl-(newx-x));
     if(.com.turbo < 1.0) sclmul **= .com.turbo;
     scl *= sclmul;
     branch{
@@ -455,7 +451,11 @@ void game()
     else:
       scl = .m.max!float?(minscl)<, .m.min!float?(.cfg.MaxScale)<, scl;
     }
-    tmp /= scl;
+    tmp =
+      #((l + r) - (newx - x)*2.0) < ((float).com.GameWidth/4.0)/scl
+      ? ((float).com.GameWidth/2.0)/scl
+      : .m.max!float?(0.0)<, .m.min!float?(((float).com.GameWidth/2.0)/scl)<,
+      .m.max!float?(-(l-(newx-x)), r-(newx-x));
     x =
       (float).com.GameWidth > br - bl + 320.0
       ? 0.0
