@@ -19,360 +19,24 @@ lib sc = "script.ssz";
 lib cmd = "command.ssz";
 lib snd = "sound.ssz";
 lib fnt = "font.ssz";
+lib lua = <alpha/lua.ssz>;
 
-
-^&sc.Script script = sc.newRoot();
-&sys.System syst;
-
-void addFunc(^/char name, func .sc.fsig_t f)
+void scGame(&.lua.State L=, int re=)
 {
-  ^&.sc.Function fn.new(1);
-  fn~f = f;
-  fn~block = .script;
-  .script~setFunction(name, fn);
+  re = 1;
+  L.pushNumber((double).match());
 }
 
-|.mac.RetState scGame(^char arg, ^char re=, &.sc.Function fn=)
+bool init(&.lua.State L=)
 {
-  re = .s.iToS(.match());
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scAddChar(^char arg, ^char re=, &.sc.Function fn=)
-{
-  .syst.selinf.sel.addChar(arg);
-  re.new(0);
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scAddStage(^char arg, ^char re=, &.sc.Function fn=)
-{
-  .syst.selinf.sel.addStage(arg);
-  re.new(0);
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scSetSelColRow(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  int c = .syst.selinf.sel.columns, r = .syst.selinf.sel.rows;
-  branch{
-  cond #mess >= 1 && !<consteval>(c=, mess[0]):
-  cond #mess >= 2 && !<consteval>(r=, mess[1]):
-  else:
-    break;
-  comm:
-    .mac.errormes .= "エラー(setSelColRow): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  .syst.selinf.sel.columns = c;
-  .syst.selinf.sel.rows = r;
-  re.new(0);
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scSetSelCellSize(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  float x = .syst.selinf.sel.cellsizex, y = .syst.selinf.sel.cellsizey;
-  branch{
-  cond #mess >= 1 && !<consteval>(x=, mess[0]):
-  cond #mess >= 2 && !<consteval>(y=, mess[1]):
-  else:
-    break;
-  comm:
-    .mac.errormes .= "エラー(setSelCellSize): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  .syst.selinf.sel.cellsizex = x;
-  .syst.selinf.sel.cellsizey = y;
-  re.new(0);
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scSetSelCellScale(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  float x = .syst.selinf.sel.cellscalex, y = .syst.selinf.sel.cellscaley;
-  branch{
-  cond #mess >= 1 && !<consteval>(x=, mess[0]):
-  cond #mess >= 2 && !<consteval>(y=, mess[1]):
-  else:
-    break;
-  comm:
-    .mac.errormes .= "エラー(setSelCellScale): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  .syst.selinf.sel.cellscalex = x;
-  .syst.selinf.sel.cellscaley = y;
-  re.new(0);
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scSetTeamMode(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  int pn, tm, nt;
-  branch{
-  cond #mess < 2:
-  cond !<consteval>(pn=, mess[0]) || !.m.inRange!int?(1, 2, pn):
-  cond !<consteval>(tm=, mess[1]) || !.m.inRange!int?(0, 2, tm):
-  cond
-    #mess >= 3 && (!<consteval>(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt))
-    :
-  else:
-    branch{
-    cond #mess >= 3:
-      if(!<consteval>(nt=, mess[2]) || !.m.inRange!int?(1, 4, nt)) break;
-    else:
-      nt = .com.numturns[pn-1];
-    comm:
-      break, break;
-    }
-  comm:
-    .mac.errormes .= "エラー(setTeamMode): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  .syst.selinf.p[pn-1].selchr.new(0);
-  .com.tmode[pn-1] = tm;
-  .com.numturns[pn-1] = nt;
-  re.new(0);
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scSetRandomSpr(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  float xs = .syst.selinf.sel.randxscl, ys = .syst.selinf.sel.randyscl;
-  branch{
-  cond #mess < 3:
-  cond #mess >= 4 && !<consteval>(xs=, mess[3]):
-  cond #mess >= 5 && !<consteval>(ys=, mess[4]):
-  else:
-    {
-      ^&.sc.Function f = fn.block~getObj(mess[0]);
-      ^&.sc.Sff sf;
-      int g, n;
-      if(
-        #f == 0 || !f~data.cast(sf=)
-        || !<consteval>(g=, mess[1]) || !<consteval>(n=, mess[2])) break;
-      ^&.sff.Sff sff = sf~getSff();
-      if(#sff > 0) .syst.selinf.sel.randomspr = sff~getOwnPalSprite(g, n);
-      break, break;
-    }
-  comm:
-    .mac.errormes .= "エラー(setRandomSpr): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  .syst.selinf.sel.randxscl = xs;
-  .syst.selinf.sel.randyscl = ys;
-  re.new(0);
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scDrawFace(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  float x = 0.0, y = 0.0;
-  index offset = 0;
-  branch{
-  cond #mess >= 1 && !<consteval>(x=, mess[0]):
-  cond #mess >= 2 && !<consteval>(y=, mess[1]):
-  cond #mess >= 3 && !<consteval>(offset=, mess[2]):
-  else:
-    break;
-  comm:
-    .mac.errormes .= "エラー(drawFace): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  if(!.se.fskip) loop{
-    int j = 0;
-    ^&.sys.Select::Char c;
-    while;
-  do:
-    loop{int i = 0; while; do:
-      c = .syst.selinf.sel.getChar(offset++);
-      if(#c > 0) branch{
-      cond #c~sportrait > 0:
-        c~sportrait~draw(
-          x + (float)i*.syst.selinf.sel.cellsizex,
-          y + (float)j*.syst.selinf.sel.cellsizey,
-          .syst.selinf.sel.cellscalex, .syst.selinf.sel.cellscaley,
-          c~sportrait~colorPallet);
-      cond .s.equ(c~def, "randomselect") && #.syst.selinf.sel.randomspr > 0:
-        .syst.selinf.sel.randomspr~draw(
-          x + (float)i*.syst.selinf.sel.cellsizex,
-          y + (float)j*.syst.selinf.sel.cellsizey,
-          .syst.selinf.sel.randxscl, .syst.selinf.sel.randxscl,
-          .syst.selinf.sel.randomspr~colorPallet);
-      }
-      i++;
-    while i < .syst.selinf.sel.columns:
-    }
-    j++;
-  while j < .syst.selinf.sel.rows:
-  }
-  re.new(0);
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scGetCharName(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  index n = 0;
-  branch{
-  cond #mess >= 1 && !<consteval>(n=, mess[0]):
-  else:
-    break;
-  comm:
-    .mac.errormes .= "エラー(getCharName): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  ^&.sys.Select::Char c = .syst.selinf.sel.getChar(n);
-  branch{
-  cond #c > 0:
-    {
-      %char buf .= c~name;
-      re = buf;
-    }
-  else:
-    re.new(0);
-  }
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scSelectChar(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  int pn, cn, pl;
-  branch{
-  cond #mess < 3:
-  cond !<consteval>(pn=, mess[0]) || !.m.inRange!int?(1, 2, pn):
-  cond !<consteval>(cn=, mess[1]):
-  cond !<consteval>(pl=, mess[2]) || !.m.inRange!int?(0, 12, pl):
-  else:
-    break;
-  comm:
-    .mac.errormes .= "エラー(selectChar): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  %char buf;
-  branch{
-  cond pl > 0 && .syst.selinf.addSelchr(pn-1, cn, pl):
-    switch(.com.tmode[pn-1]){
-    case (int).com.TeamMode::Single:
-      buf .= '2';
-    case (int).com.TeamMode::Simul:
-      buf .= #.syst.selinf.p[pn-1].selchr >= 2 ? '2' : '1';
-    case (int).com.TeamMode::Turns:
-      buf .= #.syst.selinf.p[pn-1].selchr >= .com.numturns[pn-1] ? '2' : '1';
-    }
-  else:
-    buf .= '0';
-  }
-  re = buf;
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scSetStage(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  index n = .syst.selinf.sel.curStageNo;
-  branch{
-  cond #mess >= 1 && !<consteval>(n=, mess[0]):
-  else:
-    break;
-  comm:
-    .mac.errormes .= "エラー(setStage): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  %char buf .= .s.iToS(.syst.selinf.sel.setStageNo(n));
-  re = buf;
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scGetStageName(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  index n = .syst.selinf.sel.curStageNo;
-  branch{
-  cond #mess >= 1 && !<consteval>(n=, mess[0]):
-  else:
-    break;
-  comm:
-    .mac.errormes .= "エラー(getStageName): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  %char buf .= .syst.selinf.sel.getStageName(n);
-  re = buf;
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scDrawPortrait(^char arg, ^char re=, &.sc.Function fn=)
-{
-  ^^/char mess =
-    .s.each!^/char?([void(^/char s=){s = .s.trim(s);}])<, .sc.splitArgs(arg);
-  index n = 0;
-  float x = 0.0, y = 0.0, xscl = 1.0, yscl = 1.0;
-  branch{
-  cond #mess >= 1 && !<consteval>(n=, mess[0]):
-  cond #mess >= 2 && !<consteval>(x=, mess[1]):
-  cond #mess >= 3 && !<consteval>(y=, mess[2]):
-  cond #mess >= 4 && !<consteval>(xscl=, mess[3]):
-  cond #mess >= 5 && !<consteval>(yscl=, mess[4]):
-  else:
-    break;
-  comm:
-    .mac.errormes .= "エラー(drawPortrait): " .= arg .= \r\n;
-    ret .mac.RetState::ERROR;
-  }
-  if(!.se.fskip){
-    ^&.sys.Select::Char c = .syst.selinf.sel.getChar(n);
-    if(#c > 0 && #c~lportrait > 0){
-      c~lportrait~draw(x, y, xscl, yscl, c~lportrait~colorPallet);
-    }
-  }
-  re.new(0);
-  ret .mac.RetState::OK;
-}
-|.mac.RetState scRefresh(^char arg, ^char re=, &.sc.Function fn=)
-{
-  if(!.se.fskip){
-  /?/*.cfg.OpenGL:
-    .sdl.GlSwapBuffers(::);
-  /*true:
-    .sdl.screen.flip();
-    .com.screenFill(0x00000000);
-  /*?*/
-  }
-  .snd.playSound();
-  if(!.cmd.update()) .se.end = true;
-  re.new(0);
-  ret .se.end ? .mac.RetState::END : .mac.RetState::OK;
-}
-
-
-
-bool init()
-{
-  if(!.syst.init()){
+  if(!.sc.syst.init()){
     .com.error!.self?("system初期化に失敗");
     ret false;
   }
   .fnt.debugFont.new(1);
   .fnt.debugFont~loadFile(.cfg.debugfont);
-  .addFunc("game", .scGame);
-  .addFunc("addChar", .scAddChar);
-  .addFunc("addStage", .scAddStage);
-  .addFunc("setSelColRow", .scSetSelColRow);
-  .addFunc("setSelCellSize", .scSetSelCellSize);
-  .addFunc("setSelCellScale", .scSetSelCellScale);
-  .addFunc("setTeamMode", .scSetTeamMode);
-  .addFunc("setRandomSpr", .scSetRandomSpr);
-  .addFunc("drawFace", .scDrawFace);
-  .addFunc("getCharName", .scGetCharName);
-  .addFunc("selectChar", .scSelectChar);
-  .addFunc("setStage", .scSetStage);
-  .addFunc("getStageName", .scGetStageName);
-  .addFunc("drawPortrait", .scDrawPortrait);
-  .addFunc("refresh", .scRefresh);
+  .sc.init(L=);
+  L.register("game", .scGame);
   ret true;
 }
 
@@ -403,12 +67,12 @@ int match()
 {
   ^/char stag;
   branch{
-  cond .syst.selinf.sel.curStageNo == 0:
+  cond .sc.syst.selinf.sel.curStageNo == 0:
     stag =
-      .syst.selinf.sel.stagelist[
-        .m.rand(0, #.syst.selinf.sel.stagelist-1)].def;
+      .sc.syst.selinf.sel.stagelist[
+        .m.rand(0, #.sc.syst.selinf.sel.stagelist-1)].def;
   else:
-    stag = .syst.selinf.sel.stagelist[.syst.selinf.sel.curStageNo-1].def;
+    stag = .sc.syst.selinf.sel.stagelist[.sc.syst.selinf.sel.curStageNo-1].def;
   }
   ^int ldend.new(1);
   .chr.stg.new(1);
@@ -437,19 +101,21 @@ int game()
   ^^/char cha.new(4);
   ^int pal.new(4);
   ^int ldend.new(1);
-  cha[0] = .syst.selinf.sel.charlist[.syst.selinf.p[0].selchr[0].i].def;
-  pal[0] = .syst.selinf.p[0].selchr[0].pal;
-  cha[1] = .syst.selinf.sel.charlist[.syst.selinf.p[1].selchr[0].i].def;
-  pal[1] = .syst.selinf.p[1].selchr[0].pal;
+  cha[0] = .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[0].selchr[0].i].def;
+  pal[0] = .sc.syst.selinf.p[0].selchr[0].pal;
+  cha[1] = .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[1].selchr[0].i].def;
+  pal[1] = .sc.syst.selinf.p[1].selchr[0].pal;
   if(.com.tmode[0] == (int).com.TeamMode::Simul){
-    cha[2] = .syst.selinf.sel.charlist[.syst.selinf.p[0].selchr[1].i].def;
-    pal[2] = .syst.selinf.p[0].selchr[1].pal;
+    cha[2] =
+      .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[0].selchr[1].i].def;
+    pal[2] = .sc.syst.selinf.p[0].selchr[1].pal;
   }
   if(.com.tmode[1] == (int).com.TeamMode::Simul){
-    cha[3] = .syst.selinf.sel.charlist[.syst.selinf.p[1].selchr[1].i].def;
-    pal[3] = .syst.selinf.p[1].selchr[1].pal;
+    cha[3] =
+      .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[1].selchr[1].i].def;
+    pal[3] = .sc.syst.selinf.p[1].selchr[1].pal;
   }
-  .chr.fight = .syst.fig;
+  .chr.fight = .sc.syst.fig;
   bool loadChar(^&.chr.Char p, ^/char cha, int pal)
   {
     if(#p~sf == 0){
@@ -493,16 +159,17 @@ int game()
       loop{
         index i = 0;
         .chr.fight~fa[.com.tmode[pn]][pn].teammate_face_spr.new(
-          #.syst.selinf.p[pn].selchr);
+          #.sc.syst.selinf.p[pn].selchr);
         ^/char tmp;
         while;
       do:
         tmp =
-          .syst.selinf.sel.charlist[.syst.selinf.p[pn].selchr[i].i].sprite;
+          .sc.syst.selinf.sel.charlist[
+            .sc.syst.selinf.p[pn].selchr[i].i].sprite;
         .com.loadFile(
-          .syst.selinf.sel.charlist[.syst.selinf.p[pn].selchr[i].i].def,
-          tmp=, [
-            bool(^/char f){
+          .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[pn].selchr[i].i].def,
+          tmp=,
+          [bool(^/char f){
               ^&.sff.Sprite s.new(1);
               if(
                 !s~loadFromSff(
@@ -517,7 +184,7 @@ int game()
               ret true;
             }]);
         i++;
-      while i < #.syst.selinf.p[pn].selchr:
+      while i < #.sc.syst.selinf.p[pn].selchr:
       }
     }
     ret true;
@@ -633,9 +300,9 @@ int game()
           if(.com.tmode[0] == (int).com.TeamMode::Turns){
             .chr.fight~fa[.com.tmode[0]][0].numko++;
             cha[0] =
-              .syst.selinf.sel.charlist[
-                .syst.selinf.p[0].selchr[.com.p2wins].i].def;
-            pal[0] = .syst.selinf.p[0].selchr[.com.p2wins].pal;
+              .sc.syst.selinf.sel.charlist[
+                .sc.syst.selinf.p[0].selchr[.com.p2wins].i].def;
+            pal[0] = .sc.syst.selinf.p[0].selchr[.com.p2wins].pal;
             p[0]~sf.new(0);
             if(!loadChar(p[0], cha[0], pal[0])) ret -1;
             .chr.fight~fa[.com.tmode[0]][0].face_spr =
@@ -650,9 +317,9 @@ int game()
           if(.com.tmode[1] == (int).com.TeamMode::Turns){
             .chr.fight~fa[.com.tmode[1]][1].numko++;
             cha[1] =
-              .syst.selinf.sel.charlist[
-                .syst.selinf.p[1].selchr[.com.p1wins].i].def;
-            pal[1] = .syst.selinf.p[1].selchr[.com.p1wins].pal;
+              .sc.syst.selinf.sel.charlist[
+                .sc.syst.selinf.p[1].selchr[.com.p1wins].i].def;
+            pal[1] = .sc.syst.selinf.p[1].selchr[.com.p1wins].pal;
             p[1]~sf.new(0);
             if(!loadChar(p[1], cha[1], pal[1])) ret -1;
             .chr.fight~fa[.com.tmode[1]][1].face_spr =
@@ -687,12 +354,11 @@ void main()
   }
 /*?*/
   .sdl.showCursor(false);
-  if(!.init()) ret;
-  %char tmp;
-  .script~init(tmp .= .cfg.system .= "#loadFile#!");
-  ^char out;
-  if(.script~run(out=) == .mac.RetState::ERROR){
-    .com.error!.script<>.self?(.mac.errormes);
+  &.lua.State L;
+  if(!.init(L=)) ret;
+  if(!L.runFile(.cfg.system)){
+    ^/char err = L.toString(-1);
+    if(!.s.equ(err[#err-10..-1], "<game end>")) .com.error!self?(err);
   }
 }
 

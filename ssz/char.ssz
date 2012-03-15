@@ -6956,8 +6956,7 @@ public float action(
   .playSound();
   float foobar =
     .m.max!float?(220.0/.com.scale)<, .m.sqrt(
-      (rightest - leftest)*(rightest - leftest)
-      + (lowest - highest)*(lowest - highest));
+      (rightest - leftest)**2.0 + (lowest - highest)**2.0);
   const float barbaz = 12.0;
   float tmp =
     (foobar*.com.scale) / .m.max!float?(.com.scale)<, (
@@ -7027,6 +7026,10 @@ public void draw(float x, float y, float scl)
   else:
     if(.stg~debugbg) .com.screenFill(0x00ff00ff);
     .stg~bgDraw(false, x, y, scl);
+    if(!.gs(.gsGLOBALNOSHADOW)){
+      if(.stg~reflection > 0) .drawReflection(x, y);
+      .drawShadowList(x, y);
+    }
     {
       float off = .stage.envShake.getOffset();
       float bh = 
@@ -7084,10 +7087,6 @@ public void draw(float x, float y, float scl)
         rect.x = (int)(.com.scrrect.w - rect.w);
         fade(rect=, 255);
       }
-    }
-    if(!.gs(.gsGLOBALNOSHADOW)){
-      if(.stg~reflection > 0) .drawReflection(x, y);
-      .drawShadowList(x, y);
     }
   }
   branch{

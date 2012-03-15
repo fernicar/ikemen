@@ -366,13 +366,11 @@ void sndjoyinit()
 
 TUserFunc(void, Init, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 {
-	std::string tmp;
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
 		g_screen = *pps = nullptr;
 	}else{
 		TTF_Init();
-		pu->ReftoAstr(CP_UTF8, tmp, cap);
-		SDL_WM_SetCaption(tmp.c_str(), nullptr);
+		SDL_WM_SetCaption(pu->refToAstr(CP_UTF8, cap).c_str(), nullptr);
 		g_scrflag = SDL_SWSURFACE;
 		g_screen = *pps = SDL_SetVideoMode(w, h, 32, g_scrflag);
 		sndjoyinit();
@@ -383,13 +381,11 @@ TUserFunc(void, Init, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 
 TUserFunc(void, GlInit, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 {
-	std::string tmp;
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
 		g_screen = *pps = nullptr;
 	}else{
 		TTF_Init();
-		pu->ReftoAstr(CP_UTF8, tmp, cap);
-		SDL_WM_SetCaption(tmp.c_str(), nullptr);
+		SDL_WM_SetCaption(pu->refToAstr(CP_UTF8, cap).c_str(), nullptr);
 		g_scrflag = SDL_OPENGL;
 		g_screen = *pps = SDL_SetVideoMode(w, h, 32, g_scrflag);
 		glewInit();
@@ -598,9 +594,7 @@ TUserFunc(void, Fill, uint32_t color, SDL_Rect *prect, SDL_Surface *ps)
 
 TUserFunc(intptr_t, IMGLoad, Reference fn)
 {
-	std::string tmp;
-	pu->ReftoAstr(CP_THREAD_ACP, tmp, fn);
-	return (intptr_t)IMG_Load(tmp.c_str());
+	return (intptr_t)IMG_Load(pu->refToAstr(CP_THREAD_ACP, fn).c_str());
 }
 
 TUserFunc(
@@ -674,9 +668,7 @@ TUserFunc(void, CursorShow, bool show)
 TUserFunc(intptr_t, OpenFont, int32_t size, Reference font)
 {
 	TTF_Font *pf;
-	std::string tmp;
-	pu->ReftoAstr(CP_THREAD_ACP, tmp, font);
-	pf = TTF_OpenFont(tmp.c_str(), size);
+	pf = TTF_OpenFont(pu->refToAstr(CP_THREAD_ACP, font).c_str(), size);
 	TTF_SetFontStyle (pf, TTF_STYLE_NORMAL);
 	return (intptr_t)pf;
 }
@@ -690,13 +682,12 @@ TUserFunc(
 	void, RenderFont, SDL_Surface *ps, Reference str,
 	int16_t y, int16_t x, bool srcalpha, SDL_Color c, TTF_Font *pf)
 {
-	std::wstring tmp;
 	SDL_Surface *psrc;
 	SDL_Rect dest;
 	dest.x = x;
 	dest.y = y;
-	pu->ReftoWstr(tmp, str);
-	psrc = TTF_RenderUNICODE_Blended(pf, (Uint16*)tmp.c_str(), c);
+	psrc = TTF_RenderUNICODE_Blended(
+		pf, (Uint16*)pu->refToWstr(str).c_str(), c);
 	SDL_SetAlpha(psrc, (srcalpha ? SDL_SRCALPHA : 0), SDL_ALPHA_OPAQUE);
 	SDL_BlitSurface(psrc, nullptr, ps, &dest);
 	SDL_FreeSurface(psrc);
@@ -891,10 +882,9 @@ TUserFunc(bool, PlayBGM, Reference fn, Reference pldir)
 	if(pc == nullptr) return false;
 	fname = pc;
 	free(pc);
-	std::wstring pd, tmp;
-	pu->ReftoWstr(pd, pldir);
+	std::wstring pd = pu->refToWstr(pldir);
 	pd += '\\';
-	tmp = pd;
+	std::wstring tmp = pd;
 	tmp += L"in_*.dll";
 	bool ret = false, uni = false;;
 	WIN32_FIND_DATA wfd;
@@ -1986,7 +1976,7 @@ TUserFunc(
 		|| abs(yscl) > 16383.0f) return false;
 	uint32_t pal[256];
 	int i;
-	pu->SetSSZFunc();
+	pu->setSSZFunc();
 	if(
 		(
 			127 <= alpha && alpha <= 254 && foobar(255 - alpha)

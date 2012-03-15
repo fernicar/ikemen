@@ -47,9 +47,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 TUserFunc(bool, YesNo, Reference r)
 {
-	std::wstring str;
-	pu->ReftoWstr(str, r);
-	return MessageBox(NULL, str.c_str(), L"メッセージ", MB_YESNO) == IDYES;
+	return
+		MessageBox(
+			NULL, pu->refToWstr(r).c_str(), L"メッセージ", MB_YESNO) == IDYES;
 }
 
 template<typename T> std::wstring XToStr(T x)
@@ -78,8 +78,8 @@ TUserFunc(void, DoubleToStr, double dbl, Reference *r)
 		tmp.append(str.data()+foo, str.data()+str.size());
 		str = tmp;
 	}
-	pu->SetSSZFunc();
-	pu->WstrtoRef(*r, str);
+	pu->setSSZFunc();
+	pu->wstrToRef(*r, str);
 }
 
 TUserFunc(void, VeryUnsafeCopy, intptr_t size, void *src, void *dst)
@@ -89,14 +89,14 @@ TUserFunc(void, VeryUnsafeCopy, intptr_t size, void *src, void *dst)
 
 TUserFunc(bool, GetClipboardStr, Reference *r)
 {
-	pu->SetSSZFunc();
+	pu->setSSZFunc();
 	HANDLE hText;
 	wchar_t *pText;
 	OpenClipboard(NULL);
 	hText = GetClipboardData(CF_UNICODETEXT);
 	if(hText == NULL) return false;
 	pText = (wchar_t*)GlobalLock(hText);
-	pu->WstrtoRef(*r, pText);
+	pu->wstrToRef(*r, pText);
 	GlobalUnlock(hText);
 	CloseClipboard();
 	return true;
@@ -104,14 +104,12 @@ TUserFunc(bool, GetClipboardStr, Reference *r)
 
 TUserFunc(intptr_t, TazyuuCheck, Reference name)
 {
-	std::wstring tmp;
 	HANDLE hMutex;
 	SECURITY_ATTRIBUTES securityatt;
-	pu->ReftoWstr(tmp, name);
 	securityatt.nLength = sizeof(securityatt);
 	securityatt.lpSecurityDescriptor = NULL;
 	securityatt.bInheritHandle = FALSE;
-	hMutex = CreateMutex(&securityatt, FALSE, tmp.c_str());
+	hMutex = CreateMutex(&securityatt, FALSE, pu->refToWstr(name).c_str());
 	if(GetLastError() == ERROR_ALREADY_EXISTS){
 		CloseHandle(hMutex);
 		hMutex = NULL;
@@ -127,53 +125,51 @@ TUserFunc(void, CloseTazyuuHandle, intptr_t mutex)
 
 TUserFunc(void, GetInifileString, Reference* pstr, Reference def, Reference key, Reference app, Reference file)
 {
-	pu->SetSSZFunc();
-	std::wstring tmp1, tmp2, tmp3, tmp4, tmp5;
+	pu->setSSZFunc();
 	wchar_t* pws;
-	pu->ReftoWstr(tmp1, file);
+	std::wstring tmp1 = pu->refToWstr(file);
 	pws = _wfullpath(NULL, tmp1.c_str(), 0);
 	if(pws != NULL){
 		tmp1 = pws;
 		free(pws);
 	}
-	pu->ReftoWstr(tmp2, app);
-	pu->ReftoWstr(tmp3, key);
-	pu->ReftoWstr(tmp4, def);
+	std::wstring tmp5;
 	tmp5.resize(256);
-	GetPrivateProfileString(tmp2.c_str(), tmp3.c_str(), tmp4.c_str(),
+	GetPrivateProfileString(
+		pu->refToWstr(app).c_str(), pu->refToWstr(key).c_str(),
+		pu->refToWstr(def).c_str(),
 		(wchar_t*)tmp5.data(), tmp5.size(), tmp1.c_str());
-	pu->WstrtoRef(*pstr, tmp5.c_str());
+	pu->wstrToRef(*pstr, tmp5.c_str());
 }
 
 TUserFunc(int32_t, GetInifileInt, int32_t def, Reference key, Reference app, Reference file)
 {
-	std::wstring tmp1, tmp2, tmp3;
 	wchar_t* pws;
-	pu->ReftoWstr(tmp1, file);
+	std::wstring tmp1 = pu->refToWstr(file);
 	pws = _wfullpath(NULL, tmp1.c_str(), 0);
 	if(pws != NULL){
 		tmp1 = pws;
 		free(pws);
 	}
-	pu->ReftoWstr(tmp2, app);
-	pu->ReftoWstr(tmp3, key);
-	return GetPrivateProfileInt(tmp2.c_str(), tmp3.c_str(), def, tmp1.c_str());
+	return
+		GetPrivateProfileInt(
+			pu->refToWstr(app).c_str(), pu->refToWstr(key).c_str(),
+			def, tmp1.c_str());
 }
 
 TUserFunc(bool, WriteInifileString, Reference str, Reference key, Reference app, Reference file)
 {
-	std::wstring tmp1, tmp2, tmp3, tmp4;
 	wchar_t* pws;
-	pu->ReftoWstr(tmp1, file);
+	std::wstring tmp1 = pu->refToWstr(file);
 	pws = _wfullpath(NULL, tmp1.c_str(), 0);
 	if(pws != NULL){
 		tmp1 = pws;
 		free(pws);
 	}
-	pu->ReftoWstr(tmp2, app);
-	pu->ReftoWstr(tmp3, key);
-	pu->ReftoWstr(tmp4, str);
-	return WritePrivateProfileString(tmp2.c_str(), tmp3.c_str(), tmp4.c_str(), tmp1.c_str()) != 0;
+	return
+		WritePrivateProfileString(
+			pu->refToWstr(app).c_str(), pu->refToWstr(key).c_str(),
+			pu->refToWstr(str).c_str(), tmp1.c_str()) != 0;
 }
 
 
@@ -209,7 +205,7 @@ int HeadCheck(const char *const buf, intptr_t len)
 
 TUserFunc(bool, UnCompress, Reference src, Reference *dst)
 {
-	pu->SetSSZFunc();
+	pu->setSSZFunc();
 	z_stream z;
 	intptr_t hsize;
 	char outbuf[4096];
@@ -253,7 +249,7 @@ TUserFunc(bool, UnCompress, Reference src, Reference *dst)
 
 TUserFunc(void, UbytesToStr, Reference src, Reference *dst, UINT cp)
 {
-	pu->SetSSZFunc();
+	pu->setSSZFunc();
 	dst->releaseanddelete();
 	if(src.len() == 0) return;
 	dst->refnew(MultiByteToWideChar(cp, 0, (LPCSTR)src.atpos(), (int)src.len(), NULL, 0), sizeof(wchar_t));
@@ -262,7 +258,7 @@ TUserFunc(void, UbytesToStr, Reference src, Reference *dst, UINT cp)
 
 TUserFunc(void, StrToUbytes, Reference src, Reference *dst, UINT cp)
 {
-	pu->SetSSZFunc();
+	pu->setSSZFunc();
 	dst->releaseanddelete();
 	if(src.len() == 0) return;
 	dst->refnew(WideCharToMultiByte(cp, 0, (wchar_t*)src.atpos(), (int)src.len()/sizeof(wchar_t), NULL, 0, NULL, NULL), sizeof(uint8_t));
@@ -271,7 +267,7 @@ TUserFunc(void, StrToUbytes, Reference src, Reference *dst, UINT cp)
 
 TUserFunc(void, AsciiToLocal, Reference src, Reference *dst)
 {
-	pu->SetSSZFunc();
+	pu->setSSZFunc();
 	dst->releaseanddelete();
 	if(src.len() == 0) return;
 	std::string tmp;
@@ -284,14 +280,14 @@ TUserFunc(void, AsciiToLocal, Reference src, Reference *dst)
 TUserFunc(void, SetSharedString, Reference str)
 {
 	AutoLocker al(&g_mtx);
-	pu->ReftoWstr(g_sharedstring, str);
+	g_sharedstring = pu->refToWstr(str);
 }
 
 TUserFunc(void, GetSharedString, Reference *str)
 {
-	pu->SetSSZFunc();
+	pu->setSSZFunc();
 	AutoLocker al(&g_mtx);
-	pu->WstrtoRef(*str, g_sharedstring.c_str());
+	pu->wstrToRef(*str, g_sharedstring.c_str());
 }
 
 
@@ -382,16 +378,14 @@ BOOL WINAPI InputBoxDlgProc(HWND hDlg, UINT message,WPARAM wParam, LPARAM lParam
 
 TUserFunc(void, InputStr, Reference *pr, Reference title)
 {
-	pu->SetSSZFunc();
-	std::wstring tit;
-	pu->ReftoWstr(tit, title);
+	pu->setSSZFunc();
 	wchar_t* str;
 	int len;
 	len = -1;
 	str = NULL;
-	MyInputBox(NULL, tit.c_str(), &str, &len);
+	MyInputBox(NULL, pu->refToWstr(title).c_str(), &str, &len);
 	if(len >= 0){
-		pu->WstrtoRef(*pr, str);
+		pu->wstrToRef(*pr, str);
 	}else{
 		pr->releaseanddelete();
 	}

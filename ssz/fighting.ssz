@@ -343,7 +343,7 @@ void game()
   do:
     if(.com.keyDown(.com.KeyEvent::CtrlC)) .com.clsndraw!!;
     if(.com.keyDown(.com.KeyEvent::CtrlD)) .com.debugdraw!!;
-    if(#.cmd.net == 0){
+    if(#.cmd.net == 0 && #.cmd.replay == 0){
       if(.com.keyDown(.com.KeyEvent::Pause)) .com.pause!!;
       if(.com.keyDown(.com.KeyEvent::CtrlS)) branch{
       cond .com.accel >= 4.0:
@@ -351,12 +351,10 @@ void game()
       else:
         .com.accel *= 2.0;
       }
-      if(#.cmd.replay == 0){
-        if(.com.keyDown(.com.KeyEvent::F4)) reset();
-        if(.com.keyDown(.com.KeyEvent::ShiftF4)){
-          .mes.SetSharedString(:"reload":);
-          ret;
-        }
+      if(.com.keyDown(.com.KeyEvent::F4)) reset();
+      if(.com.keyDown(.com.KeyEvent::ShiftF4)){
+        .mes.SetSharedString(:"reload":);
+        ret;
       }
     }
     if(.chr.roundOver()) branch{

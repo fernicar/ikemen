@@ -4,7 +4,7 @@ lib sh = <shell.ssz>;
 lib s = <string.ssz>;
 
 const ^/char conffile = "ssz/config.ssz";
-const ^/char selfile = "script/select.macro";
+const ^/char selfile = "script/select.lua";
 
 if(#file.find(conffile) == 0){
   &file.File f;
@@ -36,7 +36,7 @@ const float TurnsRecoveryRate = 1.0 / 300.0;//for rest time(seconds)
 const float LifebarFontScale = 0.5;
 
 
-const ^/char system = "\""script/main.macro"\"";
+const ^/char system = "\""script/main.lua"\"";
 const ^/char fight = "\""data/gms_lifebar/fight.def"\"";
 const ^/char debugfont = "\""data/gms_lifebar/font2.fnt"\"";
 
@@ -93,14 +93,14 @@ if(#file.find(selfile) == 0){
   f.open(selfile, "wb");
   f.writeAry!ubyte?()<, s.sToU8(
 \xfeff"
-#`#[
+addChar([[
 randomselect
 kfmx
-#addChar#]#each
+]])
 
-#`#[
+addStage([[
 ginga.def
-#addStage#]#each
+]])
 "
   );
 }
