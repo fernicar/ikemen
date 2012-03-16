@@ -6,7 +6,6 @@ lib s = <string.ssz>;
 lib m = <math.ssz>;
 lib file = <file.ssz>;
 lib se = <alpha/sdlevent.ssz>;
-lib mac = <macro.ssz>;
 lib stb = "statebuilder.ssz";
 lib cfg = "config.ssz";
 lib chr = "char.ssz";

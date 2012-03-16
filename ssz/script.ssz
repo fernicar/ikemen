@@ -1,6 +1,5 @@
 ﻿
 
-lib mac = <macro.ssz>;
 lib tbl = <table.ssz>;
 lib s = <string.ssz>;
 lib consts = <consts.ssz>;
@@ -769,9 +768,9 @@ void setSelCellScale(&.lua.State L=, int re=)
 
 void setStage(&.lua.State L=, int re=)
 {
-  int argc = 0, nret = 0;
+  int argc = 0, nret = 1;
   int n = (int).numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .syst.selinf.sel.setStageNo(n);
+  L.pushNumber((double).syst.selinf.sel.setStageNo(n));
 }
 
 void setTeamMode(&.lua.State L=, int re=)
