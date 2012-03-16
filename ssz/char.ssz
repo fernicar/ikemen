@@ -3187,7 +3187,6 @@ public &Char
       }
       `bind();
       `changeState2();
-      if(`mver0 == 1) `sysivar[.iSPECIALFLAG] &= !.lasMask;
       if(!`isHitPaused()){
         if(
           (`sysivar[.iSYSFLAG] & .sfOVER) == 0
@@ -3289,6 +3288,7 @@ public &Char
           `sysivar[.iPAUSEMOVETIME]--;
         }
       }
+      if(`mver0 == 1) `sysivar[.iSPECIALFLAG] &= !.lasMask;
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
       `minus = -2;
