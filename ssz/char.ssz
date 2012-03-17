@@ -4804,6 +4804,7 @@ public &Char
       p.ani.new(1);
       p.ani~copy(`ani<>=);
       p.ani~ani.setAnimElem(1);
+      p.anim = p.ani~no;
     }
     if(#p.ani > 0) p.ani~ani.updateSprite();
     if(`sysivar[.iPROJ_DOSCALE] != 0){
@@ -5998,7 +5999,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(`pyr.isFall() && #hitting == 1 && !by.ls(.lsNOJUGGLECHECK)){
         `pyr.stVal.hb.by[-1].juggle -=
-          pro != 0 ? by.stVal.hit.air_juggle : by.stVal.juggle;
+          pro != 0 ? hit.air_juggle : by.stVal.juggle;
       }
     diff<hit>:
       if(hit.palfx_time > 0){
@@ -6036,11 +6037,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         ) switch(`pyr.stVal.typ)
       {
       case .StTy::S, .StTy::C:
-        by.veloff = by.stVal.hit.ground_cornerpush_veloff * (float)by.facing;
+        by.veloff = hit.ground_cornerpush_veloff * (float)by.facing;
       case .StTy::A:
-        by.veloff = by.stVal.hit.air_cornerpush_veloff * (float)by.facing;
+        by.veloff = hit.air_cornerpush_veloff * (float)by.facing;
       case .StTy::L:
-        by.veloff = by.stVal.hit.down_cornerpush_veloff * (float)by.facing;
+        by.veloff = hit.down_cornerpush_veloff * (float)by.facing;
       }
     else:
       if(
@@ -6050,9 +6051,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         ) switch(`pyr.stVal.typ)
       {
       case .StTy::S, .StTy::C:
-        by.veloff = by.stVal.hit.guard_cornerpush_veloff * (float)by.facing;
+        by.veloff = hit.guard_cornerpush_veloff * (float)by.facing;
       case .StTy::A:
-        by.veloff = by.stVal.hit.airguard_cornerpush_veloff * (float)by.facing;
+        by.veloff = hit.airguard_cornerpush_veloff * (float)by.facing;
       }
     }
     ret true;
@@ -6092,7 +6093,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       pyr.inguarddist = true;
     }
     if(
-      p~c~stVal.hit.hitonce >= 0 && (
+      p~c~stVal.hit.hitonce >= 0
+      && (
         pyr.hittmp < 2
         || p~c~ls(.lsNOJUGGLECHECK)
         || juggcheck(
@@ -6233,93 +6235,91 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       bool hoge;
       while;
     do:
-      if(
-        pyr.playerno == i || .projs[i][j].id < 0 || .projs[i][j].hits <= 0 || (
-          .projs[i][j].hit.affectteam != 0 && ((pyr.playerno&1) != (i&1))
-          != (.projs[i][j].hit.affectteam > 0))) continue;
-      if(
-        .m.inRange!float?(
-          0.0, (float).chars[i][0]~sysivar[.iPROJ_ATTACK_DIST],
-          (pyr.sysfvar[.fX] - .projs[i][j].x) * (float).projs[i][j].facing))
-      {
-        pyr.inguarddist = true;
-      }
-      hoge = true;
-      if(
-        .projs[i][j].hit.hitonce >= 0 && (
-          .chars[i][0]~ls(.lsNOJUGGLECHECK)
-          || juggcheck(
-            pyr.stVal.hb.getJuggle(
-              .chars[i][0]~id, .chars[i][0]~sysivar[.iAIRJUGGLE]),
-            .projs[i][j].hit.air_juggle))
-        && .projs[i][j].timemiss <= 0
-        && .projs[i][j].hitpause <= 0 && pyr.hittable(
-          .projs[i][j].hit=, .chars[i][0]~id, [bool(&.Hitdef h=){
-            ret
-              (h.hitflag&(int).StTy::U) != 0
-              && pyr.hitProjCheck(.projs[i][j]=);
-          }]))
-      {
-        int oldhittmp = pyr.hittmp;
-        if(pyr.ls(.lsGETHIT)) pyr.hittmp = (int)pyr.isFall() + 1;
-        hoge = false;
+      .projs[i][j].[void(proj=){
+        if(
+          pyr.playerno == i || proj.id < 0 || proj.hits <= 0 || (
+            proj.hit.affectteam != 0 && ((pyr.playerno&1) != (i&1))
+            != (proj.hit.affectteam > 0))) ret;
         if(
           .m.inRange!float?(
-            0.0, (float).projs[i][j].hit.guard_dist,
-            (pyr.sysfvar[.fX] - .chars[i][0]~sysfvar[.fX])
-            * (float).chars[i][0]~facing))
+            0.0, (float).chars[i][0]~sysivar[.iPROJ_ATTACK_DIST],
+            (pyr.sysfvar[.fX] - proj.x) * (float)proj.facing))
         {
           pyr.inguarddist = true;
         }
-        if(pyr.projHitCheck(.projs[i][j]=)){
-          int hit;
+        hoge = true;
+        if(
+          proj.hit.hitonce >= 0
+          && (
+            .chars[i][0]~ls(.lsNOJUGGLECHECK)
+            || juggcheck(
+              pyr.stVal.hb.getJuggle(
+                .chars[i][0]~id, .chars[i][0]~sysivar[.iAIRJUGGLE]),
+              proj.hit.air_juggle))
+          && proj.timemiss <= 0
+          && proj.hitpause <= 0 && pyr.hittable(
+            proj.hit=, .chars[i][0]~id, [bool(&.Hitdef h=){
+              ret (h.hitflag&(int).StTy::U) != 0 && pyr.hitProjCheck(proj=);
+            }]))
+        {
+          int oldhittmp = pyr.hittmp;
+          if(pyr.ls(.lsGETHIT)) pyr.hittmp = (int)pyr.isFall() + 1;
+          hoge = false;
           if(
-            foo(
-              hit=, .chars[i][0]<>=, .projs[i][j].hit=,
-              .projs[i][j].x - .chars[i][0]~sysfvar[.fX],
-              .projs[i][j].y - .chars[i][0]~sysfvar[.fY],
-              .projs[i][j].facing, .projs[i][j].misstime <= 0 && (
-                #hit == 1 ? .projs[i][j].hit.pausetime
-                : .projs[i][j].hit.guard_pausetime) <= 0
-              ? .projs[i][j].hits : 1))
+            .m.inRange!float?(
+              0.0, (float)proj.hit.guard_dist,
+              (pyr.sysfvar[.fX] - .chars[i][0]~sysfvar[.fX])
+              * (float).chars[i][0]~facing))
           {
-            .projs[i][j].timemiss = !.m.max!int?(0, .projs[i][j].misstime);
-            branch{
-            cond #hit == 1:
-              .projs[i][j].pctyp == .ProjContact::Hit;
-              .projs[i][j].pctime = -1;
-              .projs[i][j].hitpause =
-                .m.max!int?(0, .projs[i][j].hit.pausetime);
-            else:
-              .projs[i][j].pctyp == .ProjContact::Guarded;
-              .projs[i][j].pctime = -1;
-              .projs[i][j].hitpause =
-                .m.max!int?(0, .projs[i][j].hit.guard_pausetime);
-            }
-            if(.projs[i][j].hit.hitonce > 0) .projs[i][j].hit.hitonce = -1;
+            pyr.inguarddist = true;
           }
+          if(pyr.projHitCheck(proj=)){
+            int hit;
+            if(
+              foo(
+                hit=, .chars[i][0]<>=, proj.hit=,
+                proj.x - .chars[i][0]~sysfvar[.fX],
+                proj.y - .chars[i][0]~sysfvar[.fY],
+                proj.facing, proj.misstime <= 0 && (
+                  #hit == 1 ? proj.hit.pausetime
+                  : proj.hit.guard_pausetime) <= 0
+                ? proj.hits : 1))
+            {
+              proj.timemiss = !.m.max!int?(0, proj.misstime);
+              branch{
+              cond #hit == 1:
+                proj.pctyp == .ProjContact::Hit;
+                proj.pctime = -1;
+                proj.hitpause = .m.max!int?(0, proj.hit.pausetime);
+              else:
+                proj.pctyp == .ProjContact::Guarded;
+                proj.pctime = -1;
+                proj.hitpause = .m.max!int?(0, proj.hit.guard_pausetime);
+              }
+              if(proj.hit.hitonce > 0) proj.hit.hitonce = -1;
+            }
+          }
+        break:
+          pyr.hittmp = oldhittmp;
         }
-      break:
-        pyr.hittmp = oldhittmp;
-      }
-      if(
-        .projs[i][j].prioritypoint > 0 && pyr.atktmp >= 0
-        && (
-          pyr.stVal.hit.affectteam == 0 || (
-           ((i&1) != (pyr.playerno&1)) == (pyr.stVal.hit.affectteam > 0)))
-        && (pyr.stVal.hit.hitflag & (int).StTy::U) != 0
-        && pyr.hitProjCheck(.projs[i][j]=) && (
-          hoge || (
-            pyr.stVal.hit.priority == .projs[i][j].hit.priority
-            && .projs[i][j].hit.bothhittype != .PriTy::Dodge
-            && pyr.stVal.hit.bothhittype == .PriTy::Hit)))
-      {
-        .projs[i][j].hits = 0;
-        .projs[i][j].prioritypoint = 0;
-        .projs[i][j].pctyp == .ProjContact::Cancel;
-        .projs[i][j].pctime = -1;
-      }
-    continue:
+        if(
+          proj.prioritypoint > 0 && pyr.atktmp >= 0
+          && (
+            pyr.stVal.hit.affectteam == 0 || (
+            ((i&1) != (pyr.playerno&1)) == (pyr.stVal.hit.affectteam > 0)))
+          && (pyr.stVal.hit.hitflag & (int).StTy::U) != 0
+          && pyr.hitProjCheck(proj=) && (
+            hoge || (
+              pyr.stVal.hit.priority == proj.hit.priority
+              && proj.hit.bothhittype != .PriTy::Dodge
+              && pyr.stVal.hit.bothhittype == .PriTy::Hit)))
+        {
+          proj.hits = 0;
+          proj.prioritypoint = 0;
+          proj.pctyp == .ProjContact::Cancel;
+          proj.pctime = -1;
+        }
+      }];
       j++;
     while j < #.projs[i]:
     }
