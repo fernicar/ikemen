@@ -2621,7 +2621,7 @@ public &StateBuilder
           }];
         }
         if(!foo){
-          if(.cfg.IgnoreMostErrors) break, break, break;
+          if(.cfg.IgnoreMostErrors) break, break;
           `lasterror = name + "が重複しています";
           ret false;
         }
