@@ -191,7 +191,7 @@ int game()
   int fight(^char ss=, ^&.sha.Share share)
   {
     .mes.SetSharedString(:ss:);
-    bool b = .ssz.run("ssz/fighting.ssz");
+    bool b = .lua.runSsz("ssz/fighting.ssz");
     .sdl.shareScreen(.cfg.OpenGL);
     share~push();
     bool w1 = .com.p1wins >= .com.p1mw;

@@ -1,5 +1,5 @@
 ﻿
-loadfile('script/select.lua')()
+assert(loadfile('script/select.lua'))()
 
 ------------------------------------------------------------
 sysSff = sffNew('script/system.sff')

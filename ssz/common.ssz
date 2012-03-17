@@ -552,21 +552,13 @@ public &Section
         i--;
         break, break;
       }
-      line = lines[i][0...s.find(";", lines[i])];
-      f = .s.find("=", line);
+      line = .s.trim(lines[i][0 .. .s.find(";", lines[i])]);
+      f = .s.cFind("= "\t, line);
       if(f > 0){
-        index foo = 0;
-        loop{while; do:
-          foo++;
-        while .s.cMatch!char?(" "\t, line[foo]):
-        }
-        foo += .s.cFind("= "\t, line[foo..-1]);
-        ^/char name = .s.toLower()<, .s.trim()<, line[0..foo];
-        if(#name > 0){
-          ^/char data = .s.trim(line[f+1..-1]);
-          if(#data == 0) break;
-          if(#`params.get(name) == 0) `params.set(name, .s.clone!char?(data));
-        }
+        ^/char name = .s.toLower(line[0 .. f]);
+        f = .s.find("=", line);
+        ^/char data = f >= 0 ? .s.trim(line[f+1..-1]) : "";
+        if(#`params.get(name) == 0) `params.set(name, .s.clone!char?(data));
       }
     continue:
       i++;

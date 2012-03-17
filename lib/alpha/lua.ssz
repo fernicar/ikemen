@@ -1,4 +1,6 @@
 ﻿
+lib ssz = <ssz.ssz>;
+
 void refSetNull(ref o=)
 {
   ref r;
@@ -10,10 +12,19 @@ void refCopy(ref o=, ref r)
   o = r;
 }
 
+void init()
 {
   plugin void Init(:
-    func refSetNull.signature, func refCopy.signature:) = "dll/lua.dll";
-  Init(:refSetNull, refCopy:);
+    func .refSetNull.signature, func .refCopy.signature:) = "dll/lua.dll";
+  Init(:.refSetNull, .refCopy:);
+}
+init();
+
+public bool runSsz(^/char file)
+{
+  bool re = .ssz.run(file);
+  .init();
+  ret re;
 }
 
 public &State

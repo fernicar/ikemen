@@ -2592,70 +2592,58 @@ public &StateBuilder
         i--;
         break, break;
       }
-      line = lines[i][0.. .s.find(";", lines[i])];
-      f = .s.find("=", line);
+      line = .s.trim(lines[i][0 .. .s.find(";", lines[i])]);
+      f = .s.cFind("= ("\t, line);
       if(f > 0){
-        ^/char name = .s.trim()<, line[0..f];
-        name = .s.toLower()<, name[0.. .s.cFind(" "\t, name)];
-        index nr = -1;
+        ^/char name = .s.toLower(line[0..f]);
+        ^/char data;
         branch{
-        cond .s.equ(name[0..3], "var"):
-          nr = 3;
-        cond .s.equ(name[0..4], "fvar"):
-          nr = 4;
-        cond .s.equ(name[0..6], "sysvar"):
-          nr = 6;
-        cond .s.equ(name[0..7], "sysfvar"):
-          nr = 7;
+        cond line[f] == '(':
+          if(
+            !.s.equ(name, "var") && !.s.equ(name, "fvar")
+            && !.s.equ(name, "sysvar") && !.s.equ(name, "sysfvar"))
+          {
+            break, break, break;
+          }
+          data = line[f..-1];
         else:
-          break;
-        comm:
-          name = .s.trim()<, line[0..f];
-          if(!.s.equ(name[0..nr], .s.toLower(name[0..nr]))){
-            %char buf .= .s.toLower(name[0..nr]) .= name[nr..-1];
-            name = buf;
-          }
+          f = .s.find("=", line);
+          data = f >= 0 ? .s.trim(line[f+1..-1]) : "";
         }
-        if(#name > 0){
-          bool foo = true;
-          ^/char data = .s.trim(line[f+1..-1]);
-          if(!.s.equ(name[0..7], "trigger")){
-            tbl.operate(name[0..nr])<,
-              [void(^int d=){
-                if(#d > 0){
-                  foo = false;
-                  ret;
-                }
-                d.new(1);
-              }];
-          }
-          if(!foo){
-            if(.cfg.IgnoreMostErrors) break, break, break;
-            %char buf;
-            `lasterror = (buf .= name .= "が重複しています");
-            ret false;
-          }
-          switch(typeid(func_t)){
-          case typeid(`stateBulid:<-state):
-            branch{
-            cond .s.equ(name, "type"):
-              typedeta = true;
-            cond
-              .s.equ(name[0..7], "trigger")
-              || .s.equ(name, "persistent") || .s.equ(name, "ignorehitpause")
-              :
-            else:
-              atomawasi.set(
-                name[0..nr], ?(nr>0 ? .s.trim(name[nr..-1])+"="+data : data));
-              break;
-            comm:
-              if(!func_t(sec, name, data)) ret false;
+        bool foo = true;
+        if(!.s.equ(name[0..7], "trigger")){
+          tbl.operate(name)<, [void(^int d=){
+            if(#d > 0){
+              foo = false;
+              ret;
             }
-          case typeid(`stateBulid:<-statedef):
+            d.new(1);
+          }];
+        }
+        if(!foo){
+          if(.cfg.IgnoreMostErrors) break, break, break;
+          `lasterror = name + "が重複しています";
+          ret false;
+        }
+        switch(typeid(func_t)){
+        case typeid(`stateBulid:<-state):
+          branch{
+          cond .s.equ(name, "type"):
+            typedeta = true;
+          cond
+            .s.equ(name[0..7], "trigger")
+            || .s.equ(name, "persistent") || .s.equ(name, "ignorehitpause")
+            :
+          else:
             atomawasi.set(name, ?data);
-          default:
+            break;
+          comm:
             if(!func_t(sec, name, data)) ret false;
           }
+        case typeid(`stateBulid:<-statedef):
+          atomawasi.set(name, ?data);
+        default:
+          if(!func_t(sec, name, data)) ret false;
         }
       }
     continue:
