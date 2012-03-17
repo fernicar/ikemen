@@ -125,7 +125,8 @@ void game()
     int tmp = .sff.allPalFX~time;
     .sff.allPalFX~time = 0;
     .fnt.debugFont~drawText(
-      x, y+=(float).fnt.debugFont~sizey/.com.HeightScale,
+      x - (float)(.com.GameWidth-320)/2.0,
+      y += (float).fnt.debugFont~sizey/.com.HeightScale,
       1.0/.com.WidthScale,  1.0/.com.HeightScale, 0, 1, txt);
     .sff.allPalFX~time = tmp;
   }
@@ -145,7 +146,10 @@ void game()
     float y = 48.0;
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0){
-        y = .m.max!float?(y, pdraw(.chr.chars[i][0]<>=, 80.0*(float)i));
+        y =
+          .m.max!float?(
+            y, pdraw(
+              .chr.chars[i][0]<>=, ((float).com.GameWidth/4.0)*(float)i));
       }
       i++;
     while i < #.chr.chars:
