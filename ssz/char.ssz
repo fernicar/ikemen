@@ -6108,7 +6108,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           p~c~stVal.juggle))
       && pyr.hittable(
         p~c~stVal.hit=, p~c~id, p~c~playerno, [bool(&.Hitdef h=){
-          ret p~c~attrCheck(h=, pyr.id, p~c~playerno)&&p~c~hitCheck(pyr=);}]))
+          ret p~c~attrCheck(h=, pyr.id, pyr.playerno)&&p~c~hitCheck(pyr=);}]))
     {
       if(
         .m.inRange!float?(
