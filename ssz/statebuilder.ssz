@@ -4943,16 +4943,7 @@ public &StateBuilder
       ~$bool(^/char) valset = [bool(^/char data){
         int flg;
         if(!`attr(flg=, data, false)) ret false;
-        if(`state.ctrlList[-1].typ == .CtrlTy::NotHitBy){
-          ^/char sca = .s.trim(data[0 .. .s.cFind(", "\t, data)]);
-          branch{
-          cond #sca == 1:
-            flg &= !63;
-          cond #sca >= 2:
-            flg |= 63;
-          }
-          flg = !flg;
-        }
+        if(`state.ctrlList[-1].typ == .CtrlTy::NotHitBy) flg = !flg;
         `state.ctrlList[-1].task .=
           (ni ? "`stVal.hb.hitf2=" : "`stVal.hb.hitf1=")
           .= .s.iToS(flg) .= ';';

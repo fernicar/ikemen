@@ -401,7 +401,7 @@ TUserFunc(void, GlInit, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 		glViewport(0, 0, w, h);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective(45.0, (float)w/(float)h, 0.1, 1000.0);
+		gluPerspective(45.0, (double)w/(double)h, 0.1, 1000.0);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		sndjoyinit();
@@ -2146,7 +2146,7 @@ void drawQuads(
 	glVertex2f(x4, y4);
 }
 
-void drawTileWidth(
+void drawTileHolizon(
 	float x1, float y1, float x2, float y2, float x3, float y3,
 	float x4, float y4, float xtw, float xbw,
 	float xtopscl, float xbotscl, SDL_Rect tile, float rcx,
@@ -2257,7 +2257,7 @@ void drawTile(
 					((0.0 > y1d || 0.0 > y4d)
 					&& (y1d > (float)-g_h || y4d > (float)-g_h)))
 				{
-					drawTileWidth(
+					drawTileHolizon(
 						x1d, y1d, x2d, y2d, x3d, y3d, x4d, y4d,
 						x3d-x4d, x2d-x1d, (x3d-x4d)/(float)w,
 						(x2d-x1d)/(float)w, tile, rcx, r, g, b, a);
@@ -2275,7 +2275,7 @@ void drawTile(
 				((0.0 > y1 || 0.0 > y4)
 				&& (y1 > (float)-g_h || y4 > (float)-g_h)))
 			{
-				drawTileWidth(
+				drawTileHolizon(
 					x1, y1, x2, y2, x3, y3, x4, y4, x3-x4, x2-x1,
 					(x3-x4)/(float)w, (x2-x1)/(float)w, tile, rcx, r, g, b, a);
 			}
