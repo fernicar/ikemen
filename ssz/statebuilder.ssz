@@ -4567,7 +4567,6 @@ public &StateBuilder
           if(#data == 0) else;
         cond data[0] == 'S' || data[0] == 's':
           data = data[1..-1];
-          `state.ctrlList[-1].task .= "vo=`sysivar[.iVOLUME];";
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
@@ -6514,7 +6513,6 @@ public &StateBuilder
         cond data[0] == 'F' || data[0] == 'f':
           `state.ctrlList[-1].task .= "f=true;";
         cond data[0] == 'S' || data[0] == 's':
-          `state.ctrlList[-1].task .= "vo=`sysivar[.iVOLUME];";
         else:
           break;
         comm:

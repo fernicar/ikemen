@@ -3801,7 +3801,7 @@ public &Char
       sou~sound = `sn~getSound(g, s);
     }
     sou~chrx = x;
-    sou~setVol(vo);
+    sou~setVol(vo + (!f ? `sysivar[.iVOLUME] : 0));
     sou~loop_ = lp;
     sou~lowpriority = lw;
     sou~setPan(p * (float)`facing);
