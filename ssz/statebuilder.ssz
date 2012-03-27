@@ -346,7 +346,7 @@ void errmes(^/char fn, ^/char line, index ln, ^/char mess)
 }
 
 const ^/char sndstart =
-  "bool f=false,lw=false,lp=false;int g=-1,s=0,ch=-1,vo=`sysivar[.iVOLUME];"
+  "bool f=false,lw=false,lp=false;int g=-1,s=0,ch=-1,vo=0;"
   "float p=0.0,fr=1.0;^float x=`sysfvar[.fX...fX+1];";
 const ^/char sndend = "`playSound(f,lw,lp,g,s,ch,vo,p,fr,x);";
 public &StateBuilder
@@ -4567,6 +4567,7 @@ public &StateBuilder
           if(#data == 0) else;
         cond data[0] == 'S' || data[0] == 's':
           data = data[1..-1];
+          `state.ctrlList[-1].task .= "vo=`sysivar[.iVOLUME];";
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
@@ -6513,6 +6514,7 @@ public &StateBuilder
         cond data[0] == 'F' || data[0] == 'f':
           `state.ctrlList[-1].task .= "f=true;";
         cond data[0] == 'S' || data[0] == 's':
+          `state.ctrlList[-1].task .= "vo=`sysivar[.iVOLUME];";
         else:
           break;
         comm:

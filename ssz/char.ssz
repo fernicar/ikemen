@@ -5936,6 +5936,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       comm:
         sou~chrx = `pyr.sysfvar[.fX...fX+1];
         sou~setDefaultParameter();
+        if(hit.hitsoundg >= 0) sou~setVol(by.sysivar[.iVOLUME]);
       }
       if(hitting > 0){
         by.addPower(hit.hitgetpower);
@@ -5972,6 +5973,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       comm:
         sou~chrx = `pyr.sysfvar[.fX...fX+1];
         sou~setDefaultParameter();
+        if(hit.hitsoundg >= 0) sou~setVol(by.sysivar[.iVOLUME]);
       }
       if(hitting > 0){
         by.addPower(hit.guardgetpower);
