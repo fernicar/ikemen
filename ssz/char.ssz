@@ -2733,7 +2733,7 @@ public &Char
       .winty[(`playerno+1)&1] = .fgt.WinTy::N;
     }
   }
-  public bool attrCheck(&.Hitdef hit=, int cid, int bpn)
+  public bool attrCheck(&.Hitdef hit=, int cid, |.StTy styp)
   {
     if(
       .super > 0 && .superunhittable != 0
@@ -2760,18 +2760,18 @@ public &Char
       if(
         `stVal.hb.hitt1 != 0 && (
           (`stVal.hb.hitf1 & (
-              `stVal.playerno != bpn ? hit.attr & 63 : (int).StTy::S)) == 0
+              styp == .StTy::N ? hit.attr & 63 : (int)styp)) == 0
           || (`stVal.hb.hitf1 & hit.attr & !63) == 0)) ret false;
       if(
         `stVal.hb.hitt2 != 0 && (
           (`stVal.hb.hitf2 & (
-              `stVal.playerno != bpn ? hit.attr & 63 : (int).StTy::S)) == 0
+              styp == .StTy::N ? hit.attr & 63 : (int)styp)) == 0
           || (`stVal.hb.hitf2 & hit.attr & !63) == 0)) ret false;
     }
     ret true;
   }
   public bool hittable(
-    &.Hitdef hit=, int cid, int bpn, ~$bool(&.Hitdef=) countercheck)
+    &.Hitdef hit=, int cid, |.StTy styp, ~$bool(&.Hitdef=) countercheck)
   {
     if(
       `atktmp >= 0 && (`stVal.hit.attr != 0 || `stVal.hit.reversal_attr > 0)
@@ -2786,7 +2786,7 @@ public &Char
               || hit.bothhittype != .PriTy::Hit)))
         && countercheck(:`stVal.hit=:)) ret false;
     }
-    ret `attrCheck(hit=, cid, bpn);
+    ret `attrCheck(hit=, cid, styp);
   }
   public bool clsnCheck(`self atk=, bool c1atk, bool c1slf)
   {
@@ -5823,8 +5823,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           `pyr.stVal.ho[i].time != 0
           && (
             `pyr.stVal.ho[i].attr & (
-              `pyr.stVal.playerno != by.playerno
-              ? hit.attr & 63 : (int).StTy::S)) != 0
+              pro != 0 ? hit.attr & 63 : (int)by.stVal.typ)) != 0
           && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0)
         {
           if(
@@ -6109,8 +6108,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           pyr.stVal.hb.getJuggle(p~c~id, p~c~sysivar[.iAIRJUGGLE]),
           p~c~stVal.juggle))
       && pyr.hittable(
-        p~c~stVal.hit=, p~c~id, p~c~playerno, [bool(&.Hitdef h=){
-          ret p~c~attrCheck(h=, pyr.id, pyr.playerno)&&p~c~hitCheck(pyr=);}]))
+        p~c~stVal.hit=, p~c~id, p~c~stVal.typ, [bool(&.Hitdef h=){
+          ret p~c~attrCheck(h=, pyr.id, pyr.stVal.typ)&&p~c~hitCheck(pyr=);}]))
     {
       if(
         .m.inRange!float?(
@@ -6266,7 +6265,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
               proj.hit.air_juggle))
           && proj.timemiss <= 0
           && proj.hitpause <= 0 && pyr.hittable(
-            proj.hit=, .chars[i][0]~id, .chars[i][0]~playerno,
+            proj.hit=, .chars[i][0]~id, .StTy::N,
             [bool(&.Hitdef h=){
               ret (h.hitflag&(int).StTy::U) != 0 && pyr.hitProjCheck(proj=);
             }]))
