@@ -117,6 +117,7 @@ public &Select
         filesflg = false;
       }
     }];
+    ^/char error;
     ^^/char defs =
       .s.each!def.self?([void(def.self s=){s = .s.trim(s);}])<,
       .s.split(",", def);
@@ -130,15 +131,19 @@ public &Select
     ^/char d = defs[0];
     {
       if(
-        .com.loadFile("chars/", d=)<, [bool(^/char f){
-          ret (mainbuf = .com.loadText(f, unicode=))$#mainbuf > 0;
-        }]) break;
+        #.com.loadFile("chars/", d=)=>error <, [^/char(^/char f){
+          ret
+            #.com.loadText(f, unicode=)=>mainbuf > 0
+            ? "" : .com.FileReadError;
+        }] == 0) break;
       %char buf;
       d = (buf .= d .= '/' .= d .= ".def");
       if(
-        .com.loadFile("chars/", d=)<, [bool(^/char f){
-          ret (mainbuf = .com.loadText(f, unicode=))$#mainbuf > 0;
-        }]) break;
+        #.com.loadFile("chars/", d=)=>error <, [^/char(^/char f){
+          ret
+            #.com.loadText(f, unicode=)=>mainbuf > 0
+            ? "" : .com.FileReadError;
+        }] == 0) break;
       ret true;
     }
     `charlist[-1].def = d;
@@ -149,23 +154,25 @@ public &Select
       i++;
     while i < #lines:
     }
-    .com.loadFile(`charlist[-1].def, `charlist[-1].sprite=)<, [bool(^/char f){
+    .com.loadFile(`charlist[-1].def, `charlist[-1].sprite=)<,
+    [^/char(^/char f){
       ^&.sff.Sprite s;
       s.new(1);
-      if(!s~loadFromSff(f, `sportg, `sportn)) ret false;
+      if(#s~loadFromSff(f, `sportg, `sportn)=>error > 0) ret error;
       `charlist[-1].sportrait = s;
-      ret true;
+      ret "";
     }];
-    .com.loadFile(`charlist[-1].def, `charlist[-1].sprite=)<, [bool(^/char f){
+    .com.loadFile(`charlist[-1].def, `charlist[-1].sprite=)<,
+    [^/char(^/char f){
       ^&.sff.Sprite s;
       s.new(1);
-      if(!s~loadFromSff(f, `lportg, `lportn)) ret false;
+      if(#s~loadFromSff(f, `lportg, `lportn)=>error > 0) ret error;
       `charlist[-1].lportrait = s;
-      ret true;
+      ret "";
     }];
     ret true;
   }
-  public bool addStage(^/char def)
+  public ^/char addStage(^/char def)
   {:<-
     public void info(&.com.Section sc=)
     {
@@ -191,16 +198,17 @@ public &Select
         `addStage:<-info(sc=);
       }
     }
+    ^/char error;
     ^char mainbuf;
     ^/char d = .s.trim(def);
     if(
-      !.com.loadFile("stages/", d=)<, [bool(^/char f){
-        ret (mainbuf = .file.loadAsciiText(f))$#mainbuf > 0;
-      }])
+      #.com.loadFile("stages/", d=)=>error <, [^/char(^/char f){
+        ret
+          #.file.loadAsciiText(f)=>mainbuf > 0
+          ? "" : .com.FileReadError;
+      }] > 0)
     {
-      %char buf;
-      .al.alert!.self?(buf .= "Stege: " .= def .= "がオープンできません");
-      ret false;
+      ret error;
     }
     `stagelist.new[-1];
     `stagelist[-1].def = d;
@@ -211,7 +219,7 @@ public &Select
       i++;
     while i < #lines:
     }
-    ret true;
+    ret "";
   }
 }
 
@@ -274,12 +282,13 @@ public &System
 {
   public ^&.fgt.Fight fig;
   public &.SelectInfo selinf;
-  public bool init()
+  public ^/char init()
   {
+    ^/char error;
     ^/char tmp = .cfg.fight;
     `fig.new(1);
-    if(!`fig~load("data/", tmp=)) ret false;
-    ret true;
+    if(#`fig~load("data/", tmp=)=>error > 0) ret error;
+    ret "";
   }
   public void clear()
   {

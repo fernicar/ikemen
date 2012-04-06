@@ -93,7 +93,7 @@ public &Sff
   public bool load(^/char file)
   {
     `sff.new(1);
-    ret `sff~loadFile(file, false);
+    ret #`sff~loadFile(file, false) == 0;
   }
 }
 void sffNew(&.lua.State L=, int re=)
@@ -120,7 +120,7 @@ public &Snd
   public bool load(^/char file)
   {
     `snd.new(1);
-    ret `snd~loadFile(file);
+    ret #`snd~loadFile(file) == 0;
   }
   public bool play(int g, int n)
   {
@@ -163,7 +163,7 @@ public &Font
   public bool load(^/char file)
   {
     `fnt.new(1);
-    ret `fnt~loadFile(file);
+    ret #`fnt~loadFile(file) == 0;
   }
 }
 void fontNew(&.lua.State L=, int re=)

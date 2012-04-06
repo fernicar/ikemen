@@ -19,6 +19,13 @@ lib cmd = "command.ssz";
 lib snd = "sound.ssz";
 lib fnt = "font.ssz";
 lib lua = <alpha/lua.ssz>;
+lib al = <alert.ssz>;
+
+
+public void error<_t>(^/char m)
+{
+  .al.alert!_t?(m);
+}
 
 void scGame(&.lua.State L=, int re=)
 {
@@ -28,8 +35,9 @@ void scGame(&.lua.State L=, int re=)
 
 bool init(&.lua.State L=)
 {
-  if(!.sc.syst.init()){
-    .com.error!.self?("system初期化に失敗");
+  ^/char error = .sc.syst.init();
+  if(#error > 0){
+    .error!.self?(error);
     ret false;
   }
   .fnt.debugFont.new(1);
@@ -41,10 +49,10 @@ bool init(&.lua.State L=)
 
 void loadCharacter(^&.chr.Char p, ^/char file, ^int end)
 {
+  ^/char error;
   &.stb.StateBuilder chara;
-  if(!chara.build(p~playerno, file) || !p~load(file)){
-    %char buf .= file .= ": キャラ初期化に失敗";
-    .com.error!.self?(buf);
+  if(#chara.build(p~playerno, file)=>error > 0 || #p~load(file)=>error > 0){
+    .error!.self?(error);
     end<> = -1;
     ret;
   }
@@ -53,9 +61,9 @@ void loadCharacter(^&.chr.Char p, ^/char file, ^int end)
 
 void loadStage(^/char file, ^int end)
 {
-  if(!.chr.stg~load(file)){
-    %char buf .= file .= ": ステージ初期化に失敗";
-    .com.error!.self?(buf);
+  ^/char error = .chr.stg~load(file);
+  if(#error > 0){
+    .error!.self?(error);
     end<> = -1;
     ret;
   }
@@ -147,6 +155,7 @@ int game()
   }
   bool foo(^&.chr.Char p, int pn)
   {
+    ^/char error;
     branch{
     cond #p > 0:
       .chr.fight~fa[.com.tmode[pn]][pn+2].face_spr =
@@ -165,22 +174,23 @@ int game()
         tmp =
           .sc.syst.selinf.sel.charlist[
             .sc.syst.selinf.p[pn].selchr[i].i].sprite;
-        .com.loadFile(
+        error = .com.loadFile(
           .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[pn].selchr[i].i].def,
           tmp=,
-          [bool(^/char f){
+          [^/char(^/char f){
               ^&.sff.Sprite s.new(1);
               if(
-                !s~loadFromSff(
+                #s~loadFromSff(
                   f, .chr.fight<>
                     .fa[(int).com.TeamMode::Turns][pn].teammate_face_sprg,
                   .chr.fight<>
-                    .fa[(int).com.TeamMode::Turns][pn].teammate_face_spri))
+                    .fa[(int).com.TeamMode::Turns][pn].teammate_face_spri
+                )=>error > 0)
               {
-                ret false;
+                ret error;
               }
               .chr.fight~fa[.com.tmode[pn]][pn].teammate_face_spr[i] = s;
-              ret true;
+              ret "";
             }]);
         i++;
       while i < #.sc.syst.selinf.p[pn].selchr:
@@ -343,12 +353,12 @@ int game()
 void main()
 {//Itumademo Kanseishinai Eienni Mikansei ENgine
   if(!.sdl.init("I.K.E.M.E.N", .cfg.Width, .cfg.Height, .cfg.OpenGL)){
-    .com.error!.self?("初期化に失敗");
+    .error!.self?("初期化に失敗");
     ret;
   }
 /?/*.cfg.OpenGL:
   if(!.sdl.InitMugenGl(::)){
-    .com.error!.self?("OpenGL 3.1 の初期設定に失敗");
+    .error!.self?("OpenGL 3.1 の初期設定に失敗");
     ret;
   }
 /*?*/
@@ -357,7 +367,7 @@ void main()
   if(!.init(L=)) ret;
   if(!L.runFile(.cfg.system)){
     ^/char err = L.toString(-1);
-    if(!.s.equ(err[#err-10..-1], "<game end>")) .com.error!self?(err);
+    if(!.s.equ(err[#err-10..-1], "<game end>")) .error!self?(err);
   }
 }
 

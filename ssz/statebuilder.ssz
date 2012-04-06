@@ -11,11 +11,11 @@ lib cfg = "config.ssz";
 
 const ^/char kuuhaktokigou = " !=<>()|&+-*/%,[]^|:"\"\t\r\n;
 
-void errmes(^/char fn, ^/char line, index ln, ^/char mess)
+^/char errmes(^/char fn, ^/char line, index ln, ^/char mess)
 {
   %char buf;
-  .com.error!.self?(
-    buf .= fn .= '(' .= .s.iToS(ln+1) .= ')' .= \r\n .= line .= \r\n .= mess);
+  ret
+    buf .= fn .= '(' .= .s.iToS(ln+1) .= ')' .= \r\n .= line .= \r\n .= mess;
 }
 
 |CtrlTy
@@ -6702,7 +6702,7 @@ public &StateBuilder
       ret true;
     }]);
   }
-  bool stateBulid(%char buf=, ^/char def, ^/char st=)
+  ^/char stateBulid(%char buf=, ^/char def, ^/char st=)
   {:<-
     public bool statedef(^/char sec, ^/char name, ^/char data)
     {
@@ -6999,17 +6999,18 @@ public &StateBuilder
       }
       ret true;
     }
+    ^/char error;
     ^char mainbuf;
     bool unicode = false;
     if(
-      !.com.loadFile(def, st=)<, [bool(^/char f){
-        ret #(mainbuf = .com.loadText(f, unicode=)) > 0;
-      }])
+      #.com.loadFile(def, st=)=>error <, [^/char(^/char f){
+        ret
+          #.com.loadText(f, unicode=)=>mainbuf > 0
+          ? "" : .com.FileReadError;
+      }] > 0)
     {
-      if(.cfg.IgnoreMostErrors) ret true;
-      %char buf;
-      .com.error!.self?(buf .= st .= "を読み込めません");
-      ret false;
+      if(.cfg.IgnoreMostErrors) ret "";
+      ret error;
     }
     ^/char fn = st;
     %^/char lines = .com.splitLines(mainbuf);
@@ -7052,8 +7053,7 @@ public &StateBuilder
         break, while;
       }
       if(!`parse!`stateBulid:<-statedef?(lines, i=, "")){
-        .errmes(fn, lines[i], i, `errorexp+\r\n+`lasterror);
-        ret false;
+        ret .errmes(fn, lines[i], i, `errorexp+\r\n+`lasterror);
       }
       loop{
         int cn;
@@ -7091,8 +7091,7 @@ public &StateBuilder
         `state.ctrlList.new[-1];
         i++;
         if(!`parse!`stateBulid:<-state?(lines, i=, "")){
-          .errmes(fn, lines[i], i, `errorexp+\r\n+`lasterror);
-          ret false;
+          ret .errmes(fn, lines[i], i, `errorexp+\r\n+`lasterror);
         }
         buf .= \t"if(";
         branch{
@@ -7281,9 +7280,9 @@ public &StateBuilder
       i++;
     while i < #lines:
     }
-    ret true;
+    ret "";
   }
-  public bool build(int no, ^/char def)
+  public ^/char build(int no, ^/char def)
   {:<-
     void files(^^/char lines, bool unicode)
     {
@@ -7555,6 +7554,7 @@ public &StateBuilder
         movementflg = false;
       }
     }];
+    ^/char error;
     `playerno = no;
     `cmd = "";
     `cns = "";
@@ -7566,12 +7566,13 @@ public &StateBuilder
     .com.mugenversion(lines, `mver0=, `mver1=);
     files(lines, unicode);
     if(
-      !.com.loadFile(def, `cns=)<, [bool(^/char f){
-        ret (mainbuf = .com.loadText(f, unicode=))$#mainbuf > 0;}])
+      #.com.loadFile(def, `cns=)=>error <, [^/char(^/char f){
+        ret
+          #.com.loadText(f, unicode=)=>mainbuf > 0
+          ? "" : .com.FileReadError;
+      }] > 0)
     {
-      %char buf;
-      .com.error!.self?(buf .= `cns .= "を読み込めません");
-      ret false;
+      ret error;
     }
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
@@ -7585,13 +7586,15 @@ public &StateBuilder
     %char buf;
     buf .= \xfeff"lib c = "\""char.ssz"\"";"\r\n;
     loop{index i = 0; while; do:
-      if(#`st[i] > 0 && !`stateBulid(buf=, def, `st[i]=)) ret false;
+      if(#`st[i] > 0 && #`stateBulid(buf=, def, `st[i]=)=>error > 0) ret error;
       i++;
     while i < #`st:}
-    if(!`stateBulid(buf=, def, `cmd=)) ret false;
-    if(#`stcommon > 0 && !`stateBulid(buf=, def, `stcommon=)) ret false;
+    if(#`stateBulid(buf=, def, `cmd=)=>error > 0) ret error;
+    if(#`stcommon > 0 && #`stateBulid(buf=, def, `stcommon=)=>error > 0){
+      ret error;
+    }
     ^/char minus = "ssz/minus.cns";
-    if(!`stateBulid(buf=, def, minus=)) ret false;
+    if(#`stateBulid(buf=, def, minus=)=>error > 0) ret error;
     buf .=
       "public void c.Char::stateInit" .= .s.iToS(`playerno) .= "P()"\r\n
       "{"\r\n
@@ -7742,7 +7745,7 @@ public &StateBuilder
       f.open(fn .= "ssz/state" .= .s.iToS(`playerno) .= "p.ssz", "wb");
       f.writeAry!ubyte?(.s.sToU8(buf));
     }
-    ret true;
+    ret "";
   }
 }
 

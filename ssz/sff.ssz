@@ -19,52 +19,51 @@ public &SffHeader
   public ubyte ver0, ver1, ver2, ver3;
   public uint firstSpriteHeaderOffset, firstPaletteHeaderOffset;
   public uint numberOfPalettes, numberOfSprites;
-  public bool read(&.file.File f=, uint lofs=, uint tofs=)
+  public ^/char read(&.file.File f=, uint lofs=, uint tofs=)
   {
     ubyte ub;
     loop{
       index i = 0;
       %char s;
     do:
-      if(!f.read!ubyte?(ub=)) ret false;
+      if(!f.read!ubyte?(ub=)) ret .com.FileReadError;
       s .= (char)ub;
       i++;
     while i < 12:
       if(!.s.equ(s, "ElecbyteSpr"\0)){
-        .com.error!self?("ElecbyteSprじゃない");
-        ret false;
+        ret "ElecbyteSprじゃない";
       }
     }
-    if(!f.read!ubyte?(`ver3=)) ret false;
-    if(!f.read!ubyte?(`ver2=)) ret false;
-    if(!f.read!ubyte?(`ver1=)) ret false;
-    if(!f.read!ubyte?(`ver0=)) ret false;
+    if(!f.read!ubyte?(`ver3=)) ret .com.FileReadError;
+    if(!f.read!ubyte?(`ver2=)) ret .com.FileReadError;
+    if(!f.read!ubyte?(`ver1=)) ret .com.FileReadError;
+    if(!f.read!ubyte?(`ver0=)) ret .com.FileReadError;
     uint dummy;
     switch(`ver0){
     case 0d1:
-      if(!f.read!uint?(dummy=)) ret false;
+      if(!f.read!uint?(dummy=)) ret .com.FileReadError;
       `numberOfPalettes = 0x0;
-      if(!f.read!uint?(`numberOfSprites=)) ret false;
-      if(!f.read!uint?(`firstSpriteHeaderOffset=)) ret false;
-      if(!f.read!uint?(dummy=)) ret false;
+      if(!f.read!uint?(`numberOfSprites=)) ret .com.FileReadError;
+      if(!f.read!uint?(`firstSpriteHeaderOffset=)) ret .com.FileReadError;
+      if(!f.read!uint?(dummy=)) ret .com.FileReadError;
       `firstPaletteHeaderOffset = 0x0;
     case 0d2:
-      if(!f.read!uint?(dummy=)) ret false;
-      if(!f.read!uint?(dummy=)) ret false;
-      if(!f.read!uint?(dummy=)) ret false;
-      if(!f.read!uint?(dummy=)) ret false;
-      if(!f.read!uint?(dummy=)) ret false;
-      if(!f.read!uint?(`firstSpriteHeaderOffset=)) ret false;
-      if(!f.read!uint?(`numberOfSprites=)) ret false;
-      if(!f.read!uint?(`firstPaletteHeaderOffset=)) ret false;
-      if(!f.read!uint?(`numberOfPalettes=)) ret false;
-      if(!f.read!uint?(lofs=)) ret false;
-      if(!f.read!uint?(dummy=)) ret false;
-      if(!f.read!uint?(tofs=)) ret false;
+      if(!f.read!uint?(dummy=)) ret .com.FileReadError;
+      if(!f.read!uint?(dummy=)) ret .com.FileReadError;
+      if(!f.read!uint?(dummy=)) ret .com.FileReadError;
+      if(!f.read!uint?(dummy=)) ret .com.FileReadError;
+      if(!f.read!uint?(dummy=)) ret .com.FileReadError;
+      if(!f.read!uint?(`firstSpriteHeaderOffset=)) ret .com.FileReadError;
+      if(!f.read!uint?(`numberOfSprites=)) ret .com.FileReadError;
+      if(!f.read!uint?(`firstPaletteHeaderOffset=)) ret .com.FileReadError;
+      if(!f.read!uint?(`numberOfPalettes=)) ret .com.FileReadError;
+      if(!f.read!uint?(lofs=)) ret .com.FileReadError;
+      if(!f.read!uint?(dummy=)) ret .com.FileReadError;
+      if(!f.read!uint?(tofs=)) ret .com.FileReadError;
     default:
-      ret false;
+      ret "バージョンが不正です";
     }
-    ret true;
+    ret "";
   }
 }
 
@@ -150,30 +149,29 @@ public &Sprite
     if(!f.read!short?(`imageNumber=)) ret false;
     ret true;
   }
-  public bool readPcxHeader(&.file.File f=, long offset)
+  public ^/char readPcxHeader(&.file.File f=, long offset)
   {
     f.seek(offset, .file.Seek::SET);
     ubyte dummy, encoding, bpp;
-    if(!f.read!ubyte?(dummy=)) ret false;
-    if(!f.read!ubyte?(dummy=)) ret false;
-    if(!f.read!ubyte?(encoding=)) ret false;
-    if(!f.read!ubyte?(bpp=)) ret false;
+    if(!f.read!ubyte?(dummy=)) ret .com.FileReadError;
+    if(!f.read!ubyte?(dummy=)) ret .com.FileReadError;
+    if(!f.read!ubyte?(encoding=)) ret .com.FileReadError;
+    if(!f.read!ubyte?(bpp=)) ret .com.FileReadError;
     if(bpp != 0d8){
-      .com.error!.self?("256色じゃない");
-      ret false;
+      ret "256色じゃない";
     }
     ushort x, y, w, h;
-    if(!f.read!ushort?(x=)) ret false;
-    if(!f.read!ushort?(y=)) ret false;
-    if(!f.read!ushort?(w=)) ret false;
-    if(!f.read!ushort?(h=)) ret false;
+    if(!f.read!ushort?(x=)) ret .com.FileReadError;
+    if(!f.read!ushort?(y=)) ret .com.FileReadError;
+    if(!f.read!ushort?(w=)) ret .com.FileReadError;
+    if(!f.read!ushort?(h=)) ret .com.FileReadError;
     f.seek(offset+66, .file.Seek::SET);
     ushort bpl;
-    if(!f.read!ushort?(bpl=)) ret false;
+    if(!f.read!ushort?(bpl=)) ret .com.FileReadError;
     `rct.w = w - x + 0x1;
     `rct.h = h - y + 0x1;
     `rle = encoding == 0x1 ? (int)bpl : 0;
-    ret true;
+    ret "";
   }
   public bool readHeaderV2(
     &.file.File f=, uint ofs=, uint siz=,
@@ -199,17 +197,18 @@ public &Sprite
     ofs += (flg & 0d1) == 0x0 ? lofs : tofs;
     ret true;
   }
-  public bool read(
+  public ^/char read(
     &.file.File f=, &.SffHeader sh=, long offset, uint loh, uint nsh,
     ^`self prev, bool palletSame=, &.PalleteList pl=, bool c00)
   {
+    ^/char error;
     uint lenghtOfSubheader = loh;
     if(nsh > (uint)offset) lenghtOfSubheader = nsh - (uint)offset;//lohを無視
     byte ps;
-    if(!f.read!byte?(ps=)) ret false;
+    if(!f.read!byte?(ps=)) ret .com.FileReadError;
     palletSame = ps != 0;
     if(#prev == 0) palletSame = false;
-    if(!`readPcxHeader(f=, offset)) ret false;
+    if(#`readPcxHeader(f=, offset)=>error > 0) ret error;
     f.seek(offset + 128, .file.Seek::SET);
     ^ubyte px.new((index)lenghtOfSubheader - (128+(c00||palletSame?0:768)));
     f.readAry!ubyte?(px);
@@ -224,9 +223,9 @@ public &Sprite
       ^uint pal = pl.newPal(`palidx=);
       if(c00) f.seek(offset + (long)lenghtOfSubheader - 768, .file.Seek::SET);
     do:
-      if(!f.read!ubyte?(r=)) ret false;
-      if(!f.read!ubyte?(g=)) ret false;
-      if(!f.read!ubyte?(b=)) ret false;
+      if(!f.read!ubyte?(r=)) ret .com.FileReadError;
+      if(!f.read!ubyte?(g=)) ret .com.FileReadError;
+      if(!f.read!ubyte?(b=)) ret .com.FileReadError;
       pal[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
       i++;
     while i < 256:
@@ -239,9 +238,9 @@ public &Sprite
       `rlePcxDecode(px=);
     }
     `setPxl(px);
-    ret true;
+    ret "";
   }
-  public bool readV2(&.file.File f=, long ofs, uint dsz)
+  public ^/char readV2(&.file.File f=, long ofs, uint dsz)
   {
     f.seek(ofs+4, .file.Seek::SET);
     ^ubyte px.new((index)dsz);
@@ -254,10 +253,10 @@ public &Sprite
     case 4:
       `lz5Decode(px=);
     default:
-      ret false;
+      ret "不明な形式です";
     }
     `setPxl(px);
-    ret true;
+    ret "";
   }
   public void setPxl(^ubyte px)
   {
@@ -422,13 +421,14 @@ public &Sprite
     }
     `rle = 0;
   }
-  public bool loadFromSff(^/char fn, short ig, short in)
+  public ^/char loadFromSff(^/char fn, short ig, short in)
   {
+    ^/char error;
     &.file.File f;
-    if(!f.open(fn, "rb")) ret false;
+    if(!f.open(fn, "rb")) ret .com.FileOpenError;
     &.SffHeader h;
     uint lofs, tofs;
-    if(!h.read(f=, lofs=, tofs=)) ret false;
+    if(#h.read(f=, lofs=, tofs=)=>error > 0) ret error;
     uint shofs = h.firstSpriteHeaderOffset, misc, size;
     ushort indexOfPrevious;
     &.PalleteList pl;
@@ -455,29 +455,31 @@ public &Sprite
     do:
       newSubHeaderOffset .= shofs;
       f.seek((long)shofs, .file.Seek::SET);
-      if(!foo(::)) ret false;
+      if(!foo(::)) ret .com.FileReadError;
       if(`palidx >= 0 && (`imageGroup != ig || `imageNumber != in)) continue;
       loop{
-        uint ip = !indexOfPrevious;
+        uint ip = (uint)#newSubHeaderOffset, ipmax;
         while;
       do:
-        if(ip == indexOfPrevious) ret false;
+        ipmax = ip - 0x1;
+        if(indexOfPrevious > ipmax) ret "linkが不正です";
         ip = indexOfPrevious;
         shofs =
           h.ver0 == 0d1 ? newSubHeaderOffset[(index)ip]
           : h.firstSpriteHeaderOffset + ip*0d28;
         f.seek((long)shofs, .file.Seek::SET);
-        if(!foo(::)) ret false;
+        if(!foo(::)) ret .com.FileReadError;
       while size == 0d0:
       }
       switch(h.ver0){
       case 0d1:
         if(
-          !`read(
+          #`read(
             f=, h=, (long)(shofs + 0d32), size,
-            misc, dummy, palletSame=, pl=, false)) ret false;
+            misc, dummy, palletSame=, pl=, false)=>error
+          > 0) ret error;
       case 0d2:
-        if(!`readV2(f=, (long)misc, size)) ret false;
+        if(#`readV2(f=, (long)misc, size)=>error > 0) ret error;
       }
       if(`imageGroup == ig && `imageNumber == in) break;
       dummy.new(1);
@@ -486,12 +488,12 @@ public &Sprite
       shofs = h.ver0 == 0d1 ? misc : shofs + 0d28;
       i++;
     while i < (index)h.numberOfSprites:
-      ret false;
+      ret .s.iToS(ig)+","+.s.iToS(in)+"のスプライトが見つかりません";
     }
     if(h.ver0 == 0d1){
       `colorPallet = pl.get(`palidx);
       `palidx = -1;
-      ret true;
+      ret "";
     }
     loop{
       uint ip;
@@ -500,9 +502,9 @@ public &Sprite
       ip = indexOfPrevious;
       shofs = h.firstPaletteHeaderOffset + ip*0d16;
       f.seek((long)shofs + 6, .file.Seek::SET);
-      if(!f.read!ushort?(indexOfPrevious=)) ret false;
-      if(!f.read!uint?(misc=)) ret false;
-      if(!f.read!uint?(size=)) ret false;
+      if(!f.read!ushort?(indexOfPrevious=)) ret .com.FileReadError;
+      if(!f.read!uint?(misc=)) ret .com.FileReadError;
+      if(!f.read!uint?(size=)) ret .com.FileReadError;
     while size == 0d0 && ip != indexOfPrevious:
     }
     f.seek((long)(lofs+misc), .file.Seek::SET);
@@ -511,17 +513,17 @@ public &Sprite
       index i = 0, l = (index)size / 4;
       ubyte r, g, b, dummy;
     do:
-      if(!f.read!ubyte?(r=)) ret false;
-      if(!f.read!ubyte?(g=)) ret false;
-      if(!f.read!ubyte?(b=)) ret false;
-      if(!f.read!ubyte?(dummy=)) ret false;
+      if(!f.read!ubyte?(r=)) ret .com.FileReadError;
+      if(!f.read!ubyte?(g=)) ret .com.FileReadError;
+      if(!f.read!ubyte?(b=)) ret .com.FileReadError;
+      if(!f.read!ubyte?(dummy=)) ret .com.FileReadError;
       `colorPallet[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
       i++;
     while i < l:
     }
     if(#`colorPallet == 0) `colorPallet.new(256);
     `palidx = -1;
-    ret true;
+    ret "";
   }
   public void draw(float x, float y, float xscale, float yscale, ^uint pal)
   {
@@ -575,13 +577,14 @@ public &Sff
     while i < .NumCharPalletes:
     }
   }
-  public bool loadFile(^/char filename, bool chr)
+  public ^/char loadFile(^/char filename, bool chr)
   {
+    ^/char error;
     &.file.File f;
-    if(!f.open(filename, "rb")) ret false;
+    if(!f.open(filename, "rb")) ret .com.FileOpenError;
     `clear();
     uint lofs, tofs;
-    if(!`head.read(f=, lofs=, tofs=)) ret false;
+    if(#`head.read(f=, lofs=, tofs=)=>error > 0) ret error;
     if(`head.ver0 != 0d1) loop{
        index i = 0;
        ^uint pal;
@@ -592,12 +595,12 @@ public &Sff
        while;
     do:
       f.seek((long)`head.firstPaletteHeaderOffset + 16*i, .file.Seek::SET);
-      if(!f.read!ushort?(group=)) ret false;
-      if(!f.read!ushort?(item=)) ret false;
-      if(!f.read!ushort?(dummy=)) ret false;
-      if(!f.read!ushort?(link=)) ret false;
-      if(!f.read!uint?(ofs=)) ret false;
-      if(!f.read!uint?(siz=)) ret false;
+      if(!f.read!ushort?(group=)) ret .com.FileReadError;
+      if(!f.read!ushort?(item=)) ret .com.FileReadError;
+      if(!f.read!ushort?(dummy=)) ret .com.FileReadError;
+      if(!f.read!ushort?(link=)) ret .com.FileReadError;
+      if(!f.read!uint?(ofs=)) ret .com.FileReadError;
+      if(!f.read!uint?(siz=)) ret .com.FileReadError;
       idx.new(1);
       branch{
       cond siz == 0x0:
@@ -610,10 +613,10 @@ public &Sff
           index i = 0, l = (index)siz / 4;
           ubyte r, g, b, dummy8;
         do:
-          if(!f.read!ubyte?(r=)) ret false;
-          if(!f.read!ubyte?(g=)) ret false;
-          if(!f.read!ubyte?(b=)) ret false;
-          if(!f.read!ubyte?(dummy8=)) ret false;
+          if(!f.read!ubyte?(r=)) ret .com.FileReadError;
+          if(!f.read!ubyte?(g=)) ret .com.FileReadError;
+          if(!f.read!ubyte?(b=)) ret .com.FileReadError;
+          if(!f.read!ubyte?(dummy8=)) ret .com.FileReadError;
           pal[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
           i++;
         while i < l:
@@ -638,14 +641,17 @@ public &Sff
       f.seek((long)shofs, .file.Seek::SET);
       switch(`head.ver0){
       case 0d1:
-        if(!f.read!uint?(misc=)) ret false;
-        if(!f.read!uint?(size=)) ret false;
-        if(!spriteList[i].readHeader(f=)) ret false;
-        if(!f.read!ushort?(indexOfPrevious=)) ret false;
+        if(!f.read!uint?(misc=)) ret .com.FileReadError;
+        if(!f.read!uint?(size=)) ret .com.FileReadError;
+        if(!spriteList[i].readHeader(f=)) ret .com.FileReadError;
+        if(!f.read!ushort?(indexOfPrevious=)) ret .com.FileReadError;
       case 0d2:
         if(
           !spriteList[i].readHeaderV2(
-            f=, misc=, size=, lofs, tofs, indexOfPrevious=)) ret false;
+            f=, misc=, size=, lofs, tofs, indexOfPrevious=))
+          {
+            ret .com.FileReadError;
+          }
       }
       branch{
         bool ps;
@@ -653,16 +659,19 @@ public &Sff
         switch(`head.ver0){
         case 0d1:
           if(
-            !spriteList[i].read(
+            #spriteList[i].read(
               f=, `head=, (long)(shofs + 0d32),
               size, misc, spriteList[prev..prev+1], ps=, `palList=,
               chr && (
                 (
                   spriteList[i].imageGroup == 0
                   && spriteList[i].imageNumber == 0)
-                || prev < 0))) ret false;
+                || prev < 0))=>error
+            > 0) ret error;
         case 0d2:
-          if(!spriteList[i].readV2(f=, (long)misc, size)) ret false;
+          if(#spriteList[i].readV2(f=, (long)misc, size)=>error > 0){
+            ret error;
+          }
         }
         prev = i;
       else:
@@ -677,7 +686,7 @@ public &Sff
       i++;
     while i < (index)`head.numberOfSprites:
     }
-    ret true;
+    ret "";
   }
   public ^&.Sprite getSprite(short group, short number)
   {

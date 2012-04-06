@@ -1550,7 +1550,7 @@ public &Fight
     }
     ret a;
   }
-  public bool load(^/char sysdef, ^/char def=)
+  public ^/char load(^/char sysdef, ^/char def=)
   {:<-
     public void files(&.com.Section sc=, bool unicode)
     {
@@ -1710,11 +1710,14 @@ public &Fight
         roundflg = false;
       }
     }];
+    ^/char error;
     ^char mainbuf;
     if(
-      !.com.loadFile(sysdef, def=)<, [bool(^/char f){
-        ret #(mainbuf = .com.loadText(f, unicode=)) > 0;
-      }]) ret false;
+      #.com.loadFile(sysdef, def=)=>error <, [^/char(^/char f){
+        ret
+          #.com.loadText(f, unicode=)=>mainbuf > 0
+          ? "" : .com.FileReadError;
+      }] > 0) ret error;
     ^^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `clear();
@@ -1751,17 +1754,18 @@ public &Fight
     }
     `sf.new(1);
     if(
-      !.com.loadFile(def, `sff=)<,
-      [bool(^/char f){ret `sf~loadFile(f, false);}]) ret false;
+      #.com.loadFile(def, `sff=)=>error <,
+      [^/char(^/char f){ret `sf~loadFile(f, false);}] > 0) ret error;
     `fsf.new(1);
     if(
-      !.com.loadFile(def, `fightfx_sff=)<,
-      [bool(^/char f){ret `fsf~loadFile(f, false);}]) ret false;
+      #.com.loadFile(def, `fightfx_sff=)=>error <,
+      [^/char(^/char f){ret `fsf~loadFile(f, false);}] > 0) ret error;
     if(
-      !.com.loadFile(def, `fightfx_air=)<, [bool(^/char f){
+      #.com.loadFile(def, `fightfx_air=)=>error <, [^/char(^/char f){
         ret
-          (mainbuf = .com.loadText(f, unicode=)) $ #mainbuf > 0;
-      }]) ret false;
+          #.com.loadText(f, unicode=)=>mainbuf > 0
+          ? "" : .com.FileReadError;
+      }] > 0) ret error;
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `actionList.new(0);
@@ -1777,17 +1781,17 @@ public &Fight
     }
     `sn.new(1);
     if(
-      #`snd > 0 && !.com.loadFile(def, `snd=)<,
-      [bool(^/char f){ret `sn~loadFile(f);}]) ret false;
+      #`snd > 0 && #.com.loadFile(def, `snd=)=>error <,
+      [^/char(^/char f){ret `sn~loadFile(f);}] > 0) ret error;
     `fsn.new(1);
     if(
-      #`common_snd > 0 && !.com.loadFile(def, `common_snd=)<,
-      [bool(^/char f){ret `fsn~loadFile(f);}]) ret false;
+      #`common_snd > 0 && #.com.loadFile(def, `common_snd=)=>error<,
+      [^/char(^/char f){ret `fsn~loadFile(f);}] > 0) ret error;
     `fnt.new(#`font);
     loop{index i = 0; while; do:
       if(
-        #`font[i] > 0 && !.com.loadFile(def, `font[i]=)<,
-        [bool(^/char f){ret `fnt[i].loadFile(f);}]) ret false;
+        #`font[i] > 0 && #.com.loadFile(def, `font[i]=)=>error <,
+        [^/char(^/char f){ret `fnt[i].loadFile(f);}] > 0) ret error;
       i++;
     while i < #`font:
     }
@@ -1813,7 +1817,7 @@ public &Fight
     `ti.setup(`sf);
     `co.setup();
     `ro.setup(`sf, `fnt, `sn);
-    ret true;
+    ret "";
   }
   public void step(^/int tm, ^/&.LifePower life, ^/bool hit, ^/int combo)
   {

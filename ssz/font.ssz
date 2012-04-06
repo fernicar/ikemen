@@ -26,7 +26,7 @@ public &Font
   /int spacingx = 0, spacingy = 0;
   int colors = 255;
   int offsetx = 0, offsety = 0;
-  public bool loadFile(^/char filename)
+  public ^/char loadFile(^/char filename)
   {:<-
     public void def(&.com.Section sc=)
     {
@@ -120,8 +120,9 @@ public &Font
         `loadFile:<-def(sc=);
       }
     }];
+    ^/char error;
     &.file.File f;
-    if(!f.open(filename, "rb")) ret false;
+    if(!f.open(filename, "rb")) ret .com.FileOpenError;
     uint pcxDataOffset, pcxDataLenght;
     uint txtDataOffset, txtDataLenght;
     ubyte ub;
@@ -129,22 +130,19 @@ public &Font
       index i = 0;
       %char s;
     do:
-      if(!f.read!ubyte?(ub=)) ret false;
+      if(!f.read!ubyte?(ub=)) ret .com.FileReadError;
       s .= (char)ub;
       i++;
     while i < 12:
-      if(!.s.equ(s, "ElecbyteFnt"\0)){
-        .com.error!.self?("ElecbyteFntじゃない");
-        ret false;
-      }
+      if(!.s.equ(s, "ElecbyteFnt"\0)) ret "ElecbyteFntじゃない";
     }
-    if(!f.read!ushort?(`ver=)) ret false;
-    if(!f.read!ushort?(`ver2=)) ret false;
-    if(!f.read!uint?(pcxDataOffset=)) ret false;
-    if(!f.read!uint?(pcxDataLenght=)) ret false;
-    if(!f.read!uint?(txtDataOffset=)) ret false;
-    if(!f.read!uint?(txtDataLenght=)) ret false;
-    if(!`img.readPcxHeader(f=, (long)pcxDataOffset)) ret false;
+    if(!f.read!ushort?(`ver=)) ret .com.FileReadError;
+    if(!f.read!ushort?(`ver2=)) ret .com.FileReadError;
+    if(!f.read!uint?(pcxDataOffset=)) ret .com.FileReadError;
+    if(!f.read!uint?(pcxDataLenght=)) ret .com.FileReadError;
+    if(!f.read!uint?(txtDataOffset=)) ret .com.FileReadError;
+    if(!f.read!uint?(txtDataLenght=)) ret .com.FileReadError;
+    if(#`img.readPcxHeader(f=, (long)pcxDataOffset)=>error > 0) ret error;
     f.seek((long)pcxDataOffset+128, .file.Seek::SET);
     ^ubyte px.new((index)pcxDataLenght-128-768);
     f.readAry!ubyte?(px);
@@ -153,9 +151,9 @@ public &Font
       ubyte r, g, b;
       `img.colorPallet.new(256);
     do:
-      if(!f.read!ubyte?(r=)) ret false;
-      if(!f.read!ubyte?(g=)) ret false;
-      if(!f.read!ubyte?(b=)) ret false;
+      if(!f.read!ubyte?(r=)) ret .com.FileReadError;
+      if(!f.read!ubyte?(g=)) ret .com.FileReadError;
+      if(!f.read!ubyte?(b=)) ret .com.FileReadError;
       `img.colorPallet[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
       i++;
     while i < 256:
@@ -164,7 +162,7 @@ public &Font
     f.seek((long)txtDataOffset, .file.Seek::SET);
     %char buf;
     loop{while; do:
-      if(!f.read!ubyte?(ub=)) ret false;
+      if(!f.read!ubyte?(ub=)) ret .com.FileReadError;
       buf .= (char)ub;
       txtDataLenght--;
     while txtDataLenght > 0x0:
@@ -223,7 +221,7 @@ public &Font
       i++;
     while i < #`mpl:
     }
-    ret true;
+    ret "";
   }
   public int charWidth(char ch)
   {

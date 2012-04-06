@@ -331,11 +331,9 @@ public ^/char readFileName(^/char f, bool unicode)
   ret tmp;
 }
 
-public void error<_t>(^/char m)
-{
-  lib al = <alert.ssz>;
-  al.alert!_t?(m);
-}
+const ^/char FileOpenError = "ファイルオープンに失敗";
+const ^/char FileReadError = "ファイル読み込みに失敗";
+
 
 public ^uint tmppl.new(256);
 /?/*!.cfg.OpenGL:
@@ -503,14 +501,16 @@ public &PalFX
 }
 
 
-public bool loadFile(^/char deffile, ^/char file=, ~$bool(^/char) load)
+public ^/char loadFile(^/char deffile, ^/char file=, ~$^/char(^/char) load)
 {
+  ^/char error, errfile;
   loop{index i = #deffile-1; while; do:
     if(.s.cMatch!char?("\/", deffile[i])){
       %char buf;
       buf .= deffile[0..i+1];
       buf .= file;
-      if(load(:buf:)){
+      if(#errfile == 0) errfile = buf;
+      if(#load(:buf:) == 0){
         file = buf;
         break, break, break;
       }
@@ -521,21 +521,21 @@ public bool loadFile(^/char deffile, ^/char file=, ~$bool(^/char) load)
       %char buf;
       buf .= "data/";
       buf .= file;
-      if(load(:buf:)){
+      if(#load(:buf:) == 0){
         file = buf;
         break, break, break;
       }
       buf.new(0);
       buf .= "ssz/";
       buf .= file;
-      if(load(:buf:)){
+      if(#load(:buf:) == 0){
         file = buf;
         break, break, break;
       }
     }
-    if(!load(:file:)) ret false;
+    if(#(error = load(:file:)) > 0) ret errfile + ":"\r\n + error;
   }
-  ret true;
+  ret "";
 }
 
 public &Section

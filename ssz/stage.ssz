@@ -122,7 +122,7 @@ public &Stage
     while i < #`bg:
     }
   }
-  public bool load(^/char def)
+  public ^/char load(^/char def)
   {:<-
     public void info(&.com.Section sc=)
     {
@@ -360,6 +360,7 @@ public &Stage
         bgctrl(sc=);
       }
     }];
+    ^/char error;
     `def = def;
     ^char buf = .com.loadText(def, unicode=);
     ^^/char lines = .com.splitLines(buf);
@@ -376,8 +377,8 @@ public &Stage
     if(!`reflect) `reflection = 0;
     `sf.new(1);
     if(
-      !.com.loadFile(def, `spr=)<,
-      [bool(^/char f){ret `sf~loadFile(f, false);}]) ret false;
+      #.com.loadFile(def, `spr=)=>error <,
+      [^/char(^/char f){ret `sf~loadFile(f, false);}] > 0) ret error;
     loop{
       index i = 0, link = 0;
       int zofs = 0;
@@ -400,7 +401,7 @@ public &Stage
     while i < #`bg:
       `zoffset += zofs;
     }
-    ret true;
+    ret "";
   }
   type bglsig_t = $void(&.bg.BackGround=);
   public void bgCtrl(&.bg.BGCtrl bgc=)

@@ -15,6 +15,7 @@ lib fgt = "fight.ssz";
 lib act = "action.ssz";
 lib mes = <alpha/mesdialog.ssz>;
 lib fnt = "font.ssz";
+lib al = <alert.ssz>;
 
 
 int changeStateNest = 0;
@@ -2379,7 +2380,7 @@ public &Char
   {
     ret (`sysivar[.iSPECIALFLAG] & mask) == mask;
   }
-  public bool load(^/char def)
+  public ^/char load(^/char def)
   {:<-
     void info(&.com.Section sc=)
     {
@@ -2557,6 +2558,7 @@ public &Char
         defaultsflg = false;
       }
     }];
+    ^/char error;
     `def = def;
     ^char mainbuf = .com.loadText(def, unicode=);
     ^^/char lines = .com.splitLines(mainbuf);
@@ -2570,12 +2572,17 @@ public &Char
     }
     `sf.new(1);
     if(
-      !.com.loadFile(def, `sprite=)<,
-       [bool(^/char f){ret `sf~loadFile(f, true);}]) ret false;
+      #.com.loadFile(def, `sprite=)=>error <,
+      [^/char(^/char f){ret `sf~loadFile(f, true);}] > 0) ret error;
     if(
-      !.com.loadFile(def, `anim=)<, [bool(^/char f){
-        ret #(mainbuf = .com.loadText(f, unicode=)) > 0;
-      }]) ret false;
+      #.com.loadFile(def, `anim=)=>error <, [^/char(^/char f){
+        ret
+          #.com.loadText(f, unicode=)=>mainbuf > 0
+          ? "" : .com.FileReadError;
+      }] > 0) 
+    {
+      ret error;
+    }
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `actionList.new(0);
@@ -2591,12 +2598,17 @@ public &Char
     }
     `sn.new(1);
     if(
-      #`sound > 0 && !.com.loadFile(def, `sound=)<,
-      [bool(^/char f){ret `sn~loadFile(f);}]) ret false;
+      #`sound > 0 && #.com.loadFile(def, `sound=)=>error <,
+      [^/char(^/char f){ret `sn~loadFile(f);}] > 0) ret error;
     if(
-      !.com.loadFile(def, `command=)<, [bool(^/char f){
-        ret #(mainbuf = .com.loadText(f, unicode=)) > 0;
-      }]) ret false;
+      #.com.loadFile(def, `command=)=>error <, [^/char(^/char f){
+        ret
+          #.com.loadText(f, unicode=)=>mainbuf > 0
+          ? "" : .com.FileReadError;
+      }] > 0)
+    {
+      ret error;
+    }
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     .cmd.resetReadKeymap();
@@ -2612,7 +2624,7 @@ public &Char
       i++;
     while i < #lines:
     }
-    ret true;
+    ret "";
   }
   public bool loadPallet(^/char def, int no)
   {
@@ -2628,9 +2640,9 @@ public &Char
       branch{
         &.file.File f;
       cond
-        .com.loadFile(def, `pal[i]=)<, [bool(^/char fn){
-          f.open(fn, "rb"); ret f.read!ubyte?(r=);
-        }]
+        #.com.loadFile(def, `pal[i]=)<, [^/char(^/char fn){
+          f.open(fn, "rb"); ret f.read!ubyte?(r=) ? "" : "error";
+        }] == 0
         :
         loop{
           index j = 255;
@@ -4504,7 +4516,7 @@ public &Char
       %char buf .=
         "2500 loops: " .= `name .= ", " .= .s.iToS(`stVal.prevno) .= " -> "
         .= .s.iToS(`stVal.no) .= " -> " .= .s.iToS(n);
-      .com.error!.self?(buf);
+      .al.alert!self?(buf);
       ret false;
     }
     if(n < 0) ret false;
