@@ -503,37 +503,38 @@ public &PalFX
 
 public ^/char loadFile(^/char deffile, ^/char file=, ~$^/char(^/char) load)
 {
-  ^/char error, errfile;
+  ^/char error;
   loop{index i = #deffile-1; while; do:
     if(.s.cMatch!char?("\/", deffile[i])){
       %char buf;
       buf .= deffile[0..i+1];
       buf .= file;
-      if(#errfile == 0) errfile = buf;
-      if(#load(:buf:) == 0){
+      if(#.file.find(buf) > 0){
+        if(#(error = load(:buf:)) > 0) ret buf + ":"\r\n + error;
         file = buf;
-        break, break, break;
       }
+      break, break;
     }
     i--;
-  while i >= 0:
-    {
-      %char buf;
-      buf .= "data/";
-      buf .= file;
-      if(#load(:buf:) == 0){
-        file = buf;
-        break, break, break;
-      }
-      buf.new(0);
-      buf .= "ssz/";
-      buf .= file;
-      if(#load(:buf:) == 0){
-        file = buf;
-        break, break, break;
-      }
+  while i >= 0:}
+  {
+    %char buf;
+    buf .= "data/";
+    buf .= file;
+    if(#.file.find(buf) > 0){
+      if(#(error = load(:buf:)) > 0) ret buf + ":"\r\n + error;
+      file = buf;
+      break, break;
     }
-    if(#(error = load(:file:)) > 0) ret errfile + ":"\r\n + error;
+    buf.new(0);
+    buf .= "ssz/";
+    buf .= file;
+    if(#.file.find(buf) > 0){
+      if(#(error = load(:buf:)) > 0) ret buf + ":"\r\n + error;
+      file = buf;
+      break, break;
+    }
+    if(#(error = load(:file:)) > 0) ret file + ":"\r\n + error;
   }
   ret "";
 }
