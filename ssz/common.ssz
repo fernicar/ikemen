@@ -506,36 +506,33 @@ public ^/char loadFile(^/char deffile, ^/char file=, ~$^/char(^/char) load)
   ^/char error;
   loop{index i = #deffile-1; while; do:
     if(.s.cMatch!char?("\/", deffile[i])){
-      %char buf;
-      buf .= deffile[0..i+1];
-      buf .= file;
+      %char buf .= deffile[0..i+1] .= file;
       if(#.file.find(buf) > 0){
         if(#(error = load(:buf:)) > 0) ret buf + ":"\r\n + error;
         file = buf;
+        ret "";
       }
       break, break;
     }
     i--;
   while i >= 0:}
   {
-    %char buf;
-    buf .= "data/";
-    buf .= file;
+    %char buf .= "data/" .= file;
     if(#.file.find(buf) > 0){
       if(#(error = load(:buf:)) > 0) ret buf + ":"\r\n + error;
       file = buf;
-      break, break;
+      ret "";
     }
-    buf.new(0);
-    buf .= "ssz/";
-    buf .= file;
-    if(#.file.find(buf) > 0){
-      if(#(error = load(:buf:)) > 0) ret buf + ":"\r\n + error;
-      file = buf;
-      break, break;
-    }
-    if(#(error = load(:file:)) > 0) ret file + ":"\r\n + error;
   }
+  {
+    %char buf .= "ssz/" .= file;
+    if(#.file.find(buf) > 0){
+      if(#(error = load(:buf:)) > 0) ret buf + ":"\r\n + error;
+      file = buf;
+      ret "";
+    }
+  }
+  if(#(error = load(:file:)) > 0) ret file + ":"\r\n + error;
   ret "";
 }
 
