@@ -1550,7 +1550,7 @@ public &Fight
     }
     ret a;
   }
-  public ^/char load(^/char sysdef, ^/char def=)
+  public ^/char load(^/char def)
   {:<-
     public void files(&.com.Section sc=, bool unicode)
     {
@@ -1712,12 +1712,9 @@ public &Fight
     }];
     ^/char error;
     ^char mainbuf;
-    if(
-      #.com.loadFile(sysdef, def=)=>error <, [^/char(^/char f){
-        ret
-          #.com.loadText(f, unicode=)=>mainbuf > 0
-          ? "" : .com.FileReadError;
-      }] > 0) ret error;
+    if(#.com.loadText(def, unicode=)=>mainbuf == 0){
+      ret def + ":"\r\n + .com.FileReadError;
+    }
     ^^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `clear();
@@ -1755,17 +1752,23 @@ public &Fight
     `sf.new(1);
     if(
       #.com.loadFile(def, `sff=)=>error <,
-      [^/char(^/char f){ret `sf~loadFile(f, false);}] > 0) ret error;
+      [^/char(^/char f){ret `sf~loadFile(f, false);}] > 0)
+    {
+      ret def + ":"\r\n + error;
+    }
     `fsf.new(1);
     if(
       #.com.loadFile(def, `fightfx_sff=)=>error <,
-      [^/char(^/char f){ret `fsf~loadFile(f, false);}] > 0) ret error;
+      [^/char(^/char f){ret `fsf~loadFile(f, false);}] > 0)
+    {
+      ret def + ":"\r\n + error;
+    }
     if(
       #.com.loadFile(def, `fightfx_air=)=>error <, [^/char(^/char f){
         ret
           #.com.loadText(f, unicode=)=>mainbuf > 0
           ? "" : .com.FileReadError;
-      }] > 0) ret error;
+      }] > 0) ret def + ":"\r\n + error;
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     `actionList.new(0);
@@ -1782,16 +1785,19 @@ public &Fight
     `sn.new(1);
     if(
       #`snd > 0 && #.com.loadFile(def, `snd=)=>error <,
-      [^/char(^/char f){ret `sn~loadFile(f);}] > 0) ret error;
+      [^/char(^/char f){ret `sn~loadFile(f);}] > 0) ret def + ":"\r\n + error;
     `fsn.new(1);
     if(
       #`common_snd > 0 && #.com.loadFile(def, `common_snd=)=>error<,
-      [^/char(^/char f){ret `fsn~loadFile(f);}] > 0) ret error;
+      [^/char(^/char f){ret `fsn~loadFile(f);}] > 0) ret def + ":"\r\n + error;
     `fnt.new(#`font);
     loop{index i = 0; while; do:
       if(
         #`font[i] > 0 && #.com.loadFile(def, `font[i]=)=>error <,
-        [^/char(^/char f){ret `fnt[i].loadFile(f);}] > 0) ret error;
+        [^/char(^/char f){ret `fnt[i].loadFile(f);}] > 0)
+      {
+        ret def + ":"\r\n + error;
+      }
       i++;
     while i < #`font:
     }

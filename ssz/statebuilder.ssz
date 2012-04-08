@@ -7010,7 +7010,7 @@ public &StateBuilder
       }] > 0)
     {
       if(.cfg.IgnoreMostErrors) ret "";
-      ret error;
+      ret def + ":"\r\n + error;
     }
     ^/char fn = st;
     %^/char lines = .com.splitLines(mainbuf);
@@ -7572,7 +7572,7 @@ public &StateBuilder
           ? "" : .com.FileReadError;
       }] > 0)
     {
-      ret error;
+      ret def + ":"\r\n + error;
     }
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);

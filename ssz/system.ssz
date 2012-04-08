@@ -282,14 +282,6 @@ public &System
 {
   public ^&.fgt.Fight fig;
   public &.SelectInfo selinf;
-  public ^/char init()
-  {
-    ^/char error;
-    ^/char tmp = .cfg.fight;
-    `fig.new(1);
-    if(#`fig~load("data/", tmp=)=>error > 0) ret error;
-    ret "";
-  }
   public void clear()
   {
     `selinf.clear();

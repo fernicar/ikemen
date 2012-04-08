@@ -378,7 +378,10 @@ public &Stage
     `sf.new(1);
     if(
       #.com.loadFile(def, `spr=)=>error <,
-      [^/char(^/char f){ret `sf~loadFile(f, false);}] > 0) ret error;
+      [^/char(^/char f){ret `sf~loadFile(f, false);}] > 0)
+    {
+      ret def + ":"\r\n + error;
+    }
     loop{
       index i = 0, link = 0;
       int zofs = 0;

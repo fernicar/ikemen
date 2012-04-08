@@ -35,13 +35,6 @@ void scGame(&.lua.State L=, int re=)
 
 bool init(&.lua.State L=)
 {
-  ^/char error = .sc.syst.init();
-  if(#error > 0){
-    .error!.self?(error);
-    ret false;
-  }
-  .fnt.debugFont.new(1);
-  .fnt.debugFont~loadFile(.cfg.debugfont);
   .sc.init(L=);
   L.register("game", .scGame);
   ret true;

@@ -1,4 +1,7 @@
 ﻿
+loadLifebar('data/gms_lifebar/fight.def')
+loadDebugFont('data/gms_lifebar/font2.fnt')
+
 assert(loadfile('script/select.lua'))()
 
 ------------------------------------------------------------

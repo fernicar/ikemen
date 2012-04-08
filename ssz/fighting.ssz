@@ -132,7 +132,7 @@ void game()
   }
   void drawDebug()
   {:<-
-    if(!.com.debugdraw) ret;
+    if(!.com.debugdraw || #.fnt.debugFont == 0) ret;
     float pdraw(&.chr.Char p=, float x)
     {:<-
       float y = 0.0;

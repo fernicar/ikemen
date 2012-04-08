@@ -2573,7 +2573,10 @@ public &Char
     `sf.new(1);
     if(
       #.com.loadFile(def, `sprite=)=>error <,
-      [^/char(^/char f){ret `sf~loadFile(f, true);}] > 0) ret error;
+      [^/char(^/char f){ret `sf~loadFile(f, true);}] > 0)
+    {
+      ret def + ":"\r\n + error;
+    }
     if(
       #.com.loadFile(def, `anim=)=>error <, [^/char(^/char f){
         ret
@@ -2581,7 +2584,7 @@ public &Char
           ? "" : .com.FileReadError;
       }] > 0) 
     {
-      ret error;
+      ret def + ":"\r\n + error;
     }
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
@@ -2599,7 +2602,7 @@ public &Char
     `sn.new(1);
     if(
       #`sound > 0 && #.com.loadFile(def, `sound=)=>error <,
-      [^/char(^/char f){ret `sn~loadFile(f);}] > 0) ret error;
+      [^/char(^/char f){ret `sn~loadFile(f);}] > 0) ret def + ":"\r\n + error;
     if(
       #.com.loadFile(def, `command=)=>error <, [^/char(^/char f){
         ret
@@ -2607,7 +2610,7 @@ public &Char
           ? "" : .com.FileReadError;
       }] > 0)
     {
-      ret error;
+      ret def + ":"\r\n + error;
     }
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);

@@ -37,8 +37,6 @@ const float LifebarFontScale = 0.5;
 
 
 const ^/char system = "\""script/main.lua"\"";
-const ^/char fight = "\""data/gms_lifebar/fight.def"\"";
-const ^/char debugfont = "\""data/gms_lifebar/font2.fnt"\"";
 
 lib sdl = <alpha/sdlplugin.ssz>;
 type k_t = |sdl.SDLKey;
