@@ -4,6 +4,8 @@ loadDebugFont('data/gms_lifebar/font2.fnt')
 
 assert(loadfile('script/select.lua'))()
 
+math.randomseed(os.time())
+
 ------------------------------------------------------------
 sysSff = sffNew('script/system.sff')
 sysSnd = sndNew('script/system.snd')

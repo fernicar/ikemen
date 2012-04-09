@@ -243,9 +243,11 @@ public &BackGround
       branch{
         ^char d = .s.toLower(data);
       cond .s.equ(d, "add"):
+        `anim.mask = 0;
         `anim.salpha = 255;
         `anim.dalpha = 255;
       cond .s.equ(d, "add1"):
+        `anim.mask = 0;
         `anim.salpha = 255;
         `anim.dalpha = 128;
         if(#(data = sc.get("alpha")) > 0){
@@ -259,6 +261,7 @@ public &BackGround
           if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
         }
       cond .s.equ(d, "addalpha"):
+        `anim.mask = 0;
         if(#(data = sc.get("alpha")) > 0){
           ^int sd = .csvToAry!int?(data);
           if(#sd < 1) break;
@@ -270,6 +273,7 @@ public &BackGround
           if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
         }
       cond .s.equ(d, "sub"):
+        `anim.mask = 0;
         `anim.salpha = 1;
         `anim.dalpha = 255;
       cond .s.equ(d, "none"):
@@ -426,7 +430,7 @@ public &BackGround
     float x2 = `startx - ((x+`camstartx) * `deltax - `bga.xoffset);
     float y2 = `starty - (y * `deltay - `bga.yoffset);
     if(!.cfg.Zoom){
-      x2 = .m.floor(x2);
+      if(`rasterxbspeed == `rasterxtspeed) x2 = .m.floor(x2);
       y2 = .m.floor(y2);
     }
     float ys = (`yscalestart - y * (scly/scl)*`yscaledelta*(1.0/100.0));
