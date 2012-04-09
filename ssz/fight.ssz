@@ -1160,7 +1160,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         `win2.text = tmp;
       else:
         tmp = `win.text;
-        fm.set(`win2.text);
+        fm.set(`win.text);
         fm.s(name[0]);
         `win.text = fm.out;
         `win.draw((float)`posx, (float)`posy, layerno, `fnt);
