@@ -156,9 +156,9 @@ public &Sound
   public void setVol(int v)
   {
     branch{
-    cond v < -256: `volume = 0;
-    cond v > 256: `volume = 512;
-    else: `volume = v+256;
+    cond v < 0: `volume = 0;
+    cond v > 512: `volume = 512;
+    else: `volume = v;
     }
   }
   public void setPan(float p)
@@ -174,7 +174,7 @@ public &Sound
   }
   public void setDefaultParameter()
   {
-    `setVol(0);
+    `setVol(256);
     `loop_ = false;
     `lowpriority = false;
     `setPan(0.0);

@@ -135,7 +135,7 @@ const ^/char kuuhaktokigou = " !=<>()|&+-*/%,[]^|:"\"\t\r\n;
     `sparkno = 2;
     `guard_sparkno = 40;
     `ko_echo = 0;
-    `volume = 0;
+    `volume = 256;
     `intpersistindex = 0;
     `floatpersistindex = 0;
   }
@@ -346,7 +346,7 @@ const ^/char kuuhaktokigou = " !=<>()|&+-*/%,[]^|:"\"\t\r\n;
 }
 
 const ^/char sndstart =
-  "bool f=false,lw=false,lp=false;int g=-1,s=0,ch=-1,vo=0;"
+  "bool f=false,lw=false,lp=false;int g=-1,s=0,ch=-1,vo=`mver0==1?100:0;"
   "float p=0.0,fr=1.0;^float x=`sysfvar[.fX...fX+1];";
 const ^/char sndend = "`playSound(f,lw,lp,g,s,ch,vo,p,fr,x);";
 public &StateBuilder
@@ -6562,7 +6562,10 @@ public &StateBuilder
             "x.new(0);p=", "$.v.toF();")) ret false;
         ret true;
       }])) ret false;
-      if(!`stateParam(param=, "volume", [`paraF_t(data=){
+      if(
+        !`stateParam(
+          param=, `mver0 == 1 ? "volumescale" : "volume", [`paraF_t(data=)
+      {
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
@@ -7340,7 +7343,14 @@ public &StateBuilder
         `c.d.guard_sparkno = .com.atoi(data);
       }
       if(#(data = sc.get("ko.echo")) > 0) `c.d.ko_echo = .com.atoi(data);
-      if(#(data = sc.get("volume")) > 0) `c.d.volume = .com.atoi(data);
+      branch{
+      cond `mver0 == 1:
+        if(#(data = sc.get("volumescale")) > 0){
+          `c.d.volume = (.com.atoi(data)*64 / 25);
+        }
+      else:
+        if(#(data = sc.get("volume")) > 0) `c.d.volume = .com.atoi(data) + 256;
+      }
       if(#(data = sc.get("intpersistindex")) > 0){
         `c.d.intpersistindex = .com.atoi(data);
       }

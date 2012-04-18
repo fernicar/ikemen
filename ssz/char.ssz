@@ -231,7 +231,6 @@ public void drawShadowList(float x, float y)
     color = sl~color;
     branch{
       int alpha = sl~alpha;
-      
       branch{
       cond sl~al~y < (float).stg~sdw.fadeend:
         break, break, continue;
@@ -335,17 +334,13 @@ public void drawReflection(float x, float y)
           .com.xoffset-(x-sl~al~x)*cs,
           .com.zoffset+.com.yoffset-(y+sl~al~y-sl~offsety)*cs,
           cs*sl~al~xscl, cs*-sl~al~yscl, sl~al~angle*(.m.PI/180.0),
-          sl~al~aset, sl~al~axscl, sl~al~ayscl,
-          #sl~al~fx > 0 && sl~al~fx~time != 0 ? sl~al~fx : .stage.bgPalFX,
-          sl~al~oVer);
+          sl~al~aset, sl~al~axscl, sl~al~ayscl, sl~al~fx, sl~al~oVer);
       else:
         sl~al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
           (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y-sl~offsety),
           cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl, 0.0,
-          (float).com.GameWidth/2.0,
-          #sl~al~fx != 0 && sl~al~fx~time > 0 ? sl~al~fx : .stage.bgPalFX,
-          sl~al~oVer);
+          (float).com.GameWidth/2.0, sl~al~fx, sl~al~oVer);
       }
     }
     sl = sl~next;
@@ -2982,7 +2977,9 @@ public &Char
     comm:
       if(`sysivar[.iHITPAUSETIME] <= 0){
         if(
-          `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0 && (
+          `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0
+          && `stVal.playerno == `playerno
+          && (
             `cmd~buffer~Bb == 1 || `cmd~buffer~Db == 1
             || `cmd~buffer~Fb == 1 || `cmd~buffer~Ub == 1
             || `cmd~buffer~ab == 1 || `cmd~buffer~bb == 1
@@ -3816,7 +3813,12 @@ public &Char
       sou~sound = `sn~getSound(g, s);
     }
     sou~chrx = x;
-    sou~setVol(vo + (!f ? `sysivar[.iVOLUME] : 0));
+    branch{
+    cond `mver0 == 1:
+      sou~setVol(!f ? `sysivar[.iVOLUME]*vo/100 : 256);
+    else:
+      sou~setVol(vo + (!f ? `sysivar[.iVOLUME] : 256));
+    }
     sou~loop_ = lp;
     sou~lowpriority = lw;
     sou~setPan(p * (float)`facing);
@@ -7049,6 +7051,7 @@ public void draw(float x, float y, float scl)
   else:
     if(.stg~debugbg) .com.screenFill(0x00ff00ff);
     .stg~bgDraw(false, x, y, scl);
+  comm:
     if(!.gs(.gsGLOBALNOSHADOW)){
       if(.stg~reflection > 0) .drawReflection(x, y);
       .drawShadowList(x, y);
