@@ -431,18 +431,17 @@ public &PalFX
       else:
         bar(ar=, sr=, r); bar(ag=, sg=, g); bar(ab=, sb=, b);
       }
-      branch{
-      cond `mr > 1.0: r = 0;
-      else          : r = ar; ar = 0;
+      void baz(float m, int a=, int c=)
+      {
+        branch{
+        cond m > 1.0 || c < 0:
+          c = 0;
+        else:
+          c = a;
+          a = 0;
+        }
       }
-      branch{
-      cond `mg > 1.0: g = 0;
-      else          : g = ag; ag = 0;
-      }
-      branch{
-      cond `mb > 1.0: b = 0;
-      else          : b = ab; ab = 0;
-      }
+      baz(`mr, ar=, r=); baz(`mg, ag=, g=); baz(`mb, ab=, b=);
       addc = (uint)(ab | ag<<8 | ar<<16);
       subc = (uint)(sb | sg<<8 | sr<<16);
     }
@@ -460,9 +459,9 @@ public &PalFX
         mg = `mulg;
         mb = `mulb;
       }
-      .m.limRange!float?(mr=, 0.0, 2.0);
-      .m.limRange!float?(mg=, 0.0, 2.0);
-      .m.limRange!float?(mb=, 0.0, 2.0);
+      .m.limRange!float?(mr=, 0.0, 255.0);
+      .m.limRange!float?(mg=, 0.0, 255.0);
+      .m.limRange!float?(mb=, 0.0, 255.0);
       int adr = `addr, adg = `addg, adb = `addb;
       if(`cycletime >= 2){
         float sin =
@@ -475,9 +474,7 @@ public &PalFX
         adb += (int)(sin*(float)`amplb);
       }
       uint addc, subc;
-      addsubset(
-        addc=, subc=, (adr=(int)((float)adr*mr))=,
-        (adg=(int)((float)adg*mg))=, (adb=(int)((float)adb*mb))=);
+      addsubset(addc=, subc=, adr=, adg=, adb=);
       uint tmp, msk;
     do:
       c = pal[i];
@@ -498,12 +495,12 @@ public &PalFX
       c = ((c + addc) - msk) | msk;
       tmp = (uint)((float)((c&0xff) + (uint)adb) * mb);
       tmp =
-        ((tmp | (uint)(((int)tmp<<23)>>31)) & 0xff)
+        ((tmp | (uint)(((int)((tmp&0xff00)!=0x0)<<31)>>31)) & 0xff)
         | (uint)((float)((c>>0d8&0xff) + (uint)adg) * mg) << 0d8;
       tmp =
-        ((tmp | (uint)(((int)(tmp&0x10000)<<15)>>23)) & 0xffff)
+        ((tmp | (uint)(((int)((tmp&0xff0000)!=0x0)<<31)>>23)) & 0xffff)
         | (uint)((float)((c>>0d16&0xff) + (uint)adr) * mr) << 0d16;
-      .workpal[i] = tmp | (uint)(((int)(tmp&0x1000000)<<7)>>15);
+      .workpal[i] = tmp | (uint)(((int)((tmp&0xff000000)!=0x0)<<31)>>15);
     while ++i < 256:
     }
     ret .workpal;
