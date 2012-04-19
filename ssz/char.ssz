@@ -399,9 +399,9 @@ public void drawReflection(float x, float y)
     `palfx~addr = 30;
     `palfx~addg = 30;
     `palfx~addb = 30;
-    `palfx~mulr = 120.0 / 256.0;
-    `palfx~mulg = 120.0 / 256.0;
-    `palfx~mulb = 220.0 / 256.0;
+    `palfx~mulr = 120;
+    `palfx~mulg = 120;
+    `palfx~mulb = 220;
     `postbrightr = 0;
     `postbrightg = 0;
     `postbrightb = 0;
@@ -432,9 +432,9 @@ public void drawReflection(float x, float y)
       `palfx[i].addg = `palfx[i-1].addg + `addg + pbg;
       `palfx[i].addb = `palfx[i-1].addb + `addb + pbb;
       pbr = pbg = pbb = 0;
-      `palfx[i].mulr = `palfx[i-1].mulr * `mulr;
-      `palfx[i].mulg = `palfx[i-1].mulg * `mulg;
-      `palfx[i].mulb = `palfx[i-1].mulb * `mulb;
+      `palfx[i].mulr = (int)((float)`palfx[i-1].mulr * `mulr);
+      `palfx[i].mulg = (int)((float)`palfx[i-1].mulg * `mulg);
+      `palfx[i].mulb = (int)((float)`palfx[i-1].mulb * `mulb);
       i++;
     while i < #`palfx:
     }
@@ -6031,9 +6031,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         fx~clear();
         fx~player = `pyr.id;
         fx~time = hit.palfx_time;
-        fx~mulr = (float)hit.palfx_mulr / 256.0;
-        fx~mulg = (float)hit.palfx_mulg / 256.0;
-        fx~mulb = (float)hit.palfx_mulb / 256.0;
+        fx~mulr = hit.palfx_mulr;
+        fx~mulg = hit.palfx_mulg;
+        fx~mulb = hit.palfx_mulb;
         fx~addr = hit.palfx_addr;
         fx~addg = hit.palfx_addg;
         fx~addb = hit.palfx_addb;

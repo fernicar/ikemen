@@ -370,9 +370,9 @@ public &PalFX
 {
   public int player;
   public int time;
-  public float mulr;
-  public float mulg;
-  public float mulb;
+  public int mulr;
+  public int mulg;
+  public int mulb;
   public int addr;
   public int addg;
   public int addb;
@@ -391,9 +391,9 @@ public &PalFX
   {
     `player = -1;
     `time = 0;
-    `mulr = 1.0;
-    `mulg = 1.0;
-    `mulb = 1.0;
+    `mulr = 256;
+    `mulg = 256;
+    `mulb = 256;
     `addr = 0;
     `addg = 0;
     `addb = 0;
@@ -412,7 +412,7 @@ public &PalFX
   }
   public ^uint getFxPal(^uint pal, bool neg)
   {
-    float mr, mg, mb;
+    int mr, mg, mb;
     void addsubset(uint addc=, uint subc=, int r=, int g=, int b=)
     {
       int ar = 0, ag = 0, ab = 0, sr = 0, sg = 0, sb = 0;
@@ -431,13 +431,13 @@ public &PalFX
       else:
         bar(ar=, sr=, r); bar(ag=, sg=, g); bar(ab=, sb=, b);
       }
-      void baz(float m, int a=, int c=)
+      void baz(int m, int a=, int c=)
       {
         branch{
-        cond m > 1.0 || c < 0:
+        cond m > 256 || c < 0:
           c = 0;
         else:
-          c = a;
+          .m.limMax!int?(c=, (int)255*256*256 / .m.max!int?(1, m));
           a = 0;
         }
       }
@@ -451,17 +451,17 @@ public &PalFX
       float ac;
       branch{
       cond neg:
-        mr = (`mulg + `mulb) * 0.5;
-        mg = (`mulr + `mulb) * 0.5;
-        mb = (`mulr + `mulg) * 0.5;
+        mr = (`mulg + `mulb) >> 1;
+        mg = (`mulr + `mulb) >> 1;
+        mb = (`mulr + `mulg) >> 1;
       else:
         mr = `mulr;
         mg = `mulg;
         mb = `mulb;
       }
-      .m.limRange!float?(mr=, 0.0, 255.0);
-      .m.limRange!float?(mg=, 0.0, 255.0);
-      .m.limRange!float?(mb=, 0.0, 255.0);
+      .m.limRange!int?(mr=, 0, 255*256);
+      .m.limRange!int?(mg=, 0, 255*256);
+      .m.limRange!int?(mb=, 0, 255*256);
       int adr = `addr, adg = `addg, adb = `addb;
       if(`cycletime >= 2){
         float sin =
@@ -493,13 +493,13 @@ public &PalFX
       tmp = ((c & addc) + (((c ^ addc) >> 0d1) & 0x7f7f7f7f)) & 0x80808080;
       msk = (tmp << 0d1) - (tmp >> 0d7);
       c = ((c + addc) - msk) | msk;
-      tmp = (uint)((float)((c&0xff) + (uint)adb) * mb);
+      tmp = ((c&0xff) + (uint)adb) * (uint)mb >> 0d8;
       tmp =
         ((tmp | (uint)(((int)((tmp&0xff00)!=0x0)<<31)>>31)) & 0xff)
-        | (uint)((float)((c>>0d8&0xff) + (uint)adg) * mg) << 0d8;
+        | (((c>>0d8&0xff) + (uint)adg) * (uint)mg >> 0d8) << 0d8;
       tmp =
         ((tmp | (uint)(((int)((tmp&0xff0000)!=0x0)<<31)>>23)) & 0xffff)
-        | (uint)((float)((c>>0d16&0xff) + (uint)adr) * mr) << 0d16;
+        | (((c>>0d16&0xff) + (uint)adr) * (uint)mr >> 0d8) << 0d16;
       .workpal[i] = tmp | (uint)(((int)((tmp&0xff000000)!=0x0)<<31)>>15);
     while ++i < 256:
     }

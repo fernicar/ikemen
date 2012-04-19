@@ -5875,16 +5875,16 @@ public &StateBuilder
       if(!`stateParam(param=, "palcontrast", [`paraF_t(data=){
         `state.ctrlList[-1].task .= "`aimg.palfx~mulr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toF()/256.0;";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= "`aimg.palfx~mulg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toF()/256.0;";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "`aimg.palfx~mulb=", "$.v.toF()/256.0;")) ret false;
+                "`aimg.palfx~mulb=", "$.v.toI();")) ret false;
           }
         }
         ret true;
@@ -6123,17 +6123,17 @@ public &StateBuilder
       if(!`stateParam(param=, "mul", [`paraF_t(data=){
         `state.ctrlList[-1].task .= pf .= "mulr=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toF()/256.0;";
+        `state.ctrlList[-1].task .= "$.v.toI();";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= pf .= "mulg=";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toF()/256.0;";
+          `state.ctrlList[-1].task .= "$.v.toI();";
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= pf;
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "mulb=", "$.v.toF()/256.0;")) ret false;
+                "mulb=", "$.v.toI();")) ret false;
           }
         }
         ret true;
