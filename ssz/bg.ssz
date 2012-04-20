@@ -158,7 +158,7 @@ public &BackGround
   public float deltax = 1.0, deltay = 1.0;
   public float xtscale = 1.0, xbscale = 1.0;
   public float rasterxtspeed = 1.0, rasterxbspeed = 1.0;
-  public float yscalestart = 1.0;
+  public float yscalestart = 100.0;
   public float yscaledelta = 0.0;
   public int actionno = -1;
   public float startvx = 0.0, startvy = 0.0;
@@ -294,7 +294,7 @@ public &BackGround
       .readPair!float?(`rasterxtspeed=, `rasterxbspeed=, data);
     }
     if(typ == 2 && #(data = sc.get("yscalestart")) > 0){
-      `yscalestart = 100.0 / .com.atof(data);
+      `yscalestart = .com.atof(data);
     }
     if(typ == 2 && #(data = sc.get("yscaledelta")) > 0){
       `yscaledelta = .com.atof(data);
@@ -433,7 +433,7 @@ public &BackGround
       if(`rasterxbspeed == `rasterxtspeed) x2 = .m.floor(x2);
       y2 = .m.floor(y2);
     }
-    float ys = (`yscalestart - y * (scly/scl)*`yscaledelta*(1.0/100.0));
+    float ys = (100.0 - y * `yscaledelta)/`yscalestart;
     x2 *= bgscl;
     y2 *= bgscl;
     ys *= bgscl;
