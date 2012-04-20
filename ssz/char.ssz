@@ -398,14 +398,16 @@ public void drawReflection(float x, float y)
   {
     `time = 0;
     `length = 20;
-    `palfx~color = 1.0;
-    `palfx~invertall = 0;
-    `palfx~addr = 30;
-    `palfx~addg = 30;
-    `palfx~addb = 30;
-    `palfx~mulr = 120;
-    `palfx~mulg = 120;
-    `palfx~mulb = 220;
+    if(#`palfx > 0){
+      `palfx~color = 1.0;
+      `palfx~invertall = 0;
+      `palfx~addr = 30;
+      `palfx~addg = 30;
+      `palfx~addb = 30;
+      `palfx~mulr = 120;
+      `palfx~mulg = 120;
+      `palfx~mulb = 220;
+    }
     `postbrightr = 0;
     `postbrightg = 0;
     `postbrightb = 0;
@@ -422,6 +424,41 @@ public void drawReflection(float x, float y)
     `imgidx = 0;
     `restgap = 0;
     `reccount = 0;
+  }
+  public void setPalcolor(int palcol)
+  {
+    if(#`palfx > 0){
+      `palfx~color = (float)palcol / 256.0;
+      .m.limRange!float?(`palfx~color=, 0.0, 1.0);
+    }
+  }
+  public void setPalinvertall(bool palinv)
+  {
+    if(#`palfx > 0) `palfx~invertall = (int)palinv;
+  }
+  public void setPalbrightR(int palbrr)
+  {
+    if(#`palfx > 0) `palfx~addr = palbrr;
+  }
+  public void setPalbrightG(int palbrg)
+  {
+    if(#`palfx > 0) `palfx~addg = palbrg;
+  }
+  public void setPalbrightB(int palbrb)
+  {
+    if(#`palfx > 0) `palfx~addb = palbrb;
+  }
+  public void setPalcontrastR(int palcor)
+  {
+    if(#`palfx > 0) `palfx~mulr = palcor;
+  }
+  public void setPalcontrastG(int palcog)
+  {
+    if(#`palfx > 0) `palfx~mulg = palcog;
+  }
+  public void setPalcontrastB(int palcob)
+  {
+    if(#`palfx > 0) `palfx~mulb = palcob;
   }
   public void setupPalfx()
   {

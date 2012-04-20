@@ -5844,47 +5844,46 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`aimg.palfx~color=.m.max!float?(0.0,.m.min!float?(1.0,",
-            "$.v.toF()/256.0));")) ret false;
+            "`aimg.setPalcolor(", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palinvertall", [`paraF_t(data=){
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            "`aimg.palfx~invertall=(int)(", "$.v.isT());")) ret false;
+            "`aimg.setPalinvertall(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palbright", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= "`aimg.palfx~addr=";
+        `state.ctrlList[-1].task .= "`aimg.setPalbrightR(";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toI();";
+        `state.ctrlList[-1].task .= "$.v.toI());";
         if(.s.equ(",")<, `tokenizer(data=)){
-          `state.ctrlList[-1].task .= "`aimg.palfx~addg=";
+          `state.ctrlList[-1].task .= "`aimg.setPalbrightG(";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toI();";
+          `state.ctrlList[-1].task .= "$.v.toI());";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "`aimg.palfx~addb=", "$.v.toI();")) ret false;
+                "`aimg.setPalbrightB(", "$.v.toI());")) ret false;
           }
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palcontrast", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= "`aimg.palfx~mulr=";
+        `state.ctrlList[-1].task .= "`aimg.setPalcontrastR(";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-        `state.ctrlList[-1].task .= "$.v.toI();";
+        `state.ctrlList[-1].task .= "$.v.toI());";
         if(.s.equ(",")<, `tokenizer(data=)){
-          `state.ctrlList[-1].task .= "`aimg.palfx~mulg=";
+          `state.ctrlList[-1].task .= "`aimg.setPalcontrastG(";
           if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
-          `state.ctrlList[-1].task .= "$.v.toI();";
+          `state.ctrlList[-1].task .= "$.v.toI());";
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
               !`fullExpression(
                 `state.ctrlList[-1].task=, data=,
-                "`aimg.palfx~mulb=", "$.v.toI();")) ret false;
+                "`aimg.setPalcontrastB(", "$.v.toI());")) ret false;
           }
         }
         ret true;
