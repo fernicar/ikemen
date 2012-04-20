@@ -6074,7 +6074,7 @@ public &StateBuilder
       switch(`state.ctrlList[-1].typ){
       case .CtrlTy::PalFX:
         `state.ctrlList[-1].task .=
-          "^&.com.PalFX fx=`getPalfx();fx~clear();fx~player=`id;";
+          "^&.com.PalFX fx=`getPalfx();fx~clear2(1);fx~player=`id;";
       case .CtrlTy::AllPalFX:
         `state.ctrlList[-1].task .= ".sff.allPalFX~clear();";
       case .CtrlTy::BGPalFX:

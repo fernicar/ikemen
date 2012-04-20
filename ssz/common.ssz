@@ -383,11 +383,12 @@ public &PalFX
   public int sintime;
   public float color;
   public int invertall;
+  public int negType;
   new()
   {
     `clear();
   }
-  public void clear()
+  public void clear2(int negType)
   {
     `player = -1;
     `time = 0;
@@ -404,33 +405,37 @@ public &PalFX
     `sintime = 0;
     `color = 1.0;
     `invertall = 0;
+    `negType = negType;
+  }
+  public void clear()
+  {
+    `clear2(0);
   }
   public void step()
   {
     if(`time > 0) `time--;
     if(`time != 0 && `cycletime > 0) `sintime = (`sintime+1) % `cycletime;
   }
-  public ^uint getFxPal(^uint pal, bool neg)
+  public ^uint getFxPal(^uint pal, bool nega)
   {
+    bool neg = `negType == 0 ? nega : false;
     int mr, mg, mb;
     void addsubset(uint addc=, uint subc=, int r=, int g=, int b=)
     {
       int ar = 0, ag = 0, ab = 0, sr = 0, sg = 0, sb = 0;
+      if(`neg){
+        r *= -1; g *= -1; b *= -1;
+      }
       void bar(int a=, int s=, int c)
       {
         branch{
         cond c < 0:
-          s = .m.min!int?(255, -c);
+          s = (int).m.min!uint?(0d255, (uint)-c);
         else:
           a = .m.min!int?(255, c);
         }
       }
-      branch{
-      cond `neg:
-        bar(sr=, ar=, r); bar(sg=, ag=, g); bar(sb=, ab=, b);
-      else:
-        bar(ar=, sr=, r); bar(ag=, sg=, g); bar(ab=, sb=, b);
-      }
+      bar(ar=, sr=, r); bar(ag=, sg=, g); bar(ab=, sb=, b);
       void baz(int m, int a=, int c=)
       {
         branch{

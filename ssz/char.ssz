@@ -385,7 +385,10 @@ public void drawReflection(float x, float y)
   new()
   {
     `palfx.new(.cfg.AfterImageMax);
-    loop{index i = 0; do: `palfx[i].time = -1; while ++i < #`palfx:}
+    loop{index i = 0; do:
+      `palfx[i].time = -1;
+      `palfx[i].negType = 1;
+    while ++i < #`palfx:}
     `clear();
     `timegap = 0;
     `imgs.new(64);
@@ -6028,7 +6031,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     diff<hit>:
       if(hit.palfx_time > 0){
         ^&.com.PalFX fx = `pyr.getPalfx();
-        fx~clear();
+        fx~clear2(1);
         fx~player = `pyr.id;
         fx~time = hit.palfx_time;
         fx~mulr = hit.palfx_mulr;
