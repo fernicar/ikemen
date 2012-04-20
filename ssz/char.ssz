@@ -385,10 +385,11 @@ public void drawReflection(float x, float y)
   new()
   {
     `palfx.new(.cfg.AfterImageMax);
-    loop{index i = 0; do:
+    loop{index i = 0; while; do:
       `palfx[i].time = -1;
       `palfx[i].negType = 1;
-    while ++i < #`palfx:}
+      i++;
+    while i < #`palfx:}
     `clear();
     `timegap = 0;
     `imgs.new(64);
