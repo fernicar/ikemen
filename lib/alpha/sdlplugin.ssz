@@ -1,6 +1,13 @@
 ﻿
 plugin void End(::)                         = "dll/sdlplugin.dll";
 plugin bool PollEvent(:&Event=:)            = "dll/sdlplugin.dll";
+
+public char getLastChar()
+{
+  plugin char GetLastChar(::) = "dll/sdlplugin.dll";
+  ret GetLastChar(::);
+}
+
 plugin bool KeyState(:|SDLKey:)             = "dll/sdlplugin.dll";
 plugin bool JoystickButtonState(:int, int:) = "dll/sdlplugin.dll";
 plugin void Delay(:uint:)                   = "dll/sdlplugin.dll";

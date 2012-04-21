@@ -12,13 +12,19 @@
 #pragma comment(lib, "OpenGL32.Lib")
 #pragma comment(lib, "GlU32.Lib")
 
+
 #include <SDL.h>
 #pragma comment(lib, "SDL.lib")
 #pragma comment(lib, "SDLmain.lib")
+
+#include <SDL_syswm.h>
+
 #include <SDL_image.h>
 #pragma comment(lib, "SDL_image.lib")
+
 #include <SDL_ttf.h>
 #pragma comment(lib, "SDL_ttf.lib")
+
 
 #include "LockSingler.h"
 
@@ -29,6 +35,7 @@
 void* (__stdcall *sszrefnewfunc)(intptr_t);
 void (__stdcall *sszrefdeletefunc)(void*);
 
+#include "../../../dll/ssz/ssz/sszdef.h"
 #include "../../../dll/ssz/ssz/typeid.h"
 #include "../../../dll/ssz/ssz/arrayandref.hpp"
 #include "../../../dll/ssz/ssz/pluginutil.hpp"
@@ -38,6 +45,43 @@ int g_w = 640, g_h = 480;
 uint32_t g_scrflag = 0;
 SDL_Surface *g_screen = nullptr;
 SDL_AudioSpec g_desired;
+
+
+WNDPROC g_orgProc;
+char16_t g_lastChar = '\0', g_newChar = '\0';
+
+LRESULT CALLBACK wrapProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	MSG m;
+	switch(msg){
+	case WM_KEYDOWN:
+		m.hwnd = hWnd;
+		m.message = msg;
+		m.wParam = wParam;
+		m.lParam = lParam;
+		m.time = 0;
+		TranslateMessage(&m);
+		if(
+			TranslateMessage(&m)
+			&& PeekMessage(&m, hWnd, WM_CHAR, WM_CHAR, PM_REMOVE))
+		{
+			g_newChar = m.wParam;
+		}
+		break;
+	}
+	return CallWindowProc(g_orgProc, hWnd, msg, wParam, lParam);
+}
+
+void winProcInit()
+{
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	SDL_GetWMInfo(&info);
+	g_orgProc = (WNDPROC)GetWindowLong(info.window, GWL_WNDPROC);
+	if(g_orgProc == wrapProc) return;
+	SetWindowLong(info.window, GWL_WNDPROC, (LONG)wrapProc);
+}
+
 
 const int g_samples = 2048;
 const int g_sndfreq = 44100;
@@ -369,6 +413,7 @@ TUserFunc(void, Init, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
 		g_screen = *pps = nullptr;
 	}else{
+		winProcInit();
 		TTF_Init();
 		SDL_WM_SetCaption(pu->refToAstr(CP_UTF8, cap).c_str(), nullptr);
 		g_scrflag = SDL_SWSURFACE;
@@ -384,6 +429,7 @@ TUserFunc(void, GlInit, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
 		g_screen = *pps = nullptr;
 	}else{
+		winProcInit();
 		TTF_Init();
 		SDL_WM_SetCaption(pu->refToAstr(CP_UTF8, cap).c_str(), nullptr);
 		g_scrflag = SDL_OPENGL;
@@ -482,6 +528,8 @@ TUserFunc(bool, PollEvent, int8_t *pb)
 	SDL_Event ev;
 	SDL_JoystickUpdate();
 	ret = SDL_PollEvent(&ev) != 0;
+	g_lastChar = g_newChar;
+	if(!ret) g_newChar = '\0';
 
 	*(int32_t *)pb = ev.type;
 	switch(ev.type){
@@ -575,6 +623,11 @@ TUserFunc(bool, PollEvent, int8_t *pb)
 		break;
 	}
 	return ret;
+}
+
+TUserFunc(char16_t, GetLastChar)
+{
+	return g_lastChar;
 }
 
 TUserFunc(bool, KeyState, int32_t key)

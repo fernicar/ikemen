@@ -1,0 +1,38 @@
+﻿
+lib lua = <alpha/lua.ssz>;
+lib sc = "script.ssz";
+lib chr = "char.ssz";
+lib al = <alert.ssz>;
+lib tscri = "trigger-script.ssz";
+
+
+void puts(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  ^/char text = .sc.strArg(L=, re=, argc=, nret); if(re < 0) ret;
+  if(#.tscri.cwc > 0) .chr.appendClipboardText(.tscri.cwc~playerno, text + \n);
+}
+
+
+public ^&.lua.State L;
+
+public void registerFunction()
+{
+  if(#.L == 0) ret;
+  .sc.init(.L<>=);
+  .tscri.registerFunction(.L<>=);
+  .L~register("puts", .puts);
+}
+
+public ^/char loadFile(^/char file)
+{
+  .L.new(1);
+  if(!.L~runFile(file)){
+    ^/char err = .L~toString(-1);
+    .L.new(0);
+    ret err;
+  }
+  ret "";
+}
+
+

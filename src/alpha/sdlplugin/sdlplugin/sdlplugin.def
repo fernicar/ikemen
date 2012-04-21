@@ -2,6 +2,7 @@ EXPORTS
 	Init
 	End
 	PollEvent
+        GetLastChar
 	KeyState
 	Fill
 	IMGLoad

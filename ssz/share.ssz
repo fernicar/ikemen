@@ -5,6 +5,8 @@ lib cmd = "command.ssz";
 lib fnt = "font.ssz";
 lib com = "common.ssz";
 lib se = <alpha/sdlevent.ssz>;
+lib dscri = "debug-script.ssz";
+lib lua = <alpha/lua.ssz>;
 
 public &Share
 {
@@ -19,6 +21,7 @@ public &Share
   public ^&.cmd.NetInput net;
   public ^&.cmd.FileInput rep;
   public ^&.fnt.Font dfnt;
+  public ^&.lua.State dlua;
   public bool dbgdw, clsndw, powsh, alvl, fullscr;
   public void copy()
   {
@@ -39,6 +42,7 @@ public &Share
     `net = .cmd.net;
     `rep = .cmd.replay;
     `dfnt = .fnt.debugFont;
+    `dlua = .dscri.L;
     `dbgdw = .com.debugdraw;
     `clsndw = .com.clsndraw;
     `powsh = .com.powershare;
@@ -64,6 +68,7 @@ public &Share
     .cmd.net = `net;
     .cmd.replay = `rep;
     .fnt.debugFont = `dfnt;
+    .dscri.L = `dlua;
     .com.debugdraw = `dbgdw;
     .com.clsndraw = `clsndw;
     .com.powershare = `powsh;

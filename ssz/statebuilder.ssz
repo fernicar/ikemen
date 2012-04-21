@@ -768,12 +768,24 @@ public &StateBuilder
     in = in[i..-1];
     ret re;
   }
+  bool oneArg(^/char fun, %char out=, ^/char in=)
+  {
+    if(!.s.equ("(", `tokenizer(in=))){
+      %char buf;
+      `lasterror = (buf .= fun .= "の次に(がありません");
+      ret false;
+    }
+    `kakko++;
+    if(!`expBoolOr(out=, in=)) ret false;
+    if(!`kakkotojiru(in=)) ret false;
+    ret true;
+  }
   bool expRedirectable(^/char obj, ^/char name, %char out=, ^/char in=)
   {:<-
-    bool var(^/char obj, ^/char v, %char out=, ^/char in=)
+    bool var(^/char obj, ^/char vtkn, ^/char v, %char out=, ^/char in=)
     {
       %char buf;
-      if(!`expValue(buf=, in=)) ret false;
+      if(!`oneArg(vtkn, buf=, in=)) ret false;
       ^/char oldin = in;
       branch{
       cond .s.equ(`tokenizer(in=), ":="):
@@ -819,38 +831,38 @@ public &StateBuilder
       if(!`expPostNot(out=, in=)) ret false;
       out .= "$`trBoolNot()";
     cond .s.equ("abs", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trAbs()";
     cond .s.equ("floor", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trFloor()";
     cond .s.equ("ceil", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trCeil()";
     cond .s.equ("pi", token):
       out .= ".v.setF(.m.PI)";
     cond .s.equ("e", token):
       out .= ".v.setF(.m.E)";
     cond .s.equ("sin", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trSin()";
     cond .s.equ("cos", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trCos()";
     cond .s.equ("tan", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trTan()";
     cond .s.equ("asin", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trAsin()";
     cond .s.equ("acos", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trAcos()";
     cond .s.equ("atan", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trAtan()";
     cond .s.equ("ln", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trLn()";
     cond .s.equ("log", token):
       if(!.s.equ("(", `tokenizer(in=))){
@@ -871,7 +883,7 @@ public &StateBuilder
       out .= "$.v)";
       if(!`kakkotojiru(in=)) ret false;
     cond .s.equ("exp", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trExp()";
     cond .s.equ("ifelse", token):
       out .= "`trIfelse(";
@@ -911,7 +923,7 @@ public &StateBuilder
     cond .s.equ("tickspersecond", token):
       out .= ".v.setI(.cfg.GameSpeed)";
     cond .s.equ("playeridexist", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trPlayerIDExist()";
     cond .s.equ("anim", token):
       out .= obj .= "trAnim()";
@@ -979,10 +991,10 @@ public &StateBuilder
         }
       }
     cond .s.equ("animelemtime", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= '$' .= obj .= "trAnimElemTime()";
     cond .s.equ("animelemno", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= '$' .= obj .= "trAnimElemNo()";
     cond .s.equ("timemod", token):
       {
@@ -1382,18 +1394,18 @@ public &StateBuilder
       }
       in = in[1..-1];
     cond .s.equ("sysvar", token):
-      if(!var(obj, "SysIVar", out=, in=)) ret false;
+      if(!var(obj, token, "SysIVar", out=, in=)) ret false;
     cond .s.equ("sysfvar", token):
-      if(!var(obj, "SysFVar", out=, in=)) ret false;
+      if(!var(obj, token, "SysFVar", out=, in=)) ret false;
     cond .s.equ("var", token):
-      if(!var(obj, "IVar", out=, in=)) ret false;
+      if(!var(obj, token, "IVar", out=, in=)) ret false;
     cond .s.equ("fvar", token):
-      if(!var(obj, "FVar", out=, in=)) ret false;
+      if(!var(obj, token, "FVar", out=, in=)) ret false;
     cond .s.equ("animexist", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= '$' .= obj .= "trAnimExist(`id)";
     cond .s.equ("selfanimexist", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= '$' .= obj .= "trSelfAnimExist()";
     cond .s.equ("stateno", token):
       out .= ".v.setI(" .= obj .= "stVal.no)";
@@ -1656,7 +1668,8 @@ public &StateBuilder
           cond t:
             out .= ".v.setI(-1)$" .= obj .= "trNumTarget()";
           cond p:
-            out .= ".v.setI(-1)$" .= obj .= "trNumProjID()";
+            `lasterror = "NumProjIDの引数がありません";
+            ret false;
           else:
             out .= ".v.setI(-1)$" .= obj .= "trNumExplod()";
           }
@@ -1671,16 +1684,16 @@ public &StateBuilder
     cond .s.equ("numpartner", token):
       out .= obj .= "trNumPartner()";
     cond .s.equ("projhittime", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= '$' .= obj .= "trProjTime(.ProjContact::Hit)";
     cond .s.equ("projguardedtime", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= '$' .= obj .= "trProjTime(.ProjContact::Guarded)";
     cond .s.equ("projcontacttime", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= '$' .= obj .= "trProjContactTime()";
     cond .s.equ("projcanceltime", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= '$' .= obj .= "trProjTime(.ProjContact::Cancel)";
     cond
       .s.equ("projhit", token[0..7]) || .s.equ("projguarded", token[0..11])
@@ -1800,12 +1813,12 @@ public &StateBuilder
     cond .s.equ("ailevel", token):
       out .= ".v.setI(.com.com[" .= obj .= "playerno])";
     cond .s.equ("const240p", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
     cond .s.equ("const480p", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trDiv(.v,.v.setF(2.0)$.v)";
     cond .s.equ("const720p", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= "$`trDiv(.v,.v.setF(4.0)$.v)";
     cond .s.equ("gamewidth", token):
       out .= ".v.setF((float).com.GameWidth)";
@@ -1871,7 +1884,7 @@ public &StateBuilder
         }]) ret false;
       }
     cond .s.equ("playerid", token):
-      if(!`expValue(out=, in=)) ret false;
+      if(!`oneArg(token, out=, in=)) ret false;
       out .= '$' .= obj .= "trPlayerID()$.rd([._t(_=){";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";

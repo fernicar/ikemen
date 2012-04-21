@@ -6,7 +6,6 @@ lib m = <math.ssz>;
 lib se = <alpha/sdlevent.ssz>;
 lib al = <alert.ssz>;
 lib sff = "sff.ssz";
-lib stage = "stage.ssz";
 lib p1 = "state0p.ssz";
 lib p2 = "state1p.ssz";
 lib p3 = "state2p.ssz";
@@ -19,6 +18,8 @@ lib sha = "share.ssz";
 lib tbl = <table.ssz>;
 lib file = <file.ssz>;
 lib cmd = "command.ssz";
+lib dscri = "debug-script.ssz";
+lib tscri = "trigger-script.ssz";
 
 const double lvmul = 2.0**(1.0/12.0);
 
@@ -124,12 +125,27 @@ void game()
   {
     int tmp = .sff.allPalFX~time;
     .sff.allPalFX~time = 0;
-    .fnt.debugFont~drawText(
-      x - (float)(.com.GameWidth-320)/2.0,
-      y += (float).fnt.debugFont~sizey/.com.HeightScale,
-      1.0/.com.WidthScale,  1.0/.com.HeightScale, 0, 1, txt);
+    loop{
+      ^/char t = txt;
+      index i;
+    do:
+      i = 0;
+      loop{int w = 0; while; do:
+        w += .fnt.debugFont~charWidth(t[i]) + .fnt.debugFont~spacingx;
+        if(w > .cfg.Width) break;
+        i++;
+      while i < #t:}
+      if(i == 0) i = 1;
+      .fnt.debugFont~drawText(
+        x - (float)(.com.GameWidth-320)/2.0,
+        y += (float).fnt.debugFont~sizey/.com.HeightScale,
+        1.0/.com.WidthScale,  1.0/.com.HeightScale, 0, 1, t[0..i]);
+      t = t[i..-1];
+    while #t > 0:
+    }
     .sff.allPalFX~time = tmp;
   }
+  %char line;
   void drawDebug()
   {:<-
     if(!.com.debugdraw || #.fnt.debugFont == 0) ret;
@@ -159,7 +175,12 @@ void game()
       i++;
     while i < #.chr.chars:}
     `put(0.0, y=, .chr.stg~def);
-    `put(0.0, y=, "");
+    `put(
+      0.0, y=,
+      (
+        #.tscri.cwc > 0
+        ? "P"+.s.iToS(.tscri.cwc~playerno+1)+":" + .tscri.cwc~name : "")
+      + "> " + `line);
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0){
         loop{index j = 0; while; do:
@@ -171,6 +192,27 @@ void game()
       y+=(float).fnt.debugFont~sizey/.com.HeightScale;
       i++;
     while i < #.chr.chars:
+    }
+  }
+  void debugInput()
+  {
+    if(!.com.debugdraw || #.fnt.debugFont == 0) ret;
+    char lastChar = .sdl.getLastChar();
+    switch(lastChar){
+    case '\0':
+    case '\r':
+      if(#.dscri.L > 0){
+        if(!.dscri.L~runString(`line)) .al.alert!self?(.dscri.L~toString(-1));
+      }
+      `line.new(0);
+    case '\x8':
+      {
+        ^char tmp = `line[0..#`line-1];
+        `line.new(0);
+        `line .= tmp;
+      }
+    default:
+      if(lastChar >= '\x20' && lastChar < '\x7f') `line .= lastChar;
     }
   }
   float x = 0.0, y = 0.0, l = 0.0, r = 0.0;
@@ -228,6 +270,7 @@ void game()
     sdr.p = .s.sToN!index?(sss[1]);
     sdr.copyToRef!&.sha.Share?(share=);
     share~push();
+    .dscri.registerFunction();//必須
     stagetime = share~stt;
     .cmd.synchronize();
     .wm.init();
@@ -488,6 +531,7 @@ void game()
       if(!.se.eventUpdate()) break, while;
       break, do;
     }
+    debugInput();
     if(.se.fskip) while;
     .chr.draw(x, y, scl);
     drawDebug();
