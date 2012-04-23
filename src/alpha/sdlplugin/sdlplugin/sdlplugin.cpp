@@ -2188,14 +2188,28 @@ void drawQuads(
 	float x1, float y1, float x2, float y2, float x3, float y3,
 	float x4, float y4, float r, float g, float b, float a)
 {
+	float txl, txr;
+	if(x4 <= x3){
+		txl = 0.0;
+		txr = 1.0;
+	}else{
+		txl = 1.0;
+		txr = 0.0;
+		float tmp = x4;
+		x4 = x3;
+		x3 = tmp;
+		tmp = x1;
+		x1 = x2;
+		x2 = tmp;
+	}
 	glColor4f(r, g, b, a);
-	glTexCoord2f(0, 1.0);
+	glTexCoord2f(txl, 1.0);
 	glVertex2f(x1, y1);
-	glTexCoord2f(1.0, 1.0);
+	glTexCoord2f(txr, 1.0);
 	glVertex2f(x2, y2);
-	glTexCoord2f(1.0, 0);
+	glTexCoord2f(txr, 0);
 	glVertex2f(x3, y3);
-	glTexCoord2f(0, 0);
+	glTexCoord2f(txl, 0);
 	glVertex2f(x4, y4);
 }
 

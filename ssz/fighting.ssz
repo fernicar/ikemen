@@ -527,11 +527,11 @@ void game()
     newx = x;
     newy = y;
     sclmul = .chr.action(newx=, newy=, l=, r=, scl);
+    debugInput();
     if(!.com.addFrameTime(.com.turbo)){
       if(!.se.eventUpdate()) break, while;
       break, do;
     }
-    debugInput();
     if(.se.fskip) while;
     .chr.draw(x, y, scl);
     drawDebug();

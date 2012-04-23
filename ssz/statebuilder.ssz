@@ -4503,9 +4503,9 @@ public &StateBuilder
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .=
-        "if(s<0||s>7)s=0;if(st>=0)"
-        "{`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
-        "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;}";
+        "if(s<0||s>7)s=0;if(st<0)t=0;"
+        "`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
+        "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;";
       ret true;
     }]);
   }
