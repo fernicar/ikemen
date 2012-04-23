@@ -14,22 +14,15 @@ void puts(&.lua.State L=, int re=)
 }
 
 
-public ^&.lua.State L;
-
-public void registerFunction()
-{
-  if(#.L == 0) ret;
-  .sc.init(.L<>=);
-  .tscri.registerFunction(.L<>=);
-  .L~register("puts", .puts);
-}
+public &.lua.State L;
 
 public ^/char loadFile(^/char file)
 {
-  .L.new(1);
-  if(!.L~runFile(file)){
-    ^/char err = .L~toString(-1);
-    .L.new(0);
+  .sc.init(.L=);
+  .tscri.registerFunction(.L=);
+  .L.register("puts", .puts);
+  if(!.L.runFile(file)){
+    ^/char err = .L.toString(-1);
     ret err;
   }
   ret "";

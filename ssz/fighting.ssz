@@ -201,8 +201,8 @@ void game()
     switch(lastChar){
     case '\0':
     case '\r':
-      if(#.dscri.L > 0){
-        if(!.dscri.L~runString(`line)) .al.alert!self?(.dscri.L~toString(-1));
+      if(#.com.debugScript > 0){
+        if(!.dscri.L.runString(`line)) .al.alert!self?(.dscri.L.toString(-1));
       }
       `line.new(0);
     case '\x8':
@@ -270,7 +270,10 @@ void game()
     sdr.p = .s.sToN!index?(sss[1]);
     sdr.copyToRef!&.sha.Share?(share=);
     share~push();
-    .dscri.registerFunction();//必須
+    if(#.com.debugScript > 0){
+      ^/char err = .dscri.loadFile(.com.debugScript);
+      if(#err > 0) .al.alert!.self?(err);
+    }
     stagetime = share~stt;
     .cmd.synchronize();
     .wm.init();

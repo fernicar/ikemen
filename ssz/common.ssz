@@ -129,6 +129,8 @@ public int p1wins = 0, p2wins = 0, draws = 0;
 
 public int win = -1;
 
+public ^/char debugScript;
+
 |KeyEvent
 {
   CtrlC, CtrlD, CtrlS, Pause, Scroll, F4, ShiftF4,
