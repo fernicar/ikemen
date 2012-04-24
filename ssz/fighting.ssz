@@ -391,21 +391,22 @@ void game()
       .m.max!float?(xminscl, yminscl);
     float tmp;
   do:
-    if(.com.keyDown(.com.KeyEvent::CtrlC)) .com.clsndraw!!;
-    if(.com.keyDown(.com.KeyEvent::CtrlD)) .com.debugdraw!!;
-    if(#.cmd.net == 0 && #.cmd.replay == 0){
-      if(.com.keyDown(.com.KeyEvent::Pause)) .com.pause!!;
-      if(.com.keyDown(.com.KeyEvent::CtrlS)) branch{
-      cond .com.accel >= 4.0:
-        .com.accel = 0.25;
-      else:
-        .com.accel *= 2.0;
+    .com.step = false;
+    .dscri.roundResetFlg = false;
+    .dscri.reloadFlg = false;
+    loop{index i = 0; while; do:
+      if(.se.eventKeys[i].down){
+        ^^/char scri = .com.hotkeys.get(.com.eventKeyHash(.se.eventKeys[i]));
+        if(#scri > 0 && !.dscri.L.runString(scri<>)){
+          .al.alert!self?(.dscri.L.toString(-1));
+        }
       }
-      if(.com.keyDown(.com.KeyEvent::F4)) reset();
-      if(.com.keyDown(.com.KeyEvent::ShiftF4)){
-        .mes.SetSharedString(:"reload":);
-        ret;
-      }
+      i++;
+    while i < #.se.eventKeys:}
+    if(.dscri.roundResetFlg) reset();
+    if(.dscri.reloadFlg){
+      .mes.SetSharedString(:"reload":);
+      ret;
     }
     if(.chr.roundOver()) branch{
       .com.round++;

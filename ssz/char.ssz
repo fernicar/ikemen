@@ -2909,8 +2909,7 @@ public &Char
   }
   public void tickBind()
   {
-    if(`sysivar[.iBINDTIME] > 0) `sysivar[.iBINDTIME]--;
-    if(`sysivar[.iBINDTIME] == 0) `sysivar[.iBINDTOID] = -1;
+    if(`sysivar[.iBINDTIME] > 0) `setBindTime(`sysivar[.iBINDTIME]-1);
   }
   public void tick()
   {
@@ -3240,7 +3239,7 @@ public &Char
         `setFacing(`p1facing);
         `p1facing = 0;
       }
-      `bind();
+      if(`isBound()) `bind();
       `changeState2();
       if(!`isHitPaused()){
         if(
@@ -3372,6 +3371,7 @@ public &Char
               + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
           }
         }
+        if(!`isBound()) `bind();
         if(!`isHitPaused()){
           `stVal.time++;
           `posUpdate();
@@ -7000,9 +7000,7 @@ public float action(
   }
   if(.com.turbo == 0.0 || .com.tickNextFrame()) branch{
     int slowt = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
-    float spd =
-      .com.pause && !.com.keyDown(.com.KeyEvent::Scroll)
-      ? 0.0 : .com.Speed*.com.accel;
+    float spd = .com.pause && !.com.step ? 0.0 : .com.Speed*.com.accel;
   cond
     !.gs(.gsNOKOSLOW) && .com.time != 0
     && .m.inRange!int?(slowt, -.fight~ro.over_hittime-1, .com.intro)

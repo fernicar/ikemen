@@ -31,101 +31,136 @@ public ^&chr.Char cwc;
 
 void player(&.lua.State L=, int re=)
 {
-  int argc = 0, nret = 0;
+  int argc = 0, nret = 1;
   int pn = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  bool retVal = false;
   if(.m.inRange!int?(1, 4, pn) && #.chr.chars[pn-1] > 0){
     .cwc = .chr.chars[pn-1]<>;
+    retVal = true;
   }
+  L.pushBoolean(retVal);
 }
 
 void parent(&.lua.State L=, int re=)
 {
-  re = 0;
-  if(#.cwc == 0) ret;
+  re = 1;
+  if(#.cwc == 0){
+    L.pushBoolean(false);
+    ret;
+  }
   .cwc~trParent();
   if(#.chr.c > 0) .cwc = .chr.c;
+  L.pushBoolean(#.chr.c > 0);
 }
 
 void root(&.lua.State L=, int re=)
 {
-  re = 0;
-  if(#.cwc == 0) ret;
+  re = 1;
+  if(#.cwc == 0){
+    L.pushBoolean(false);
+    ret;
+  }
   .cwc~trRoot();
   if(#.chr.c > 0) .cwc = .chr.c;
+  L.pushBoolean(#.chr.c > 0);
 }
 
 void helper(&.lua.State L=, int re=)
 {
-  int argc = 0, nret = 0;
+  int argc = 0, nret = 1;
   re = nret;
   int id = 0;
   if(L.getTop() > argc){
     id = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   }
-  if(#.cwc == 0) ret;
+  if(#.cwc == 0){
+    L.pushBoolean(false);
+    ret;
+  }
   .chr.v.setI(id);
   .cwc~trHelper();
   if(#.chr.c > 0) .cwc = .chr.c;
+  L.pushBoolean(#.chr.c > 0);
 }
 
 void target(&.lua.State L=, int re=)
 {
-  int argc = 0, nret = 0;
+  int argc = 0, nret = 1;
   re = nret;
   int id = -1;
   if(L.getTop() > argc){
     id = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   }
-  if(#.cwc == 0) ret;
+  if(#.cwc == 0){
+    L.pushBoolean(false);
+    ret;
+  }
   .chr.v.setI(id);
   .cwc~trTarget();
   if(#.chr.c > 0) .cwc = .chr.c;
+  L.pushBoolean(#.chr.c > 0);
 }
 
 void partner(&.lua.State L=, int re=)
 {
-  re = 0;
-  if(#.cwc == 0) ret;
+  re = 1;
+  if(#.cwc == 0){
+    L.pushBoolean(false);
+    ret;
+  }
   .cwc~trPartner();
   if(#.chr.c > 0) .cwc = .chr.c;
+  L.pushBoolean(#.chr.c > 0);
 }
 
 void enemy(&.lua.State L=, int re=)
 {
-  int argc = 0, nret = 0;
+  int argc = 0, nret = 1;
   re = nret;
   int n = 0;
   if(L.getTop() > argc){
     n = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   }
-  if(#.cwc == 0) ret;
+  if(#.cwc == 0){
+    L.pushBoolean(false);
+    ret;
+  }
   .chr.v.setI(n);
   .cwc~trEnemy();
   if(#.chr.c > 0) .cwc = .chr.c;
+  L.pushBoolean(#.chr.c > 0);
 }
 
 void enemynear(&.lua.State L=, int re=)
 {
-  int argc = 0, nret = 0;
+  int argc = 0, nret = 1;
   re = nret;
   int n = 0;
   if(L.getTop() > argc){
     n = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   }
-  if(#.cwc == 0) ret;
+  if(#.cwc == 0){
+    L.pushBoolean(false);
+    ret;
+  }
   .chr.v.setI(n);
   .cwc~trEnemyNear();
   if(#.chr.c > 0) .cwc = .chr.c;
+  L.pushBoolean(#.chr.c > 0);
 }
 
 void playerid(&.lua.State L=, int re=)
 {
-  int argc = 0, nret = 0;
+  int argc = 0, nret = 1;
   int id = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  if(#.cwc == 0) ret;
+  if(#.cwc == 0){
+    L.pushBoolean(false);
+    ret;
+  }
   .chr.v.setI(id);
   .cwc~trPlayerID();
   if(#.chr.c > 0) .cwc = .chr.c;
+  L.pushBoolean(#.chr.c > 0);
 }
 
 

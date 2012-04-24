@@ -29,7 +29,8 @@ public ^%%char clipboardText.new(4);
 
 public ^int com = com + (int)[4, 4, 4, 4];
 
-public bool pause = false;
+public bool pause = false, step = false;
+public bool statusDraw = true;
 public float accel = 1.0;
 
 public bool autolevel = false;
@@ -131,29 +132,33 @@ public int win = -1;
 
 public ^/char debugScript;
 
-|KeyEvent
-{
-  CtrlC, CtrlD, CtrlS, Pause, Scroll, F4, ShiftF4,
+public &tbl.IntTable!int, ^/char? hotkeys;
 
-  NumEvents
+public int eventKeyHash(&.se.Key key)
+{
+  ret (int)key.key | (int)key.ctrl<<16 | (int)key.alt<<17 | (int)key.shift<<18;
 }
 
-se.eventKeys.new((int)KeyEvent::NumEvents);
-se.eventKeys[(int)KeyEvent::CtrlC].key = .sdl.SDLKey::c;
-se.eventKeys[(int)KeyEvent::CtrlC].ctrl = true;
-se.eventKeys[(int)KeyEvent::CtrlD].key = .sdl.SDLKey::d;
-se.eventKeys[(int)KeyEvent::CtrlD].ctrl = true;
-se.eventKeys[(int)KeyEvent::CtrlS].key = .sdl.SDLKey::s;
-se.eventKeys[(int)KeyEvent::CtrlS].ctrl = true;
-se.eventKeys[(int)KeyEvent::Pause].key = .sdl.SDLKey::PAUSE;
-se.eventKeys[(int)KeyEvent::Scroll].key = .sdl.SDLKey::SCROLLOCK;
-se.eventKeys[(int)KeyEvent::F4].key = .sdl.SDLKey::F4;
-se.eventKeys[(int)KeyEvent::ShiftF4].key = .sdl.SDLKey::F4;
-se.eventKeys[(int)KeyEvent::ShiftF4].shift = true;
-
-public bool keyDown(|.KeyEvent k)
+public bool addHotkey(
+  ^/char sdlkey, bool ctrl, bool alt, bool shift, ^/char script)
 {
-  ret .se.eventKeys[(int)k].down;
+  if(#sdlkey == 0) ret false;
+  ^/char skey = (sdlkey[0] >= '0' && sdlkey[0] <= '9' ? "_"+sdlkey : sdlkey);
+  |.sdl.SDLKey key;
+  if(!<consteval>(key=, ".sdl.SDLKey::" + skey)) ret false;
+  &.se.Key ekey.key = key;
+  ekey.ctrl = ctrl;
+  ekey.alt = alt;
+  ekey.shift = shift;
+  int hash = .eventKeyHash(ekey);
+  ^^/char item = .hotkeys.get(hash);
+  if(#item == 0){
+    item.new(1);
+    .hotkeys.set(hash, item);
+    .se.eventKeys .= ekey;
+  }
+  item<> = script;
+  ret true;
 }
 
 

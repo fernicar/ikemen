@@ -5184,7 +5184,7 @@ public &StateBuilder
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .=
-        "if(`sysivar[.iBINDTIME]==0)`sysivar[.iBINDTOID]=-1;`bind();";
+        "if(`sysivar[.iBINDTIME]==0)`sysivar[.iBINDTOID]=-1;";
       ret true;
     }]);
   }
