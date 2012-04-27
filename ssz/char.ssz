@@ -4651,7 +4651,7 @@ public &Char
   public void trP2DistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(!e~isAlive() && e~roundState() == 4){
+    if(!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
       .v.setF(0.0);
       ret;
     }
@@ -4665,7 +4665,7 @@ public &Char
   public void trP2BodyDistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(!e~isAlive() && e~roundState() == 4){
+    if(!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
       .v.setF(0.0);
       ret;
     }
