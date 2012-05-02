@@ -1167,7 +1167,9 @@ public &StateBuilder
           `lasterror = "コマンド"\" + token + \""は存在しません";
           ret false;
         }
-        out .= obj .= "trCommand(" .= .s.iToS(ci<>) .= ")";
+        out .=
+          obj .= "trCommand(" .= .s.iToS(`playerno) .= ","
+          .= .s.iToS(ci<>) .= ")";
         ret true;
       }]) ret false;
     cond
@@ -4854,8 +4856,7 @@ public &StateBuilder
             `state.ctrlList[-1].task=, data=, "s=", "$.v.toI();")) ret false;
        ret true;
       }])) ret false;
-      `state.ctrlList[-1].task .=
-        "`trTargetState(" .= .s.iToS(`playerno) .= ",tar,s);";
+      `state.ctrlList[-1].task .= "`trTargetState(tar,s);";
       ret true;
     }]);
   }

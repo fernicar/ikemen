@@ -4503,9 +4503,9 @@ public &Char
   {
     `trChangeState2(no, `playerno, anim, ctrl);
   }
-  bool commandSub(int i)
+  bool commandSub(int pno, int i)
   {
-    ^&.cmd.Command cl = `cmd[`minus == -2 ? `playerno : `stVal.playerno].at(i);
+    ^&.cmd.Command cl = `cmd[pno].at(i);
     if(#cl > 0 && `key < 0){
       ^/char name = cl~name;
       if(
@@ -4521,18 +4521,17 @@ public &Char
   public bool commandByName(^/char name)
   {
     if(!`keyctrl || #`cmd == 0) ret false;
-    ^index ci =
-      `cmd[`minus == -2 ? `playerno : `stVal.playerno].cTable~get(name);
+    ^index ci = `cmd[`stVal.playerno].cTable~get(name);
     if(#ci == 0) ret false;
-    ret `commandSub(ci<>);
+    ret `commandSub(`stVal.playerno, ci<>);
   }
-  public void trCommand(int i)
+  public void trCommand(int pno, int i)
   {
     if(!`keyctrl || #`cmd == 0){
       .v.setI(0);
       ret;
     }
-    .v.setI((int)`commandSub(i));
+    .v.setI((int)`commandSub(pno, i));
   }
   public void trP2Life()
   {
@@ -4892,10 +4891,11 @@ public &Char
     while i < #tar:
     }
   }
-  public void trTargetState(int pno, ^/int tar, int state)
+  public void trTargetState(^/int tar, int state)
   {
     if(state < 0) ret;
     ^`self c;
+    int pno = `minus == -2 ? `playerno : `stVal.playerno;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
       if(#c > 0){
