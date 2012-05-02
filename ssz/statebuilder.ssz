@@ -3299,6 +3299,8 @@ public &StateBuilder
       ^/char obj =
         `state.ctrlList[-1].typ == .CtrlTy::Projectile
         ? "pr~hit" : "`stVal.hit";
+      `state.ctrlList[-1].task .=
+        obj .= ".player=" .= .s.iToS(`playerno) .= ';';
       if(!`stateParam(param=, "attr", [`paraF_t(data=){
         int flg;
         if(!`attr(flg=, data, true)) ret false;
@@ -4513,6 +4515,7 @@ public &StateBuilder
       }])) ret false;
       `state.ctrlList[-1].task .=
         "if(s<0||s>7)s=0;if(st<0)t=0;"
+        "`stVal.ho[s].player=" .= .s.iToS(`playerno) .= ";"
         "`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
         "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;";
       ret true;

@@ -886,6 +886,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public int snapt;
   public int forcenofall;
   public &.Fall fall;
+  public int player;
   public void clear()
   {
     `attr = 0;
@@ -989,6 +990,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `snapt = 0;
     `forcenofall = 0;
     `fall.setDefault();
+    `player = -1;
   }
   public void invalidate()
   {
@@ -1128,6 +1130,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public int stateno;
   public int time;
   public int forceair;
+  public int player;
   new()
   {
     `clear();
@@ -1138,6 +1141,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `stateno = -1;
     `time = 0;
     `forceair = 0;
+    `player = -1;
   }
 }
 |MoveContact
@@ -5786,7 +5790,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             ret false;
           }
           branch{
-          cond `pyr.changeState1(`pyr.playerno, `pyr.stVal.ho[i].stateno):
+          cond
+            `pyr.changeState1(
+              `pyr.stVal.ho[i].player, `pyr.stVal.ho[i].stateno)
+            :
             if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
             `pyr.setCtrl(false);
             ho = true;
@@ -5798,7 +5805,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(#hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0){
         p2s = 1;
-        if(`pyr.changeState1(by.playerno, hit.p2stateno)){
+        if(`pyr.changeState1(hit.player, hit.p2stateno)){
           `pyr.setCtrl(false);
           p2s = 2;
         }
@@ -5947,7 +5954,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(
         #hitting == 1 && hit.p1stateno >= 0 && !by.ls(.lsGETHIT)
-        && by.changeState1(by.playerno, hit.p1stateno))
+        && by.changeState1(hit.player, hit.p1stateno))
       {
         by.setCtrl(false);
       }
