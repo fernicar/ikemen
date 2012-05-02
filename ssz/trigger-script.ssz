@@ -173,7 +173,7 @@ void ailevel(&.lua.State L=, int re=)
 void alive(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~isAlive() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~isAlive());
 }
 
 void anim(&.lua.State L=, int re=)
@@ -203,7 +203,7 @@ void animexist(&.lua.State L=, int re=)
   int argc = 0, nret = 1;
   int n = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   .chr.v.setI(n);
-  L.pushBoolean(#.cwc > 0 ? .cwc~trAnimExist(.cwc~id)$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trAnimExist(.cwc~id)$.chr.v.isT());
 }
 
 void animtime(&.lua.State L=, int re=)
@@ -233,14 +233,14 @@ void backedgedist(&.lua.State L=, int re=)
 void canrecover(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trCanRecover()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trCanRecover()$.chr.v.isT());
 }
 
 void command(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
   ^/char cmd = .sc.strArg(L=, re=, argc=, nret); if(re < 0) ret;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trCommand(cmd)$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~commandByName(cmd));
 }
 
 void const_(&.lua.State L=, int re=)
@@ -408,13 +408,13 @@ void const_(&.lua.State L=, int re=)
 void ctrl(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~ctrl() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~ctrl());
 }
 
 void drawgame(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trDrawGame()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trDrawGame()$.chr.v.isT());
 }
 
 void facing(&.lua.State L=, int re=)
@@ -559,13 +559,13 @@ void hitdefattr(&.lua.State L=, int re=)
 void hitfall(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trHitFall()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trHitFall()$.chr.v.isT());
 }
 
 void hitover(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trHitOver()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trHitOver()$.chr.v.isT());
 }
 
 void hitpausetime(&.lua.State L=, int re=)
@@ -577,7 +577,7 @@ void hitpausetime(&.lua.State L=, int re=)
 void hitshakeover(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trHitShakeOver()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trHitShakeOver()$.chr.v.isT());
 }
 
 void hitvelX(&.lua.State L=, int re=)
@@ -613,13 +613,13 @@ void ishelper(&.lua.State L=, int re=)
     id = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   }
   .chr.v.setI(id);
-  L.pushBoolean(#.cwc > 0 ? .cwc~trIsHelper()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trIsHelper()$.chr.v.isT());
 }
 
 void ishometeam(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? (.cwc~playerno&1) == .com.home : false);
+  L.pushBoolean(#.cwc > 0 && (.cwc~playerno&1) == .com.home);
 }
 
 void life(&.lua.State L=, int re=)
@@ -637,19 +637,19 @@ void lifemax(&.lua.State L=, int re=)
 void lose(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trLose()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trLose()$.chr.v.isT());
 }
 
 void loseko(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trLoseKO()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trLoseKO()$.chr.v.isT());
 }
 
 void losetime(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trLoseTime()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trLoseTime()$.chr.v.isT());
 }
 
 void matchno(&.lua.State L=, int re=)
@@ -661,7 +661,7 @@ void matchno(&.lua.State L=, int re=)
 void matchover(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trMatchOver()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trMatchOver()$.chr.v.isT());
 }
 
 void movecontact(&.lua.State L=, int re=)
@@ -816,7 +816,7 @@ void playeridexist(&.lua.State L=, int re=)
   int argc = 0, nret = 1;
   int id = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   .chr.v.setI(id);
-  L.pushBoolean(#.cwc > 0 ? .cwc~trPlayerIDExist()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trPlayerIDExist()$.chr.v.isT());
 }
 
 void prevstateno(&.lua.State L=, int re=)
@@ -897,7 +897,7 @@ void selfanimexist(&.lua.State L=, int re=)
   int argc = 0, nret = 1;
   int n = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   .chr.v.setI(n);
-  L.pushBoolean(#.cwc > 0 ? .cwc~trSelfAnimExist()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trSelfAnimExist()$.chr.v.isT());
 }
 
 void stateno(&.lua.State L=, int re=)
@@ -1014,25 +1014,25 @@ void velY(&.lua.State L=, int re=)
 void win(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trWin()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trWin()$.chr.v.isT());
 }
 
 void winko(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trWinKO()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trWinKO()$.chr.v.isT());
 }
 
 void wintime(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trWinTime()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trWinTime()$.chr.v.isT());
 }
 
 void winperfect(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trWinPerfect()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 && .cwc~trWinPerfect()$.chr.v.isT());
 }
 
 

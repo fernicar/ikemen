@@ -6,6 +6,7 @@ lib mes = <alpha/mesdialog.ssz>;
 lib tbl = <table.ssz>;
 lib m = <math.ssz>;
 lib chr = "char.ssz";
+lib cmd = chr.cmd;
 lib com = "common.ssz";
 lib cfg = "config.ssz";
 
@@ -371,6 +372,7 @@ public &StateBuilder
   public &.Const c;
   public int playerno = 0;
   public short mver0 = 0, mver1 = 0;
+  ^&.cmd.CommandList cmdl;
   *.s.ptn_t pt2, pt3;
   int kakko = 0;
   type paraF_t = $bool(^/char=);
@@ -1160,7 +1162,12 @@ public &StateBuilder
         index fnd = .s.find(\", in);
         token = in[0..fnd];
         in = in[fnd+1..-1];
-        out .= obj .= "trCommand("\" .= token .= \"")";
+        ^index ci = `cmdl[`playerno].cTable~get(token);
+        if(#ci == 0){
+          `lasterror = "コマンド"\" + token + \""は存在しません";
+          ret false;
+        }
+        out .= obj .= "trCommand(" .= .s.iToS(ci<>) .= ")";
         ret true;
       }]) ret false;
     cond
@@ -7548,6 +7555,75 @@ public &StateBuilder
         `c.m.down_friction_threshold = .com.atof(data);
       }
     }
+    void remap(&.com.Section sc=)
+    {
+      ^/char data;
+      void map(|.cmd.Key k=, |.cmd.Key nk=)
+      {
+        `data = .s.toLower(`data);
+        branch{
+        cond .s.equ(`data, "x"):
+          k  = .cmd.Key:: x;
+          nk = .cmd.Key::nx;
+        cond .s.equ(`data, "y"):
+          k  = .cmd.Key:: y;
+          nk = .cmd.Key::ny;
+        cond .s.equ(`data, "z"):
+          k  = .cmd.Key:: z;
+          nk = .cmd.Key::nz;
+        cond .s.equ(`data, "a"):
+          k  = .cmd.Key:: a;
+          nk = .cmd.Key::na;
+        cond .s.equ(`data, "b"):
+          k  = .cmd.Key:: b;
+          nk = .cmd.Key::nb;
+        cond .s.equ(`data, "c"):
+          k  = .cmd.Key:: c;
+          nk = .cmd.Key::nc;
+        cond .s.equ(`data, "s"):
+          k  = .cmd.Key:: s;
+          nk = .cmd.Key::ns;
+        }
+      }
+      if(#(data = sc.get("x")) > 0) map(.cmd.x=, .cmd.nx=);
+      if(#(data = sc.get("y")) > 0) map(.cmd.y=, .cmd.ny=);
+      if(#(data = sc.get("z")) > 0) map(.cmd.z=, .cmd.nz=);
+      if(#(data = sc.get("a")) > 0) map(.cmd.a=, .cmd.na=);
+      if(#(data = sc.get("b")) > 0) map(.cmd.b=, .cmd.nb=);
+      if(#(data = sc.get("c")) > 0) map(.cmd.c=, .cmd.nc=);
+      if(#(data = sc.get("s")) > 0) map(.cmd.s=, .cmd.ns=);
+    }
+    ~$void(&.com.Section=) defaults = [void(&.com.Section sc=){
+      ^/char data;
+      if(#(data = sc.get("command.time")) > 0){
+        `cmdl~defaultTime = .com.atoi(data);
+      }
+      if(#(data = sc.get("command.buffer.time")) > 0){
+        `cmdl~defaultBufferTime = .m.max!int?(1)<, .com.atoi(data);
+      }
+    }];
+    ~$void(^^/char, index=) command = [void(^^/char lines, index i=){
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      &.com.Section sc.parse(lines, i=);
+      if(!.s.equ(secname, "command")) ret;
+      `cmdl~ctmp.new(1);
+      `cmdl~ctmp~time = `cmdl~defaultTime;
+      `cmdl~ctmp~buffertime = `cmdl~defaultBufferTime;
+      ^/char data;
+      if(#(data = sc.getText("name")) > 0) `cmdl~ctmp~name = data;
+      if(#(data = sc.get("time")) > 0) `cmdl~ctmp~time = .com.atoi(data);
+      if(#(data = sc.get("buffer.time")) > 0){
+        `cmdl~ctmp~buffertime = .m.max!int?(1)<, .com.atoi(data);
+      }
+      if(#(data = sc.get("command")) > 0) `cmdl~ctmp~readCmd(data);
+      if(#`cmdl~ctmp~cmd == 1 && `cmdl~ctmp~cmd~slash){
+        `cmdl~ctmp~buffertime = 1;
+      }
+      `cmdl~add(`cmdl~ctmp<>=);
+    }];
     bool unicode = false;
     bool dataflg = true, sizeflg = true, velocityflg = true;
     bool movementflg = true;
@@ -7576,6 +7652,22 @@ public &StateBuilder
         movementflg = false;
       }
     }];
+    bool remapflg = true, defaultsflg = true;
+    ~$void(^^/char, index=) commandlist = [void(^^/char lines, index i=){
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      &.com.Section sc.parse(lines, i=);
+      branch{
+      cond .s.equ(secname, "remap"):
+        if(remapflg) remap(sc=);
+        remapflg = false;
+      cond .s.equ(secname, "defaults"):
+        if(defaultsflg) defaults(:sc=:);
+        defaultsflg = false;
+      }
+    }];
     ^/char error;
     `playerno = no;
     `cmd = "";
@@ -7601,6 +7693,36 @@ public &StateBuilder
     `c.reset();
     loop{index i = 0; while; do:
       cns(:lines, i=:);
+      i++;
+    while i < #lines:
+    }
+    if(
+      #.com.loadFile(def, `cmd=)=>error <, [^/char(^/char f){
+        ret
+          #.com.loadText(f, unicode=)=>mainbuf > 0
+          ? "" : .com.FileReadError;
+      }] > 0)
+    {
+      ret def + ":"\r\n + error;
+    }
+    lines = .com.splitLines(mainbuf);
+    .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
+    .cmd.resetReadKeymap();
+    if(#.chr.chars[no]<>~cmd == 0) .chr.chars[no]<>~cmd.new(#.chr.chars);
+    .chr.chars[no]<>~cmd~buffer.new(1);
+    loop{index i = 1; while; do:
+      .chr.chars[no]<>~cmd[i].buffer = .chr.chars[no]<>~cmd~buffer;
+      i++;
+    while i < #.chr.chars[no]<>~cmd:
+    }
+    `cmdl = .chr.chars[no]<>~cmd[`playerno..`playerno+1];
+    loop{index i = 0; while; do:
+      commandlist(:lines, i=:);
+      i++;
+    while i < #lines:
+    }
+    loop{index i = 0; while; do:
+      command(:lines, i=:);
       i++;
     while i < #lines:
     }
@@ -7759,7 +7881,7 @@ public &StateBuilder
       \t"`state_3 = `s_3_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`state_i1 = `s_I1_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`clearSpSysVar();"\r\n
-      \t"`cmd~bufReset(`key);"\r\n
+      \t"`cmd[" .= .s.iToS(`playerno) .= "].bufReset(`key);"\r\n
       "}"\r\n;
     {
       &.file.File f;

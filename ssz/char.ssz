@@ -1993,7 +1993,6 @@ public &Projectile
 public &Char
 {
   public ^/char def, name, displayname, author;
-  public ^/char command;
   public ^/char sprite;
   public ^/char anim;
   public ^/char sound;
@@ -2439,7 +2438,6 @@ public &Char
         ret s;
       }
       ^/char data;
-      if(#(data = sc.get("cmd")) > 0) `command = f(data);
       if(#(data = sc.get("sprite")) > 0) `sprite = f(data);
       if(#(data = sc.get("anim")) > 0) `anim = f(data);
       if(#(data = sc.get("sound")) > 0) `sound = f(data);
@@ -2487,77 +2485,6 @@ public &Char
         keymapflg = false;
       }
     }];
-    void remap(&.com.Section sc=)
-    {
-      ^/char data;
-      void map(|.cmd.Key k=, |.cmd.Key nk=)
-      {
-        `data = .s.toLower(`data);
-        branch{
-        cond .s.equ(`data, "x"):
-          k  = .cmd.Key:: x;
-          nk = .cmd.Key::nx;
-        cond .s.equ(`data, "y"):
-          k  = .cmd.Key:: y;
-          nk = .cmd.Key::ny;
-        cond .s.equ(`data, "z"):
-          k  = .cmd.Key:: z;
-          nk = .cmd.Key::nz;
-        cond .s.equ(`data, "a"):
-          k  = .cmd.Key:: a;
-          nk = .cmd.Key::na;
-        cond .s.equ(`data, "b"):
-          k  = .cmd.Key:: b;
-          nk = .cmd.Key::nb;
-        cond .s.equ(`data, "c"):
-          k  = .cmd.Key:: c;
-          nk = .cmd.Key::nc;
-        cond .s.equ(`data, "s"):
-          k  = .cmd.Key:: s;
-          nk = .cmd.Key::ns;
-        }
-      }
-      if(#(data = sc.get("x")) > 0) map(.cmd.x=, .cmd.nx=);
-      if(#(data = sc.get("y")) > 0) map(.cmd.y=, .cmd.ny=);
-      if(#(data = sc.get("z")) > 0) map(.cmd.z=, .cmd.nz=);
-      if(#(data = sc.get("a")) > 0) map(.cmd.a=, .cmd.na=);
-      if(#(data = sc.get("b")) > 0) map(.cmd.b=, .cmd.nb=);
-      if(#(data = sc.get("c")) > 0) map(.cmd.c=, .cmd.nc=);
-      if(#(data = sc.get("s")) > 0) map(.cmd.s=, .cmd.ns=);
-    }
-    void defaults(&.com.Section sc=)
-    {
-      ^/char data;
-      if(#(data = sc.get("command.time")) > 0){
-        `cmd~defaultTime = .com.atoi(data);
-      }
-      if(#(data = sc.get("command.buffer.time")) > 0){
-        `cmd~defaultBufferTime = .m.max!int?(1)<, .com.atoi(data);
-      }
-    }
-    void command(^^/char lines, index i=)
-    {
-      ^/char sec = lines[i];
-      ^/char secname = .com.sectionName(sec=);
-      if(#secname == 0) ret;
-      i++;
-      &.com.Section sc.parse(lines, i=);
-      if(!.s.equ(secname, "command")) ret;
-      `cmd~ctmp.new(1);
-      `cmd~ctmp~time = `cmd~defaultTime;
-      `cmd~ctmp~buffertime = `cmd~defaultBufferTime;
-      ^/char data;
-      if(#(data = sc.getText("name")) > 0) `cmd~ctmp~name = data;
-      if(#(data = sc.get("time")) > 0) `cmd~ctmp~time = .com.atoi(data);
-      if(#(data = sc.get("buffer.time")) > 0){
-        `cmd~ctmp~buffertime = .m.max!int?(1)<, .com.atoi(data);
-      }
-      if(#(data = sc.get("command")) > 0) `cmd~ctmp~readCmd(data);
-      if(#`cmd~ctmp~cmd == 1 && `cmd~ctmp~cmd~slash){
-        `cmd~ctmp~buffertime = 1;
-      }
-      `cmd~add(`cmd~ctmp<>=);
-    }
     bool unicode = false;
     bool infoflg = true, filesflg = true;
     ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
@@ -2575,22 +2502,6 @@ public &Char
         filesflg = false;
       cond .s.equ(secname, "palette "):
         palette(:sec, sc=:);
-      }
-    }];
-    bool remapflg = true, defaultsflg = true;
-    ~$void(^^/char, index=) commandlist = [void(^^/char lines, index i=){
-      ^/char sec = lines[i];
-      ^/char secname = .com.sectionName(sec=);
-      if(#secname == 0) ret;
-      i++;
-      &.com.Section sc.parse(lines, i=);
-      branch{
-      cond .s.equ(secname, "remap"):
-        if(remapflg) remap(sc=);
-        remapflg = false;
-      cond .s.equ(secname, "defaults"):
-        if(defaultsflg) defaults(sc=);
-        defaultsflg = false;
       }
     }];
     ^/char error;
@@ -2638,30 +2549,6 @@ public &Char
     if(
       #`sound > 0 && #.com.loadFile(def, `sound=)=>error <,
       [^/char(^/char f){ret `sn~loadFile(f);}] > 0) ret def + ":"\r\n + error;
-    if(
-      #.com.loadFile(def, `command=)=>error <, [^/char(^/char f){
-        ret
-          #.com.loadText(f, unicode=)=>mainbuf > 0
-          ? "" : .com.FileReadError;
-      }] > 0)
-    {
-      ret def + ":"\r\n + error;
-    }
-    lines = .com.splitLines(mainbuf);
-    .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
-    .cmd.resetReadKeymap();
-    `cmd.new(1);
-    `cmd~buffer.new(1);
-    loop{index i = 0; while; do:
-      commandlist(:lines, i=:);
-      i++;
-    while i < #lines:
-    }
-    loop{index i = 0; while; do:
-      command(lines, i=);
-      i++;
-    while i < #lines:
-    }
     ret "";
   }
   public bool loadPallet(^/char def, int no)
@@ -2741,7 +2628,6 @@ public &Char
     `name = "";
     `displayname = "";
     `author = "";
-    `command = "";
     `sprite = "";
     `anim = "";
     `sound = "";
@@ -4617,27 +4503,36 @@ public &Char
   {
     `trChangeState2(no, `playerno, anim, ctrl);
   }
-  public void trCommand(^/char name)
+  bool commandSub(int i)
+  {
+    ^&.cmd.Command cl = `cmd[`minus == -2 ? `playerno : `stVal.playerno].at(i);
+    if(#cl > 0 && `key < 0){
+      ^/char name = cl~name;
+      if(
+        `helperindex == 0 && (#name == 1 || .s.equ(name[0..4], "hold"))) break;
+      ret i >= 0 && i == `cpucmd;
+    }
+    loop{index i = 0; while; do:
+      if(cl[i].curbuftime > 0) ret true;
+      i++;
+    while i < #cl:}
+    ret false;
+  }
+  public bool commandByName(^/char name)
+  {
+    if(!`keyctrl || #`cmd == 0) ret false;
+    ^index ci =
+      `cmd[`minus == -2 ? `playerno : `stVal.playerno].cTable~get(name);
+    if(#ci == 0) ret false;
+    ret `commandSub(ci<>);
+  }
+  public void trCommand(int i)
   {
     if(!`keyctrl || #`cmd == 0){
       .v.setI(0);
       ret;
     }
-    .v.typ = .VarTy::Int;
-    if(`key < 0){
-      if(
-        `helperindex == 0 && (#name == 1 || .s.equ(name[0..4], "hold"))) break;
-      .v.i = `cpucmd < 0 ? 0 : (int).s.equ(name, `cmd~commands[`cpucmd]);
-      ret;
-    }
-    .v.i = 1;
-    ^&.cmd.Command cl = `cmd~get(name);
-    loop{index i = 0; while; do:
-      if(cl[i].curbuftime > 0) break;
-      i++;
-    while i < #cl:
-      .v.i = 0;
-    }
+    .v.setI((int)`commandSub(i));
   }
   public void trP2Life()
   {
@@ -6544,23 +6439,28 @@ void update(
 void commandUpdate()
 {
   loop{index i = 0; while; do:
-    if(#.chars[i] > 0){
-      .chars[i][0]~cmd~step(
-        .chars[i][0]~key, .chars[i][0]~facing,
-        .chars[i][0]~key < 0, .chars[i][0]~acttmp%2 == -1);
-      if(.chars[i][0]~key < 0) loop{
+    if(#.chars[i] == 0) continue;
+    .chars[i].[void(p){
+      p<>~cmd~input(p<>~key, p<>~facing);
+      loop{index i = 0; while; do:
+        p<>~cmd[i].step(
+          p<>~key, p<>~facing, p<>~key < 0, p<>~acttmp%2 == -1);
+        i++;
+      while i < #p<>~cmd:}
+      if(p<>~key < 0) loop{
         index j = 0;
         index cc =
-          .chars[i][j]~roundState() == 2 && #.chars[i][j]~keyctrl
+          p[j]~roundState() == 2 && #p[j]~keyctrl
           && .m.rand(0, .com.com[i]+16) > 16
-          ? .m.rand(0, #.chars[i][j]~cmd~commands-1) : -1;
+          ? .m.rand(0, #p[j]~cmd[p[j]~stVal.playerno].commands-1) : -1;
         while;
       do:
-        if(.chars[i][j]~helperindex >= 0) .chars[i][j]~cpucmd = cc;
+        if(p[j]~helperindex >= 0) p[j]~cpucmd = cc;
         j++;
-      while j < #.chars[i]:
+      while j < #p:
       }
-    }
+    }];
+  continue:
     i++;
   while i < #.chars:
   }

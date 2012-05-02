@@ -133,6 +133,13 @@ int game()
     /*?*/
     }
     p~loadPallet(cha, pal);
+    loop{index i = 0; while; do:
+      if(#.chr.chars[i] > 0 && i != p~playerno){
+        if(#.chr.chars[i]<>~cmd == 0) .chr.chars[i]<>~cmd.new(#.chr.chars);
+        .chr.chars[i]<>~cmd[p~playerno].copyList(p~cmd[p~playerno]=);
+      }
+      i++;
+    while i < #.chr.chars:}
     ret true;
   }
   void pset(^&.chr.Char p=, int no)

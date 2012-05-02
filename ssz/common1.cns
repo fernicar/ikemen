@@ -111,10 +111,10 @@ SSZ_CODE:
 void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
-    if(`trCommand("holdfwd")$.v.isT()){
+    if(`commandByName("holdfwd")){
       `setXV(`sysfvar[.fWALK_FWD]);
     }
-    if(`trCommand("holdback")$.v.isT()){
+    if(`commandByName("holdback")){
       `setXV(`sysfvar[.fWALK_BACK]);
     }
     if(
@@ -153,8 +153,8 @@ void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
     if(`stVal.time == 0) `sysivar[1] = 0;
-    if(`trCommand("holdfwd")$.v.isT()) `sysivar[1] = 1;
-    if(`trCommand("holdback")$.v.isT()) `sysivar[1] = -1;
+    if(`commandByName("holdfwd")) `sysivar[1] = 1;
+    if(`commandByName("holdback")) `sysivar[1] = -1;
     if(`trAnimTime()$.v.toI() == 0){
       branch{
       cond `stVal.prevno == 100 && `sysivar[1] == 1:
@@ -198,8 +198,8 @@ void c.Char::s##_@@P()
       `trChangeAnim(41);
     }
     if(`stVal.time == 0) `sysivar[1] = 0;
-    if(`trCommand("holdfwd")$.v.isT()) `sysivar[1] = 1;
-    if(`trCommand("holdback")$.v.isT()) `sysivar[1] = -1;
+    if(`commandByName("holdfwd")) `sysivar[1] = 1;
+    if(`commandByName("holdback")) `sysivar[1] = -1;
     if(`stVal.time == 2){
       `setXV(
         `sysivar[1] == 0 ? `sysfvar[.fAIRJUMP_NEUX] : (
@@ -319,7 +319,7 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     `setXV(`sysfvar[.fRUN_FWDX]);
     `sysivar[.iSPECIALFLAG] |= .lsNOWALK | .lsNOAUTOTURN;
-    if(`trCommand("holdfwd")$!.v.isT()){
+    if(!`commandByName("holdfwd")){
       `trChangeState(0, -1, -1);
       ret;
     }
@@ -487,12 +487,12 @@ void c.Char::s##_@@P()
     }
     switch(`stVal.typ){
     case .StTy::S:
-      if(`trCommand("holddown")$.v.isT()){
+      if(`commandByName("holddown")){
         `stVal.typ = .StTy::C;
         `stVal.phy = .StTy::C;
       }
     case .StTy::C:
-      if(`trCommand("holddown")$!.v.isT()){
+      if(!`commandByName("holddown")){
         `stVal.typ = .StTy::S;
         `stVal.phy = .StTy::S;
       }
@@ -503,7 +503,7 @@ void c.Char::s##_@@P()
         -1, -1);
       ret;
     }
-    if(`trCommand("holdback")$!.v.isT() || !`inguarddist){
+    if(!`commandByName("holdback") || !`inguarddist){
       `trChangeState(140, -1, -1);
       ret;
     }
@@ -526,11 +526,11 @@ void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
     if(`animno != 130) `trChangeAnim(130);
-    if(`trCommand("holddown")$.v.isT()){
+    if(`commandByName("holddown")){
       `trChangeState(131, -1, -1);
       ret;
     }
-    if(`trCommand("holdback")$!.v.isT() || !`inguarddist){
+    if(!`commandByName("holdback") || !`inguarddist){
       `trChangeState(140, -1, -1);
       ret;
     }
@@ -555,11 +555,11 @@ void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
     if(`animno != 131) `trChangeAnim(131);
-    if(`trCommand("holddown")$!.v.isT()){
+    if(!`commandByName("holddown")){
       `trChangeState(130, -1, -1);
       ret;
     }
-    if(`trCommand("holdback")$!.v.isT() || !`inguarddist){
+    if(!`commandByName("holdback") || !`inguarddist){
       `trChangeState(140, -1, -1);
       ret;
     }
@@ -589,14 +589,14 @@ void c.Char::s##_@@P()
     if(`sysivar[0] != 0){
       `setYV(0.0);
       .v.setF(0.0)$`trSetY();
-      if(`trCommand("holdback")$.v.isT() && `inguarddist){
+      if(`commandByName("holdback") && `inguarddist){
         `trChangeState(130, -1, -1);
         ret;
       }
       `trChangeState(52, -1, -1);
       ret;
     }
-    if(`trCommand("holdback")$!.v.isT() || !`inguarddist){
+    if(!`commandByName("holdback") || !`inguarddist){
       `trChangeState(140, -1, -1);
       ret;
     }
@@ -634,12 +634,12 @@ void c.Char::s##_@@P()
     }
     switch(`stVal.typ){
     case .StTy::S:
-      if(`trCommand("holddown")$.v.isT()){
+      if(`commandByName("holddown")){
         `stVal.typ = .StTy::C;
         `stVal.phy = .StTy::C;
       }
     case .StTy::C:
-      if(`trCommand("holddown")$!.v.isT()){
+      if(!`commandByName("holddown")){
         `stVal.typ = .StTy::S;
         `stVal.phy = .StTy::S;
       }
@@ -665,17 +665,17 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     `trChangeAnim(150);
     if(`trHitShakeOver()$.v.isT()){
-      `trChangeState(151 + `trCommand("holddown")$(.v.toI()*2), -1, -1);
+      `trChangeState(151 + (int)`commandByName("holddown")*2, -1, -1);
       ret;
     }
     switch(`stVal.typ){
     case .StTy::S:
-      if(`trCommand("holddown")$.v.isT()){
+      if(`commandByName("holddown")){
         `stVal.typ = .StTy::C;
         `stVal.phy = .StTy::C;
       }
     case .StTy::C:
-      if(`trCommand("holddown")$!.v.isT()){
+      if(!`commandByName("holddown")){
         `stVal.typ = .StTy::S;
         `stVal.phy = .StTy::S;
       }
@@ -712,12 +712,12 @@ void c.Char::s##_@@P()
     if(`stVal.time == `stVal.hb.ctrltime) `setCtrl(true);
     switch(`stVal.typ){
     case .StTy::S:
-      if(`trCommand("holddown")$.v.isT()){
+      if(`commandByName("holddown")){
         `stVal.typ = .StTy::C;
         `stVal.phy = .StTy::C;
       }
     case .StTy::C:
-      if(`trCommand("holddown")$!.v.isT()){
+      if(!`commandByName("holddown")){
         `stVal.typ = .StTy::S;
         `stVal.phy = .StTy::S;
       }
@@ -749,17 +749,17 @@ void c.Char::s##_@@P()
   if(!`isHitPaused()){
     `trChangeAnim(151);
     if(`trHitShakeOver()$.v.isT()){
-      `trChangeState(151 + `trCommand("holddown")$(.v.toI()*2), -1, -1);
+      `trChangeState(151 + (int)`commandByName("holddown")*2, -1, -1);
       ret;
     }
     switch(`stVal.typ){
     case .StTy::S:
-      if(`trCommand("holddown")$.v.isT()){
+      if(`commandByName("holddown")){
         `stVal.typ = .StTy::C;
         `stVal.phy = .StTy::C;
       }
     case .StTy::C:
-      if(`trCommand("holddown")$!.v.isT()){
+      if(!`commandByName("holddown")){
         `stVal.typ = .StTy::S;
         `stVal.phy = .StTy::S;
       }
@@ -796,12 +796,12 @@ void c.Char::s##_@@P()
     if(`stVal.time == `stVal.hb.ctrltime) `setCtrl(true);
     switch(`stVal.typ){
     case .StTy::S:
-      if(`trCommand("holddown")$.v.isT()){
+      if(`commandByName("holddown")){
         `stVal.typ = .StTy::C;
         `stVal.phy = .StTy::C;
       }
     case .StTy::C:
-      if(`trCommand("holddown")$!.v.isT()){
+      if(!`commandByName("holddown")){
         `stVal.typ = .StTy::S;
         `stVal.phy = .StTy::S;
       }
@@ -871,7 +871,7 @@ void c.Char::s##_@@P()
     if(`sysivar[0] != 0){
       `setYV(0.0);
       .v.setF(0.0)$`trSetY();
-      if(`trCommand("holdback")$.v.isT() && `inguarddist){
+      if(`commandByName("holdback") && `inguarddist){
         `trChangeState(130, -1, -1);
         ret;
       }
@@ -1419,10 +1419,7 @@ void c.Char::s##_@@P()
       `trChangeAnim(`animno + 10);
     }
     .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
-    if(
-      `isAlive() && `trCanRecover()$.v.isT()
-      && `trCommand("recovery")$.v.isT())
-    {
+    if(`isAlive() && `trCanRecover()$.v.isT() && `commandByName("recovery")){
       branch{
       cond
         `sysfvar[.fVY] > 0.0
@@ -2045,16 +2042,16 @@ void c.Char::s##_@@P()
       if(`sysfvar[.fVY] > 0.0) .v.setF(0.5)$`trVelMulY();
       if(`sysfvar[.fVY] > -3.0) .v.setF(-2.0)$`trVelAddY();
       if(`sysfvar[.fVY] > -2.0) .v.setF(-1.0)$`trVelAddY();
-      if(`trCommand("holdup")$.v.isT()){
+      if(`commandByName("holdup")){
         .v.setF(`sysfvar[.fAIR_GETHIT_AIRRECOVER_UP])$`trVelAddY();
       }
-      if(`trCommand("holddown")$.v.isT()){
+      if(`commandByName("holddown")){
         .v.setF(`sysfvar[.fAIR_GETHIT_AIRRECOVER_DOWN])$`trVelAddY();
       }
-      if(`trCommand("holdfwd")$.v.isT()){
+      if(`commandByName("holdfwd")){
         .v.setF(`sysfvar[.fAIR_GETHIT_AIRRECOVER_FWD])$`trVelAddX();
       }
-      if(`trCommand("holdback")$.v.isT()){
+      if(`commandByName("holdback")){
         .v.setF(`sysfvar[.fAIR_GETHIT_AIRRECOVER_BACK])$`trVelAddX();
       }
     case 20:

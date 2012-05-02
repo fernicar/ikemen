@@ -1027,8 +1027,8 @@ public &Command
 public &CommandList
 {
   public ^&.Buffer buffer;
-  public ^&.tbl.NameTable!%&.Command? cTable;
-  public %^/char commands;
+  public ^&.tbl.NameTable!index? cTable;
+  public %%&.Command commands;
   public int defaultTime;
   public int defaultBufferTime;
   public ^&.Command ctmp;
@@ -1043,7 +1043,20 @@ public &CommandList
     `defaultBufferTime = 1;
     `ctmp.new(0);
   }
-  void input(int input, int facing)
+  public void copyList(`self src=)
+  {
+    `cTable = src.cTable;
+    `commands.new(#src.commands);
+    loop{index i = 0; while; do:
+      `commands[i].new(#src.commands[i]);
+      loop{index j = 0; while; do:
+        `commands[i][j].copy(src.commands[i][j]=);
+        j++;
+      while j < #`commands[i]:}
+      i++;
+    while i < #`commands:}
+  }
+  public void input(int input, int facing)
   {
     if(input < 0 && input >= -4){
       .aiil.new[!input].update();//同期がずれないようここで
@@ -1098,47 +1111,48 @@ public &CommandList
   }
   public void step(int input, int facing, bool ai, bool hitpause)
   {
-    `input(input, facing);
-    `cTable~each()<, [void(^%&.Command cl){
+    loop{index ii = 0; while; do:
       loop{index i = 0; while; do:
-        cl<>[i].step(`buffer, ai, hitpause);
+        `commands[ii][i].step(`buffer, ai, hitpause);
         i++;
-      while i < #cl<>:
-      }
-    }];
+      while i < #`commands[ii]:}
+      ii++;
+    while ii < #`commands:}
   }
   public void bufReset(int in)
   {
     if(#`buffer == 0) ret;
     `buffer~reset();
-    `cTable~each()<, [void(^%&.Command cl){
+    loop{index ii = 0; while; do:
       loop{index i = 0; while; do:
-        cl<>[i].clear();
+        `commands[ii][i].clear();
         i++;
-      while i < #cl<>:
-      }
-    }];
+      while i < #`commands[ii]:}
+      ii++;
+    while ii < #`commands:}
     `step(in, 1, false, false);
     `step(in, 1, false, false);
   }
   public void add(&.Command c=)
   {
-    ^%&.Command cl = `cTable~get(c.name);
-    branch{
-    cond<n> #cl == 0:
-      cl.new(1);
-      `commands .= c.name;
-    comm:
-      cl~new[-1].copy(c=);
-    diff<n>:
-      `cTable~set(c.name, cl);
+    ^index ci = `cTable~get(c.name);
+    if(#ci == 0 || ci<> < 0 || ci<> >= #`commands){
+      ci.new(1);
+      ci<> = #`commands;
     }
+    `commands.new[ci<>].new[-1].copy(c=);
+    `cTable~set(c.name, ci);
   }
   public ^&.Command get(^/char name)
   {
-    ^%&.Command cl = `cTable~get(name);
-    if(#cl == 0) ret .consts.null!&.Command?();
-    ret cl<>;
+    ^index ci = `cTable~get(name);
+    if(#ci == 0) ret .consts.null!&.Command?();
+    ret `at(ci<>);
+  }
+  public ^&.Command at(index i)
+  {
+    if(i < 0 || i >= #`commands) ret .consts.null!&.Command?();
+    ret `commands[i];
   }
 }
 
