@@ -690,6 +690,7 @@ public &Sff
   }
   public ^&.Sprite getSprite(short group, short number)
   {
+    if(group < 0 || number < 0) ret .consts.null!&.Sprite?();
     ret `spriteTable.get((uint)group | (uint)number<<0d16);
   }
   public ^&.Sprite getOwnPalSprite(short group, short number)
