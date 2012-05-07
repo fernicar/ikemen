@@ -126,11 +126,17 @@ public &Snd
       if(!f.read!uint?(subFileLenght=)) ret .com.FileReadError;
       if(!f.read!int?(soundList[i].num.group=)) ret .com.FileReadError;
       if(!f.read!int?(soundList[i].num.number=)) ret .com.FileReadError;
-      if(#wav(soundList[i]=)=>error > 0) ret error;
-      `soundTable.operate(
-        (ulong)soundList[i].num.group
-        | (ulong)soundList[i].num.number<<0d32,
-        [void(^&.Wave w=){if(#w == 0) w = soundList[i..i+1];}]);
+      if(soundList[i].num.group >= 0 && soundList[i].num.number >= 0){
+        `soundTable.operate(
+          (ulong)soundList[i].num.group
+          | (ulong)soundList[i].num.number<<0d32,
+          [void(^&.Wave w=){
+            if(#w > 0) ret;
+            error = wav(soundList[i]=);
+            w = soundList[i..i+1];
+          }]);
+        if(#error > 0) ret error;
+      }
       subHeaderOffset = nextSubHeaderOffset;
       i++;
     while i < (index)numberOfSounds:

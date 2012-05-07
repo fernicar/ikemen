@@ -183,12 +183,16 @@ public &Buffer
     }
     ret `keyState(k);
   }
+  /int lastDirectionTime()
+  {
+     ret .min(#`Bb)<, .min(#`Db)<, .min(#`Fb)<, #`Ub;
+ }
   /int lastChangeTime()
   {
     ret
-      .min(#`Bb)<, .min(#`Db)<, .min(#`Fb)<, .min(#`Ub)<,
-      .min(#`ab)<, .min(#`bb)<, .min(#`cb)<, .min(#`xb)<,
-      .min(#`yb)<, .min(#`zb)<, #`sb;
+      .min(`lastDirectionTime())<,
+      .min(#`ab)<, .min(#`bb)<, .min(#`cb)<,
+      .min(#`xb)<, .min(#`yb)<, .min(#`zb)<, #`sb;
   }
 }
 
@@ -677,7 +681,8 @@ public &Command
   {
     public %|.Key key;
     public int tametime = 1;
-    public bool slash = false, greater = false, flag1 = false, flag2 = false;
+    public bool slash = false, greater = false, direction = false;
+    public bool padding = false;
     public bool isDirection()
     {
       ret !`slash && #`key == 1 && `key[0] < .Key::a;
@@ -826,7 +831,7 @@ public &Command
         while i < #cmds[j]:
       }
       if(j >= 1 && `cmd[j].isDirection() && `cmd[j-1].isDirection()){
-        `cmd[j].greater = true;
+        `cmd[j].direction = true;
       }
       j++;
     while j < #cmds:
@@ -897,9 +902,11 @@ public &Command
       cond `cmdidx == 0:
         ret false;
       else:
-        if(!ai && `cmd[`cmdidx].greater) loop{
+        if(!ai && (`cmd[`cmdidx].greater || `cmd[`cmdidx].direction)) loop{
           index j = 0;
-          int t = kbuf.lastChangeTime();
+          int t =
+            `cmd[`cmdidx].greater
+            ? kbuf.lastChangeTime() : kbuf.lastDirectionTime();
           while;
         do:
           if(#kbuf.keyState2(`cmd[`cmdidx-1].key[j]) == t) break;
