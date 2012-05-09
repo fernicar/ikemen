@@ -16,6 +16,7 @@ lib act = "action.ssz";
 lib mes = <alpha/mesdialog.ssz>;
 lib fnt = "font.ssz";
 lib al = <alert.ssz>;
+lib tbl = <table.ssz>;
 
 
 int changeStateNest = 0;
@@ -1474,8 +1475,9 @@ const int sfKO_ROUND_MIDDLE = 0b00000000000000000000000000001000;
 }
 
 public ^%^&Char chars.new(4);
-/^%&Projectile projs.new(4);
-/^%&Explod explods.new(4);
+/^%&Projectile projs.new(#chars);
+/^%&Explod explods.new(#chars);
+^&.tbl.IntTable!int, &Char::State? states.new(#chars);
 
 
 ^%index expdrawlist.new(4), topexpdrawlist.new(4);
@@ -1996,6 +1998,12 @@ public &Projectile
 }
 public &Char
 {
+  public void dummy(){}
+  type stateMethod_t = method dummy.signature;
+  public &State
+  {
+    public .Char::stateMethod_t state = .Char::dummy;
+  }
   public ^/char def, name, displayname, author;
   public ^/char sprite;
   public ^/char anim;
@@ -2037,7 +2045,6 @@ public &Char
   public %&.snd.Sound sounds;
   public short mver0 = 0, mver1 = 0;
   public index cpucmd = -1;
-  void dummy(){}
   public method$void() state = dummy, state_1 = dummy,
     state_2 = dummy, state_3 = dummy, state_i1 = dummy;
   type action_t = &.act.Action;
@@ -4475,10 +4482,11 @@ public &Char
   public void changeState2()
   {
     if(`cs1tmp && (!`isHitPaused() || `mver0 == 1)){
-      %char buf .=
-        "`s" .= .s.iToS(`stVal.no) .= '_'
-        .= .s.iToS(`stVal.playerno) .= "PInit";
-      if(!<consteval>(`state=, buf)){
+      ^&`State st = .states[`stVal.playerno].get(`stVal.no);
+      branch{
+      cond #st > 0:
+        `state = st~state;
+      else:
         `trDestroySelf();
         `state = `dummy;
       }

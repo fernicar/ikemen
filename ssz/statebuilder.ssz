@@ -356,10 +356,12 @@ public &StateBuilder
   {
     public int no;
     public bool i;
-    public void set(int no, bool i)
+    public ^/char proc;
+    public void set(int no, bool i, ^/char proc)
     {
       `no = no;
       `i = i;
+      `proc = proc;
     }
   }
   public ^/char cmd;
@@ -7044,6 +7046,7 @@ public &StateBuilder
     loop{
       index i = 0;
       ^/char line;
+      %char fname;
       while;
     do:
       line = .s.trim(lines[i][0.. .s.find(";", lines[i])]);
@@ -7059,7 +7062,20 @@ public &StateBuilder
       }
       `state.no = .com.atoi(line);
       if(`existState(`state.no, `state.i)) continue;
-      `stnoList.new[-1].set(`state.no, `state.i);
+      fname.new(0);
+      branch{
+      cond `state.i:
+        fname .= "s_I" .= .s.iToS(`state.no);
+      cond `state.no < 0:
+        {
+          ^char tmp;
+          fname .= "s_" .= .s.iToS(`state.no)=>tmp$tmp[1..-1];
+        }
+      else:
+        fname .= 's' .= .s.iToS(`state.no);
+      }
+      fname .= '_' .= .s.iToS(`playerno) .= 'P';
+      `stnoList.new[-1].set(`state.no, `state.i, fname);
       `state.clear();
       i++;
       if(
@@ -7083,22 +7099,9 @@ public &StateBuilder
       }
       loop{
         int cn;
-        %char fname;
         %char cbuf, dbuf;
         &.tbl.NameTable!^/char? tbl;
         ^^/char item;
-        branch{
-        cond `state.i:
-          fname .= "s_I" .= .s.iToS(`state.no);
-        cond `state.no < 0:
-          {
-            ^char tmp;
-            fname .= "s_" .= .s.iToS(`state.no)=>tmp$tmp[1..-1];
-          }
-        else:
-          fname .= 's' .= .s.iToS(`state.no);
-        }
-        fname .= '_' .= .s.iToS(`playerno) .= 'P';
         buf .=
           "void c.Char::" .= fname .= "()"\r\n
           "{"\r\n
@@ -7137,68 +7140,64 @@ public &StateBuilder
         if(`state.persistent != 1){
           buf .= "--`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p<=0&&";
         }
-        branch{
-        cond
-          #`state.ctrlList[-1].trigger > 0
-          && #`state.ctrlList[-1].trigger[0] > 0
-          :
-          branch{
-          cond #`state.ctrlList[-1].triggerall > 0:
-            branch{
-            cond #`state.ctrlList[-1].triggerall > 384:
-              item.new(0);
-            else:
-              item = tbl.get(`state.ctrlList[-1].triggerall);
-            }
-            if(#item == 0){
-              %char tmp;
-              tmp .= fname .= 'c' .= .s.iToS(#`state.ctrlList-1) .= "ta";
-              item.new(1);
-              item<> = tmp;
-              tbl.set(`state.ctrlList[-1].triggerall, item);
-              cbuf .=
-                "bool c.Char::" .= item<> .= "()"\r\n
-                "{"\r\n
-                \t"ret "
-                .= `okikae(`state.ctrlList[-1].triggerall) .= ";"\r\n
-                "}"\r\n;
-            }
-            buf .= '`' .= item<> .= "()&&(";
-          else:
-            buf .= '(';
-          comm:
-            loop{index m = 0;while; do:
-              if(#`state.ctrlList[-1].trigger[m] == 0) break;
-              if(m != 0) buf .= "||";
-              branch{
-              cond #`state.ctrlList[-1].trigger[m] > 384:
-                item.new(0);
-              else:
-                item = tbl.get(`state.ctrlList[-1].trigger[m]);
-              }
-              if(#item == 0){
-                %char tmp;
-                tmp .=
-                  fname .= 'c' .= .s.iToS(#`state.ctrlList-1)
-                  .= 't' .= .s.iToS(m+1);
-                item.new(1);
-                item<> = tmp;
-                tbl.set(`state.ctrlList[-1].trigger[m], item);
-                cbuf .=
-                  "bool c.Char::" .= item<> .= "()"\r\n
-                  "{"\r\n
-                  \t"ret "
-                  .= `okikae(`state.ctrlList[-1].trigger[m]) .= ";"\r\n
-                  "}"\r\n;
-              }
-              buf .= '`' .= item<> .= "()";
-              m++;
-            while m < #`state.ctrlList[-1].trigger:
-            }
-          }
-        else:
-          buf .= "(false";
+        if(
+          #`state.ctrlList[-1].trigger == 0
+          || #`state.ctrlList[-1].trigger[0] == 0)
+        {
+          ret .errmes(fn, lines[i], i, "trigger1がありません");
         }
+        branch{
+        cond #`state.ctrlList[-1].triggerall > 0:
+          branch{
+          cond #`state.ctrlList[-1].triggerall > 384:
+            item.new(0);
+          else:
+            item = tbl.get(`state.ctrlList[-1].triggerall);
+          }
+          if(#item == 0){
+            %char tmp;
+            tmp .= fname .= 'c' .= .s.iToS(#`state.ctrlList-1) .= "ta";
+            item.new(1);
+            item<> = tmp;
+            tbl.set(`state.ctrlList[-1].triggerall, item);
+            cbuf .=
+              "bool c.Char::" .= item<> .= "()"\r\n
+              "{"\r\n
+              \t"ret "
+              .= `okikae(`state.ctrlList[-1].triggerall) .= ";"\r\n
+              "}"\r\n;
+          }
+          buf .= '`' .= item<> .= "()&&(";
+        else:
+          buf .= '(';
+        }
+        loop{index m = 0; while; do:
+          if(#`state.ctrlList[-1].trigger[m] == 0) break;
+          if(m != 0) buf .= "||";
+          branch{
+          cond #`state.ctrlList[-1].trigger[m] > 384:
+            item.new(0);
+          else:
+            item = tbl.get(`state.ctrlList[-1].trigger[m]);
+          }
+          if(#item == 0){
+            %char tmp;
+            tmp .=
+              fname .= 'c' .= .s.iToS(#`state.ctrlList-1)
+              .= 't' .= .s.iToS(m+1);
+            item.new(1);
+            item<> = tmp;
+            tbl.set(`state.ctrlList[-1].trigger[m], item);
+            cbuf .=
+              "bool c.Char::" .= item<> .= "()"\r\n
+              "{"\r\n
+              \t"ret "
+              .= `okikae(`state.ctrlList[-1].trigger[m]) .= ";"\r\n
+              "}"\r\n;
+          }
+          buf .= '`' .= item<> .= "()";
+          m++;
+        while m < #`state.ctrlList[-1].trigger:}
         buf .= "))";
         dbuf.new(0);
         if(`state.persistent != 1){
@@ -7746,6 +7745,18 @@ public &StateBuilder
     buf .=
       "public void c.Char::stateInit" .= .s.iToS(`playerno) .= "P()"\r\n
       "{"\r\n
+      \t"^&`State st.new(" .= .s.iToS(#`stnoList) .= ");"\r\n;
+    loop{index i = 0; while; do:
+      if(`stnoList[i].no >= 0 && !`stnoList[i].i){
+        buf .=
+          \t"st[" .= .s.iToS(i) .= "].state=`" .= `stnoList[i].proc .= "Init;"
+          ".states[" .= .s.iToS(`playerno) .= "].set("
+          .= .s.iToS(`stnoList[i].no) .= ",st[" .= .s.iToS(i)
+          .= ".." .= .s.iToS(i+1) .= "]);"\r\n;
+      }
+      i++;
+    while i < #`stnoList:}
+    buf .=
       \t"`sysfvar[.fX] = 0.0;"\r\n
       \t"`sysfvar[.fY] = 0.0;"\r\n
       \t"`sysfvar[.fVX] = 0.0;"\r\n
