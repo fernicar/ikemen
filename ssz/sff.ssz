@@ -1081,8 +1081,15 @@ public &Anim<frame_t>
   ^uint palFoo(^&.com.PalFX fx)
   {
     ^uint pal = `spr~getPal(`sff~palList=);
-    if(#fx > 0 && fx~time != 0) pal = fx~getFxPal(pal, `alphaFoo() == -2);
-    if(.allPalFX~time != 0){
+    branch{
+    cond #fx > 0 && fx~time != 0 && .allPalFX~time != 0:
+      {
+        &.com.PalFX synth.synthesize(fx<>=, .allPalFX<>=, `alphaFoo() == -2);
+        pal = synth.getFxPal(pal, `alphaFoo() == -2);
+      }
+    cond #fx > 0 && fx~time != 0:
+      pal = fx~getFxPal(pal, `alphaFoo() == -2);
+    cond .allPalFX~time != 0:
       pal = .allPalFX~getFxPal(pal, `alphaFoo() == -2);
     }
     ret pal;

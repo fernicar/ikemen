@@ -418,6 +418,34 @@ public &PalFX
   {
     `clear2(0);
   }
+  void sinAdd(int r=, int g=, int b=, bool neg)
+  {
+    if(`cycletime < 2) ret;
+    float sin =
+      .m.sin(
+        (
+          .m.PI*2.0*(double)`sintime + (neg ? .m.PI : 0.0)
+          + (`cycletime == 2 ? .m.PI/2.0 : 0.0)) / (double)`cycletime);
+    r += (int)(sin*(float)`amplr);
+    g += (int)(sin*(float)`amplg);
+    b += (int)(sin*(float)`amplb);
+  }
+  public void synthesize(`self pfx1=, `self pfx2=, bool nega)
+  {
+    ` = pfx1; 
+    `mulr = `mulr * pfx2.mulr / 256;
+    `mulg = `mulg * pfx2.mulg / 256;
+    `mulb = `mulb * pfx2.mulb / 256;
+    `addr += pfx2.addr;
+    `addg += pfx2.addg;
+    `addb += pfx2.addb;
+    `cycletime = 0;
+    bool neg = `negType == 0 ? nega : false;
+    `sinAdd(`addr=, `addg=, `addb=, neg);
+    pfx2.sinAdd(`addr=, `addg=, `addb=, neg);
+    `color *= pfx2.color;
+    `invertall = (int)(`invertall != 0 ^ pfx2.invertall != 0);
+  }
   public void step()
   {
     if(`time > 0) `time--;
@@ -475,16 +503,7 @@ public &PalFX
       .m.limRange!int?(mg=, 0, 255*256);
       .m.limRange!int?(mb=, 0, 255*256);
       int adr = `addr, adg = `addg, adb = `addb;
-      if(`cycletime >= 2){
-        float sin =
-          .m.sin(
-            (
-              .m.PI*2.0*(double)`sintime + (neg ? .m.PI : 0.0)
-              + (`cycletime == 2 ? .m.PI/2.0 : 0.0)) / (double)`cycletime);
-        adr += (int)(sin*(float)`amplr);
-        adg += (int)(sin*(float)`amplg);
-        adb += (int)(sin*(float)`amplb);
-      }
+      `sinAdd(adr=, adg=, adb=, neg);
       uint addc, subc;
       addsubset(addc=, subc=, adr=, adg=, adb=);
       uint tmp, msk;
