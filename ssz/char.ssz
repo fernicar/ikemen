@@ -5862,6 +5862,33 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       else:
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
       }
+      if(ho) branch{
+      cond `pyr.stVal.typ == .StTy::L:
+        `pyr.stVal.prevno = 5080;
+      cond
+        `pyr.stVal.hb.guarded != 0
+        && (`pyr.stVal.hb.damage < `pyr.sysivar[.iLIFE] || .gs(.gsNOKO))
+        :
+        switch(`pyr.stVal.typ){
+        case .StTy::S:
+          `pyr.stVal.prevno = 150;
+        case .StTy::C:
+          `pyr.stVal.prevno = 152;
+        case .StTy::A:
+          `pyr.stVal.prevno = 154;
+        }
+      cond `pyr.stVal.hb.typ == 3:
+        `pyr.stVal.prevno = 5070;
+      else:
+        switch(`pyr.stVal.typ){
+        case .StTy::S:
+          `pyr.stVal.prevno = 5000;
+        case .StTy::C:
+          `pyr.stVal.prevno = 5010;
+        case .StTy::A:
+          `pyr.stVal.prevno = 5020;
+        }
+      }
       if(
         (`pyr.facing < 0)
         == ((pro != 0 ? pro : by.facing*(hit.p1facing < 0 ? -1 : 1)) < 0))
