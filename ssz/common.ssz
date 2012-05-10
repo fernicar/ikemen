@@ -418,7 +418,7 @@ public &PalFX
   {
     `clear2(0);
   }
-  void sinAdd(int r=, int g=, int b=, bool neg)
+  /void sinAdd(int r=, int g=, int b=, bool neg)
   {
     if(`cycletime < 2) ret;
     float sin =
@@ -430,21 +430,20 @@ public &PalFX
     g += (int)(sin*(float)`amplg);
     b += (int)(sin*(float)`amplb);
   }
-  public void synthesize(`self pfx1=, `self pfx2=, bool nega)
+  public void synthesize(`self pfx, bool nega)
   {
-    ` = pfx1; 
-    `mulr = `mulr * pfx2.mulr / 256;
-    `mulg = `mulg * pfx2.mulg / 256;
-    `mulb = `mulb * pfx2.mulb / 256;
-    `addr += pfx2.addr;
-    `addg += pfx2.addg;
-    `addb += pfx2.addb;
+    `mulr = `mulr * pfx.mulr / 256;
+    `mulg = `mulg * pfx.mulg / 256;
+    `mulb = `mulb * pfx.mulb / 256;
+    `addr += pfx.addr;
+    `addg += pfx.addg;
+    `addb += pfx.addb;
     `cycletime = 0;
     bool neg = `negType == 0 ? nega : false;
     `sinAdd(`addr=, `addg=, `addb=, neg);
-    pfx2.sinAdd(`addr=, `addg=, `addb=, neg);
-    `color *= pfx2.color;
-    `invertall = (int)(`invertall != 0 ^ pfx2.invertall != 0);
+    pfx.sinAdd(`addr=, `addg=, `addb=, neg);
+    `color *= pfx.color;
+    `invertall = (int)(`invertall != 0 ^ pfx.invertall != 0);
   }
   public void step()
   {
