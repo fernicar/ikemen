@@ -7898,7 +7898,6 @@ public &StateBuilder
       \t"`state_3 = `s_3_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`state_i1 = `s_I1_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`clearSpSysVar();"\r\n
-      \t"`cmd[" .= .s.iToS(`playerno) .= "].bufReset(`key);"\r\n
       "}"\r\n;
     {
       &.file.File f;

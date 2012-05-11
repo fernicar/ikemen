@@ -6486,8 +6486,7 @@ void commandUpdate()
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
     .chars[i].[void(p){
-      p<>~cmd~input(p<>~key, p<>~facing);
-      loop{index i = 0; while; do:
+      if(p<>~cmd~input(p<>~key, p<>~facing)) loop{index i = 0; while; do:
         p<>~cmd[i].step(
           p<>~key, p<>~facing, p<>~key < 0, p<>~acttmp%2 == -1);
         i++;
@@ -7214,20 +7213,18 @@ public void nextRound()
       c.clearSpSysVar();
       c.rangeSetIVar(0, c.sysivar[.iINTPERSISTINDEX]-1, 0);
       c.rangeSetFVar(0, c.sysivar[.iFLOATPERSISTINDEX]-1, 0.0);
+      loop{index j = 0; while; do:
+        c.cmd[j].bufReset(c.key);
+        j++;
+      while j < #.chars:}
     }];
   continue:
     i++;
-  while i < #.chars:
-  }
-  .commandUpdate();
-  loop{
-    index i = 0;
-    while;
-  do:
+  while i < #.chars:}
+  loop{index i = 0; while; do:
     if(#.chars[i] > 0) .chars[i][0]~trSelfState(5900, 0, -1);
     i++;
-  while i < #.chars:
-  }
+  while i < #.chars:}
 }
 
 
