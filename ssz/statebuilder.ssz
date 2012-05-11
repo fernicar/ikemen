@@ -1276,7 +1276,7 @@ public &StateBuilder
       cond .s.equ("size.shadowoffset", token):
         out .= ".v.setI(" .= obj .= "sysivar[.iSHADOWOFFSET])";
       cond .s.equ("data.power", token):
-        out .= ".v.setI(" .= obj .= "sysivar[.iPOWERMAX])";
+        out .= ".v.setI(" .= obj .= "sysivar[.iPOWERMAX2])";
       cond .s.equ("data.attack", token):
         out .= ".v.setI(" .= obj .= "sysivar[.iATTACK])";
       cond .s.equ("data.defence", token):
@@ -1961,7 +1961,7 @@ public &StateBuilder
       if(!`expRedirectable("_.", `tokenizer(in=), out=, in=)) ret false;
       out .= ";}])";
     cond .s.equ("standby", token):
-      out .= ".v.setB(" .= obj .= "sysivar[.iSTANDBY]!=0)";
+      out .= ".v.setB(" .= obj .= "standby)";
     cond
       .s.equ("=", token) || .s.equ("!=", token)
       || .s.equ(">", token) || .s.equ(">=", token)
@@ -6719,14 +6719,14 @@ public &StateBuilder
       }])) ret false;
       `state.ctrlList[-1].task .=
         "if(psn<0)ret false;if(sn>=0)`trChangeState(sn,-1,-1);"
-        "p~sysivar[.iSTANDBY]=0;p~trChangeState(psn,-1,0);ret true;";
+        "p~standby=false;p~trChangeState(psn,-1,0);ret true;";
       ret true;
     }]);
   }
   bool tagOut(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
-      `state.ctrlList[-1].task .= "`sysivar[.iSTANDBY]=1;";
+      `state.ctrlList[-1].task .= "`standby=true;";
       ret true;
     }]);
   }
@@ -7763,7 +7763,8 @@ public &StateBuilder
       \t"`sysfvar[.fVY] = 0.0;"\r\n
       \t"`sysivar[.iLIFEMAX] = `sysivar[.iLIFEMAX2] = "
       .= .s.iToS(`c.d.life) .= ";"\r\n
-      \t"`sysivar[.iPOWERMAX] = " .= .s.iToS(`c.d.power) .= ";"\r\n
+      \t"`sysivar[.iPOWERMAX] = `sysivar[.iPOWERMAX2] = "
+      .= .s.iToS(`c.d.power) .= ";"\r\n
       \t"`sysivar[.iATTACK] = " .= .s.iToS(`c.d.attack) .= ";"\r\n
       \t"`sysivar[.iDEFENCE] = " .= .s.iToS(`c.d.defence) .= ";"\r\n
       \t"`sysfvar[.fFALL_DEFENCE_MUL] = "
