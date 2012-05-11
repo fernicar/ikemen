@@ -20,29 +20,29 @@ type = PlaySnd
 triggerall = sysvar(9)
 triggerall = !nokosnd
 trigger1 = roundstate >= 2
-trigger1 = !(sysvar(55) & 4);SYSFLAG,KO
+trigger1 = !(sysvar(56) & 4);SYSFLAG,KO
 value = 11, 0
 channel = 0
 
 [State -I1, KO2]
 type = VarSet
 trigger1 = sysvar(9)
-sysvar(55) = sysvar(55) | 4;SYSFLAG,KO
+sysvar(56) = sysvar(56) | 4;SYSFLAG,KO
 
 [State -I1, KO3]
 type = VarSet
 trigger1 = roundstate < 2
-sysvar(55) = sysvar(55) & ~4;SYSFLAG,KO
+sysvar(56) = sysvar(56) & ~4;SYSFLAG,KO
 
 [State -I1, Getup1]
 type = VarSet
 trigger1 = movetype != H
-sysvar(53) = const(data.liedown.time);RECOVERTIME
+sysvar(54) = const(data.liedown.time);RECOVERTIME
 
 [State -I1, Getup2]
 type = VarAdd
 triggerall = Active
 trigger1 = StateNo = 5110
-trigger1 = sysvar(53) > 0;RECOVERTIME
-sysvar(53) = -1;RECOVERTIME
+trigger1 = sysvar(54) > 0;RECOVERTIME
+sysvar(54) = -1;RECOVERTIME
 
