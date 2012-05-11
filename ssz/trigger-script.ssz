@@ -408,7 +408,7 @@ void const_(&.lua.State L=, int re=)
 void ctrl(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~ctrl());
+  L.pushBoolean(#.cwc > 0 && .cwc~canCtrl());
 }
 
 void drawgame(&.lua.State L=, int re=)

@@ -1270,7 +1270,7 @@ public &StateBuilder
       cond .s.equ("size.yscale", token):
         out .= ".v.setF(" .= obj .= "sysfvar[.fYSCALE])";
       cond .s.equ("data.life", token):
-        out .= ".v.setI(" .= obj .= "sysivar[.iLIFEMAX])";
+        out .= ".v.setI(" .= obj .= "sysivar[.iLIFEMAX2])";
       cond .s.equ("size.proj.doscale", token):
         out .= ".v.setI(" .= obj .= "sysivar[.iPROJ_DOSCALE])";
       cond .s.equ("size.shadowoffset", token):
@@ -1782,7 +1782,7 @@ public &StateBuilder
     cond .s.equ("hitpausetime", token):
       out .= obj .= "trHitPauseTime()";
     cond .s.equ("ctrl", token):
-      out .= ".v.setB(" .= obj .= "ctrl())";
+      out .= ".v.setB(" .= obj .= "canCtrl())";
     cond .s.equ("teamside", token):
       out .= ".v.setI((" .= obj .= "playerno&1)+1)";
     cond .s.equ("nokosnd", token):
@@ -7761,7 +7761,8 @@ public &StateBuilder
       \t"`sysfvar[.fY] = 0.0;"\r\n
       \t"`sysfvar[.fVX] = 0.0;"\r\n
       \t"`sysfvar[.fVY] = 0.0;"\r\n
-      \t"`sysivar[.iLIFEMAX] = " .= .s.iToS(`c.d.life) .= ";"\r\n
+      \t"`sysivar[.iLIFEMAX] = `sysivar[.iLIFEMAX2] = "
+      .= .s.iToS(`c.d.life) .= ";"\r\n
       \t"`sysivar[.iPOWERMAX] = " .= .s.iToS(`c.d.power) .= ";"\r\n
       \t"`sysivar[.iATTACK] = " .= .s.iToS(`c.d.attack) .= ";"\r\n
       \t"`sysivar[.iDEFENCE] = " .= .s.iToS(`c.d.defence) .= ";"\r\n

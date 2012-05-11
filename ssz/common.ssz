@@ -438,9 +438,9 @@ public &PalFX
     `addr += pfx.addr;
     `addg += pfx.addg;
     `addb += pfx.addb;
-    `cycletime = 0;
     bool neg = `negType == 0 ? nega : false;
     `sinAdd(`addr=, `addg=, `addb=, neg);
+    `cycletime = 0;
     pfx.sinAdd(`addr=, `addg=, `addb=, neg);
     `color *= pfx.color;
     `invertall = (int)(`invertall != 0 ^ pfx.invertall != 0);

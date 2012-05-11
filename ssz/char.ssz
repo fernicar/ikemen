@@ -1288,37 +1288,37 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
 }
 const index iLIFE              = 10;
 const index iLIFEMAX           = 11;
-const index iPOWER             = 12;
-const index iPOWERMAX          = 13;
-const index iATTACK            = 14;
-const index iDEFENCE           = 15;
-const index iLIEDOWN_TIME      = 16;
-const index iAIRJUGGLE         = 17;
-const index iSPARKNO           = 18;
-const index iGUARD_SPARKNO     = 19;
-const index iKO_ECHO           = 20;
-const index iVOLUME            = 21;
-const index iINTPERSISTINDEX   = 22;
-const index iFLOATPERSISTINDEX = 23;
-const index iGROUND_BACK       = 24;
-const index iGROUND_FRONT      = 25;
-const index iAIR_BACK          = 26;
-const index iAIR_FRONT         = 27;
-const index iHEIGHT            = 28;
-const index iATTACK_DIST       = 29;
-const index iPROJ_ATTACK_DIST  = 30;
-const index iPROJ_DOSCALE      = 31;
-const index iHEAD_POSX         = 32;
-const index iHEAD_POSY         = 33;
-const index iMID_POSX          = 34;
-const index iMID_POSY          = 35;
-const index iSHADOWOFFSET      = 36;
-const index iDRAW_OFFSETX      = 37;
-const index iDRAW_OFFSETY      = 38;
-const index iAIRJUMP_CNT       = 39;
-const index iAIRJUMP_NUM       = 40;
-const index iAIRJUMP_HEIGHT    = 41;
-const index iCTRL              = 42;
+const index iLIFEMAX2          = 12;
+const index iPOWER             = 13;
+const index iPOWERMAX          = 14;
+const index iATTACK            = 15;
+const index iDEFENCE           = 16;
+const index iLIEDOWN_TIME      = 17;
+const index iAIRJUGGLE         = 18;
+const index iSPARKNO           = 19;
+const index iGUARD_SPARKNO     = 20;
+const index iKO_ECHO           = 21;
+const index iVOLUME            = 22;
+const index iINTPERSISTINDEX   = 23;
+const index iFLOATPERSISTINDEX = 24;
+const index iGROUND_BACK       = 25;
+const index iGROUND_FRONT      = 26;
+const index iAIR_BACK          = 27;
+const index iAIR_FRONT         = 28;
+const index iHEIGHT            = 29;
+const index iATTACK_DIST       = 30;
+const index iPROJ_ATTACK_DIST  = 31;
+const index iPROJ_DOSCALE      = 32;
+const index iHEAD_POSX         = 33;
+const index iHEAD_POSY         = 34;
+const index iMID_POSX          = 35;
+const index iMID_POSY          = 36;
+const index iSHADOWOFFSET      = 37;
+const index iDRAW_OFFSETX      = 38;
+const index iDRAW_OFFSETY      = 39;
+const index iAIRJUMP_CNT       = 40;
+const index iAIRJUMP_NUM       = 41;
+const index iAIRJUMP_HEIGHT    = 42;
 const index iHITCOUNT          = 43;
 const index iUNIQHITCOUNT      = 44;
 const index iPAUSEMOVETIME     = 45;
@@ -2031,6 +2031,9 @@ public &Char
   public bool inguarddist;
   public byte palno, drawpalno, p1facing, animpno;
   public bool destmp, cs1tmp, angleset;
+  public bool ctrl;
+  public byte hittmp, acttmp, minus;
+  public int atktmp;
   public int sprpriority;
   public int animno;
   public int getcombo;
@@ -2039,7 +2042,6 @@ public &Char
   public float offsetx, offsety;
   public float veloff;
   public float ticOldX, drawX, ticOldY, drawY;
-  public int atktmp, hittmp, acttmp, minus;
   public %&.RdCacheInfo enemyn;
   public ^&.act.Frame curFrame;
   public %&.snd.Sound sounds;
@@ -2086,7 +2088,6 @@ public &Char
     `rangeSetSysIVar(0, 4, 0);
     `rangeSetSysFVar(0, 4, 0.0);
     `sysivar[.iAIRJUMP_CNT] = 0;
-    `sysivar[.iCTRL] = 0;
     `sysivar[.iHITCOUNT] = 0;
     `sysivar[.iUNIQHITCOUNT] = 0;
     `sysivar[.iPAUSEMOVETIME] = 0;
@@ -2102,6 +2103,7 @@ public &Char
     `sysivar[.iRECOVERTIME] = 0;
     `sysivar[.iSYSFLAG] = 0;
     `sysivar[.iSTANDBY] = 0;
+    `ctrl = false;
     `sprpriority = 0;
     `getcombo = 0;
     `veloff = 0.0;
@@ -3141,7 +3143,7 @@ public &Char
       if(!`isHitPaused()){
         if(
           (`sysivar[.iSYSFLAG] & .sfOVER) == 0
-          && `sysivar[.iCTRL] != 0 && `helperindex == 0
+          && `ctrl && `helperindex == 0
           && `stVal.typ != .StTy::A  && !`ls(.lsNOAUTOTURN))
         {
           ^`self e = .players.enemyNear(`=, 0);
@@ -3159,7 +3161,7 @@ public &Char
             `sysivar[.iAIRJUMP_CNT] = 0;
             `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
           }
-        cond `ctrl() && (`key >= 0 || `helperindex == 0):
+        cond `canCtrl() && (`key >= 0 || `helperindex == 0):
           branch{
           cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
             if(`stVal.no != 10) `trSelfState(10, -1, -1);
@@ -3196,7 +3198,7 @@ public &Char
           {
             `trSelfState(120, -1, -1);
           }
-        cond `sysivar[.iCTRL] != 0:
+        cond `ctrl:
           switch(`stVal.no){
           case 11:
             `trSelfState(12, -1, 1);
@@ -3461,7 +3463,7 @@ public &Char
       if(
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
-            `isActive() && `ctrl() && #`cmd > 0 && `cmd~buffer~B > 0 && (
+            `isActive() && `canCtrl() && #`cmd > 0 && `cmd~buffer~B > 0 && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
               || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
               || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
@@ -3768,15 +3770,15 @@ public &Char
      .com.time == 0
      || .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime);
   }
-  public bool ctrl()
+  public bool canCtrl()
   {
     ret
-      `sysivar[.iCTRL] != 0 && !`isKO()
+      `ctrl && !`isKO()
       && (`helperindex != 0 || .com.intro <= 0) && !`ctrlOver();
   }
   public void setCtrl(bool c)
   {
-    `sysivar[.iCTRL] = (int)c;
+    `ctrl = c;
   }
   public void destroySelf()
   {:<-
@@ -5320,7 +5322,7 @@ public &Char
   {
     ret
       (`sysivar[.iSYSFLAG] & .sfOVER) != 0 || (
-        `ctrlOver() && `sysivar[.iCTRL] != 0
+        `ctrlOver() && `ctrl
         && `stVal.typ != .StTy::A && `stVal.phy != .StTy::A);
   }
   public void trWin()
@@ -6837,7 +6839,7 @@ public float action(
         if(.com.intro == 0) loop{index i = 0; while; do:
           if(#.chars[i] > 0) branch{
           cond .chars[i][0]~stVal.no == 0:
-            .chars[i][0]~sysivar[.iCTRL] = 1;
+            .chars[i][0]~setCtrl(true);
           else:
             .chars[i][0]~trSelfState(0, -1, 1);
           }
