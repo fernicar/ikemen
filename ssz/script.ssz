@@ -325,6 +325,12 @@ void esc(&.lua.State L=, int re=)
   L.pushBoolean(.se.esc);
 }
 
+void sszRandom(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber((double).m.random());
+}
+
 public void init(&.lua.State L=)
 {
   L.register("sffNew", .sffNew);
@@ -342,6 +348,7 @@ public void init(&.lua.State L=)
   L.register("inputDialogGetStr", .inputDialogGetStr);
   L.register("playBGM", .playBGM);
   L.register("esc", .esc);
+  L.register("sszRandom", .sszRandom);
 }
 
 

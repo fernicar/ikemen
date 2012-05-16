@@ -2592,6 +2592,8 @@ public &StateBuilder
         if(!`tagIn(am=)) ret false;
       case .CtrlTy::TagOut:
         if(!`tagOut(am=)) ret false;
+      case .CtrlTy::RemapPal:
+        if(!`remapPal(am=)) ret false;
       default:
         {
           bool error = false;
@@ -3837,6 +3839,14 @@ public &StateBuilder
             ".forcestand=(int)(", "$.v.isT());")) ret false;
         ret true;
       }])) ret false;
+      if(!`stateParam(param=, "forcenofall", [`paraF_t(data=){
+        `state.ctrlList[-1].task .= obj;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".forcenofall=(int)(", "$.v.isT());")) ret false;
+        ret true;
+      }])) ret false;
       if(!`stateParam(param=, "fall.damage", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
@@ -4444,14 +4454,6 @@ public &StateBuilder
           ret true;
         }])) ret false;
       }
-      if(!`stateParam(param=, "forcenofall", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= obj;
-        if(
-          !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            ".forcenofall=(int)(", "$.v.isT());")) ret false;
-        ret true;
-      }])) ret false;
       `state.ctrlList[-1].task .= "`setHitdefDefault";
       branch{
       cond `state.ctrlList[-1].typ == .CtrlTy::Projectile:
@@ -6730,6 +6732,38 @@ public &StateBuilder
       ret true;
     }]);
   }
+  bool remapPal(&.tbl.NameTable!^/char? param=)
+  {
+    ret `stateSec(param=,[bool(){
+      `state.ctrlList[-1].task .= "int sg=-1,sn=-1,dg=-1,dn=-1;";
+      if(!`stateParam(param=, "source", [`paraF_t(data=){
+        `state.ctrlList[-1].task .= "sg=";
+        if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
+        `state.ctrlList[-1].task .= "$.v.toI();";
+        if(.s.equ(",")<, `tokenizer(data=)){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=,
+              "sn=", "$.v.toI();")) ret false;
+        }
+        ret true;
+      }])) ret false;
+      if(!`stateParam(param=, "dest", [`paraF_t(data=){
+        `state.ctrlList[-1].task .= "dg=";
+        if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
+        `state.ctrlList[-1].task .= "$.v.toI();";
+        if(.s.equ(",")<, `tokenizer(data=)){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=,
+              "dn=", "$.v.toI();")) ret false;
+        }
+        ret true;
+      }])) ret false;
+      `state.ctrlList[-1].task .= "`trRemapPal(sg,sn,dg,dn);";
+      ret true;
+    }]);
+  }
   ^/char stateBulid(%char buf=, ^/char def, ^/char st=)
   {:<-
     public bool statedef(^/char sec, ^/char name, ^/char data)
@@ -6928,7 +6962,6 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::VictoryQuote;
         cond .s.equ(s, "remappal"):
           `state.ctrlList[-1].typ = .CtrlTy::RemapPal;
-          `state.ctrlList[-1].task .= "int sg=-1,sn=-1,dg=-1,dn=-1;";
         cond .s.equ(s, "null"):
           `state.ctrlList[-1].typ = .CtrlTy::Null;
         else:
@@ -6992,32 +7025,16 @@ public &StateBuilder
           ret false;
         }
         switch(`state.ctrlList[-1].typ){
-        case .CtrlTy::RemapPal:
+        case .CtrlTy::VictoryQuote:
           branch{
-          cond .s.equ(name, "source"):
-            `state.ctrlList[-1].task .= "sg=";
-            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
-            `state.ctrlList[-1].task .= "$.v.toI();";
-            if(.s.equ(",")<, `tokenizer(text=)){
-              if(
-                !`fullExpression(
-                  `state.ctrlList[-1].task=, text=,
-                  "sn=", "$.v.toI();")) ret false;
-            }
-          cond .s.equ(name, "dest"):
-            `state.ctrlList[-1].task .= "dg=";
-            if(!`expression(`state.ctrlList[-1].task=, text=)) ret false;
-            `state.ctrlList[-1].task .= "$.v.toI();";
-            if(.s.equ(",")<, `tokenizer(text=)){
-              if(
-                !`fullExpression(
-                  `state.ctrlList[-1].task=, text=,
-                  "dn=", "$.v.toI();")) ret false;
+          cond .s.equ(name, "value"):
+            if(!`fullExpression(`state.ctrlList[-1].task=, text=, "", ";")){
+              ret false;
             }
           else:
             break, default;
           }
-        case .CtrlTy::ForceFeedback, .CtrlTy::VictoryQuote:
+        case .CtrlTy::ForceFeedback:
         case .CtrlTy::Null:
         default:
           if(.cfg.IgnoreMostErrors) break;
@@ -7207,10 +7224,6 @@ public &StateBuilder
             .= .s.iToS(`state.persistent) .= ';';
         }
         dbuf .= `state.ctrlList[-1].task;
-        switch(`state.ctrlList[-1].typ){
-        case .CtrlTy::RemapPal:
-          dbuf .= "`trRemapPal(sg,sn,dg,dn);";
-        }
         branch{
         cond #dbuf > 64:
           item.new(0);

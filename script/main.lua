@@ -597,6 +597,7 @@ function modeSel()
       if not cancel then
         init()
         synchronize()
+        math.randomseed(sszRandom())
       end
     elseif gameMode == 4 then
       inputDialogPopup(inputdia, 'Input Port')
@@ -612,6 +613,7 @@ function modeSel()
       enterReplay('replay/netplay.replay')
       init()
       synchronize()
+      math.randomseed(sszRandom())
     end
     if not cancel then
       main()
