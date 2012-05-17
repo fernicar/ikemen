@@ -5779,8 +5779,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     bool guard =
       (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.ls(.lsGUARD);
     hitting = `pyr.stVal.hitCheck(hit=, guard);
-    bool ho = false;
-    int p2s = 0;
+    bool ho = false,  p2s = false;
     if(
       !`pyr.cs1tmp || `pyr.stVal.playerno == by.playerno
       || `pyr.stVal.playerno == `pyr.playerno || !`pyr.ls(.lsGETHIT))
@@ -5815,10 +5814,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       while i < #`pyr.stVal.ho:
       }
       if(#hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0){
-        p2s = 1;
         if(`pyr.changeState1(hit.player, hit.p2stateno)){
           `pyr.setCtrl(false);
-          p2s = 2;
+          p2s = true;
         }
       }
     }
@@ -5827,7 +5825,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(hitting > 0){
       `pyr.stVal.setHb(
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
-      if(!ho && p2s < 2 && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
+      if(!ho && !p2s && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
       `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
       if(`pyr.sysivar[.iBINDTOID] == by.id) `pyr.setBindTime(0);
       if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
@@ -5865,7 +5863,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       else:
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
       }
-      if(ho) branch{
+      if(ho || p2s) branch{
       cond `pyr.stVal.typ == .StTy::L:
         `pyr.stVal.prevno = 5080;
       cond
