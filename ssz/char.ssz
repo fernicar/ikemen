@@ -1435,7 +1435,7 @@ const int lsGUARD         = 0b00000000010000000000000000000000;
 
 const int lasMask =
   lsNOAUTOTURN | lsNOWALK | lsNOSTANDGUARD | lsNOCROUCHGUARD | lsNOAIRGUARD
-  | lsNOSHADOW | lsINVISIBLE | lsUNGUARDABLE | lsNOJUGGLECHECK;
+  | lsNOSHADOW | lsINVISIBLE | lsUNGUARDABLE | lsNOJUGGLECHECK | lsANGLEDRAW;
 
 public uint specialFlag;
 const uint gsINTRO          = 0b00000000000000000000000000000001;
@@ -3225,6 +3225,7 @@ public &Char
               (`sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE) == 0
               ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY : 0))
           : 0;
+        `sysfvar[.fANGLESCALEX] = `sysfvar[.fANGLESCALEY] = 1.0;
         `attackmul = (float)`sysivar[.iATTACK] / 100.0;
         `attackdist = (float)`sysivar[.iATTACK_DIST];
         `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
@@ -3242,7 +3243,10 @@ public &Char
           `sysivar[.iPAUSEMOVETIME]--;
         }
       }
-      if(`mver0 == 1) `sysivar[.iSPECIALFLAG] &= !.lasMask;
+      if(`mver0 == 1){
+        `sysivar[.iSPECIALFLAG] &= !.lasMask;
+        `sysfvar[.fANGLESCALEX] = `sysfvar[.fANGLESCALEY] = 1.0;
+      }
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
       `minus = -2;

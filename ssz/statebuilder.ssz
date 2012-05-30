@@ -6035,9 +6035,7 @@ public &StateBuilder
   bool angleDraw(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
-      `state.ctrlList[-1].task .=
-        "`sysivar[.iSPECIALFLAG]|=.lsANGLEDRAW;"
-        "`sysfvar[.fANGLESCALEX]=`sysfvar[.fANGLESCALEY]=1.0;";
+      `state.ctrlList[-1].task .= "`sysivar[.iSPECIALFLAG]|=.lsANGLEDRAW;";
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         if(
           !`fullExpression(
@@ -6046,7 +6044,7 @@ public &StateBuilder
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "scale", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= "`sysfvar[.fANGLESCALEX]=";
+        `state.ctrlList[-1].task .= "`sysfvar[.fANGLESCALEX]*=";
         if(!`expression(`state.ctrlList[-1].task=, data=)) ret false;
         `state.ctrlList[-1].task .= "$.v.toF();";
         branch{
@@ -6055,9 +6053,8 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "`sysfvar[.fANGLESCALEY]=", "$.v.toF();")) ret false;
+              "`sysfvar[.fANGLESCALEY]*=", "$.v.toF();")) ret false;
         cond #tmp == 0:
-          `state.ctrlList[-1].task .= "`sysfvar[.fANGLESCALEY]=1.0;";
         else:
           {
             %char buf;
