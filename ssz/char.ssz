@@ -2746,10 +2746,11 @@ public &Char
     ^&.act.Rect clsn2 = c1slf ? `curFrame~clsn1 : `curFrame~clsn2;
     &.ClsnHantei ch.set(
       atk.sysfvar[.fCLSNXSCALE], atk.sysfvar[.fCLSNYSCALE],
-      atk.sysfvar[.fX] + atk.offsetx, atk.sysfvar[.fY] + atk.offsety,
+      atk.sysfvar[.fX] + atk.offsetx*(float)atk.facing,
+      atk.sysfvar[.fY] + atk.offsety,
       atk.facing > 0 ? .pLrSet : .mLrSet,
       `sysfvar[.fCLSNXSCALE], `sysfvar[.fCLSNYSCALE],
-      `sysfvar[.fX] + `offsetx, `sysfvar[.fY] + `offsety,
+      `sysfvar[.fX] + `offsetx*(float)`facing, `sysfvar[.fY] + `offsety,
       `facing > 0 ? .pLrSet : .mLrSet);
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
@@ -2774,7 +2775,7 @@ public &Char
     &.ClsnHantei ch.set(
       pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
       `sysfvar[.fCLSNXSCALE], `sysfvar[.fCLSNYSCALE],
-      `sysfvar[.fX] + `offsetx, `sysfvar[.fY] + `offsety,
+      `sysfvar[.fX] + `offsetx*(float)`facing, `sysfvar[.fY] + `offsety,
       `facing > 0 ? .pLrSet : .mLrSet);
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
@@ -2796,7 +2797,7 @@ public &Char
     &.ClsnHantei ch.set(
       pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
       `sysfvar[.fCLSNXSCALE], `sysfvar[.fCLSNYSCALE],
-      `sysfvar[.fX] + `offsetx, `sysfvar[.fY] + `offsety,
+      `sysfvar[.fX] + `offsetx*(float)`facing, `sysfvar[.fY] + `offsety,
       `facing > 0 ? .pLrSet : .mLrSet);
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
@@ -2938,7 +2939,7 @@ public &Char
   {
     if(`helperindex < 0 || `id < 0) ret;
     if(.com.clsndraw && #`curFrame > 0){
-      float x = `sysfvar[.fX]+`offsetx;
+      float x = `sysfvar[.fX]+`offsetx*(float)`facing;
       float y = `sysfvar[.fY]+`offsety;
       float xs = (float)`facing * `sysfvar[.fCLSNXSCALE];
       float ys = `sysfvar[.fCLSNYSCALE];
@@ -2958,10 +2959,11 @@ public &Char
         clsn~t = (short)-`getHeight() + 1;
         clsn~r = (short)`frontw - 1;
         clsn~b = 0;
-        .drawwh.new[-1].set(clsn, x-`offsetx, y-`offsety, (float)`facing, 1.0);
+        .drawwh.new[-1].set(
+          clsn, x-`offsetx*(float)`facing, y-`offsety, (float)`facing, 1.0);
       }
     }
-    float x = `drawX+`offsetx;
+    float x = `drawX+`offsetx*(float)`facing;
     float y = `drawY+`offsety;
     float xs = (float)`facing * `sysfvar[.fXSCALE];
     float ys = `sysfvar[.fYSCALE];
@@ -3246,6 +3248,8 @@ public &Char
       if(`mver0 == 1){
         `sysivar[.iSPECIALFLAG] &= !.lasMask;
         `sysfvar[.fANGLESCALEX] = `sysfvar[.fANGLESCALEY] = 1.0;
+        `offsetx = (float)`sysivar[.iDRAW_OFFSETX];
+        `offsety = (float)`sysivar[.iDRAW_OFFSETY];
       }
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
