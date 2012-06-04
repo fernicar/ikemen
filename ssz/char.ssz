@@ -2115,6 +2115,7 @@ public &Char
     `frontw = `defFW();
     `backw = `defBW();
     `fedge = `bedge = 0.0;
+    `attackmul = (float)`sysivar[.iATTACK] / 100.0;
     `enemyn.new(0);
     `targets.new(0);
   }
@@ -3235,7 +3236,6 @@ public &Char
               ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY : 0))
           : 0;
         `sysfvar[.fANGLESCALEX] = `sysfvar[.fANGLESCALEY] = 1.0;
-        `attackmul = (float)`sysivar[.iATTACK] / 100.0;
         `attackdist = (float)`sysivar[.iATTACK_DIST];
         `offsetx = 0.0;
         `offsety = 0.0;

@@ -11,6 +11,7 @@
 void* (__stdcall *sszrefnewfunc)(intptr_t);
 void (__stdcall *sszrefdeletefunc)(void*);
 
+#include "../../../dll/ssz/ssz/sszdef.h"
 #include "../../../dll/ssz/ssz/typeid.h"
 #include "../../../dll/ssz/ssz/arrayandref.hpp"
 #include "../../../dll/ssz/ssz/pluginutil.hpp"
