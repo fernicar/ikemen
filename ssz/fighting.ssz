@@ -6,10 +6,6 @@ lib m = <math.ssz>;
 lib se = <alpha/sdlevent.ssz>;
 lib al = <alert.ssz>;
 lib sff = "sff.ssz";
-lib p1 = "state0p.ssz";
-lib p2 = "state1p.ssz";
-lib p3 = "state2p.ssz";
-lib p4 = "state3p.ssz";
 lib chr = "char.ssz";
 lib cfg = "config.ssz";
 lib com = "common.ssz";
@@ -555,17 +551,13 @@ void game()
   }
 }
 
-void main()
+public void main()
 {
   if(!.sdl.shareScreen(.cfg.OpenGL)){
     .al.alert!.self?("初期化に失敗");
     ret;
   }
-  ret .game();
+  .game();
+  if(.se.end) .mes.SetSharedString(:"end":);
 }
-
-main();
-
-if(se.end) mes.SetSharedString(:"end":);
-
 

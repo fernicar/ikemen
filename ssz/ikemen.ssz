@@ -21,6 +21,7 @@ lib fnt = "font.ssz";
 lib lua = <alpha/lua.ssz>;
 lib al = <alert.ssz>;
 
+^^/char code.new(4);
 
 public void error<_t>(^/char m)
 {
@@ -40,11 +41,14 @@ bool init(&.lua.State L=)
   ret true;
 }
 
-void loadCharacter(^&.chr.Char p, ^/char file, ^int end)
+void loadCharacter(^&.chr.Char p, ^/char file, ^int end, ^^/char code)
 {
   ^/char error;
   &.stb.StateBuilder chara;
-  if(#chara.build(p~playerno, file)=>error > 0 || #p~load(file)=>error > 0){
+  if(
+    #chara.build(p~playerno, file, code<>=)=>error > 0
+    || #p~load(file)=>error > 0)
+  {
     .error!.self?(error);
     end<> = -1;
     ret;
@@ -55,6 +59,17 @@ void loadCharacter(^&.chr.Char p, ^/char file, ^int end)
 void loadStage(^/char file, ^int end)
 {
   ^/char error = .chr.stg~load(file);
+  if(#error > 0){
+    .error!.self?(error);
+    end<> = -1;
+    ret;
+  }
+  end<> = 1;
+}
+
+void compileState(^&.lua.SszCompiler sc, ^/char code, ^/char dir, ^int end)
+{
+  ^/char error = sc~compileString(code, dir);
   if(#error > 0){
     .error!.self?(error);
     end<> = -1;
@@ -116,21 +131,23 @@ int game()
     pal[3] = .sc.syst.selinf.p[1].selchr[1].pal;
   }
   .chr.fight = .sc.syst.fig;
-  bool loadChar(^&.chr.Char p, ^/char cha, int pal)
+  bool loadChar(^&.chr.Char p, ^/char cha, int pal, ^/char code=)
   {
     if(#p~sf == 0){
+      ^^/char tmp.new(1);
       `ldend<> = 0;
     /?/*.cfg.OpenGL:
-      .loadCharacter(p, cha, `ldend);
+      .loadCharacter(p, cha, `ldend, tmp);
       if(`ldend<> <= 0) ret false;
     /*true:
-      thread!.loadCharacter? lcha..(p, cha, `ldend);
+      thread!.loadCharacter? lcha..(p, cha, `ldend, tmp);
       loop{do:
         if(`ldend<> > 0) break;
       while `ldend<> >= 0 && .se.event():
         ret false;
       }
     /*?*/
+      code = tmp<>;
     }
     p~loadPallet(cha, pal);
     loop{index i = 0; while; do:
@@ -201,7 +218,19 @@ int game()
   int fight(^char ss=, ^&.sha.Share share)
   {
     .mes.SetSharedString(:ss:);
-    bool b = .lua.runSsz("ssz/fighting.ssz");
+    %char codeBuf .=
+      "lib c = "\""char.ssz"\"", f = "\""fighting.ssz"\"";"\r\n
+      "f.main();"\r\n .= .code[0] .= .code[1] .= .code[2] .= .code[3];
+    `ldend<> = 0;
+    thread!.compileState? compState;
+    ^&.lua.SszCompiler sc.new(1);
+    compState..(sc, codeBuf, "ssz", `ldend);
+    loop{do:
+      if(`ldend<> > 0) break;
+    while `ldend<> >= 0 && .se.event():
+      ret -1;
+    }
+    bool b = sc~run();
     .sdl.shareScreen(.cfg.OpenGL);
     share~push();
     bool w1 = .com.p1wins >= .com.p1mw;
@@ -221,8 +250,7 @@ int game()
   }
   {
     if(#.cmd.net > 0) .cmd.net~stop();
-    ^^&.chr.Char p;
-    p.new(4);
+    ^^&.chr.Char p.new(4);
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0 && .s.equ(cha[i], .chr.chars[i][0]~def)){
         p[i] = .chr.chars[i][0];
@@ -239,33 +267,19 @@ int game()
     pset(p[1]=, 1);
     if(.com.tmode[0] == (int).com.TeamMode::Simul) pset(p[2]=, 2);
     if(.com.tmode[1] == (int).com.TeamMode::Simul) pset(p[3]=, 3);
-    if(!loadChar(p[0], cha[0], pal[0])) ret -1;
-    if(!loadChar(p[1], cha[1], pal[1])) ret -1;
+    if(!loadChar(p[0], cha[0], pal[0], .code[0]=)) ret -1;
+    if(!loadChar(p[1], cha[1], pal[1], .code[1]=)) ret -1;
     branch{
     cond #p[2] > 0:
-      if(!loadChar(p[2], cha[2], pal[2])) ret -1;
+      if(!loadChar(p[2], cha[2], pal[2], .code[2]=)) ret -1;
     else:
-      {
-        &.file.File f;
-        f.open("ssz/state2p.ssz", "wb");
-        f.writeAry!ubyte?(
-          .s.sToU8(
-            \xfeff
-            "lib c="\""char.ssz"\"";public void c.Char::stateInit2P(){}"));
-      }
+      .code[2] = "public void c.Char::stateInit2P(){}"\r\n;
     }
     branch{
     cond #p[3] > 0:
-      if(!loadChar(p[3], cha[3], pal[3])) ret -1;
+      if(!loadChar(p[3], cha[3], pal[3], .code[3]=)) ret -1;
     else:
-      {
-        &.file.File f;
-        f.open("ssz/state3p.ssz", "wb");
-        f.writeAry!ubyte?(
-          .s.sToU8(
-            \xfeff
-            "lib c="\""char.ssz"\"";public void c.Char::stateInit3P(){}"));
-      }
+      .code[3] = "public void c.Char::stateInit3P(){}"\r\n;
     }
     .chr.fight~fa[.com.tmode[0]][0].face_spr =
       p[0]~sf~getOwnPalSprite(
@@ -313,7 +327,7 @@ int game()
                 .sc.syst.selinf.p[0].selchr[.com.p2wins].i].def;
             pal[0] = .sc.syst.selinf.p[0].selchr[.com.p2wins].pal;
             p[0]~sf.new(0);
-            if(!loadChar(p[0], cha[0], pal[0])) ret -1;
+            if(!loadChar(p[0], cha[0], pal[0], .code[0]=)) ret -1;
             .chr.fight~fa[.com.tmode[0]][0].face_spr =
               p[0]~sf~getOwnPalSprite(
                 .chr.fight~fa[.com.tmode[0]][0].face_sprg,
@@ -330,7 +344,7 @@ int game()
                 .sc.syst.selinf.p[1].selchr[.com.p1wins].i].def;
             pal[1] = .sc.syst.selinf.p[1].selchr[.com.p1wins].pal;
             p[1]~sf.new(0);
-            if(!loadChar(p[1], cha[1], pal[1])) ret -1;
+            if(!loadChar(p[1], cha[1], pal[1], .code[1]=)) ret -1;
             .chr.fight~fa[.com.tmode[1]][1].face_spr =
               p[1]~sf~getOwnPalSprite(
                 .chr.fight~fa[.com.tmode[1]][1].face_sprg,

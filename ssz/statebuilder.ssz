@@ -7317,7 +7317,7 @@ public &StateBuilder
     }
     ret "";
   }
-  public ^/char build(int no, ^/char def)
+  public ^/char build(int no, ^/char def, ^/char code=)
   {:<-
     void files(^^/char lines, bool unicode)
     {
@@ -7741,7 +7741,6 @@ public &StateBuilder
     }
     `stnoList.new(0);
     %char buf;
-    buf .= \xfeff"lib c = "\""char.ssz"\"";"\r\n;
     loop{index i = 0; while; do:
       if(#`st[i] > 0 && #`stateBulid(buf=, def, `st[i]=)=>error > 0) ret error;
       i++;
@@ -7909,12 +7908,7 @@ public &StateBuilder
       \t"`state_i1 = `s_I1_" .= .s.iToS(`playerno) .= "P;"\r\n
       \t"`clearSpSysVar();"\r\n
       "}"\r\n;
-    {
-      &.file.File f;
-      %char fn;
-      f.open(fn .= "ssz/state" .= .s.iToS(`playerno) .= "p.ssz", "wb");
-      f.writeAry!ubyte?(.s.sToU8(buf));
-    }
+    code = buf;
     ret "";
   }
 }

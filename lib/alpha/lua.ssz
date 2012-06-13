@@ -27,6 +27,17 @@ public bool runSsz(^/char file)
   ret re;
 }
 
+public &SszCompiler
+{
+  core &.ssz.Compiler c;
+  public bool run()
+  {
+    bool re = `c.run();
+    .init();
+    ret re;
+  }
+}
+
 public &State
 {
   index ptr = 0;
