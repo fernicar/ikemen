@@ -131,7 +131,9 @@ int game()
     .mes.GetSharedString(:ss=:);
     if(.s.equ(ss, "end")) .se.end = true;
     if(.s.equ(ss, "reload")){
-      .chr.chars.new(#.chr.chars);
+      int numP = #.chr.chars;
+      .chr.chars.new(numP);
+      .ld.reset();
       ret -2;
     }
     ret b && !.s.equ(ss, "esc") ? `winp : -1;
