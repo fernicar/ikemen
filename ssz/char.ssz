@@ -1480,7 +1480,7 @@ public ^%^&Char chars.new(4);
 ^&.tbl.IntTable!int, &Char::State? states.new(#chars);
 
 
-^%index expdrawlist.new(4), topexpdrawlist.new(4);
+^%index expdrawlist.new(#.chars), topexpdrawlist.new(#.chars);
 
 void delIL(%index l=, index i)
 {
@@ -1501,7 +1501,7 @@ void insIL(%index l=, index i, index x)
   public int n, pn, hi;
 }
 %&RdCacheInfo playerid;
-^int numenemy.new(4);
+^int numenemy.new(#.chars);
 void resetNumenemy()
 {
   loop{index i = 0; do: .numenemy[i] = -1; while ++i < #.numenemy:}
@@ -7024,8 +7024,8 @@ public void draw(float x, float y, float scl)
       winner.new[-1] = .chars[.com.win+2][0]~displayname;
     }
   }
-  ^^/char names.new(4);
-  ^^&.com.PalFX facefx.new(4);
+  ^^/char names.new(#.chars);
+  ^^&.com.PalFX facefx.new(#.chars);
   loop{index i = 0; while; do:
     if(#.chars[i] > 0){
       names[i] = .chars[i][0]~displayname;

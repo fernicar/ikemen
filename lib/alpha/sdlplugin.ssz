@@ -1,4 +1,6 @@
 ﻿
+lib th = <thread.ssz>;
+
 plugin void End(::)                         = "dll/sdlplugin.dll";
 plugin bool PollEvent(:&Event=:)            = "dll/sdlplugin.dll";
 
@@ -633,6 +635,9 @@ public &Surface screen;
 }
 &ScreenReleaseGuard srg;
 /bool ogl = false;
+^bool glContextBinded.new(1);
+glContextBinded<> = false;
+
 
 public bool init(^/char t, int w, int h, bool gl)
 {
@@ -642,6 +647,7 @@ public bool init(^/char t, int w, int h, bool gl)
   cond gl:
     GlInit(:.screen=, t, w, h:);
     .ogl = true;
+    .glContextBinded<> = true;
   else:
     Init(:.screen=, t, w, h:);
   }
@@ -699,3 +705,37 @@ plugin bool RenderMugenGl(:
   &GlTexture, uint=, int, &Rect=, float, float, &Rect=, float, float, float,
   float, float, int, &Rect=, float, float:) = "dll/sdlplugin.dll";
 plugin void GlSwapBuffers(::) = "dll/sdlplugin.dll";
+
+public bool bindGlContext()
+{
+  plugin bool BindGlContext(::) = "dll/sdlplugin.dll";
+  bool result;
+  lock(.glContextBinded){
+    if(result = BindGlContext(::)) .glContextBinded<> = true;
+  }
+  ret result;
+}
+
+public bool unbindGlContext()
+{
+  plugin bool UnbindGlContext(::) = "dll/sdlplugin.dll";
+  bool result;
+  lock(.glContextBinded){
+    if(UnbindGlContext(::)) .glContextBinded<> = false;
+    result = !.glContextBinded<>;
+  }
+  ret result;
+}
+
+public &UseGlContext
+{
+  new()
+  {
+    loop{while; do: .th.sleep(0x1); while !.bindGlContext():}
+  }
+  delete()
+  {
+    .unbindGlContext();
+  }
+}
+

@@ -379,6 +379,7 @@ function selStageSub()
     selStageTxt, 'Stage ' .. stageNo .. ': ' .. getStageName(stageNo))
   textImgDraw(selStageTxt)
   if btnPalNo(p1Cmd) > 0 then
+    selectStage(stageNo)
     selMode = false
   end
 end
@@ -470,6 +471,7 @@ function main()
     commandBufReset(p2Cmd, p2In)
 
     selMode = true
+    selectStart()
 
     ------------------------------------------------------------
     --メインループ
@@ -513,6 +515,7 @@ function main()
       if true or winner < 0 or gameMode ~= 0 then break end
       randSel(1, winner)
       randSel(2, winner)
+      loadStart()
     end
     playBGM(bgm)
   end

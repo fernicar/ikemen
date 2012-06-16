@@ -1,31 +1,39 @@
 ﻿
 lib mes = <alpha/mesdialog.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
-lib ssz = <ssz.ssz>;
 lib s = <string.ssz>;
-lib m = <math.ssz>;
-lib file = <file.ssz>;
 lib se = <alpha/sdlevent.ssz>;
-lib stb = "statebuilder.ssz";
 lib cfg = "config.ssz";
 lib chr = "char.ssz";
 lib com = "common.ssz";
-lib stage = "stage.ssz";
-lib sys = "system.ssz";
 lib sha = "share.ssz";
-lib sff = "sff.ssz";
 lib sc = "system-script.ssz";
 lib cmd = "command.ssz";
-lib snd = "sound.ssz";
 lib fnt = "font.ssz";
 lib lua = <alpha/lua.ssz>;
 lib al = <alert.ssz>;
+lib ld = "loader.ssz";
 
-^^/char code.new(4);
+^^/char code.new(#.chr.chars);
 
 public void error<_t>(^/char m)
 {
   .al.alert!_t?(m);
+}
+
+void loadStart(&.lua.State L=, int re=)
+{
+  re = 0;
+  .chr.fight = .sc.syst.fig;
+  .com.round = 1;
+  .ld.reset();
+  .ld.runTread();
+}
+
+void selectStart(&.lua.State L=, int re=)
+{
+  .sc.syst.selReset();
+  .loadStart(L=, re=);
 }
 
 void scGame(&.lua.State L=, int re=)
@@ -37,200 +45,80 @@ void scGame(&.lua.State L=, int re=)
 bool init(&.lua.State L=)
 {
   .sc.init(L=);
+  L.register("loadStart", .loadStart);
+  L.register("selectStart", .selectStart);
   L.register("game", .scGame);
   ret true;
 }
 
-void loadCharacter(^&.chr.Char p, ^/char file, ^int end, ^^/char code)
-{
-  ^/char error;
-  &.stb.StateBuilder chara;
-  if(
-    #chara.build(p~playerno, file, code<>=)=>error > 0
-    || #p~load(file)=>error > 0)
-  {
-    .error!.self?(error);
-    end<> = -1;
-    ret;
-  }
-  end<> = 1;
-}
-
-void loadStage(^/char file, ^int end)
-{
-  ^/char error = .chr.stg~load(file);
-  if(#error > 0){
-    .error!.self?(error);
-    end<> = -1;
-    ret;
-  }
-  end<> = 1;
-}
-
-void compileState(^&.lua.SszCompiler sc, ^/char code, ^/char dir, ^int end)
-{
-  ^/char error = sc~compileString(code, dir);
-  if(#error > 0){
-    .error!.self?(error);
-    end<> = -1;
-    ret;
-  }
-  end<> = 1;
-}
-
 int match()
 {
-  ^/char stag;
-  branch{
-  cond .sc.syst.selinf.sel.curStageNo == 0:
-    stag =
-      .sc.syst.selinf.sel.stagelist[
-        .m.rand(0, #.sc.syst.selinf.sel.stagelist-1)].def;
-  else:
-    stag = .sc.syst.selinf.sel.stagelist[.sc.syst.selinf.sel.curStageNo-1].def;
-  }
-  ^int ldend.new(1);
-  .chr.stg.new(1);
-  ldend<> = 0;
-/?/*.cfg.OpenGL:
-  .loadStage(stag, ldend);
-  if(ldend<> <= 0) ret -1;
-/*true:
-  thread!.loadStage? lstage;
-  lstage..(stag, ldend);
-  loop{do:
-    if(ldend<> > 0) break;
-  while ldend<> >= 0 && .se.event():
-    ret -1;
-  }
-/*?*/
   int retval;
   loop{do: retval = .game(); while retval == -2:}
-  if(retval < 0) .chr.chars.new(4);
   ret retval;
 }
 int game()
 {
   int winp = 0;
   if(.se.end) ret -1;
-  ^^/char cha.new(4);
-  ^int pal.new(4);
-  ^int ldend.new(1);
-  cha[0] = .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[0].selchr[0].i].def;
-  pal[0] = .sc.syst.selinf.p[0].selchr[0].pal;
-  cha[1] = .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[1].selchr[0].i].def;
-  pal[1] = .sc.syst.selinf.p[1].selchr[0].pal;
-  if(.com.tmode[0] == (int).com.TeamMode::Simul){
-    cha[2] =
-      .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[0].selchr[1].i].def;
-    pal[2] = .sc.syst.selinf.p[0].selchr[1].pal;
-  }
-  if(.com.tmode[1] == (int).com.TeamMode::Simul){
-    cha[3] =
-      .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[1].selchr[1].i].def;
-    pal[3] = .sc.syst.selinf.p[1].selchr[1].pal;
-  }
-  .chr.fight = .sc.syst.fig;
-  bool loadChar(^&.chr.Char p, ^/char cha, int pal, ^/char code=)
+  ^^&.chr.Char p.new(#.chr.chars);
+  .com.rexisted[0] = .com.rexisted[1] = 0;
+  .chr.fight~wi[0].clear();
+  .chr.fight~wi[1].clear();
+  .com.home = 0;
+  .com.p1wins = 0;
+  .com.p2wins = 0;
+  .com.draws = 0;
+  bool load()
   {
-    if(#p~sf == 0){
-      ^^/char tmp.new(1);
-      `ldend<> = 0;
-    /?/*.cfg.OpenGL:
-      .loadCharacter(p, cha, `ldend, tmp);
-      if(`ldend<> <= 0) ret false;
-    /*true:
-      thread!.loadCharacter? lcha..(p, cha, `ldend, tmp);
-      loop{do:
-        if(`ldend<> > 0) break;
-      while `ldend<> >= 0 && .se.event():
-        ret false;
-      }
-    /*?*/
-      code = tmp<>;
-    }
-    p~loadPallet(cha, pal);
-    loop{index i = 0; while; do:
-      if(#.chr.chars[i] > 0 && i != p~playerno){
-        if(#.chr.chars[i]<>~cmd == 0) .chr.chars[i]<>~cmd.new(#.chr.chars);
-        .chr.chars[i]<>~cmd[p~playerno].copyList(p~cmd[p~playerno]=);
-      }
-      i++;
-    while i < #.chr.chars:}
-    ret true;
-  }
-  void pset(^&.chr.Char p=, int no)
-  {
-    branch{
-    cond #p == 0:
-      p = .chr.create(no);
-    else:
-      p~id = .chr.id++;
-      .chr.chars[no].new[0] = p;
-      .chr.players.add(p);
-    }
-  }
-  bool foo(^&.chr.Char p, int pn)
-  {
-    ^/char error;
-    branch{
-    cond #p > 0:
-      .chr.fight~fa[.com.tmode[pn]][pn+2].face_spr =
-        p~sf~getOwnPalSprite(
-          .chr.fight~fa[.com.tmode[pn]][pn+2].face_sprg,
-          .chr.fight~fa[.com.tmode[pn]][pn+2].face_spri);
-    cond .com.tmode[pn] == (int).com.TeamMode::Turns:
-      .chr.fight~fa[.com.tmode[pn]][pn].numko = 0;
-      loop{
-        index i = 0;
-        .chr.fight~fa[.com.tmode[pn]][pn].teammate_face_spr.new(
-          #.sc.syst.selinf.p[pn].selchr);
-        ^/char tmp;
-        while;
-      do:
-        tmp =
-          .sc.syst.selinf.sel.charlist[
-            .sc.syst.selinf.p[pn].selchr[i].i].sprite;
-        error = .com.loadFile(
-          .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[pn].selchr[i].i].def,
-          tmp=,
-          [^/char(^/char f){
-              ^&.sff.Sprite s.new(1);
-              if(
-                #s~loadFromSff(
-                  f, .chr.fight<>
-                    .fa[(int).com.TeamMode::Turns][pn].teammate_face_sprg,
-                  .chr.fight<>
-                    .fa[(int).com.TeamMode::Turns][pn].teammate_face_spri
-                )=>error > 0)
-              {
-                ret error;
-              }
-              .chr.fight~fa[.com.tmode[pn]][pn].teammate_face_spr[i] = s;
-              ret "";
-            }]);
-        i++;
-      while i < #.sc.syst.selinf.p[pn].selchr:
-      }
+    .ld.runTread();
+    loop{do:
+      if(.ld.state == .ld.State::Complete) break;
+    while .ld.state != .ld.State::Error && .se.event():
+      if(#.ld.errorMes > 0) .error!.self?(.ld.errorMes);
+      ret false;
     }
     ret true;
   }
   int fight(^char ss=, ^&.sha.Share share)
   {
-    .mes.SetSharedString(:ss:);
-    %char codeBuf .=
-      "lib c = "\""char.ssz"\"", f = "\""fighting.ssz"\"";"\r\n
-      "f.main();"\r\n .= .code[0] .= .code[1] .= .code[2] .= .code[3];
-    `ldend<> = 0;
-    thread!.compileState? compState;
-    ^&.lua.SszCompiler sc.new(1);
-    compState..(sc, codeBuf, "ssz", `ldend);
-    loop{do:
-      if(`ldend<> > 0) break;
-    while `ldend<> >= 0 && .se.event():
-      ret -1;
+    if(!`load()) ret -1;
+    .chr.id = .cfg.HelperMax;
+    .chr.players.clear();
+    loop{index i = 0; while; do:
+      if(#.chr.chars[i] > 0){
+        `p[i] = .chr.chars[i]<>;
+        `p[i]~id = .chr.id++;
+        .chr.players.add(`p[i]);
+        `p[i]~loadPallet(`p[i]~def, `p[i]~palno);
+        loop{index j = 0; while; do:
+          if(#.chr.chars[j] > 0 && j != i){
+            if(#.chr.chars[j]<>~cmd == 0) .chr.chars[j]<>~cmd.new(#.chr.chars);
+            .chr.chars[j]<>~cmd[i].copyList(`p[i]~cmd[i]=);
+          }
+          j++;
+        while j < #.chr.chars:}
+      }
+      i++;
+    while i < #`p:}
+    if(.com.round == 1){
+      .com.p1mw =
+        .com.tmode[1] == (int).com.TeamMode::Turns
+        ? .com.numturns[1] : .chr.fight~ro.match_wins;
+      .com.p2mw =
+        .com.tmode[0] == (int).com.TeamMode::Turns
+        ? .com.numturns[0] : .chr.fight~ro.match_wins;
+      share~copy();
+      share~stt = 0;
     }
-    bool b = sc~run();
+    .mes.SetSharedString(:ss:);
+    bool b;
+    {
+    /?/*.cfg.OpenGL:
+      &.sdl.UseGlContext ugc;
+    /*?*/
+      b = .ld.sszc~run();
+    }
     .sdl.shareScreen(.cfg.OpenGL);
     share~push();
     bool w1 = .com.p1wins >= .com.p1mw;
@@ -243,70 +131,14 @@ int game()
     .mes.GetSharedString(:ss=:);
     if(.s.equ(ss, "end")) .se.end = true;
     if(.s.equ(ss, "reload")){
-      .chr.chars.new(4);
+      .chr.chars.new(#.chr.chars);
       ret -2;
     }
     ret b && !.s.equ(ss, "esc") ? `winp : -1;
   }
   {
     if(#.cmd.net > 0) .cmd.net~stop();
-    ^^&.chr.Char p.new(4);
-    loop{index i = 0; while; do:
-      if(#.chr.chars[i] > 0 && .s.equ(cha[i], .chr.chars[i][0]~def)){
-        p[i] = .chr.chars[i][0];
-        p[i]~key = .com.com[i] != 0 ? !i : i;
-      }
-      i++;
-    while i < #p:
-    }
-    .chr.id = .cfg.HelperMax;
-    .chr.players.clear();
-    .chr.chars.new(4);
-    .com.rexisted[0] = .com.rexisted[1] = 0;
-    pset(p[0]=, 0);
-    pset(p[1]=, 1);
-    if(.com.tmode[0] == (int).com.TeamMode::Simul) pset(p[2]=, 2);
-    if(.com.tmode[1] == (int).com.TeamMode::Simul) pset(p[3]=, 3);
-    if(!loadChar(p[0], cha[0], pal[0], .code[0]=)) ret -1;
-    if(!loadChar(p[1], cha[1], pal[1], .code[1]=)) ret -1;
-    branch{
-    cond #p[2] > 0:
-      if(!loadChar(p[2], cha[2], pal[2], .code[2]=)) ret -1;
-    else:
-      .code[2] = "public void c.Char::stateInit2P(){}"\r\n;
-    }
-    branch{
-    cond #p[3] > 0:
-      if(!loadChar(p[3], cha[3], pal[3], .code[3]=)) ret -1;
-    else:
-      .code[3] = "public void c.Char::stateInit3P(){}"\r\n;
-    }
-    .chr.fight~fa[.com.tmode[0]][0].face_spr =
-      p[0]~sf~getOwnPalSprite(
-        .chr.fight~fa[.com.tmode[0]][0].face_sprg,
-        .chr.fight~fa[.com.tmode[0]][0].face_spri);
-    .chr.fight~fa[.com.tmode[1]][1].face_spr =
-      p[1]~sf~getOwnPalSprite(
-        .chr.fight~fa[.com.tmode[1]][1].face_sprg,
-        .chr.fight~fa[.com.tmode[1]][1].face_spri);
-    foo(p[2], 0);
-    foo(p[3], 1);
-    .chr.fight~wi[0].clear();
-    .chr.fight~wi[1].clear();
-    .com.home = 0;
-    .com.round = 1;
-    .com.p1mw =
-      .com.tmode[1] == (int).com.TeamMode::Turns
-      ? .com.numturns[1] : .chr.fight~ro.match_wins;
-    .com.p2mw =
-      .com.tmode[0] == (int).com.TeamMode::Turns
-      ? .com.numturns[0] : .chr.fight~ro.match_wins;
-    .com.p1wins = 0;
-    .com.p2wins = 0;
-    .com.draws = 0;
     ^&.sha.Share share.new(1);
-    share~copy();
-    share~stt = 0;
     &.com.SuperDangerousRef sdr;
     sdr.copyRef!&.sha.Share?(share=);
     %char buf .= "gt<>" .= .s.iToS(sdr.p);
@@ -322,16 +154,6 @@ int game()
           if(.com.p2wins >= .com.p2mw) break, break;
           if(.com.tmode[0] == (int).com.TeamMode::Turns){
             .chr.fight~fa[.com.tmode[0]][0].numko++;
-            cha[0] =
-              .sc.syst.selinf.sel.charlist[
-                .sc.syst.selinf.p[0].selchr[.com.p2wins].i].def;
-            pal[0] = .sc.syst.selinf.p[0].selchr[.com.p2wins].pal;
-            p[0]~sf.new(0);
-            if(!loadChar(p[0], cha[0], pal[0], .code[0]=)) ret -1;
-            .chr.fight~fa[.com.tmode[0]][0].face_spr =
-              p[0]~sf~getOwnPalSprite(
-                .chr.fight~fa[.com.tmode[0]][0].face_sprg,
-                .chr.fight~fa[.com.tmode[0]][0].face_spri);
             .com.rexisted[0] = 0;
           }
         }
@@ -339,21 +161,11 @@ int game()
           if(.com.p1wins >= .com.p1mw) break, break;
           if(.com.tmode[1] == (int).com.TeamMode::Turns){
             .chr.fight~fa[.com.tmode[1]][1].numko++;
-            cha[1] =
-              .sc.syst.selinf.sel.charlist[
-                .sc.syst.selinf.p[1].selchr[.com.p1wins].i].def;
-            pal[1] = .sc.syst.selinf.p[1].selchr[.com.p1wins].pal;
-            p[1]~sf.new(0);
-            if(!loadChar(p[1], cha[1], pal[1], .code[1]=)) ret -1;
-            .chr.fight~fa[.com.tmode[1]][1].face_spr =
-              p[1]~sf~getOwnPalSprite(
-                .chr.fight~fa[.com.tmode[1]][1].face_sprg,
-                .chr.fight~fa[.com.tmode[1]][1].face_spri);
             .com.rexisted[1] = 0;
           }
         }
         ss = buf;
-        
+        .ld.reset();
         if((res = fight(ss=, share)) < 0) ret res;
       while !.se.end:
       }
@@ -375,6 +187,7 @@ void main()
     .error!.self?("OpenGL 3.1 の初期設定に失敗");
     ret;
   }
+  .sdl.unbindGlContext();
 /*?*/
   .sdl.showCursor(false);
   &.lua.State L;

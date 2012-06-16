@@ -45,6 +45,8 @@ int g_w = 640, g_h = 480;
 uint32_t g_scrflag = 0;
 SDL_Surface *g_screen = nullptr;
 SDL_AudioSpec g_desired;
+HGLRC g_hglrc;
+HDC g_hdc;
 
 
 WNDPROC g_orgProc;
@@ -450,6 +452,8 @@ TUserFunc(void, GlInit, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 		gluPerspective(45.0, (double)w/(double)h, 0.1, 1000.0);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		g_hglrc = wglGetCurrentContext();
+		g_hdc = wglGetCurrentDC();
 		sndjoyinit();
 	}
 	g_w = w;
@@ -2509,5 +2513,17 @@ TUserFunc(void, MugenFillGl, int32_t alpha, uint32_t color, SDL_Rect rect)
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+}
+
+TUserFunc(bool, BindGlContext)
+{
+	return wglMakeCurrent(g_hdc, g_hglrc) != 0;
+}
+
+TUserFunc(bool, UnbindGlContext)
+{
+	if(wglGetCurrentContext() != g_hglrc) return false;
+	wglMakeCurrent(nullptr, nullptr);
+	return true;
 }
 

@@ -51,7 +51,7 @@ public &Select
   public float randxscl = 1.0, randyscl = 1.0;
   public %&Char charlist;
   public %&Stage stagelist;
-  public index curStageNo = 0;
+  public index curStageNo = 0, selectedStageNo = -1;
   public index getCharNo(index i)
   {
     index n = i;
@@ -72,6 +72,10 @@ public &Select
     `curStageNo %= #`stagelist + 1;
     if(`curStageNo < 0) `curStageNo += #`stagelist + 1;
     ret `curStageNo;
+  }
+  public void selectStage(index no)
+  {
+    `selectedStageNo = no;
   }
   public ^/char getStageName(index i)
   {
@@ -267,14 +271,11 @@ public &Select
     `p[pn].selchr[-1].pal = p;
     ret true;
   }
-  public void clear()
-  {
-    `p.new(2);
-  }
   public void reset()
   {
     `p[0].reset();
     `p[1].reset();
+    `sel.selectedStageNo = -1;
   }
 }
 
@@ -282,10 +283,6 @@ public &System
 {
   public ^&.fgt.Fight fig;
   public &.SelectInfo selinf;
-  public void clear()
-  {
-    `selinf.clear();
-  }
   public void selReset()
   {
     `selinf.reset();

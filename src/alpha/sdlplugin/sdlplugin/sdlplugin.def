@@ -36,3 +36,5 @@ EXPORTS
 	InitMugenGl
 	RenderMugenGl
 	MugenFillGl
+        BindGlContext
+        UnbindGlContext

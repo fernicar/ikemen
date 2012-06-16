@@ -215,9 +215,9 @@ void game()
   float scl = 1.0, sclmul = 1.0;
   float newx = x, newy = y;
   int oldp1wins, oldp2wins, olddraws;
-  ^int lif.new(4), pow.new(4);
-  ^^/int var.new(4);
-  ^^/float fvar.new(4);
+  ^int lif.new(#.chr.chars), pow.new(#.chr.chars);
+  ^^/int var.new(#.chr.chars);
+  ^^/float fvar.new(#.chr.chars);
   void copyVar(int pno)
   {
     `lif[pno] = .chr.chars[pno][0]~sysivar[.chr.iLIFE];
@@ -274,7 +274,7 @@ void game()
     .cmd.synchronize();
     .wm.init();
     ^int level;
-    level.new(4);
+    level.new(#.chr.chars);
     if(#.chr.chars[0] > 0){
       .chr.chars[0][0]~stateInit0P();
       level[0] = level[2] = .wm.getLevel(0);
