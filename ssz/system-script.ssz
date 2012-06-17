@@ -127,9 +127,6 @@ void textImgDraw(&.lua.State L=, int re=)
   int argc = 0, nret = 0;
   ^&.TextImg textImg = .sc.refArg!&.TextImg?(L=, re=, argc=, nret);
   if(re < 0) ret;
-/?/*.cfg.OpenGL:
-  &.sdl.UseGlContext ugc;
-/*?*/
   textImg~draw();
 }
 
@@ -298,9 +295,6 @@ void animDraw(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 0;
   ^&.Anim anim = .sc.refArg!&.Anim?(L=, re=, argc=, nret); if(re < 0) ret;
-/?/*.cfg.OpenGL:
-  &.sdl.UseGlContext ugc;
-/*?*/
   anim~draw();
 }
 

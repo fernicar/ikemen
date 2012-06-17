@@ -710,19 +710,23 @@ public bool bindGlContext()
 {
   plugin bool BindGlContext(::) = "dll/sdlplugin.dll";
   bool result;
-  lock(.glContextBinded){
-    if(result = BindGlContext(::)) .glContextBinded<> = true;
-  }
+  loop{do:
+    lock(.glContextBinded){
+      if(.glContextBinded<>) break;
+      if(result = BindGlContext(::)) .glContextBinded<> = true;
+      break, break;
+    }
+    .th.sleep(0x1);
+  while true:}
   ret result;
 }
 
 public bool unbindGlContext()
 {
   plugin bool UnbindGlContext(::) = "dll/sdlplugin.dll";
-  bool result;
-  lock(.glContextBinded){
-    if(UnbindGlContext(::)) .glContextBinded<> = false;
-    result = !.glContextBinded<>;
+  bool result = !.glContextBinded<>;
+  if(!result) lock(.glContextBinded){
+    if(result = UnbindGlContext(::)) .glContextBinded<> = false;
   }
   ret result;
 }
@@ -731,7 +735,7 @@ public &UseGlContext
 {
   new()
   {
-    loop{while; do: .th.sleep(0x1); while !.bindGlContext():}
+    .bindGlContext();
   }
   delete()
   {
