@@ -635,8 +635,6 @@ public &Surface screen;
 }
 &ScreenReleaseGuard srg;
 /bool ogl = false;
-^bool glContextBinded.new(1);
-glContextBinded<> = false;
 
 
 public bool init(^/char t, int w, int h, bool gl)
@@ -647,7 +645,6 @@ public bool init(^/char t, int w, int h, bool gl)
   cond gl:
     GlInit(:.screen=, t, w, h:);
     .ogl = true;
-    .glContextBinded<> = true;
   else:
     Init(:.screen=, t, w, h:);
   }
@@ -709,26 +706,13 @@ plugin void GlSwapBuffers(::) = "dll/sdlplugin.dll";
 public bool bindGlContext()
 {
   plugin bool BindGlContext(::) = "dll/sdlplugin.dll";
-  bool result;
-  loop{do:
-    lock(.glContextBinded){
-      if(.glContextBinded<>) break;
-      if(result = BindGlContext(::)) .glContextBinded<> = true;
-      break, break;
-    }
-    .th.sleep(0x1);
-  while true:}
-  ret result;
+  ret BindGlContext(::);
 }
 
 public bool unbindGlContext()
 {
   plugin bool UnbindGlContext(::) = "dll/sdlplugin.dll";
-  bool result = !.glContextBinded<>;
-  if(!result) lock(.glContextBinded){
-    if(result = UnbindGlContext(::)) .glContextBinded<> = false;
-  }
-  ret result;
+  ret UnbindGlContext(::);
 }
 
 public &UseGlContext

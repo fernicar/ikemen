@@ -10,6 +10,8 @@ lib sff = "sff.ssz";
 lib sc = "system-script.ssz";
 lib lua = <alpha/lua.ssz>;
 lib th = <thread.ssz>;
+lib sdl = <alpha/sdlplugin.ssz>;
+lib cfg = "config.ssz";
 
 /^^/char code.new(4);
 /^/char errorMes;
@@ -144,6 +146,9 @@ bool stateCompile()
 
 void load()
 {
+/?/*.cfg.OpenGL:
+  &.sdl.UseGlContext ugc;
+/*?*/
   ^bool charDone.new(4);
   loop{index i = 0; while; do:
     charDone[i] = false;

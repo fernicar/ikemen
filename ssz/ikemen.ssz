@@ -114,9 +114,6 @@ int game()
     .mes.SetSharedString(:ss:);
     bool b;
     {
-    /?/*.cfg.OpenGL:
-      &.sdl.UseGlContext ugc;
-    /*?*/
       b = .ld.sszc~run();
     }
     .sdl.shareScreen(.cfg.OpenGL);
@@ -189,7 +186,6 @@ void main()
     .error!.self?("OpenGL 3.1 の初期設定に失敗");
     ret;
   }
-  .sdl.unbindGlContext();
 /*?*/
   .sdl.showCursor(false);
   &.lua.State L;

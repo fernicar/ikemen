@@ -45,8 +45,9 @@ int g_w = 640, g_h = 480;
 uint32_t g_scrflag = 0;
 SDL_Surface *g_screen = nullptr;
 SDL_AudioSpec g_desired;
-HGLRC g_hglrc;
+HGLRC g_hglrc, g_hglrc2;
 HDC g_hdc;
+DWORD g_mainTreadId;
 
 
 WNDPROC g_orgProc;
@@ -420,6 +421,7 @@ TUserFunc(void, Init, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 		SDL_WM_SetCaption(pu->refToAstr(CP_UTF8, cap).c_str(), nullptr);
 		g_scrflag = SDL_SWSURFACE;
 		g_screen = *pps = SDL_SetVideoMode(w, h, 32, g_scrflag);
+		g_mainTreadId = GetCurrentThreadId();
 		sndjoyinit();
 	}
 	g_w = w;
@@ -454,6 +456,9 @@ TUserFunc(void, GlInit, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 		glLoadIdentity();
 		g_hglrc = wglGetCurrentContext();
 		g_hdc = wglGetCurrentDC();
+		g_hglrc2 = wglCreateContext(g_hdc);
+		wglShareLists(g_hglrc, g_hglrc2);
+		g_mainTreadId = GetCurrentThreadId();
 		sndjoyinit();
 	}
 	g_w = w;
@@ -479,6 +484,7 @@ TUserFunc(void, SetSurfaceNull, SDL_Surface **pps)
 
 TUserFunc(void, End)
 {
+	wglDeleteContext(g_hglrc2);
 	g_js.close();
 	bgmclear(true);
 	SDL_PauseAudio(1);
@@ -2517,13 +2523,14 @@ TUserFunc(void, MugenFillGl, int32_t alpha, uint32_t color, SDL_Rect rect)
 
 TUserFunc(bool, BindGlContext)
 {
-	return wglMakeCurrent(g_hdc, g_hglrc) != 0;
+	return
+		wglMakeCurrent(
+			g_hdc,
+			g_mainTreadId == GetCurrentThreadId() ? g_hglrc : g_hglrc2) != 0;
 }
 
 TUserFunc(bool, UnbindGlContext)
 {
-	if(wglGetCurrentContext() != g_hglrc) return false;
-	wglMakeCurrent(nullptr, nullptr);
-	return true;
+	return wglMakeCurrent(nullptr, nullptr) != 0;
 }
 

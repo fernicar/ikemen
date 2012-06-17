@@ -207,7 +207,7 @@ public &Font
          px2.new(`mpl[i].w * (int)`img.rct.h);
           copyCharRect(
             px2, `mpl[i].w, px, `mpl[i].ofs, (int)`img.rct.w, (int)`img.rct.h);
-          `mpl[i].img[j].setPxl2(px2);
+          `mpl[i].img[j].setPxl(px2);
         else:
           `mpl[i].img[j].shareCopy(`mpl[i].img[j-1]=);
           `mpl[i].img[j].rct.w = (ushort)`mpl[i].w;

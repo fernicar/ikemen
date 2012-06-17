@@ -237,7 +237,7 @@ public &Sprite
     {
       `rlePcxDecode(px=);
     }
-    `setPxl2(px);
+    `setPxl(px);
     ret "";
   }
   public ^/char readV2(&.file.File f=, long ofs, uint dsz)
@@ -255,7 +255,7 @@ public &Sprite
     default:
       ret "不明な形式です";
     }
-    `setPxl2(px);
+    `setPxl(px);
     ret "";
   }
   public void setPxl(^ubyte px)
@@ -266,13 +266,6 @@ public &Sprite
   /*true:
     `pxl = px;
   /*?*/
-  }
-  public void setPxl2(^ubyte px)
-  {
-  /?/*.cfg.OpenGL:
-    &.sdl.UseGlContext ugc;
-  /*?*/
-    `setPxl(px);
   }
   public void rlePcxDecode(^ubyte px=)
   {

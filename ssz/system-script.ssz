@@ -37,9 +37,6 @@ public &TextImg
   public void draw()
   {
     if(.se.fskip || #`fnt == 0) ret;
-  /?/*.cfg.OpenGL:
-    &.sdl.UseGlContext ugc;
-  /*?*/
     `fnt~drawText(`x, `y, `xscl, `yscl, `bank, `align, `text);
   }
   public void setText(^/char t)
@@ -168,9 +165,6 @@ public &Anim
   public void draw()
   {
     if(.se.fskip) ret;
-  /?/*.cfg.OpenGL:
-    &.sdl.UseGlContext ugc;
-  /*?*/
     `ani~draw(
       `window=, `x + (float)(.com.GameWidth-320)/2.0,
       `y + (float)(.com.GameHeight-240), 1.0, 1.0,
@@ -548,7 +542,6 @@ void refresh(&.lua.State L=, int re=)
   re = 0;
   if(!.se.fskip){
   /?/*.cfg.OpenGL:
-    &.sdl.UseGlContext ugc;
     .sdl.GlSwapBuffers(::);
   /*true:
     .sdl.screen.flip();
@@ -596,9 +589,6 @@ void drawFace(&.lua.State L=, int re=)
   if(!.se.fskip) loop{
     int j = 0;
     ^&.sys.Select::Char c;
-  /?/*.cfg.OpenGL:
-    &.sdl.UseGlContext ugc;
-  /*?*/
     while;
   do:
     loop{int i = 0; while; do:
