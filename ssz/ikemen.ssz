@@ -130,6 +130,7 @@ int game()
     if(.s.equ(ss, "reload")){
       int numP = #.chr.chars;
       .chr.chars.new(numP);
+      .com.round = 1;
       .ld.reset();
       ret -2;
     }
