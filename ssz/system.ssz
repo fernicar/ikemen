@@ -266,9 +266,11 @@ public &Select
       || .s.equ(`sel.charlist[n].def, "randomselect")
       :
     }
-    `p[pn].selchr.new[-1];
-    `p[pn].selchr[-1].i = n;
-    `p[pn].selchr[-1].pal = p;
+    lock(`p){
+      `p[pn].selchr.new[-1];
+      `p[pn].selchr[-1].i = n;
+      `p[pn].selchr[-1].pal = p;
+    }
     ret true;
   }
   public void reset()

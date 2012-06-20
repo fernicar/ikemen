@@ -128,8 +128,7 @@ int game()
     .mes.GetSharedString(:ss=:);
     if(.s.equ(ss, "end")) .se.end = true;
     if(.s.equ(ss, "reload")){
-      int numP = #.chr.chars;
-      .chr.chars.new(numP);
+      .chr.chars.new(#.chr.chars);
       .com.round = 1;
       .ld.reset();
       ret -2;

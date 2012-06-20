@@ -52,16 +52,26 @@ bool stage()
 
 int chara(int pn)
 {
+  int nsel = #.sc.syst.selinf.p[pn&1].selchr;
   if(.com.tmode[pn&1] != (int).com.TeamMode::Simul && pn >= 2) ret 0;
+  if(
+    .com.tmode[pn&1] == (int).com.TeamMode::Turns
+    && nsel < .com.numturns[pn&1]) ret 0;
   int memberNo = pn>>1;
   if(.com.tmode[pn&1] == (int).com.TeamMode::Turns){
     memberNo = pn == 0 ? .com.p2wins : .com.p1wins;
   }
-  if(#.sc.syst.selinf.p[pn&1].selchr  <= memberNo) ret 0;
-  ^/char cha =
-    .sc.syst.selinf.sel.charlist[
-      .sc.syst.selinf.p[pn&1].selchr[memberNo].i].def;
-  int pal = .sc.syst.selinf.p[pn&1].selchr[memberNo].pal;
+  if(nsel  <= memberNo) ret 0;
+  int pal;
+  ^index idx.new(nsel);
+  lock(.sc.syst.selinf.p){
+    pal = .sc.syst.selinf.p[pn&1].selchr[memberNo].pal;
+    loop{index i = 0; while; do:
+      idx[i] = .sc.syst.selinf.p[pn&1].selchr[i].i;
+      i++;
+    while i < nsel:}
+  }
+  ^/char cha = .sc.syst.selinf.sel.charlist[idx[memberNo]].def;
   ^&.chr.Char p;
   branch{
   cond #.chr.chars[pn] > 0 && .s.equ(cha, .chr.chars[pn][0]~def):
@@ -95,17 +105,13 @@ int chara(int pn)
     .chr.fight~fa[turns][pn].numko = 0;
     loop{
       index i = 0;
-      .chr.fight~fa[turns][pn].teammate_face_spr.new(
-        #.sc.syst.selinf.p[pn].selchr);
+      .chr.fight~fa[turns][pn].teammate_face_spr.new(nsel);
       ^/char tmp;
       while;
     do:
-      tmp =
-        .sc.syst.selinf.sel.charlist[
-          .sc.syst.selinf.p[pn].selchr[i].i].sprite;
+      tmp = .sc.syst.selinf.sel.charlist[idx[i]].sprite;
       error = .com.loadFile(
-        .sc.syst.selinf.sel.charlist[.sc.syst.selinf.p[pn].selchr[i].i].def,
-        tmp=,
+        .sc.syst.selinf.sel.charlist[idx[i]].def, tmp=,
         [^/char(^/char f){
           ^&.sff.Sprite s.new(1);
           if(
@@ -122,8 +128,7 @@ int chara(int pn)
           ret "";
         }]);
       i++;
-    while i < #.sc.syst.selinf.p[pn].selchr:
-    }
+    while i < nsel:}
   }
   ret 1;
 }

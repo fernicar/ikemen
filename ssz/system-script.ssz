@@ -302,8 +302,7 @@ void enterNetPlay(&.lua.State L=, int re=)
     re = -1;
     ret;
   }
-  int numP = #.chr.chars;
-  .chr.chars.new(numP);
+  .chr.chars.new(#.chr.chars);
   .cmd.net.new(1);
   .cmd.net~openReplayFile("replay/netplay.replay");
   branch{
@@ -324,8 +323,7 @@ void enterReplay(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 0;
   ^/char file = .sc.strArg(L=, re=, argc=, nret); if(re < 0) ret;
-  int numP = #.chr.chars;
-  .chr.chars.new(numP);
+  .chr.chars.new(#.chr.chars);
   .cmd.replay.new(1);
   .cmd.replay~open(file);
 }
