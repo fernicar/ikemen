@@ -2119,6 +2119,8 @@ TUserFunc(uint32_t, Load8bitTexture, uint16_t h, uint16_t w, uint8_t* ppxl)
 		w, h, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, ppxl);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	return texid;
 }
 
@@ -2148,11 +2150,11 @@ TUserFunc(bool, InitMugenGl)
 		"uniform int msk;"
 		"uniform float alp;"
 		"void main(void){"
-			"vec4 c = texture(tex, gl_TexCoord[0].st);"
-			"int i = int(round(85.0*(c.r+c.g+c.b)));"
+			"int i = int(round(255.0*texture(tex, gl_TexCoord[0].st).r));"
+			"vec4 c;"
 			"fragColor ="
 				"i == msk ? vec4(0.0)"
-				": vec4(texelFetchBuffer(pal, i).rgb, alp);"
+				": (c = texelFetchBuffer(pal, i), vec4(c.b, c.g, c.r, alp));"
 		"}";
 	if(
 		!GLEW_VERSION_3_1
@@ -2364,7 +2366,6 @@ TUserFunc(
 	SDL_Rect* tile, float y, float x, SDL_Rect* rect,
 	int mask, uint8_t* ppal, uint32_t texid)
 {
-	float plt[4*256];
 	if(
 		texid == 0
 		|| _finite(x+y+rcx+rcy+xtopscl+xbotscl+yscl+rasterxadd+angle) == 0)
@@ -2385,14 +2386,8 @@ TUserFunc(
 	glBindTexture(GL_TEXTURE_2D, texid);
 	glActiveTexture(GL_TEXTURE1);
 	glBindBuffer(GL_TEXTURE_BUFFER, g_glpalette);
-	for(int i = 0; i < sizeof(plt)/sizeof(plt[0]); i += 4){
-		plt[i+0] = (float)ppal[i+2] / 255.0f;
-		plt[i+1] = (float)ppal[i+1] / 255.0f;
-		plt[i+2] = (float)ppal[i+0] / 255.0f;
-		plt[i+3] = (float)ppal[i+3] / 255.0f;
-	}
-	glBufferData(GL_TEXTURE_BUFFER, 4*4*256, plt, GL_STATIC_DRAW);
-	glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, g_glpalette);
+	glBufferData(GL_TEXTURE_BUFFER, 4*256, ppal, GL_STATIC_DRAW);
+	glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA8, g_glpalette);
 	glUniform1i(glGetUniformLocation(g_mugenshader, "pal"), 1);
 	glActiveTexture(GL_TEXTURE0);
 	glUseProgram(g_mugenshader);
