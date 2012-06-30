@@ -3503,7 +3503,7 @@ public &Char
         }
         if(`stVal.hb.fallf != 0) `stVal.fallTime++;
         if(
-          `stVal.mov == .MovTy::H && `sysfvar[.fY] == 0.0
+          (`stVal.mov == .MovTy::H || `stVal.no == 52) && `sysfvar[.fY] == 0.0
           && #(`sysfvar[.fX]-`ticOldX) >= 1.0 && `stVal.time % 3 == 0)
         {
           `makeDust(0.0, 0.0);
