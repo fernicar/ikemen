@@ -157,11 +157,11 @@ struct OutBufList
 };
 
 Out_Module out_mod;
-In_Module *in_mod;
+In_Module* in_mod;
 OutBufList g_obl;
 int16_t g_omzero[g_samples*2] = {0};
 int16_t g_ombuf[g_samples*2] = {0};
-int16_t *g_omdata = g_omzero;
+int16_t* g_omdata = g_omzero;
 HMODULE	g_omdll = nullptr;
 bool om_paused = true, om_closed = false;
 int om_bufidx, om_samplerate, om_numchannels, om_bitspersamp, om_bufferlenms;
@@ -1041,6 +1041,25 @@ TUserFunc(void, PauseBGM, bool pause)
 			in_mod->UnPause();
 		}
 	}
+}
+
+TUserFunc(bool, SendOpenBGM, int32_t channels, int32_t rate)
+{
+	bgmclear(true);
+	return om_open(rate, channels, 16, 5000, 5000) >= 0;
+}
+
+TUserFunc(void, SendCloseBGM)
+{
+	om_close();
+}
+
+TUserFunc(intptr_t, SendWriteBGM, Reference buffer)
+{
+	if(buffer.len() == 0) return 0;
+	auto len = min(om_canwrite(), buffer.len());
+	om_write((char*)buffer.atpos(), len);
+	return len / sizeof(int16_t);
 }
 
 TUserFunc(void, SetVolume, int32_t v)

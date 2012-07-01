@@ -6,6 +6,7 @@ lib fnt = "font.ssz";
 lib com = "common.ssz";
 lib se = <alpha/sdlevent.ssz>;
 lib lua = <alpha/lua.ssz>;
+lib snd = "sound.ssz";
 
 public &Share
 {
@@ -21,6 +22,7 @@ public &Share
   public ^&.cmd.FileInput rep;
   public ^&.fnt.Font dfnt;
   public ^/char dlua;
+  public ^&.snd.Bgm bgm;
   public bool dbgdw, clsndw, powsh, alvl, fullscr;
   public void copy()
   {
@@ -42,6 +44,7 @@ public &Share
     `rep = .cmd.replay;
     `dfnt = .fnt.debugFont;
     `dlua = .com.debugScript;
+    `bgm = .snd.bgm;
     `dbgdw = .com.debugdraw;
     `clsndw = .com.clsndraw;
     `powsh = .com.powershare;
@@ -68,6 +71,7 @@ public &Share
     .cmd.replay = `rep;
     .fnt.debugFont = `dfnt;
     .com.debugScript = `dlua;
+    .snd.bgm = `bgm;
     .com.debugdraw = `dbgdw;
     .com.clsndraw = `clsndw;
     .com.powershare = `powsh;

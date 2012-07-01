@@ -16,6 +16,7 @@ lib file = <file.ssz>;
 lib cmd = "command.ssz";
 lib dscri = "debug-script.ssz";
 lib tscri = "trigger-script.ssz";
+lib snd = "sound.ssz";
 
 const double lvmul = 2.0**(1.0/12.0);
 
@@ -375,7 +376,7 @@ void game()
       i++;
     while i < stagetime:
     }
-    if(.com.round == 1) .sdl.playBGM("plugins", .chr.stg~bgmusic);
+    if(.com.round == 1) .snd.bgm~play(.chr.stg~bgmusic);
     reset();
     float bl = (float)(.chr.stg~cam.boundleft - .chr.stg~cam.startx);
     float br = (float)(.chr.stg~cam.boundright - .chr.stg~cam.startx);

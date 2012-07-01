@@ -316,7 +316,7 @@ void playBGM(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 0;
   ^/char file = .strArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .sdl.playBGM("plugins", file);
+  .snd.bgm~play(file);
 }
 
 void esc(&.lua.State L=, int re=)

@@ -7,6 +7,7 @@ lib mat = <math.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
 lib com = "common.ssz";
 lib m = <math.ssz>;
+lib ogg = <alpha/ogg.ssz>;
 
 public &SndNnm
 {
@@ -321,6 +322,73 @@ public &Sound
   }
 }
 
+public &Bgm
+{
+  &Vorbis
+  {
+    public ^&.ogg.OggVorbis ov;
+    /^short buf;
+    /index bufOffset = 0, bufLength = 0;
+    public void clear()
+    {
+      if(#`ov > 0){
+        .sdl.sendCloseBGM();
+        `ov.new(0);
+      }
+    }
+    public bool open(^/char file)
+    {
+      `ov.new(1);
+      if(#`buf == 0) `buf.new(4096);
+      `bufOffset = `bufLength = 0;
+      if(!`ov~open(file) || !.sdl.sendOpenBGM(`ov~rate(), `ov~channels())){
+        `clear();
+        ret false;
+      }
+      ret true;
+    }
+    public bool write()
+    {
+      if(#`ov == 0) ret false;
+      if(`bufLength == 0){
+        `bufOffset = 0;
+        `bufLength = `ov~read(`buf);
+        if(`bufLength == 0){
+          `ov~seek(0.0);
+          `bufLength = `ov~read(`buf);
+        }
+      }
+      if(`bufLength < 0) ret false;
+      index wlen = .sdl.sendWriteBGM(`buf[`bufOffset..`bufOffset+`bufLength]);
+      `bufOffset += wlen;
+      `bufLength -= wlen;
+      ret wlen > 0;
+    }
+  }
+  /^/char fileName;
+  &Vorbis vor;
+  public void play(^/char file)
+  {
+    `clear();
+    branch{
+    cond .s.equ(.s.toLower(file[#file-4 .. -1]), ".ogg"):
+      if(`vor.open(file)) `fileName = file;
+    else:
+      if(.sdl.playBGM("plugins", file)) `fileName = file;
+    }
+  }
+  public void write()
+  {
+    loop{do: while `vor.write():}
+  }
+  public void clear()
+  {
+    `fileName = "";
+    `vor.clear();
+  }
+}
+public ^&Bgm bgm.new(1);
+
 
 public ^int sndbuf.new(.sdl.SNDBUFLEN);
 /^&Sound sounds.new(16);
@@ -348,6 +416,7 @@ public ^&Sound getChannel(int ch)
 
 public void mixSounds()
 {
+  .bgm~write();
   loop{index i = 0; while; do:
     .sounds[i].mix(.sndbuf, -160.0, 160.0);
     i++;

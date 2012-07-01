@@ -37,6 +37,24 @@ public void pauseBGM(bool pause)
   PauseBGM(:pause:);
 }
 
+public bool sendOpenBGM(int rate, int channels)
+{
+  plugin bool SendOpenBGM(:int, int:) = "dll/sdlplugin.dll";
+  ret SendOpenBGM(:rate, channels:);
+}
+
+public void sendCloseBGM()
+{
+  plugin void SendCloseBGM(::) = "dll/sdlplugin.dll";
+  SendCloseBGM(::);
+}
+
+public index sendWriteBGM(^/short buffer)
+{
+  plugin index SendWriteBGM(:^/short:) = "dll/sdlplugin.dll";
+  ret SendWriteBGM(:buffer:);
+}
+
 public void setVolume(int vol)
 {
   plugin void SetVolume(:int:) = "dll/sdlplugin.dll";
