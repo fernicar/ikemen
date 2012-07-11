@@ -39,7 +39,8 @@ int funcCall(lua_State* L)
 		int32_t* ret;
 		lua_State** pL;
 	} arg = {&ret, &L};
-	*(int32_t*)g_callback(g_handle, func, &arg, sizeof(arg), 0);
+	#pragma pack(pop)
+	g_callback(g_handle, func, &arg, sizeof(arg), 0);
 	if(ret < 0) return luaL_error(L, "%s", lua_tostring(L, -1));
 	return ret;
 }

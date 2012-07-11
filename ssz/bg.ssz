@@ -283,6 +283,7 @@ public &BackGround
     }
     if(#(data = sc.get("tile")) > 0){
       .readPair!ushort?(`anim.tile.w=, `anim.tile.h=, data);
+      if(typ == 2) `anim.tile.h = 0x0;
     }
     if(#(data = sc.get("tilespacing")) > 0){
       `anim.tile.x = `anim.tile.y = .com.atoi(data);
