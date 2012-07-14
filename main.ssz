@@ -97,7 +97,7 @@ kfmx
 ]])
 
 addStage([[
-ginga.def
+SpaceRainbowLowRes.def
 ]])
 "
   );

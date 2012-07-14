@@ -172,9 +172,7 @@ public &BackGround
   public float windowdeltax = 0.0, windowdeltay = 0.0;
   new()
   {
-    `startrect.set(
-      -.com.GameWidth*2, -.com.GameHeight*2,
-      (ushort)(.com.GameWidth*4), (ushort)(.com.GameHeight*4));
+    `startrect.set(-32768, -32768, 0d65535, 0d65535);
   }
   public void reset()
   {
@@ -302,25 +300,18 @@ public &BackGround
     }
     if(#(data = sc.get("window")) > 0){
       ^int ltrb = .csvToAry!int?(data);
-      `startrect.x = .m.max!int?(-.com.GameWidth, .m.min!int?(32767, ltrb[0]));
+      `startrect.x = .m.max!int?(-32768, .m.min!int?(32767, ltrb[0]));
       if(#ltrb < 2) break;
-      `startrect.y =
-        .m.max!int?(-.com.GameHeight, .m.min!int?(32767, ltrb[1]));
+      `startrect.y = .m.max!int?(-32768, .m.min!int?(32767, ltrb[1]));
       if(#ltrb < 3) break;
       `startrect.w =
-        .m.min!uint?(
-          (uint)(65535.0/.com.WidthScale),
-          (uint).m.max!int?(0, ltrb[2]+1 - `startrect.x));
+        .m.min!uint?(0d65535, (uint).m.max!int?(0, ltrb[2]+1 - `startrect.x));
       if(#ltrb < 4) break;
       `startrect.h =
-        .m.min!uint?(
-          (uint)(65535.0/.com.HeightScale),
-          (uint).m.max!int?(0, ltrb[3]+1 - `startrect.y));
+        .m.min!uint?(0d65535, (uint).m.max!int?(0, ltrb[3]+1 - `startrect.y));
     }
     if(#(data = sc.get("windowdelta")) > 0){
       .readPair!float?(`windowdeltax=, `windowdeltay=, data);
-      `windowdeltax *= .com.WidthScale;
-      `windowdeltay *= .com.HeightScale;
     }
     if(#(data = sc.get("id")) > 0) `id = .com.atoi(data);
     if(#(data = sc.get("velocity")) > 0){
@@ -393,15 +384,19 @@ public &BackGround
     float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
     float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
     `startrect.x =
-      (short)(
+      .m.max!int?(-32768)<, .m.min!int?(32767)<, (int)(
         (float)`startrect.x*mulx
         + .com.WidthScale*(float)(.com.GameWidth-320)/2.0);
     `startrect.y =
-      (short)(
+      .m.max!int?(-32768)<, .m.min!int?(32767)<, (int)(
         (float)`startrect.y*muly
         + .com.HeightScale*(float)(.com.GameHeight-240));
-    `startrect.w = (ushort)((float)`startrect.w*mulx + 0.5);
-    `startrect.h = (ushort)((float)`startrect.h*muly + 0.5);
+    `startrect.w =
+      .m.min!uint?(0d65535)<, (uint)((float)`startrect.w*mulx + 0.5);
+    `startrect.h =
+      .m.min!uint?(0d65535)<, (uint)((float)`startrect.h*muly + 0.5);
+    `windowdeltax *= mulx;
+    `windowdeltay *= muly;
     `anim.setup(sf);
   }
   public void draw(

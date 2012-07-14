@@ -12,7 +12,7 @@ sysSff = sffNew('script/system.sff')
 sysSnd = sndNew('script/system.snd')
 jgFnt = fontNew('data/gms_lifebar/font2.fnt')
 
-bgm = 'sound/mp3/t.K_boss02.mp3'
+bgm = ''
 playBGM(bgm)
 
 ------------------------------------------------------------
