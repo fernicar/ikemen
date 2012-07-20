@@ -3412,10 +3412,9 @@ public &Char
         ret;
       }
       if(
-        `stVal.playerno == `playerno && (
-          `stVal.mov != .MovTy::H || (
-            `roundState() == 2 && `isKO()
-            && (`sysivar[.iSYSFLAG] & .sfOVER) != 0)))
+        `stVal.mov != .MovTy::H || (
+          `roundState() == 2 && `isKO()
+          && (`sysivar[.iSYSFLAG] & .sfOVER) != 0))
       {
         `outTarget();
       }
