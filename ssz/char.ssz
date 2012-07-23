@@ -3110,19 +3110,13 @@ public &Char
   {:<-
     bool isSuperPaused()
     {
-      ret
-        .super > 0 && (
-          !`isAlive() || (
-            `sysivar[.iSUPERMOVETIME] == 0
-            && (`stVal.hb.hitshaketime <= 0 || .super == 1)));
+      ret .super > 0 && (!`isAlive() || `sysivar[.iSUPERMOVETIME] == 0);
     }
     bool isNormalPaused()
     {
       ret
-        .super <= 0 && .pause > 0 && (
-          !`isAlive() || (
-            `sysivar[.iPAUSEMOVETIME] == 0
-            && (`stVal.hb.hitshaketime <= 0 || .pause == 1)));
+        .super <= 0 && .pause > 0
+        && (!`isAlive() || `sysivar[.iPAUSEMOVETIME] == 0);
     }
     if(`minus != 2) ret;
     `minus = 3;
@@ -3425,8 +3419,10 @@ public &Char
           || `stVal.hit.reversal_attr > 0)
         && `isActive() ? `stVal.no : -1;
       if(`stVal.mov == .MovTy::H){
-        `sysivar[.iPAUSEMOVETIME] = 0;
-        `sysivar[.iSUPERMOVETIME] = 0;
+        if(`stVal.hb.hitshaketime <= 0){
+          `sysivar[.iPAUSEMOVETIME] = 0;
+          `sysivar[.iSUPERMOVETIME] = 0;
+        }
         `hittmp = (int)`isFall() + 1;
         if(
           `isActive()
@@ -5839,6 +5835,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(hitting > 0){
       `pyr.stVal.setHb(
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
+      branch{
+      cond .super > 1:
+        `pyr.sysivar[.iSUPERMOVETIME] =
+          .m.min!int?(`pyr.stVal.hb.hitshaketime, .super-1);
+      cond .pause > 1 || (.super == 1 && .pause > 0):
+        `pyr.sysivar[.iPAUSEMOVETIME] =
+          .m.min!int?(`pyr.stVal.hb.hitshaketime, .pause-(int)(.super <= 0));
+      }
       if(!ho && !p2s && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
       `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
       if(`pyr.sysivar[.iBINDTOID] == by.id) `pyr.setBindTime(0);

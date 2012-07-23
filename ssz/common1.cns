@@ -405,9 +405,12 @@ void c.Char::s##_@@P()
     case 2:
       branch{
       cond `mver0 == 1:
-        `makeDust(0.0, 0.0);
+        `makeDust(
+          -(float)`sysivar[.iDRAW_OFFSETX], -(float)`sysivar[.iDRAW_OFFSETY]);
       else:
-        `makeDust(-5.0, -2.0);
+        `makeDust(
+          -5.0 - (float)`sysivar[.iDRAW_OFFSETX],
+          -2.0 - (float)`sysivar[.iDRAW_OFFSETY]);
       }
     case 7:
       `trChangeState(0, -1, 1);
