@@ -5755,9 +5755,13 @@ public &StateBuilder
       }
       switch(`state.ctrlList[-1].typ){
       case .CtrlTy::Explod, .CtrlTy::GameMakeAnim:
+        if(`state.ctrlList[-1].typ == .CtrlTy::GameMakeAnim){
+          `state.ctrlList[-1].task .=
+            "e~offsetx-=(float)`sysivar[.iDRAW_OFFSETX];"
+            .= "e~offsety-=(float)`sysivar[.iDRAW_OFFSETY];";
+        }
         `state.ctrlList[-1].task .=
-          "if(!.m.isnan(e~offsetx))e~offsetx+=.m.randF(-rx,rx);"
-          "if(!.m.isnan(e~offsety))e~offsety+=.m.randF(-ry,ry);"
+          "e~offsetx+=.m.randF(-rx,rx);e~offsety+=.m.randF(-ry,ry);"
           "e~setPos(`=);`setAlpha(t,e~alphas=,e~alphad=);"
           "`insertExplod(i);";
         if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
@@ -6028,7 +6032,13 @@ public &StateBuilder
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= 
-        "`makeDust(x,y);if(!.m.isnan(x2))`makeDust(x2,y2);";
+        "x-=(float)`sysivar[.iDRAW_OFFSETX];"
+        "y-=(float)`sysivar[.iDRAW_OFFSETY];"
+        "`makeDust(x,y);"
+        "if(!.m.isnan(x2)){"
+        "x2-=(float)`sysivar[.iDRAW_OFFSETX];"
+        "y2-=(float)`sysivar[.iDRAW_OFFSETY];"
+        "`makeDust(x2,y2);}";
       ret true;
     }]);
   }

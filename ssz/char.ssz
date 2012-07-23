@@ -3094,7 +3094,7 @@ public &Char
   }
   public float offsetX()
   {
-    ret (float)`sysivar[.iDRAW_OFFSETX] + `offsetx*(float)`facing;
+    ret (float)`sysivar[.iDRAW_OFFSETX]*(float)`facing + `offsetx;
   }
   public float offsetY()
   {
@@ -3657,7 +3657,7 @@ public &Char
     branch{
     cond `sysivar[.iPAUSEMOVETIME] > pausetime:
       `sysivar[.iPAUSEMOVETIME] = 0;
-    cond (.pause > 0 || #`stVal.hb.by > 0) && `sysivar[.iPAUSEMOVETIME] > 0:
+    cond .pause > 0 && `sysivar[.iPAUSEMOVETIME] > 0:
       `sysivar[.iPAUSEMOVETIME]--;
     }
   }
@@ -3674,7 +3674,7 @@ public &Char
     branch{
     cond `sysivar[.iSUPERMOVETIME] > pausetime:
       `sysivar[.iSUPERMOVETIME] = 0;
-    cond (.super > 0 || #`stVal.hb.by > 0) && `sysivar[.iSUPERMOVETIME] > 0:
+    cond .super > 0 && `sysivar[.iSUPERMOVETIME] > 0:
       `sysivar[.iSUPERMOVETIME]--;
     }
   }
@@ -5443,8 +5443,8 @@ public void Explod::update(bool oVer)
         `bindtime = 0;
         break, break;
       }
-      if(!.m.isnan(`offsetx)) `setX(bc~drawX + `offsetx);
-      if(!.m.isnan(`offsety)) `setY(bc~drawY + `offsety);
+      if(!.m.isnan(`offsetx)) `setX(bc~drawX+bc~offsetX() + `offsetx);
+      if(!.m.isnan(`offsety)) `setY(bc~drawY+bc~offsetY() + `offsety);
     }
   }
   if(.com.tickFrame()){
@@ -5508,8 +5508,8 @@ public void Explod::setPos(&.Char c=)
     `bindid = c.id;
     `facing = c.facing*`relativef;
     `offsetx *= (float)c.facing;
-    if(!.m.isnan(`offsetx)) `setX(c.sysfvar[.fX] + `offsetx);
-    if(!.m.isnan(`offsety)) `setY(c.sysfvar[.fY] + `offsety);
+    if(!.m.isnan(`offsetx)) `setX(c.sysfvar[.fX]+c.offsetX() + `offsetx);
+    if(!.m.isnan(`offsety)) `setY(c.sysfvar[.fY]+c.offsetY() + `offsety);
     if(`bindtime == 0) `bindtime = 1;
   case 1:
     {
@@ -5518,8 +5518,8 @@ public void Explod::setPos(&.Char c=)
       `bindid = bc~id;
       `facing *= bc~facing*`relativef;
       `offsetx *= (float)bc~facing;
-      if(!.m.isnan(`offsetx)) `setX(bc~sysfvar[.fX] + `offsetx);
-      if(!.m.isnan(`offsety)) `setY(bc~sysfvar[.fY] + `offsety);
+      if(!.m.isnan(`offsetx)) `setX(bc~sysfvar[.fX]+bc~offsetX() + `offsetx);
+      if(!.m.isnan(`offsety)) `setY(bc~sysfvar[.fY]+bc~offsetY() + `offsety);
       if(`bindtime == 0) `bindtime = 1;
     }
   case 2, 3:
