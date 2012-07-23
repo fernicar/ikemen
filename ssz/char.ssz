@@ -3419,7 +3419,7 @@ public &Char
           || `stVal.hit.reversal_attr > 0)
         && `isActive() ? `stVal.no : -1;
       if(`stVal.mov == .MovTy::H){
-        if(`stVal.hb.hitshaketime <= 0){
+        if(.super <= 0 && .pause <= 0){
           `sysivar[.iPAUSEMOVETIME] = 0;
           `sysivar[.iSUPERMOVETIME] = 0;
         }
@@ -5836,12 +5836,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       `pyr.stVal.setHb(
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
       branch{
-      cond .super > 1:
+      cond .super > 0:
         `pyr.sysivar[.iSUPERMOVETIME] =
-          .m.min!int?(`pyr.stVal.hb.hitshaketime, .super-1);
-      cond .pause > 1 || (.super == 1 && .pause > 0):
+          .m.max!int?(
+            `pyr.sysivar[.iSUPERMOVETIME], `pyr.stVal.hb.hitshaketime);
+      cond .pause > 0:
         `pyr.sysivar[.iPAUSEMOVETIME] =
-          .m.min!int?(`pyr.stVal.hb.hitshaketime, .pause-(int)(.super <= 0));
+          .m.max!int?(
+            `pyr.sysivar[.iPAUSEMOVETIME], `pyr.stVal.hb.hitshaketime);
       }
       if(!ho && !p2s && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
       `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
