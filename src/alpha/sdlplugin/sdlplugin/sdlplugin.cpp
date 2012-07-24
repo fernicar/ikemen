@@ -2217,24 +2217,50 @@ TUserFunc(bool, InitMugenGl)
 
 void drawQuads(
 	float x1, float y1, float x2, float y2, float x3, float y3,
-	float x4, float y4, float r, float g, float b, float a)
+	float x4, float y4, float r, float g, float b, float a, float pers)
 {
 	glColor4f(r, g, b, a);
-	glTexCoord2f(0, 1.0);
-	glVertex2f(x1, y1);
-	glTexCoord2f(1.0, 1.0);
-	glVertex2f(x2, y2);
-	glTexCoord2f(1.0, 0);
-	glVertex2f(x3, y3);
-	glTexCoord2f(0, 0);
-	glVertex2f(x4, y4);
+	if(abs(pers - 1) > 0.01){
+		glBegin(GL_TRIANGLE_STRIP);
+		{
+			glTexCoord2f(0, 1);
+			glVertex2f(x1, y1);
+			glTexCoord2f(0, 0);
+			glVertex2f(x4, y4);
+			int n = min(100, (int)(abs(pers - 1)*g_h*40/abs(y1-y4)));
+			for(int i = 1; i < n; i++){
+				glTexCoord2f((float)i/n, 1);
+				glVertex2f(x1 + (x2 - x1)*i/n, y1 + (y2 - y1)*i/n);
+				glTexCoord2f((float)i/n, 0);
+				glVertex2f(x4 + (x3 - x4)*i/n, y4 + (y3 - y4)*i/n);
+			}
+			glTexCoord2f(1, 1);
+			glVertex2f(x2, y2);
+			glTexCoord2f(1, 0);
+			glVertex2f(x3, y3);
+		}
+		glEnd();
+	}else{
+		glBegin(GL_QUADS);
+		{
+			glTexCoord2f(0, 1);
+			glVertex2f(x1, y1);
+			glTexCoord2f(1, 1);
+			glVertex2f(x2, y2);
+			glTexCoord2f(1, 0);
+			glVertex2f(x3, y3);
+			glTexCoord2f(0, 0);
+			glVertex2f(x4, y4);
+		}
+		glEnd();
+	}
 }
 
 void drawTileHolizon(
 	float x1, float y1, float x2, float y2, float x3, float y3,
 	float x4, float y4, float xtw, float xbw,
 	float xtopscl, float xbotscl, SDL_Rect tile, float rcx,
-	float r, float g, float b, float a)
+	float r, float g, float b, float a, float pers)
 {
 	float topbtwn = xtw + xtopscl*(float)tile.x;
 	float db =
@@ -2265,7 +2291,7 @@ void drawTileHolizon(
 					&& (x3d < (float)g_w || x4d < (float)g_w)))
 			{
 				drawQuads(
-					x1d, y1, x2d, y2, x3d, y3, x4d, y4, r, g, b, a);
+					x1d, y1, x2d, y2, x3d, y3, x4d, y4, r, g, b, a, pers);
 			}
 		}
 	}
@@ -2284,7 +2310,7 @@ void drawTileHolizon(
 				(0.0 < x3 || 0.0 < x4)
 				&& (x3 < (float)g_w || x4 < (float)g_w)))
 		{
-			drawQuads(x1, y1, x2, y2, x3, y3, x4, y4, r, g, b, a);
+			drawQuads(x1, y1, x2, y2, x3, y3, x4, y4, r, g, b, a, pers);
 		}
 		if(tile.w != 1) n--;
 		if(n <= 0) break;
@@ -2309,13 +2335,13 @@ void drawTile(
 	y3 = y;
 	x4 = x;
 	y4 = y3;
-	glBegin(GL_QUADS);
+	float pers = abs(x3 - x4) / abs(x2 - x1);
 	if(angle != 0.0f){
 		kaiten(x1, y1, angle, rcx, rcy);
 		kaiten(x2, y2, angle, rcx, rcy);
 		kaiten(x3, y3, angle, rcx, rcy);
 		kaiten(x4, y4, angle, rcx, rcy);
-		drawQuads(x1, y1, x2, y2, x3, y3, x4, y4, r, g, b, a);
+		drawQuads(x1, y1, x2, y2, x3, y3, x4, y4, r, g, b, a, pers);
 	}else{
 		if(tile.h == 1){
 			float x1d=x1, y1d=y1, x2d=x2, y2d=y2, x3d=x3;
@@ -2344,7 +2370,7 @@ void drawTile(
 					drawTileHolizon(
 						x1d, y1d, x2d, y2d, x3d, y3d, x4d, y4d,
 						x3d-x4d, x2d-x1d, (x3d-x4d)/(float)w,
-						(x2d-x1d)/(float)w, tile, rcx, r, g, b, a);
+						(x2d-x1d)/(float)w, tile, rcx, r, g, b, a, pers);
 				}
 			}
 		}
@@ -2361,7 +2387,8 @@ void drawTile(
 			{
 				drawTileHolizon(
 					x1, y1, x2, y2, x3, y3, x4, y4, x3-x4, x2-x1,
-					(x3-x4)/(float)w, (x2-x1)/(float)w, tile, rcx, r, g, b, a);
+					(x3-x4)/(float)w, (x2-x1)/(float)w,
+					tile, rcx, r, g, b, a, pers);
 			}
 			if(tile.h != 1) n--;
 			if(n <= 0) break;
@@ -2376,7 +2403,6 @@ void drawTile(
 			y1 = y2;
 		}
 	}
-	glEnd();
 }
 
 TUserFunc(
