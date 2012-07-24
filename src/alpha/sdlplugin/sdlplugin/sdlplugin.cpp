@@ -2220,40 +2220,23 @@ void drawQuads(
 	float x4, float y4, float r, float g, float b, float a, float pers)
 {
 	glColor4f(r, g, b, a);
-	if(abs(pers - 1) > 0.01){
-		glBegin(GL_TRIANGLE_STRIP);
-		{
-			glTexCoord2f(0, 1);
-			glVertex2f(x1, y1);
-			glTexCoord2f(0, 0);
-			glVertex2f(x4, y4);
-			int n = min(100, (int)(abs(pers - 1)*g_h*40/abs(y1-y4)));
-			for(int i = 1; i < n; i++){
-				glTexCoord2f((float)i/n, 1);
-				glVertex2f(x1 + (x2 - x1)*i/n, y1 + (y2 - y1)*i/n);
-				glTexCoord2f((float)i/n, 0);
-				glVertex2f(x4 + (x3 - x4)*i/n, y4 + (y3 - y4)*i/n);
-			}
-			glTexCoord2f(1, 1);
-			glVertex2f(x2, y2);
-			glTexCoord2f(1, 0);
-			glVertex2f(x3, y3);
-		}
-		glEnd();
-	}else{
-		glBegin(GL_QUADS);
-		{
-			glTexCoord2f(0, 1);
-			glVertex2f(x1, y1);
-			glTexCoord2f(1, 1);
-			glVertex2f(x2, y2);
-			glTexCoord2f(1, 0);
-			glVertex2f(x3, y3);
-			glTexCoord2f(0, 0);
-			glVertex2f(x4, y4);
-		}
-		glEnd();
+	glBegin(GL_TRIANGLE_STRIP);
+	glTexCoord2f(0, 1);
+	glVertex2f(x1, y1);
+	glTexCoord2f(0, 0);
+	glVertex2f(x4, y4);
+	int n = min(100, (int)(abs(pers - 1)*g_h*40/abs(y1-y4)));
+	for(int i = 1; i < n; i++){
+		glTexCoord2f((float)i/n, 1);
+		glVertex2f(x1 + (x2 - x1)*i/n, y1 + (y2 - y1)*i/n);
+		glTexCoord2f((float)i/n, 0);
+		glVertex2f(x4 + (x3 - x4)*i/n, y4 + (y3 - y4)*i/n);
 	}
+	glTexCoord2f(1, 1);
+	glVertex2f(x2, y2);
+	glTexCoord2f(1, 0);
+	glVertex2f(x3, y3);
+	glEnd();
 }
 
 void drawTileHolizon(
