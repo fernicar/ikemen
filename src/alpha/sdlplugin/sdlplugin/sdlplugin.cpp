@@ -2226,7 +2226,9 @@ void drawQuads(
 	glTexCoord2f(0, 0);
 	glVertex2f(x4, y4);
 	int n =
-		min(100, (int)((1-(pers > 1.0 ? 1/pers : pers))*g_h*40/abs(y1-y4)));
+		(int)(
+			(pers > 1.0 ? (1-1/pers)*abs(x3-x4) : (1-pers)*abs(x1-x2))
+			* g_h*0.02 / abs(y1-y4));
 	for(int i = 1; i < n; i++){
 		glTexCoord2f((float)i/n, 1);
 		glVertex2f(x1 + (x2 - x1)*i/n, y1 + (y2 - y1)*i/n);
