@@ -333,18 +333,24 @@ void game()
         float lm = (float).chr.chars[i][0]~sysivar[.chr.iLIFEMAX];
         lm *= (float).cfg.Life / 100.0;
         switch(.com.tmode[i&1]){
-        case (int).com.TeamMode::Single:
-          if(.com.tmode[i+1 & 1] != (int).com.TeamMode::Single){
-            lm *= (float).cfg.Team_1VS2Life / 100.0;
+        case (int).com.TeamMode::Single, (int).com.TeamMode::Simul:
+          branch{
+          cond .com.tmode[i&1] == (int).com.TeamMode::Single:
+            if(.com.tmode[i+1 & 1] != (int).com.TeamMode::Single){
+              lm *= (float).cfg.Team_1VS2Life / 100.0;
+            }
+          else:
+            lm *= 0.5;
           }
-        case (int).com.TeamMode::Simul:<-
           if(.com.tmode[i+1 & 1] == (int).com.TeamMode::Turns){
-            lm *=
-              300.0 / (
-                (float).chr.fight~ro.match_wins * (float).cfg.Team_1VS2Life);
+            lm *= 2.0 / (float).chr.fight~ro.match_wins;
           }
         case (int).com.TeamMode::Turns:
-          lm *= 3.0 / (float).com.numturns[i&1];
+          lm *=
+            2.0 * (
+              .com.tmode[i+1 & 1] != (int).com.TeamMode::Turns
+              ? (float).cfg.Team_1VS2Life / 100.0 : 1.0)
+            / (float).com.numturns[i&1];
         }
         double hoge = .lvmul**((double)-level[i]);
         .chr.chars[i][0]~sysivar[.chr.iLIFEMAX] = (int).m.ceil(hoge * lm);
@@ -409,22 +415,6 @@ void game()
       .com.round++;
       loop{index i = 0; while; do:
         .com.rexisted[i]++;
-        i++;
-      while i < #.com.tmode:
-      }
-      if(.com.time > 0) loop{index i = 0; while; do:
-        if(
-          .com.tmode[i] == (int).com.TeamMode::Turns
-          && .chr.chars[i][0]~isWin())
-        {
-          .chr.chars[i][0]~sysivar[.chr.iLIFE] +=
-            (int)(
-              (float).chr.chars[i][0]~sysivar[.chr.iLIFEMAX]
-              * (float).com.time * (1.0/60.0) * .cfg.TurnsRecoveryRate);
-          .m.limMax!int?(
-            .chr.chars[i][0]~sysivar[.chr.iLIFE]=,
-            .chr.chars[i][0]~sysivar[.chr.iLIFEMAX]);
-        }
         i++;
       while i < #.com.tmode:
       }

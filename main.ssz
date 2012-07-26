@@ -14,7 +14,7 @@ if(#file.find(conffile) == 0){
 
 const int Time = 999 * 6;//frames
 const int Life = 100;
-const int Team_1VS2Life = 150;
+const int Team_1VS2Life = 100;
 
 const int HelperMax = 56;
 const int PlayerProjectileMax = 50;

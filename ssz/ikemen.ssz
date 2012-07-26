@@ -21,12 +21,19 @@ public void error<_t>(^/char m)
   .al.alert!_t?(m);
 }
 
+void loaderReset()
+{
+  .com.round = 1;
+  .com.p1wins = 0;
+  .com.p2wins = 0;
+  .ld.reset();
+}
+
 void loadStart(&.lua.State L=, int re=)
 {
   re = 0;
   .chr.fight = .sc.syst.fig;
-  .com.round = 1;
-  .ld.reset();
+  .loaderReset();
   .ld.runTread();
 }
 
@@ -66,8 +73,6 @@ int game()
   .chr.fight~wi[0].clear();
   .chr.fight~wi[1].clear();
   .com.home = 0;
-  .com.p1wins = 0;
-  .com.p2wins = 0;
   .com.draws = 0;
   bool load()
   {
@@ -129,8 +134,7 @@ int game()
     if(.s.equ(ss, "end")) .se.end = true;
     if(.s.equ(ss, "reload")){
       .chr.chars.new(#.chr.chars);
-      .com.round = 1;
-      .ld.reset();
+      .loaderReset();
       ret -2;
     }
     ret b && !.s.equ(ss, "esc") ? `winp : -1;

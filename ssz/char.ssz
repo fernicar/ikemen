@@ -3406,7 +3406,7 @@ public &Char
         ret;
       }
       if(
-        `stVal.mov != .MovTy::H || (
+        (`acttmp > 0 && `stVal.mov != .MovTy::H) || (
           `roundState() == 2 && `isKO()
           && (`sysivar[.iSYSFLAG] & .sfOVER) != 0))
       {
@@ -5716,7 +5716,6 @@ public void PlayerList!&Char?::action(
   float highest=, float lowest=, float leftest=, float rightest=)
 {
   .commandUpdate();
-  %`top<>.c.self targets;
   loop{
     *`top.self p = `top;
     while;
@@ -6941,6 +6940,13 @@ public float action(
               (c.sysivar[.iSYSFLAG] & .sfOVER) == 0
               && c.isActive() && !c.isKO() && (c.isOver() || .waitdown <= 0))
             {
+              if(.com.time > 0 && c.isWin()){
+                c.sysivar[.iLIFE] +=
+                  (int)(
+                    (float)c.sysivar[.iLIFEMAX]
+                    * (float).com.time * (1.0/60.0) * .cfg.TurnsRecoveryRate);
+                .m.limMax!int?(c.sysivar[.iLIFE]=, c.sysivar[.iLIFEMAX]);
+              }
               c.trSelfState(c.isWin() ? 180 : (c.isLose() ? 170 : 175), -1, 1);
             }
           }];
