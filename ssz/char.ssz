@@ -6940,7 +6940,13 @@ public float action(
               (c.sysivar[.iSYSFLAG] & .sfOVER) == 0
               && c.isActive() && !c.isKO() && (c.isOver() || .waitdown <= 0))
             {
-              if(.com.time > 0 && c.isWin()){
+              if(
+                .com.time > 0 && c.isWin()
+                && .com.p1wins < .com.p1mw && .com.p2wins < .com.p2mw
+                && (
+                  .com.tmode[0] == (int).com.TeamMode::Turns
+                  || .com.tmode[1] == (int).com.TeamMode::Turns))
+              {
                 c.sysivar[.iLIFE] +=
                   (int)(
                     (float)c.sysivar[.iLIFEMAX]
