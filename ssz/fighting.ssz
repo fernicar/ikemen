@@ -336,7 +336,7 @@ void game()
         case (int).com.TeamMode::Single, (int).com.TeamMode::Simul:
           branch{
           cond .com.tmode[i&1] == (int).com.TeamMode::Single:
-            if(.com.tmode[i+1 & 1] != (int).com.TeamMode::Single){
+            if(.com.tmode[i+1 & 1] == (int).com.TeamMode::Simul){
               lm *= (float).cfg.Team_1VS2Life / 100.0;
             }
           else:
@@ -348,7 +348,7 @@ void game()
         case (int).com.TeamMode::Turns:
           lm *=
             2.0 * (
-              .com.tmode[i+1 & 1] != (int).com.TeamMode::Turns
+              .com.tmode[i+1 & 1] == (int).com.TeamMode::Simul
               ? (float).cfg.Team_1VS2Life / 100.0 : 1.0)
             / (float).com.numturns[i&1];
         }
