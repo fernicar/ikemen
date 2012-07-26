@@ -5350,11 +5350,7 @@ public &Char
   }
   public void trWinPerfect()
   {
-    .v.setI(
-      (int)(
-        `isWin()
-        && .chars[`playerno][0]~sysivar[.iLIFE]
-        == .chars[`playerno][0]~sysivar[.iLIFEMAX]));
+    .v.setI((int)(`isWin() && .winty[`playerno&1] >= .fgt.WinTy::PN));
   }
   public void trLose()
   {
