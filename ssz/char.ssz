@@ -5827,6 +5827,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     }
     if(pro == 0) by.sprpriority = hit.p1sprpriority;
     `pyr.sprpriority = hit.p2sprpriority;
+    `pyr.stVal.hb.hitid = hit.id;
     if(hitting > 0){
       `pyr.stVal.setHb(
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
