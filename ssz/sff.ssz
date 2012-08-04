@@ -848,6 +848,7 @@ public &Anim<frame_t>
     `sumtime = 0;
     `newframe = true;
     `loopend = false;
+    `spr.new(0);
   }
   public void copy(`self a=)
   {

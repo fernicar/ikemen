@@ -1250,6 +1250,8 @@ public void setPerfect(|.WinTy wt=)
   public ^&.com.Layout icon_lay;
   public &.ActionList al;
   public ^|.WinTy wins;
+  public int numWins = 0;
+  public ^&.sff.Anim!&.bg.Frame? justAdded, justAddedP;
   new()
   {
     `icon.new((index).WinTy::NumTypes);
@@ -1369,8 +1371,13 @@ public void setPerfect(|.WinTy wt=)
   }
   public void step(int numwin)
   {
-    `wins = `wins[0..numwin];
+    if(numwin < #`wins){
+      `wins = `wins[0..numwin];
+      `reset();
+    }
     loop{index i = 0; do: `icon[i].action(); while ++i < #`icon:}
+    if(#`justAdded > 0) `justAdded~action();
+    if(#`justAddedP > 0) `justAddedP~action();
   }
   public void draw(int layerno, ^&.fnt.Font f)
   {
@@ -1402,13 +1409,37 @@ public void setPerfect(|.WinTy wt=)
             `icon_lay[(index).WinTy::Perfect]=);
         }
         i++;
-      while i < #`wins:
+      while i < `numWins:
+        if(#`justAdded > 0) branch{
+          int wt = (int)`wins[i];
+        cond<p> #`justAddedP > 0:
+          wt -= (int).WinTy::PN;
+        comm:
+          .laydraw(
+            .com.scrrect=, (float)(`posx+`iconoffsetx*i),
+            (float)(`posy+`iconoffsety*i), 1.0,
+            layerno, `justAdded<>=, `icon_lay[wt]=);
+        diff<p>:
+          .laydraw(
+            .com.scrrect=, (float)(`posx+`iconoffsetx*i),
+            (float)(`posy+`iconoffsety*i), 1.0,
+            layerno, `justAddedP<>=, `icon_lay[(index).WinTy::Perfect]=);
+        }
       }
     }
   }
   public void add(|.WinTy wt)
   {
     `wins = `wins + ?wt;
+    `justAdded.new(1);
+    `justAdded~copy(
+      `icon[wt >= .WinTy::PN ? (int)wt-(int).WinTy::PN : (int)wt]=);
+    `justAdded~reset();
+    if(wt >= .WinTy::PN){
+      `justAddedP.new(1);
+      `justAddedP~copy(`icon[(int).WinTy::Perfect]=);
+      `justAddedP~reset();
+    }
   }
   public void setup(^&.sff.Sff sf)
   {
@@ -1424,6 +1455,9 @@ public void setPerfect(|.WinTy wt=)
   public void reset()
   {
     loop{index i = 0; do: `icon[i].reset(); while ++i < #`icon:}
+    `numWins = #`wins;
+    `justAdded.new(0);
+    `justAddedP.new(0);
   }
   public void clear()
   {

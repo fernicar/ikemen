@@ -6728,28 +6728,10 @@ public float action(
       .com.draws++;
     else:
       if(p2){
-        loop{index i = 0; while; do:
-          if(
-            #.chars[i] > 0
-            && .chars[i][0]~sysivar[.iLIFE]
-            < .chars[i][0]~sysivar[.iLIFEMAX]) break;
-          i += 2;
-        while i < #.chars:
-          .fgt.setPerfect(.winty[0]=);
-        }
         .fight~wi[0].add(.winty[0]);
         .com.p1wins += 1;
       }
       if(p1){
-        loop{index i = 1; while; do:
-          if(
-            #.chars[i] > 0
-            && .chars[i][0]~sysivar[.iLIFE]
-            < .chars[i][0]~sysivar[.iLIFEMAX]) break;
-          i += 2;
-        while i < #.chars:
-          .fgt.setPerfect(.winty[1]=);
-        }
         .fight~wi[1].add(.winty[1]);
         .com.p2wins += 1;
       }
@@ -6763,12 +6745,30 @@ public float action(
       i += 2;
     while i < #.chars:
       p1 = true;
+      loop{index i = 1; while; do:
+        if(
+          #.chars[i] > 0
+          && .chars[i][0]~sysivar[.iLIFE]
+          < .chars[i][0]~sysivar[.iLIFEMAX]) break;
+        i += 2;
+      while i < #.chars:
+        .fgt.setPerfect(.winty[1]=);
+      }
     }
     loop{index i = 1; while; do:
       if(#.chars[i] > 0 && !.chars[i][0]~isKO()) break;
       i += 2;
     while i < #.chars:
       p2 = true;
+      loop{index i = 0; while; do:
+        if(
+          #.chars[i] > 0
+          && .chars[i][0]~sysivar[.iLIFE]
+          < .chars[i][0]~sysivar[.iLIFEMAX]) break;
+        i += 2;
+      while i < #.chars:
+        .fgt.setPerfect(.winty[0]=);
+      }
     }
     branch{
     cond .com.time == 0:
@@ -6777,7 +6777,6 @@ public float action(
       .winty[0] = .winty[1] = .fgt.WinTy::T;
     }
     if(.com.intro == -.fight~ro.over_hittime && (p1 || p2)){
-      `setWinType(p1, p2);
       branch{
       cond p1 && p2:
         .ko = .fgt.KOTy::DKO;
@@ -6903,7 +6902,24 @@ public float action(
           else:
             p1 = p2 = true;
           }
-          setWinType(p1, p2);
+          if(p1) loop{index i = 1; while; do:
+            if(
+              #.chars[i] > 0
+              && .chars[i][0]~sysivar[.iLIFE]
+              < .chars[i][0]~sysivar[.iLIFEMAX]) break;
+            i += 2;
+          while i < #.chars:
+            .fgt.setPerfect(.winty[1]=);
+          }
+          if(p2) loop{index i = 0; while; do:
+            if(
+              #.chars[i] > 0
+              && .chars[i][0]~sysivar[.iLIFE]
+              < .chars[i][0]~sysivar[.iLIFEMAX]) break;
+            i += 2;
+          while i < #.chars:
+            .fgt.setPerfect(.winty[0]=);
+          }
           branch{
           cond p1 && p2:
             .ko = .fgt.KOTy::TODraw;
@@ -6929,33 +6945,37 @@ public float action(
         }
         if(.waitdown <= 0 || .com.intro < rs4t - .fight~ro.over_wintime) loop{
           index i = 0;
+          if(.waitdown >= 0){
+            setWinType(!.chars[0]<>~isWin(), !.chars[1]<>~isWin());
+          }
           while;
         do:
           if(#.chars[i] == 0) continue;
           .chars[i][0]~[void(c=){
             if(
+              .waitdown >= 0 && .com.time > 0 && c.isWin() && !c.isKO()
+              && .com.p1wins < .com.p1mw && .com.p2wins < .com.p2mw
+              && (
+                .com.tmode[0] == (int).com.TeamMode::Turns
+                || .com.tmode[1] == (int).com.TeamMode::Turns))
+            {
+              c.sysivar[.iLIFE] +=
+                (int)(
+                  (float)c.sysivar[.iLIFEMAX]
+                  * (float).com.time * (1.0/60.0) * .cfg.TurnsRecoveryRate);
+              .m.limMax!int?(c.sysivar[.iLIFE]=, c.sysivar[.iLIFEMAX]);
+            }
+            if(
               (c.sysivar[.iSYSFLAG] & .sfOVER) == 0
               && c.isActive() && !c.isKO() && (c.isOver() || .waitdown <= 0))
             {
-              if(
-                .com.time > 0 && c.isWin() && c.sysivar[.iLIFE] > 0
-                && .com.p1wins < .com.p1mw && .com.p2wins < .com.p2mw
-                && (
-                  .com.tmode[0] == (int).com.TeamMode::Turns
-                  || .com.tmode[1] == (int).com.TeamMode::Turns))
-              {
-                c.sysivar[.iLIFE] +=
-                  (int)(
-                    (float)c.sysivar[.iLIFEMAX]
-                    * (float).com.time * (1.0/60.0) * .cfg.TurnsRecoveryRate);
-                .m.limMax!int?(c.sysivar[.iLIFE]=, c.sysivar[.iLIFEMAX]);
-              }
               c.trSelfState(c.isWin() ? 180 : (c.isLose() ? 170 : 175), -1, 1);
             }
           }];
         continue:
           i++;
         while i < #.chars:
+          .waitdown = 0;
         }
         .waitdown--;
       }
