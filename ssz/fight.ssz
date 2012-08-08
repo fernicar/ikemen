@@ -683,7 +683,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public int displaytime = 90;
   public ^int cur, old;
   public ^int resttime;
-  public ^int slidetime;
+  public ^float counterX;
   public ^int shaketime;
   new()
   {
@@ -692,7 +692,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     `cur.new(2);
     `old.new(2);
     `resttime.new(2);
-    `slidetime.new(2);
+    `counterX.new(2);
     `shaketime.new(2);
     `reset();
   }
@@ -718,12 +718,13 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     loop{index i = 0; while; do:
       branch{
       cond `resttime[i] > 0:
-        `slidetime[i] = .m.min!int?(30, `slidetime[i] + 2);
+        `counterX[i] += -`counterX[i] / 8.0;
       else:
-        if(`slidetime[i] > 0) `slidetime[i]--;
+        `counterX[i] -= .cfg.LifebarFontScale * 4.0;
+        if(`counterX[i] < `start_x*2.0) `counterX[i] = `start_x*2.0;
       }
       if(`shaketime[i] > 0) `shaketime[i]--;
-      if(`slidetime[i] == 30) `resttime[i]--;
+      if(#`counterX[i] < 1.0) `resttime[i]--;
       if(combo[i] >= 2 && `old[i] != combo[i]){
         `cur[i] = combo[i];
         `resttime[i] = `displaytime;
@@ -749,16 +750,12 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       ^/char t;
       &.s.Format fm.set(`text_text);
     while; do:
-      if(`slidetime[i] == 0) continue;
+      if(`resttime[i] <= 0 && `counterX[i] == `start_x*2.0) continue;
       x =
         (i&1) == 0
-        ? (
-          `start_x > 0.0 ? 0.0
-          : `start_x*((float)(15-`slidetime[i])/15.0 + 1.0))
+        ? (`start_x > 0.0 ? 0.0 : `counterX[i])
         + (float)`posx + haba(`cur[i], f)
-        : (
-          `start_x > 0.0 ? 0.0 
-          : -`start_x*((float)(15-`slidetime[i])/15.0 + 1.0))
+        : (`start_x > 0.0 ? 0.0 : -`counterX[i])
         - (float)`posx + 320.0;
       fm.d(`cur[i]);
       t = fm.out;
@@ -811,7 +808,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     `cur[0] = `cur[1] = 0;
     `old[0] = `old[1] = 0;
     `resttime[0] = `resttime[1] = 0;
-    `slidetime[0] = `slidetime[1] = 0;
+    `counterX[0] = `counterX[1] = `start_x*2.0;
     `shaketime[0] = `shaketime[1] = 0;
   }
 }

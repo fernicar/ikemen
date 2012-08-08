@@ -5950,7 +5950,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(hitting > 0){
         by.addPower(hit.hitgetpower);
-        `pyr.addPower(hit.hitgivepower);
+        `pyr.sysivar[.iPOWER] += hit.hitgivepower;
+        .m.limRange!int?(`pyr.sysivar[.iPOWER]=, 0, `pyr.sysivar[.iPOWERMAX]);
       }
     else:
       branch{
@@ -5987,7 +5988,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
       if(hitting > 0){
         by.addPower(hit.guardgetpower);
-        `pyr.addPower(hit.guardgivepower);
+        `pyr.sysivar[.iPOWER] += hit.guardgivepower;
+        .m.limRange!int?(`pyr.sysivar[.iPOWER]=, 0, `pyr.sysivar[.iPOWERMAX]);
       }
     comm:
       if(ho) break;
