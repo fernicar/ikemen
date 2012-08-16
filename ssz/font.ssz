@@ -257,7 +257,7 @@ public &Font
     .sdl.RenderMugenGl(:
       spr~pxl<>, pal<>=, 0, spr~rct=, -x*.com.WidthScale,
       -y*.com.HeightScale, tile=, xscl*.com.WidthScale,
-      xscl*.com.WidthScale, yscl*.com.HeightScale,
+      xscl*.com.WidthScale, yscl*.com.HeightScale, 1.0,
       0.0, 0.0, .com.brightness*255>>8 | 1<<9, .com.scrrect=, 0.0, 0.0:);
   /*true:
     .sdl.screen.renderMugenZoom(

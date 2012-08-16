@@ -538,7 +538,7 @@ public &Sprite
       .sdl.RenderMugenGl(:
         `pxl<>, pal<>=, 0, `rct=, -x2*.com.WidthScale, -y2*.com.HeightScale,
         tile=, xscale*.com.WidthScale, xscale*.com.WidthScale,
-        yscale*.com.HeightScale, 0.0, 0.0, 255, .com.scrrect=, 0.0, 0.0:);
+        yscale*.com.HeightScale, 1.0, 0.0, 0.0, 255, .com.scrrect=, 0.0, 0.0:);
     }
   /*true:
     .sdl.screen.renderMugenZoom(
@@ -1136,7 +1136,7 @@ public &Anim<frame_t>
     .sdl.RenderMugenGl(:
       `spr~pxl<>, pal<>=, `mask, `spr~rct=, (rx-x2)*.com.WidthScale,
       -y2*.com.HeightScale, `tile=, xs*.com.WidthScale,
-      cscalex*bs*(float)h*.com.WidthScale, ys*.com.HeightScale,
+      cscalex*bs*(float)h*.com.WidthScale, ys*.com.HeightScale, 1.0,
       cscalex*rasterxadd*(.com.WidthScale/.com.HeightScale),
       0.0, `alphaFoo(), rect=, rx*.com.WidthScale, 0.0:);
   /*true:
@@ -1183,8 +1183,8 @@ public &Anim<frame_t>
       #xs*(float)`spr~rct.x*.com.WidthScale,
       #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
       xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
-      ys*(float)v*.com.HeightScale, 0.0, (double)uagl*.m.PI/512.0, `alphaFoo(),
-      .com.scrrect=, rx*.com.WidthScale,
+      ys*(float)v*.com.HeightScale, 1.0, 0.0, (double)uagl*.m.PI/512.0,
+      `alphaFoo(), .com.scrrect=, rx*.com.WidthScale,
       (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
   /*true:
     .sdl.screen.renderMugenZoom(
@@ -1196,6 +1196,54 @@ public &Anim<frame_t>
       `tile=, xs*(float)h*.com.WidthScale,
       xs*(float)h*.com.WidthScale, ys*(float)v*.com.HeightScale,
       0.0, uagl, `alphaFoo(), `spr~rle, `spr~pluginbuf=);
+  /*?*/
+  }
+  public void shadowDraw(
+    float x, float y, float xscale, float yscale, float vscale, float angle,
+    bool angleset, float axscl, float ayscl, ^&.com.PalFX fx, bool oVer,
+    uint color, int alpha)
+  {
+    if(#`spr == 0 || #`spr~pxl == 0) ret;
+    float x2 = x, y2 = y;
+    int h = `h*`frames[`drawidx].h;
+    int v = `v*`frames[`drawidx].v;
+    float xs = xscale * axscl, ys = yscale * ayscl;
+    float agl =
+      angle*(float)(`h * `v * (xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
+    uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
+    if(uagl == 0x0 && !angleset){
+      x2 += xs*(float)(h*`frames[`drawidx].x);
+      if(xs < 0.0 && oVer) x2 -= xs;
+      if(ys < 0.0 && oVer) y2 -= ys;
+    }
+    .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
+    .m.limRange!float?(
+      ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
+  /?/*.cfg.OpenGL:
+    if(color != 0x0) loop{index i = 0; do:
+      .com.tmppl[i] = color;
+    while ++i < 256:}
+    ~$void(int) draw = [void(int alp){
+      .sdl.RenderMugenGl(:
+        `spr~pxl<>, .com.tmppl<>=, `mask, `spr~rct=,
+        #xs*(float)`spr~rct.x*.com.WidthScale,
+        #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
+        xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
+        ys*(float)v*.com.HeightScale, vscale, 0.0, (double)uagl*.m.PI/512.0,
+        alp, .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
+        (y2+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
+    }];
+    if((int)color > 0) draw(:-2:);
+    if(alpha > 0) draw(:(256-alpha) << 10 | 1 << 9:);
+  /*true:
+    .sdl.screen.renderMugenShadow(
+      .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
+      (y2+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
+      `spr~pxl, color, `spr~rct=,
+      #xs*(float)`spr~rct.x*.com.WidthScale,
+      #ys*(float)`spr~rct.y*.com.HeightScale,
+      xs*(float)h*.com.WidthScale, ys*(float)v*.com.HeightScale, vscale,
+      uagl, alpha, `spr~rle, `spr~pluginbuf=);
   /*?*/
   }
   public void setup(^&.Sff sff)

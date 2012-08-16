@@ -169,7 +169,7 @@ public &DrawnClsn
         spr.pxl<>, spr.colorPallet<>=, -1, spr.rct=,
         (-x+160.0)*.com.WidthScale, -y*.com.HeightScale, til=,
         `xscale*.com.WidthScale*w, `xscale*.com.WidthScale*w,
-        `yscale*.com.WidthScale*h, 0.0, 0.0, alpha, .com.scrrect=,
+        `yscale*.com.WidthScale*h, 1.0, 0.0, 0.0, alpha, .com.scrrect=,
         .com.WidthScale*160.0, 0.0:);
     /*true:
       {

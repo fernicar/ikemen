@@ -128,7 +128,7 @@ struct OutBufList
 	{
 		delete head;
 	}
-	void add(char *buf, int len)
+	void add(char* buf, int len)
 	{
 		if(head == nullptr){
 			head = tail = new Node;
@@ -143,7 +143,7 @@ struct OutBufList
 	void pop()
 	{
 		if(head == nullptr) return;
-		Node *tmp = head;
+		Node* tmp = head;
 		head = head->next;
 		tmp->next = nullptr;
 		delete tmp;
@@ -207,7 +207,7 @@ void om_close()
 {
 	om_closed = true;
 }
-int om_write(char *buf, int len)
+int om_write(char* buf, int len)
 {
 	if(buf == nullptr || len <= 0) return 0;
 	AutoLocker al(&g_sndmtx);
@@ -252,22 +252,22 @@ int om_getwrittentime()
 
 void dummySAVAInit(int maxlatancy_in_ms, int srate){}
 void dummySAVADeInit(){}
-void dummySAAddPCMData(void *PCMData, int nch, int bps, int timestamp){}
+void dummySAAddPCMData(void* PCMData, int nch, int bps, int timestamp){}
 int dummySAGetMode(){return 0;}
-void dummySAAdd(void *data, int timestamp, int csa){}
-void dummyVSAAddPCMData(void *PCMData, int nch, int bps, int timestamp){}
-int dummyVSAGetMode(int *specNch, int *waveNch){return 0;}
-void dummyVSAAdd(void *data, int timestamp){}
+void dummySAAdd(void* data, int timestamp, int csa){}
+void dummyVSAAddPCMData(void* PCMData, int nch, int bps, int timestamp){}
+int dummyVSAGetMode(int* specNch, int* waveNch){return 0;}
+void dummyVSAAdd(void* data, int timestamp){}
 void dummyVSASetInfo(int nch, int srate){}
 int dummydsp_isactive(){return 0;}
 int dummydsp_dosamples(
-	short int *samples, int numsamples, int bps, int nch, int srate)
+	short int* samples, int numsamples, int bps, int nch, int srate)
 {return numsamples;}
 void dummySetInfo(int bitrate, int srate, int stereo, int synched){}
 
 
 
-void sndcallback(void *unused, Uint8 *stream, int len)
+void sndcallback(void* unused, Uint8* stream, int len)
 {
 	int i;
 	for(i = 0; i < g_samples*2; i++){
@@ -411,7 +411,7 @@ void sndjoyinit()
 	g_js.init();
 }
 
-TUserFunc(void, Init, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
+TUserFunc(void, Init, int32_t h, int32_t w, Reference cap, SDL_Surface** pps)
 {
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
 		g_screen = *pps = nullptr;
@@ -428,7 +428,7 @@ TUserFunc(void, Init, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 	g_h = h;
 }
 
-TUserFunc(void, GlInit, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
+TUserFunc(void, GlInit, int32_t h, int32_t w, Reference cap, SDL_Surface** pps)
 {
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
 		g_screen = *pps = nullptr;
@@ -465,19 +465,19 @@ TUserFunc(void, GlInit, int32_t h, int32_t w, Reference cap, SDL_Surface **pps)
 	g_h = h;
 }
 
-TUserFunc(void, FullScreen, bool fs, SDL_Surface **pps)
+TUserFunc(void, FullScreen, bool fs, SDL_Surface** pps)
 {
 	g_screen =
 		*pps =
 		SDL_SetVideoMode(g_w, g_h, 32, g_scrflag | (fs ? SDL_FULLSCREEN : 0));
 }
 
-TUserFunc(void, ShareScreen, SDL_Surface **pps)
+TUserFunc(void, ShareScreen, SDL_Surface** pps)
 {
 	*pps = g_screen;
 }
 
-TUserFunc(void, SetSurfaceNull, SDL_Surface **pps)
+TUserFunc(void, SetSurfaceNull, SDL_Surface** pps)
 {
 	*pps = nullptr;
 }
@@ -493,7 +493,7 @@ TUserFunc(void, End)
 	SDL_Quit();
 }
 
-TUserFunc(bool, PollEvent, int8_t *pb)
+TUserFunc(bool, PollEvent, int8_t* pb)
 {
 	const int activeofs  =            sizeof(int32_t);
 
@@ -650,7 +650,7 @@ TUserFunc(bool, JoystickButtonState, int32_t btn, int32_t joy)
 	return g_js.getState(joy, btn);
 }
 
-TUserFunc(void, Fill, uint32_t color, SDL_Rect *prect, SDL_Surface *ps)
+TUserFunc(void, Fill, uint32_t color, SDL_Rect* prect, SDL_Surface* ps)
 {
 	SDL_FillRect(ps, prect, color);
 }
@@ -661,36 +661,36 @@ TUserFunc(intptr_t, IMGLoad, Reference fn)
 }
 
 TUserFunc(
-	void, BlitSurfaceEx, SDL_Rect *pdstr,
-	SDL_Surface *pdsts, SDL_Rect *psrcr, SDL_Surface *psrcs)
+	void, BlitSurfaceEx, SDL_Rect* pdstr,
+	SDL_Surface* pdsts, SDL_Rect* psrcr, SDL_Surface* psrcs)
 {
 	SDL_BlitSurface(psrcs, psrcr, pdsts, pdstr);
 }
 
 TUserFunc(
-	void, BlitSurface, SDL_Rect *prect,
-	SDL_Surface *pdsts, SDL_Surface *psrcs)
+	void, BlitSurface, SDL_Rect* prect,
+	SDL_Surface* pdsts, SDL_Surface* psrcs)
 {
 	SDL_BlitSurface(psrcs, nullptr, pdsts, prect);
 }
 
 TUserFunc(
 	intptr_t, CreatePaletteSurface,
-	int32_t h, int32_t w, SDL_Color *ppl, uint8_t *ppx)
+	int32_t h, int32_t w, SDL_Color* ppl, uint8_t* ppx)
 {
-	SDL_Surface *psrc = SDL_CreateRGBSurfaceFrom(ppx, w, h, 8, w, 0, 0, 0, 0);
+	SDL_Surface* psrc = SDL_CreateRGBSurfaceFrom(ppx, w, h, 8, w, 0, 0, 0, 0);
 	SDL_SetColors(psrc, ppl, 0, 256);
-	SDL_Surface *pdst = SDL_ConvertSurface(psrc, psrc->format, SDL_SWSURFACE);
+	SDL_Surface* pdst = SDL_ConvertSurface(psrc, psrc->format, SDL_SWSURFACE);
 	SDL_FreeSurface(psrc);
 	return (intptr_t)pdst;
 }
 
-TUserFunc(void, SetColorKey, uint32_t key, SDL_Surface *psur)
+TUserFunc(void, SetColorKey, uint32_t key, SDL_Surface* psur)
 {
 	SDL_SetColorKey(psur, (key >= 256 ? 0 : SDL_SRCCOLORKEY), key);
 }
 
-TUserFunc(void, Flip, SDL_Surface *ps)
+TUserFunc(void, Flip, SDL_Surface* ps)
 {
 	SDL_Flip(ps);
 }
@@ -703,7 +703,7 @@ TUserFunc(intptr_t, AllocSurface, int32_t h, int32_t w)
 			0x0000FF00, 0x000000FF, 0xFF000000);
 }
 
-TUserFunc(void, FreeSurface, SDL_Surface *ps)
+TUserFunc(void, FreeSurface, SDL_Surface* ps)
 {
 	SDL_FreeSurface(ps);
 }
@@ -718,7 +718,7 @@ TUserFunc(uint32_t, GetTicks)
 	return SDL_GetTicks();
 }
 
-TUserFunc(void, SetAlpha, uint8_t a, SDL_Surface *ps)
+TUserFunc(void, SetAlpha, uint8_t a, SDL_Surface* ps)
 {
 	SDL_SetAlpha(ps, SDL_SRCALPHA, a);
 }
@@ -730,22 +730,22 @@ TUserFunc(void, CursorShow, bool show)
 
 TUserFunc(intptr_t, OpenFont, int32_t size, Reference font)
 {
-	TTF_Font *pf;
+	TTF_Font* pf;
 	pf = TTF_OpenFont(pu->refToAstr(CP_THREAD_ACP, font).c_str(), size);
 	TTF_SetFontStyle (pf, TTF_STYLE_NORMAL);
 	return (intptr_t)pf;
 }
 
-TUserFunc(void, CloseFont, TTF_Font *pf)
+TUserFunc(void, CloseFont, TTF_Font* pf)
 {
 	TTF_CloseFont(pf);
 }
 
 TUserFunc(
 	void, RenderFont, SDL_Surface *ps, Reference str,
-	int16_t y, int16_t x, bool srcalpha, SDL_Color c, TTF_Font *pf)
+	int16_t y, int16_t x, bool srcalpha, SDL_Color c, TTF_Font* pf)
 {
-	SDL_Surface *psrc;
+	SDL_Surface* psrc;
 	SDL_Rect dest;
 	dest.x = x;
 	dest.y = y;
@@ -811,7 +811,7 @@ double normalize(double sam, const int chs, const int sps, NormalizeVar& v)
 	else if(v.heri > 1.0) v.heri = 1.0;
 	return sam;
 }
-TUserFunc(bool, SetSndBuf, int32_t *buf)
+TUserFunc(bool, SetSndBuf, int32_t* buf)
 {
 	if(g_snddata == g_sndbuf) return false;
 	int i, j;
@@ -1074,30 +1074,31 @@ TUserFunc(void, SetVolume, int32_t v)
 
 
 
-void kaiten(float &x, float &y, float angle, float rcx, float rcy)
+void kaiten(float& x, float& y, float angle, float rcx, float rcy, float vscl)
 {
-	float length = sqrt((x - rcx)*(x - rcx) + (y - rcy)*(y - rcy));
+	float temp = (y - rcy) / vscl;
+	float length = sqrt((x - rcx)*(x - rcx) + temp*temp);
 	if(x - rcx == 0.0f){
 		angle += (float)(y - rcy > 0.0f ? (float)PI/2.0f : -(float)PI/2.0f);
 		x = rcx + (float)(length*cos(angle));
-		y = rcy + (float)(length*sin(angle));
+		y = rcy + (float)(length*sin(angle)) * vscl;
 		return;
 	}
 	double kakudo =
-		atan((y - rcy) / (x - rcx)) + (x - rcx < 0 ? (float)PI : 0.0f) + angle;
+		atan(temp / (x - rcx)) + (x - rcx < 0 ? (float)PI : 0.0f) + angle;
 	x = rcx + (float)(length*cos(kakudo));
-	y = rcy + (float)(length*sin(kakudo));
+	y = rcy + (float)(length*sin(kakudo)) * vscl;
 }
 
 struct PalletColorImg
 {
-	uint8_t *data;
-	uint8_t *end;
+	uint8_t* data;
+	uint8_t* end;
 	int currentx;
 	int currenty;
 	int width;
 	int color;
-	void setImg(Reference &r, int w)
+	void setImg(Reference& r, int w)
 	{
 		data = (uint8_t*)r.atpos();
 		end = data + r.len();
@@ -1151,18 +1152,18 @@ struct PcxRleImg
 {
 	struct LineInfo
 	{
-		uint8_t *data;
+		uint8_t* data;
 	};
-	uint8_t *data;
-	uint8_t *end;
+	uint8_t* data;
+	uint8_t* end;
 	int currentx;
 	int currenty;
 	int width;
 	int datawidth;
 	int color;
 	int restcount;
-	Reference *nlbuf;
-	void setImg(Reference &r, int w, int dw, Reference *b)
+	Reference* nlbuf;
+	void setImg(Reference& r, int w, int dw, Reference* b)
 	{
 		data = (uint8_t*)r.atpos();
 		end = data + r.len();
@@ -1280,19 +1281,25 @@ public:
 	typedef void (*mrllporc)(
 		uint32_t*, int, int, int, Img, uint32_t*, uint32_t,
 		bool, uint32_t, int, int, int, int, int, int, int, int);
+	typedef void (*mzlslporc)(
+		uint32_t*, Img&, uint32_t, uint32_t,
+		int, int, int, int, int, int);
+	typedef void (*mrlslporc)(
+		uint32_t*, int, int, int, Img, uint32_t, uint32_t,
+		bool, uint32_t, int, int, int, int, int, int, int, int, int);
 };
-void mTrans(uint32_t &dst, uint32_t color, uint32_t colorkey)
+void mTrans(uint32_t& dst, uint32_t color, uint32_t colorkey)
 {
 	dst = color;
 }
-void mAddTrans(uint32_t &dst, uint32_t color, uint32_t colorkey)
+void mAddTrans(uint32_t& dst, uint32_t color, uint32_t colorkey)
 {
 	uint32_t tmp =
 		((dst & color) + (((dst ^ color) >> 1) & 0x7f7f7f7f)) & 0x80808080;
 	uint32_t msk = (tmp << 1) - (tmp >> 7);
 	dst = ((dst + color) - msk) | msk;
 }
-void mAdd1Trans(uint32_t &dst, uint32_t color, uint32_t colorkey)
+void mAdd1Trans(uint32_t& dst, uint32_t color, uint32_t colorkey)
 {
 	uint32_t tmpm = (1 << (8 - (colorkey >> 16))) - 1;
 	tmpm |= tmpm << 8 | tmpm << 16;
@@ -1302,14 +1309,14 @@ void mAdd1Trans(uint32_t &dst, uint32_t color, uint32_t colorkey)
 	uint32_t msk = (tmp << 1) - (tmp >> 7);
 	dst = ((tmpd + color) - msk) | msk;
 }
-void mSubTrans(uint32_t &dst, uint32_t color, uint32_t colorkey)
+void mSubTrans(uint32_t& dst, uint32_t color, uint32_t colorkey)
 {
 	uint32_t tmp =
 		(((~dst & color) << 1) + ((~dst ^ color) & 0xfefefefe)) & 0x01010100;
 	uint32_t msk = tmp - (tmp >> 8);
 	dst = (dst - color + tmp) & ~msk;
 }
-void mAlphaTrans(uint32_t &dst, uint32_t color, uint32_t colorkey)
+void mAlphaTrans(uint32_t& dst, uint32_t color, uint32_t colorkey)
 {
 	uint64_t tmpd =
 		((uint64_t)(dst&0xff0000) << 16)
@@ -1328,9 +1335,20 @@ void mAlphaTrans(uint32_t &dst, uint32_t color, uint32_t colorkey)
 		(uint32_t)((tmpd&0xff0000000000L)>>24
 		| (tmpd&0xff000000L)>>16 | (tmpd&0xff00L)>>8);
 }
+void mShadowTrans(uint32_t& dst, uint32_t color, uint32_t alpha)
+{
+	mSubTrans(dst, color, 0);
+	uint64_t tmpd =
+		((uint64_t)(dst&0xff0000) << 16)
+		| ((uint64_t)(dst&0xff00) << 8) | (uint64_t)(dst&0xff);
+	tmpd *= alpha;
+	dst =
+		(uint32_t)((tmpd&0xff0000000000L)>>24
+		| (tmpd&0xff000000L)>>16 | (tmpd&0xff00L)>>8);
+}
 
 template<typename Img, copycolorproc ccp> void mzlLoop(
-	uint32_t *pdpx, Img &pri, uint32_t *pspl, uint32_t colorkey,
+	uint32_t* pdpx, Img& pri, uint32_t* pspl, uint32_t colorkey,
 	int xsign, SDL_Rect tile, int ix, int dxend, int ifx, int ixcl, int sx)
 {
 	Img tmppri = pri;
@@ -1438,8 +1456,8 @@ template<typename Img, copycolorproc ccp> void mzlLoop(
 	}
 }
 template<typename Img> void mzLineBilt(
-	typename Funcs<Img>::mzllporc loop, uint32_t *pdpx, SDL_Rect &dr,
-	float dcx, Img &pri, uint32_t *pspl, float cx, SDL_Rect &til,
+	typename Funcs<Img>::mzllporc loop, uint32_t* pdpx, SDL_Rect& dr,
+	float dcx, Img& pri, uint32_t* pspl, float cx, SDL_Rect& til,
 	float xscl, uint32_t colorkey)
 {
 	float fx = dcx - cx*xscl;
@@ -1537,7 +1555,7 @@ BARBARBAR:
 	int ixcl = (int)(xscl*65536.0f);
 	loop(pdpx, pri, pspl, colorkey, xsign, tile, ix, dxend, ifx, ixcl, sx);
 }
-void getdxdy(int &dx, int &dy, const Zurashi *zt, uint8_t ztofs, uint32_t roto)
+void getdxdy(int& dx, int& dy, const Zurashi* zt, uint8_t ztofs, uint32_t roto)
 {
 	if((roto & 0x80) == 0){
 		dx = zt[ztofs].dx;
@@ -1549,7 +1567,7 @@ void getdxdy(int &dx, int &dy, const Zurashi *zt, uint8_t ztofs, uint32_t roto)
 }
 
 template<int sign> void inclrxy(
-	int &rx, int &ry, const Zurashi *xzt, uint8_t xztofs, uint32_t roto)
+	int& rx, int& ry, const Zurashi* xzt, uint8_t xztofs, uint32_t roto)
 {
 	int xp1 = (roto+256)>>9 & 1;
 	int xmask = (int)(xp1 == 0) - 1;
@@ -1566,7 +1584,7 @@ template<int sign> void inclrxy(
 	}
 }
 template<typename Img, copycolorproc ccp> void mzrlLoop(
-	uint32_t *pdpx, int pdpch, int rx, int ry, Img pri, uint32_t *pspl,
+	uint32_t* pdpx, int dstw, int rx, int ry, Img pri, uint32_t* pspl,
 	uint32_t roto, bool biltflg, uint32_t colorkey, int rxsrt, int rxend,
 	int rysrt, int ryend, int rxlimmask, int rylimmask, int ifx, int ixcl)
 {
@@ -1614,7 +1632,7 @@ template<typename Img, copycolorproc ccp> void mzrlLoop(
 							|| (xzt[xztofs].dy == 0) == (xzt[xztofs].dx == 0))
 						&& (xzt[xztofs].dy != 0 || xzt[xztofs].dx != 0))
 					{
-						ccp(pdpx[rx + ry*pdpch], pspl[pri.color], colorkey);
+						ccp(pdpx[rx + ry*dstw], pspl[pri.color], colorkey);
 					}
 					xztofs++;
 					inclrxy<1>(rx, ry, xzt, xztofs, roto);
@@ -1651,7 +1669,7 @@ template<typename Img, copycolorproc ccp> void mzrlLoop(
 						|| (xzt[xztofs].dy == 0) == (xzt[xztofs].dx == 0))
 					&& (xzt[xztofs].dy != 0 || xzt[xztofs].dx != 0))
 				{
-					ccp(pdpx[rx + ry*pdpch], pspl[pri.color], colorkey);
+					ccp(pdpx[rx + ry*dstw], pspl[pri.color], colorkey);
 				}
 				xztofs++;
 				inclrxy<1>(rx, ry, xzt, xztofs, roto);
@@ -1701,7 +1719,7 @@ template<typename Img, copycolorproc ccp> void mzrlLoop(
 							|| (xzt[xztofs].dy == 0) == (xzt[xztofs].dx == 0))
 						&& (xzt[xztofs].dy != 0 || xzt[xztofs].dx != 0))
 					{
-						ccp(pdpx[rx + ry*pdpch], pspl[pri.color], colorkey);
+						ccp(pdpx[rx + ry*dstw], pspl[pri.color], colorkey);
 					}
 					inclrxy<-1>(rx, ry, xzt, xztofs, roto);
 					ix--;
@@ -1738,7 +1756,7 @@ template<typename Img, copycolorproc ccp> void mzrlLoop(
 						|| (xzt[xztofs].dy == 0) == (xzt[xztofs].dx == 0))
 					&& (xzt[xztofs].dy != 0 || xzt[xztofs].dx != 0))
 				{
-					ccp(pdpx[rx + ry*pdpch], pspl[pri.color], colorkey);
+					ccp(pdpx[rx + ry*dstw], pspl[pri.color], colorkey);
 				}
 				inclrxy<-1>(rx, ry, xzt, xztofs, roto);
 				if(--ix <= ifx>>16){
@@ -1751,8 +1769,8 @@ template<typename Img, copycolorproc ccp> void mzrlLoop(
 	}
 }
 template<typename Img> void mzrLineBilt(
-	typename Funcs<Img>::mrllporc loop, uint32_t *pdpx, int pdpch,
-	int rx, int ry, int xlim, int ylim, float fx, Img &pri, uint32_t *pspl,
+	typename Funcs<Img>::mrllporc loop, uint32_t* pdpx, int dstw,
+	int rx, int ry, int xlim, int ylim, float fx, Img& pri, uint32_t* pspl,
 	float xscl, uint32_t roto, bool biltflg, uint32_t colorkey)
 {
 	if(abs(fx) > 16383.0f) return;
@@ -1798,13 +1816,13 @@ template<typename Img> void mzrLineBilt(
 	int ifx = (int)floor(fx*65536.0f);
 	int ixcl = (int)(xscl*65536.0f);
 	loop(
-		pdpx, pdpch, rx, ry, pri, pspl, roto, biltflg, colorkey,
+		pdpx, dstw, rx, ry, pri, pspl, roto, biltflg, colorkey,
 		rxsrt, rxend, rysrt, ryend, rxlimmask, rylimmask, ifx, ixcl);
 }
 template<typename Img> void mzScreenBilt(
-	typename Funcs<Img>::mzllporc loop, SDL_Surface &pdst, SDL_Rect &dr,
-	float rcx, Img pri, uint32_t *ppal, SDL_Rect &psrcr, float cx, float ty,
-	SDL_Rect &tile, float xtopscl, float xbotscl, float yscl,
+	typename Funcs<Img>::mzllporc loop, SDL_Surface& dst, SDL_Rect& dr,
+	float rcx, Img pri, uint32_t *ppal, SDL_Rect& srcr, float cx, float ty,
+	SDL_Rect& tile, float xtopscl, float xbotscl, float yscl,
 	float rasterxadd, uint32_t colorkey)
 {
 	if(abs(yscl) < 0.001f) return;
@@ -1812,17 +1830,17 @@ template<typename Img> void mzScreenBilt(
 		dr.w += dr.x;
 		dr.x = 0;
 	}
-	if((int)dr.x+dr.w > pdst.w) dr.w -= dr.x+dr.w - pdst.w;
+	if((int)dr.x+dr.w > dst.w) dr.w -= dr.x+dr.w - dst.w;
 	if((int16_t)dr.w <= 0) return;
 	if(dr.y < 0){
 		dr.h += dr.y;
 		dr.y = 0;
 	}
-	if((int)dr.y+dr.h > pdst.h) dr.h -= dr.y+dr.h - pdst.h;
+	if((int)dr.y+dr.h > dst.h) dr.h -= dr.y+dr.h - dst.h;
 	if((int16_t)dr.h <= 0) return;
 	float fcx = cx / abs(xtopscl);
-	uint32_t *pdpx = (uint32_t*)pdst.pixels;
-	int pdpch = pdst.pitch / sizeof(uint32_t);
+	uint32_t* pdpx = (uint32_t*)dst.pixels;
+	int dstw = dst.pitch / sizeof(uint32_t);
 	int ysign;
 	int dybgn;
 	int dyend;
@@ -1837,7 +1855,7 @@ template<typename Img> void mzScreenBilt(
 		dyend = dr.y+dr.h;
 		ty += (float)dr.y;
 	}
-	float xscdf = (xbotscl - xtopscl) / ((float)(ysign*psrcr.h) * yscl);
+	float xscdf = (xbotscl - xtopscl) / ((float)(ysign*srcr.h) * yscl);
 	float xscl = xtopscl + xscdf*0.5f;
 	float dcx = rcx + (xscl < 0.0 ? -0.5f : 0.5f);
 	float fy = (float)dybgn - (float)ysign*ty + 0.5f;
@@ -1855,8 +1873,8 @@ template<typename Img> void mzScreenBilt(
 				fy += yscl;
 				n += 1.0f;
 			}
-			sy = (sy + (int)n) % (psrcr.h+tile.y);
-			if(sy < 0) sy += psrcr.h+tile.y;
+			sy = (sy + (int)n) % (srcr.h+tile.y);
+			if(sy < 0) sy += srcr.h+tile.y;
 		}
 		if(tile.h == 0){
 			tile.h = 1;
@@ -1878,14 +1896,14 @@ template<typename Img> void mzScreenBilt(
 		}else if(tile.h == 1){
 			tile.h = UINT16_MAX;
 		}
-		if(sy >= psrcr.h+tile.y){
-			if(sy >= (int)(psrcr.h+tile.y)*tile.h) return;
-			tile.h -= sy/(psrcr.h+tile.y);
-			sy = sy%(psrcr.h+tile.y);
+		if(sy >= srcr.h+tile.y){
+			if(sy >= (int)(srcr.h+tile.y)*tile.h) return;
+			tile.h -= sy/(srcr.h+tile.y);
+			sy = sy%(srcr.h+tile.y);
 		}
 	}
-	if(sy >= psrcr.h){
-		fy += yscl*(float)(tile.y - (sy-psrcr.h));
+	if(sy >= srcr.h){
+		fy += yscl*(float)(tile.y - (sy-srcr.h));
 		xscl += xscdf*(float)(ysign*((int)floor(fy)-iy));
 		dcx += rasterxadd*(float)(ysign*((int)floor(fy)-iy));
 		iy = (int)floor(fy);
@@ -1893,7 +1911,7 @@ template<typename Img> void mzScreenBilt(
 		if(--tile.h == 0) return;
 	}
 	if(ysign*iy >= ysign*dyend) return;
-	pdpx += pdpch*iy;
+	pdpx += dstw*iy;
 	Img newpri = pri;
 	int i;
 	for(i = 0; i < sy; i++) newpri.nextLine();
@@ -1901,7 +1919,7 @@ template<typename Img> void mzScreenBilt(
 	if(newpri.finished()){
 		xscl += (float)ysign*(floor(fy)-(float)iy)*xscdf;
 		dcx += (float)ysign*(floor(fy)-(float)iy)*rasterxadd;
-		pdpx += ((int)floor(fy)-iy)*pdpch;
+		pdpx += ((int)floor(fy)-iy)*dstw;
 		iy = (int)floor(fy);
 	}
 	float dcx2 = dcx;
@@ -1909,11 +1927,11 @@ template<typename Img> void mzScreenBilt(
 		if(iy == (int)floor(fy)){
 			do{
 				newpri.nextLine();
-				if(newpri.currenty >= psrcr.h || newpri.finished()){
-					fy += yscl*(float)(tile.y+psrcr.h-newpri.currenty);
+				if(newpri.currenty >= srcr.h || newpri.finished()){
+					fy += yscl*(float)(tile.y+srcr.h-newpri.currenty);
 					xscl += xscdf*(float)(ysign*((int)floor(fy)-iy));
 					dcx += rasterxadd*(float)(ysign*((int)floor(fy)-iy));
-					pdpx += ((int)floor(fy) - iy)*pdpch;
+					pdpx += ((int)floor(fy) - iy)*dstw;
 					iy = (int)floor(fy);
 					if(--tile.h == 0 || ysign*iy >= ysign*dyend) return;
 					newpri = pri;
@@ -1929,12 +1947,12 @@ template<typename Img> void mzScreenBilt(
 		xscl += xscdf;
 		dcx += rasterxadd;
 		iy += ysign;
-		pdpx += ysign*pdpch;
+		pdpx += ysign*dstw;
 	}
 }
 template<typename Img> void mzrScreenBilt(
-	typename Funcs<Img>::mrllporc loop, SDL_Surface &pdst,
-	float rcx, float rcy, Img &pri, uint32_t *ppal, SDL_Rect &psrcr,
+	typename Funcs<Img>::mrllporc loop, SDL_Surface& dst,
+	float rcx, float rcy, Img& pri, uint32_t* ppal, SDL_Rect& srcr,
 	float fx, float fy, float xscl, float yscl,
 	uint32_t roto, uint32_t colorkey)
 {
@@ -1948,13 +1966,13 @@ template<typename Img> void mzrScreenBilt(
 			(roto-256 & 0x80) == 0
 			? roto-256 & 0x7f : 128 - (roto-256 & 0x7f)];
 	uint8_t yztofs = 0;
-	uint32_t *pdpx = (uint32_t*)pdst.pixels;
-	int pdpch = pdst.pitch / sizeof(uint32_t);
-	int xlim = pdst.w;
-	int ylim = pdst.h;
+	uint32_t* pdpx = (uint32_t*)dst.pixels;
+	int dstw = dst.pitch / sizeof(uint32_t);
+	int xlim = dst.w;
+	int ylim = dst.h;
 	float tmpx = fx = rcx + (xscl < 0.0f ? fx : -fx);
 	float tmpy = fy = rcy - fy;
-	kaiten(tmpx, tmpy, -((float)PI*(float)roto/512.0f), rcx, rcy);
+	kaiten(tmpx, tmpy, -((float)PI*(float)roto/512.0f), rcx, rcy, 1.0);
 	int rx = (int)floor(tmpx + 0.5f), ry = (int)floor(tmpy + 0.5f);
 	intptr_t pmask = (int32_t)((roto-256)<<(31-8))>>31;
 	int xp1 = roto>>9 & 1;
@@ -1971,20 +1989,20 @@ template<typename Img> void mzrScreenBilt(
 	for(;;){
 		while(iy == (int)floor(fy)){
 			pri.nextLine();
-			if(pri.currenty >= psrcr.h || pri.finished()) return;
+			if(pri.currenty >= srcr.h || pri.finished()) return;
 			fy += yscl;
 		}
 		if(tmpdx != 0){
 			*(int*)(((intptr_t)&rx&~pmask) | ((intptr_t)&ry&pmask)) +=
 				((tmpdx^xmask) + xp1);
 			mzrLineBilt(
-				loop, pdpx, pdpch, rx, ry, xlim, ylim, fx,
+				loop, pdpx, dstw, rx, ry, xlim, ylim, fx,
 				pri, ppal, xscl, roto, tmpdy == 0, colorkey);
 		}
 		if(tmpdy != 0){
 			*(int*)(((intptr_t)&rx&pmask) | ((intptr_t)&ry&~pmask)) +=
 				((tmpdy^ymask) + yp1);
-			mzrLineBilt(loop, pdpx, pdpch, rx, ry, xlim, ylim, fx,
+			mzrLineBilt(loop, pdpx, dstw, rx, ry, xlim, ylim, fx,
 				pri, ppal, xscl, roto, true, colorkey);
 		}
 		getdxdy(tmpdx, tmpdy, yzt, yztofs, roto-256);
@@ -1993,7 +2011,7 @@ template<typename Img> void mzrScreenBilt(
 	}
 }
 template<copycolorproc ccp> void mRender(
-	SDL_Surface &pdst, SDL_Rect dr, float rcx, float rcy, Reference img,
+	SDL_Surface& dst, SDL_Rect dr, float rcx, float rcy, Reference img,
 	uint32_t *ppal, SDL_Rect psrcr, float cx, float ty, SDL_Rect tile,
 	float xtopscl, float xbotscl, float yscl, float rasterxadd,
 	uint32_t roto, uint32_t colorkey, int rle, Reference *pluginbuf)
@@ -2004,11 +2022,11 @@ template<copycolorproc ccp> void mRender(
 		pri.setImg(img, psrcr.w, rle, pluginbuf);
 		if(roto == 0){
 			mzScreenBilt(
-				mzlLoop<PcxRleImg, ccp>, pdst, dr, rcx, pri, ppal, psrcr,
+				mzlLoop<PcxRleImg, ccp>, dst, dr, rcx, pri, ppal, psrcr,
 				cx, ty, tile, xtopscl, xbotscl, yscl, rasterxadd, colorkey);
 		}else{
 			mzrScreenBilt(
-				mzrlLoop<PcxRleImg, ccp>, pdst, rcx, rcy, pri, ppal, psrcr,
+				mzrlLoop<PcxRleImg, ccp>, dst, rcx, rcy, pri, ppal, psrcr,
 				cx, ty, xtopscl, yscl, roto, colorkey);
 		}
 	}else{
@@ -2016,11 +2034,11 @@ template<copycolorproc ccp> void mRender(
 		pri.setImg(img, psrcr.w);
 		if(roto == 0){
 			mzScreenBilt(
-				mzlLoop<PalletColorImg, ccp>, pdst, dr, rcx, pri, ppal, psrcr,
+				mzlLoop<PalletColorImg, ccp>, dst, dr, rcx, pri, ppal, psrcr,
 				cx, ty, tile, xtopscl, xbotscl, yscl, rasterxadd, colorkey);
 		}else{
 			mzrScreenBilt(
-				mzrlLoop<PalletColorImg, ccp>, pdst, rcx, rcy, pri, ppal,
+				mzrlLoop<PalletColorImg, ccp>, dst, rcx, rcy, pri, ppal,
 				psrcr, cx, ty, xtopscl, yscl, roto, colorkey);
 		}
 	}
@@ -2037,11 +2055,11 @@ int foobar(int n)
 	return 0;
 }
 TUserFunc(
-	bool, RenderMugenZoom, Reference *pluginbuf, int32_t rle,
-	float rcy, float rcx, SDL_Rect *pdstr, SDL_Surface *pdst, int32_t alpha,
+	bool, RenderMugenZoom, Reference* pluginbuf, int32_t rle,
+	float rcy, float rcx, SDL_Rect* pdstr, SDL_Surface* pdst, int32_t alpha,
 	uint32_t roto, float rasterxadd, float yscl, float xbotscl, float xtopscl,
-	SDL_Rect *tile, float ty, float cx, SDL_Rect *psrcr,
-	uint16_t ckey, uint32_t *ppal, Reference img)
+	SDL_Rect* tile, float ty, float cx, SDL_Rect* psrcr,
+	uint16_t ckey, uint32_t* ppal, Reference img)
 {
 	SDL_Rect tl = *tile;
 	if(tl.x > 0) tl.x -= psrcr->w;
@@ -2123,6 +2141,549 @@ TUserFunc(
 				xtopscl, xbotscl, yscl, rasterxadd, roto, ck, rle, pluginbuf);
 		}
 	}
+	return true;
+}
+
+
+template<typename Img> void mzlShadowLoop(
+	uint32_t* pdpx, Img& pri, uint32_t color, uint32_t alpha,
+	int xsign, int ix, int dxend, int ifx, int ixcl, int sx)
+{
+	Img tmppri = pri;
+	tmppri.skip(sx);
+	if(
+		xsign*dxend
+		> xsign*((ifx + ((tmppri.width-1) - tmppri.currentx)*ixcl) >> 16))
+	{
+		if(sx != 0 && tmppri.currentx <= 0) return;
+		if(-65536 <= ixcl && ixcl <= 65536){
+			for(;;){
+				int n = (int)(ix == ifx>>16) - 1 & xsign;
+				if(n != 0 && tmppri.color != 0){
+					mShadowTrans(pdpx[ix], color, alpha);
+				}
+				ix += n;
+				tmppri.nextPixel();
+				if(tmppri.currentx <= 0) return;
+				ifx += ixcl;
+			}
+		}else{
+			for(;;){
+				if(ix == ifx>>16){
+					tmppri.nextPixel();
+					if(tmppri.currentx <= 0) return;
+					ifx += ixcl;
+				}
+				if(tmppri.color != 0){
+					mShadowTrans(pdpx[ix], color, alpha);
+				}
+				ix += xsign;
+			}
+		}
+	}else{
+		if(-65536 <= ixcl && ixcl <= 65536){
+			for(;;){
+				int n = (int)(ix == ifx>>16) - 1 & xsign;
+				if(n != 0 && tmppri.color != 0){
+					mShadowTrans(pdpx[ix], color, alpha);
+				}
+				if((ix += n) == dxend) return;
+				tmppri.nextPixel();
+				ifx += ixcl;
+			}
+		}else{
+			for(;;){
+				if(ix == ifx>>16){
+					tmppri.nextPixel();
+					ifx += ixcl;
+				}
+				if(tmppri.color != 0){
+					mShadowTrans(pdpx[ix], color, alpha);
+				}
+				if((ix += xsign) == dxend) return;
+			}
+		}
+	}
+}
+template<typename Img> void mzShadowLineBilt(
+	typename Funcs<Img>::mzlslporc loop, uint32_t* pdpx, SDL_Rect& dr,
+	float fx, Img& pri, uint32_t color, float xscl, uint32_t alpha)
+{
+	if(
+		abs(fx) > 1.0e5f || abs(xscl) < 0.001f
+		|| abs((float)pri.width * xscl) + (float)g_w > 32767.0f)
+	{
+		return;
+	}
+	int xsign = (xscl < 0.0f ? -1 : 1);
+	int ix;
+	int sx = 0;
+	int dxend;
+	if(xsign < 0){
+		dxend = dr.x-1;
+		ix = (int)floor(fx);
+		if(ix > (int)dr.x+dr.w-1){
+			ix = (int)dr.x+dr.w-1;
+			float n = floor(((float)ix-floor(fx))/xscl);
+			fx += n*xscl;
+			if(floor(fx+xscl) > (float)ix){
+				fx += xscl;
+				n += 1.0f;
+			}
+			sx += (int)n;
+			if(sx >= pri.width) return;
+		}
+	}else{
+		dxend = dr.x+dr.w;
+		ix = (int)floor(fx);
+		if(ix < dr.x){
+			ix = dr.x;
+			float n = floor(((float)ix-floor(fx))/xscl);
+			fx += n*xscl;
+			if(floor(fx+xscl) < (float)ix){
+				fx += xscl;
+				n += 1.0f;
+			}
+			sx += (int)n;
+			if(sx >= pri.width) return;
+		}
+	}
+	if(xsign*ix >= xsign*dxend) return;
+	fx += xscl;
+	int ifx = (int)floor(fx*65536.0f);
+	int ixcl = (int)(xscl*65536.0f);
+	loop(pdpx, pri, color, alpha, xsign, ix, dxend, ifx, ixcl, sx);
+}
+
+template<int sign> void inclrxyShadow(
+	int& rx, int& ry, const Zurashi* xzt, uint8_t xztofs, uint32_t roto,
+	int vscl)
+{
+	int xp1 = (roto+256)>>9 & 1;
+	int xmask = (int)(xp1 == 0) - 1;
+	int yp1 = roto>>9 & 1;
+	int ymask = (int)(yp1 == 0) - 1;
+	int dx, dy;
+	getdxdy(dx, dy, xzt, xztofs, roto);
+	if((roto & 0x100) != 0){
+		ry += sign*((dx^xmask) + xp1)*vscl;
+		rx += sign*((dy^ymask) + yp1);
+	}else{
+		rx += sign*((dx^xmask) + xp1);
+		ry += sign*((dy^ymask) + yp1)*vscl;
+	}
+}
+template<typename Img> void mzrlShadowLoop(
+	uint32_t* pdpx, int dstw, int rx, int ry, Img pri, uint32_t color,
+	uint32_t roto, bool biltflg, uint32_t alpha, int rxsrt, int rxend,
+	int rysrt, int ryend, int rxlimmask, int rylimmask, int ifx,
+	int ixcl, int ivcl)
+{
+	const Zurashi* xzt =
+		RotoZurasiTable[(roto&0x80) == 0 ? roto & 0x7f : 128 - (roto & 0x7f)];
+	uint8_t xztofs = 0;
+	int ix = ifx>>16;
+	ifx += ixcl;
+	int tx = 1;
+	if(ixcl > 0){
+		if(ixcl < 65536){
+			for(;;){
+				if(ix >= ifx>>16 && tx > 0){
+					pri.nextPixel();
+					tx = pri.currentx;
+					ifx += ixcl;
+				}else{
+					if(
+						tx <= 0 || (rx^rxlimmask)+(rxlimmask&1) >= rxsrt
+						&& (ry>>16^rylimmask)+(rylimmask&1) >= rysrt)
+					{
+						break;
+					}
+					xztofs++;
+					inclrxyShadow<1>(rx, ry, xzt, xztofs, roto, ivcl);
+					ix++;
+				}
+			}
+			for(;;){
+				if(ix >= ifx>>16 && tx > 0){
+					pri.nextPixel();
+					tx = pri.currentx;
+					ifx += ixcl;
+				}else{
+					if(
+						tx <= 0 || (rx^rxlimmask)+(rxlimmask&1) >= rxend
+						|| (ry>>16^rylimmask)+(rylimmask&1) >= ryend)
+					{
+						return;
+					}
+					if(
+						pri.color != 0 && abs(ry - ((ry>>16)<<16)) <= abs(ivcl)
+						&& (
+							biltflg
+							|| (xzt[xztofs].dy == 0) == (xzt[xztofs].dx == 0))
+						&& (xzt[xztofs].dy != 0 || xzt[xztofs].dx != 0))
+					{
+						mShadowTrans(pdpx[rx + (ry>>16)*dstw], color, alpha);
+					}
+					xztofs++;
+					inclrxyShadow<1>(rx, ry, xzt, xztofs, roto, ivcl);
+					ix++;
+				}
+			}
+		}else{
+			for(;;){
+				if(
+					tx <= 0 || (rx^rxlimmask)+(rxlimmask&1) >= rxsrt
+					&& (ry>>16^rylimmask)+(rylimmask&1) >= rysrt)
+				{
+					break;
+				}
+				xztofs++;
+				inclrxyShadow<1>(rx, ry, xzt, xztofs, roto, ivcl);
+				if(++ix >= ifx>>16){
+					pri.nextPixel();
+					tx = pri.currentx;
+					ifx += ixcl;
+				}
+			}
+			for(;;){
+				if(
+					tx <= 0 || (rx^rxlimmask)+(rxlimmask&1) >= rxend
+					|| (ry>>16^rylimmask)+(rylimmask&1) >= ryend)
+				{
+					return;
+				}
+				if(
+					pri.color != 0 && abs(ry - ((ry>>16)<<16)) <= abs(ivcl)
+					&& (
+						biltflg
+						|| (xzt[xztofs].dy == 0) == (xzt[xztofs].dx == 0))
+					&& (xzt[xztofs].dy != 0 || xzt[xztofs].dx != 0))
+				{
+					mShadowTrans(pdpx[rx + (ry>>16)*dstw], color, alpha);
+				}
+				xztofs++;
+				inclrxyShadow<1>(rx, ry, xzt, xztofs, roto, ivcl);
+				if(++ix >= ifx>>16){
+					pri.nextPixel();
+					tx = pri.currentx;
+					ifx += ixcl;
+				}
+			}
+		}
+	}else{
+		if(ixcl > -65536){
+			for(;;){
+				if(ix <= ifx>>16 && tx > 0){
+					pri.nextPixel();
+					tx = pri.currentx;
+					ifx += ixcl;
+				}else{
+					if(
+						tx <= 0 || (rx^rxlimmask)+(rxlimmask&1) >= rxsrt
+						&& (ry>>16^rylimmask)+(rylimmask&1) >= rysrt)
+					{
+						break;
+					}
+					xztofs--;
+					inclrxyShadow<-1>(rx, ry, xzt, xztofs, roto, ivcl);
+					ix--;
+				}
+			}
+			for(;;){
+				if(ix <= ifx>>16 && tx > 0){
+					pri.nextPixel();
+					tx = pri.currentx;
+					ifx += ixcl;
+				}else{
+					if(
+						tx <= 0 || (rx^rxlimmask)+(rxlimmask&1) >= rxend
+						|| (ry>>16^rylimmask)+(rylimmask&1) >= ryend)
+					{
+						return;
+					}
+					xztofs--;
+					if(
+						pri.color != 0 && abs(ry - ((ry>>16)<<16)) <= abs(ivcl)
+						&& (
+							biltflg
+							|| (xzt[xztofs].dy == 0) == (xzt[xztofs].dx == 0))
+						&& (xzt[xztofs].dy != 0 || xzt[xztofs].dx != 0))
+					{
+						mShadowTrans(pdpx[rx + (ry>>16)*dstw], color, alpha);
+					}
+					inclrxyShadow<-1>(rx, ry, xzt, xztofs, roto, ivcl);
+					ix--;
+				}
+			}
+		}else{
+			for(;;){
+				if(
+					tx <= 0 || (rx^rxlimmask)+(rxlimmask&1) >= rxsrt
+					&& (ry>>16^rylimmask)+(rylimmask&1) >= rysrt)
+				{
+					break;
+				}
+				xztofs--;
+				inclrxyShadow<-1>(rx, ry, xzt, xztofs, roto, ivcl);
+				if(--ix <= ifx>>16){
+					pri.nextPixel();
+					tx = pri.currentx;
+					ifx += ixcl;
+				}
+			}
+			for(;;){
+				if(
+					tx <= 0 || (rx^rxlimmask)+(rxlimmask&1) >= rxend
+					|| (ry>>16^rylimmask)+(rylimmask&1) >= ryend)
+				{
+					return;
+				}
+				xztofs--;
+				if(
+					pri.color != 0 && abs(ry - ((ry>>16)<<16)) <= abs(ivcl)
+					&& (
+						biltflg
+						|| (xzt[xztofs].dy == 0) == (xzt[xztofs].dx == 0))
+					&& (xzt[xztofs].dy != 0 || xzt[xztofs].dx != 0))
+				{
+					mShadowTrans(pdpx[rx + (ry>>16)*dstw], color, alpha);
+				}
+				inclrxyShadow<-1>(rx, ry, xzt, xztofs, roto, ivcl);
+				if(--ix <= ifx>>16){
+					pri.nextPixel();
+					tx = pri.currentx;
+					ifx += ixcl;
+				}
+			}
+		}
+	}
+}
+template<typename Img> void mzrShadowLineBilt(
+	typename Funcs<Img>::mrlslporc loop, uint32_t* pdpx, int dstw,
+	int rx, int ry, int xlim, int ylim, float fx, Img& pri, uint32_t color,
+	float xscl, float vscl, uint32_t roto, bool biltflg, uint32_t alpha)
+{
+	if(abs(fx) > 16383.0f) return;
+	int rxsrt, rxend, rysrt, ryend;
+	int rxlimmask, rylimmask;
+	if(xscl < 0.0f){
+		if(roto < 256){
+			if(roto == 0 && ry < 0) return;
+			rxsrt = -xlim+1; rxend = 1;    rxlimmask = -1;
+			rysrt = 0;       ryend = ylim; rylimmask = 0;
+		}else if(roto < 512){
+			if(roto == 256 && rx < 0) return;
+			rxsrt = 0;       rxend = xlim; rxlimmask = 0;
+			rysrt = 0;       ryend = ylim; rylimmask = 0;
+		}else if(roto < 768){
+			if(roto == 512 && ry>>16 >= ylim) return;
+			rxsrt = 0;       rxend = xlim; rxlimmask = 0;
+			rysrt = -ylim+1; ryend = 1;    rylimmask = -1;
+		}else{
+			if(roto == 768 && rx >= xlim) return;
+			rxsrt = -xlim+1; rxend = 1;    rxlimmask = -1;
+			rysrt = -ylim+1; ryend = 1;    rylimmask = -1;
+		}
+	}else{
+		if(roto < 256){
+			if(roto == 0 && ry>>16 >= ylim) return;
+			rxsrt = 0;       rxend = xlim; rxlimmask = 0;
+			rysrt = -ylim+1; ryend = 1;    rylimmask = -1;
+		}else if(roto < 512){
+			if(roto == 256 && rx >= xlim) return;
+			rxsrt = -xlim+1; rxend = 1;    rxlimmask = -1;
+			rysrt = -ylim+1; ryend = 1;    rylimmask = -1;
+		}else if(roto < 768){
+			if(roto == 512 && ry < 0) return;
+			rxsrt = -xlim+1; rxend = 1;    rxlimmask = -1;
+			rysrt = 0;       ryend = ylim; rylimmask = 0;
+		}else{
+			if(roto == 768 && rx < 0) return;
+			rxsrt = 0;       rxend = xlim; rxlimmask = 0;
+			rysrt = 0;       ryend = ylim; rylimmask = 0;
+		}
+	}
+	int ifx = (int)floor(fx*65536.0f);
+	int ixcl = (int)(xscl*65536.0f);
+	int ivcl = (int)(vscl*65536.0f);
+	loop(
+		pdpx, dstw, rx, ry, pri, color, roto, biltflg, alpha,
+		rxsrt, rxend, rysrt, ryend, rxlimmask, rylimmask, ifx, ixcl, ivcl);
+}
+
+template<typename Img> void mzShadowScreenBilt(
+	typename Funcs<Img>::mzlslporc loop, SDL_Surface& dst, SDL_Rect& dr,
+	Img pri, uint32_t color, SDL_Rect& srcr,
+	float fx, float fy, float xscl, float yscl, uint32_t alpha)
+{
+	if(abs(yscl) < 0.001f) return;
+	if(dr.x < 0){
+		dr.w += dr.x;
+		dr.x = 0;
+	}
+	if((int)dr.x+dr.w > dst.w) dr.w -= dr.x+dr.w - dst.w;
+	if((int16_t)dr.w <= 0) return;
+	if(dr.y < 0){
+		dr.h += dr.y;
+		dr.y = 0;
+	}
+	if((int)dr.y+dr.h > dst.h) dr.h -= dr.y+dr.h - dst.h;
+	if((int16_t)dr.h <= 0) return;
+	int dstw = dst.pitch / sizeof(uint32_t);
+	int ysign = yscl < 0.0f ? -1 : 1;
+	fy += 0.5f;
+	int iy = (int)floor(fy);
+	if((iy < dr.y && ysign < 0) || (iy >= dr.h && ysign > 0)) return;
+	while(iy < dr.y || iy >= dr.h){
+		pri.nextLine();
+		if(pri.currenty >= srcr.h || pri.finished()) return;
+		fy += yscl;
+		iy = (int)floor(fy);
+	}
+	uint32_t* pdpx = (uint32_t*)dst.pixels + dstw*iy;
+	fy += yscl;
+	while(iy >= dr.y && iy < dr.h){
+		while(iy == (int)floor(fy)){
+			pri.nextLine();
+			if(pri.currenty >= srcr.h || pri.finished()) return;
+			fy += yscl;
+		}
+		mzShadowLineBilt(loop, pdpx, dr, fx, pri, color, xscl, alpha);
+		iy += ysign;
+		pdpx = (uint32_t*)dst.pixels + iy*dstw;
+	}
+}
+template<typename Img> void mzrShadowScreenBilt(
+	typename Funcs<Img>::mrlslporc loop, SDL_Surface& dst, float rcx,
+	float rcy, Img& pri, uint32_t color, SDL_Rect& srcr, float fx, float fy,
+	float xscl, float yscl, float vscl, uint32_t roto, uint32_t alpha)
+{
+	if(vscl < 0.0f){
+		vscl *= -1;
+		yscl *= -1;
+		roto = (0 - roto) & 0x3ff;
+	}
+	if(yscl < 0.0f){
+		xscl *= -1.0f;
+		yscl *= -1.0f;
+		roto = roto + 512 & 0x3ff;
+	}
+	const Zurashi* yzt =
+		RotoZurasiTable[
+			(roto-256 & 0x80) == 0
+			? roto-256 & 0x7f : 128 - (roto-256 & 0x7f)];
+	uint8_t yztofs = 0;
+	uint32_t* pdpx = (uint32_t*)dst.pixels;
+	int dstw = dst.pitch / sizeof(uint32_t);
+	int xlim = dst.w;
+	int ylim = dst.h;
+	float tmpx = fx = rcx + (xscl < 0.0f ? fx : -fx);
+	float tmpy = rcy - fy*vscl;
+	fy = rcy - fy;
+	kaiten(tmpx, tmpy, -((float)PI*(float)roto/512.0f), rcx, rcy, vscl);
+	int rx = (int)floor(tmpx + 0.5f), ry = (int)floor(tmpy*65536 + 0.5f);
+	bool kakudoToKa = (int32_t)((roto-256)<<(31-8))>>31 == 0;
+	int xmul = (roto>>9 & 1) == 0 ? 1 : -1;
+	int ymul = ((roto-256)>>9 & 1) == 0 ? 1 : -1;
+	int ivscl = (int)(vscl*65536);
+	fx += xscl < 0.0 ? -0.5f : 0.5f;
+	fy += 0.5f;
+	int iy = (int)floor(fy);
+	fy += yscl;
+	int tmpdx = 0, tmpdy = 1;
+	if(kakudoToKa){
+		ry -= tmpdy*ymul * min(1<<16, ivscl);
+	}else{
+		rx -= tmpdy*ymul;
+	}
+	for(;;){
+		while(iy == (int)floor(fy)){
+			pri.nextLine();
+			if(pri.currenty >= srcr.h || pri.finished()) return;
+			fy += yscl;
+		}
+		if(tmpdx != 0){
+			if(kakudoToKa){
+				rx += tmpdx*xmul;
+			}else{
+				ry += tmpdx*xmul * ivscl;
+			}
+			mzrShadowLineBilt(
+				loop, pdpx, dstw, rx, ry, xlim, ylim, fx,
+				pri, color, xscl, vscl, roto, tmpdy == 0, alpha);
+		}
+		if(tmpdy != 0){
+			if(kakudoToKa){
+				ry += tmpdy*ymul * ivscl;
+			}else{
+				rx += tmpdy*ymul;
+			}
+			mzrShadowLineBilt(
+				loop, pdpx, dstw, rx, ry, xlim, ylim, fx,
+				pri, color, xscl, vscl, roto, true, alpha);
+		}
+		getdxdy(tmpdx, tmpdy, yzt, yztofs, roto-256);
+		yztofs++;
+		iy++;
+	}
+}
+void mShadowRender(
+	SDL_Surface& pdst, SDL_Rect dr, float rcx, float rcy, Reference img,
+	uint32_t color, SDL_Rect srcr, float cx, float ty,
+	float xscl, float yscl, float vscl,
+	uint32_t roto, uint32_t alpha, int rle, Reference* pluginbuf)
+{
+	roto &= 0x3ff;
+	alpha = 256 - alpha;
+	if(roto == 0){
+		if(xscl >= 0) cx = -cx;
+		cx += rcx;
+		if(yscl*vscl >= 0) ty = -ty;
+		ty = rcy + ty * abs(vscl);
+	}
+	if(rle > 0){
+		PcxRleImg pri;
+		pri.setImg(img, srcr.w, rle, pluginbuf);
+		if(roto == 0){
+			mzShadowScreenBilt(
+				mzlShadowLoop<PcxRleImg>, pdst, dr, pri, color,
+				srcr, cx, ty, xscl, yscl*vscl, alpha);
+		}else{
+			mzrShadowScreenBilt(
+				mzrlShadowLoop<PcxRleImg>, pdst, rcx, rcy, pri, color,
+				srcr, cx, ty, xscl, yscl, vscl, roto, alpha);
+		}
+	}else{
+		PalletColorImg pri;
+		pri.setImg(img, srcr.w);
+		if(roto == 0){
+			mzShadowScreenBilt(
+				mzlShadowLoop<PalletColorImg>, pdst, dr, pri,
+				color, srcr, cx, ty, xscl, yscl*vscl, alpha);
+		}else{
+			mzrShadowScreenBilt(
+				mzrlShadowLoop<PalletColorImg>, pdst, rcx, rcy, pri,
+				color, srcr, cx, ty, xscl, yscl, vscl, roto, alpha);
+		}
+	}
+}
+TUserFunc(
+	bool, RenderMugenShadow, Reference* pluginbuf, int32_t rle,
+	float rcy, float rcx, SDL_Rect* pdstr, SDL_Surface* pdst, int32_t alpha,
+	uint32_t roto, float vscl, float yscl, float xscl,
+	float ty, float cx, SDL_Rect* psrcr, uint32_t color, Reference img)
+{
+	if(
+		pdst->format->BitsPerPixel != 32 || img.len() == 0
+		|| _finite(cx+ty+rcx+rcy+xscl+vscl+yscl) == 0
+		|| abs(rcx) > 1.0e5f || abs(rcy) > 1.0e5f
+		|| abs(cx) > 1.0e5f || abs(ty) > 1.0e5f
+		|| abs(xscl) > 16383.0f
+		|| abs(yscl) > 16383.0f || abs(vscl) > 16383.0f) return false;
+	mShadowRender(
+		*pdst, *pdstr, rcx, rcy, img, color, *psrcr, cx, ty,
+		xscl, yscl, vscl, roto, alpha, rle, pluginbuf);
 	return true;
 }
 
@@ -2309,24 +2870,25 @@ void drawTileHolizon(
 }
 void drawTile(
 	uint16_t w, uint16_t h, float x, float y,
-	SDL_Rect tile, float xtopscl, float xbotscl,  float yscl, float rasterxadd,
-	float angle, float rcx, float rcy, float r, float g, float b, float a)
+	SDL_Rect tile, float xtopscl, float xbotscl,  float yscl, float vscl,
+	float rasterxadd, float angle, float rcx, float rcy,
+	float r, float g, float b, float a)
 {
 	float x1, y1, x2, y2, x3, y3, x4, y4;
 	x1 = x + rasterxadd*yscl*(float)h;
-	y1 = y - yscl*(float)h;
+	y1 = rcy + ((y - yscl*(float)h) - rcy) * vscl;
 	x2 = x1 + xbotscl*(float)w;
 	y2 = y1;
 	x3 = x + xtopscl*(float)w;
-	y3 = y;
+	y3 = rcy + (y - rcy) * vscl;
 	x4 = x;
 	y4 = y3;
 	float pers = abs(x3 - x4) / abs(x2 - x1);
 	if(angle != 0.0f){
-		kaiten(x1, y1, angle, rcx, rcy);
-		kaiten(x2, y2, angle, rcx, rcy);
-		kaiten(x3, y3, angle, rcx, rcy);
-		kaiten(x4, y4, angle, rcx, rcy);
+		kaiten(x1, y1, angle, rcx, rcy, vscl);
+		kaiten(x2, y2, angle, rcx, rcy, vscl);
+		kaiten(x3, y3, angle, rcx, rcy, vscl);
+		kaiten(x4, y4, angle, rcx, rcy, vscl);
 		drawQuads(x1, y1, x2, y2, x3, y3, x4, y4, r, g, b, a, pers);
 	}else{
 		if(tile.h == 1){
@@ -2334,17 +2896,17 @@ void drawTile(
 			float y3d=y3, x4d=x4, y4d=y4;
 			for(;;){
 				x1d = x4d;
-				y1d = y4d + yscl*(float)tile.y;
+				y1d = y4d + yscl*vscl*(float)tile.y;
 				x2d = x3d;
 				y2d = y1d;
 				x3d =
 					(x4d - rasterxadd*yscl*(float)h)
 					+ (xtopscl/xbotscl)*(x3d - x4d);
-				y3d = y2d + yscl*(float)h;
+				y3d = y2d + yscl*vscl*(float)h;
 				x4d = x4d - rasterxadd*yscl*(float)h;
 				if(abs(y3d - y4d) < 0.01) break;
 				y4d = y3d;
-				if(yscl*(float)h + yscl*(float)tile.y < 0){
+				if(yscl*((float)h + (float)tile.y) < 0){
 					if(y1d <= (float)-g_h && y4d <= (float)-g_h) break;
 				}else{
 					if(y1d >= 0.0 && y4d >= 0.0) break;
@@ -2362,7 +2924,7 @@ void drawTile(
 		}
 		int n = tile.h;
 		for(;;){
-			if(yscl*(float)h + yscl*(float)tile.y > 0){
+			if(yscl*((float)h + (float)tile.y) > 0){
 				if(y1 <= (float)-g_h && y4 <= (float)-g_h) break;
 			}else{
 				if(y1 >= 0.0 && y4 >= 0.0) break;
@@ -2379,11 +2941,11 @@ void drawTile(
 			if(tile.h != 1) n--;
 			if(n <= 0) break;
 			x4 = x1;
-			y4 = y1 - yscl*(float)tile.y;
+			y4 = y1 - yscl*vscl*(float)tile.y;
 			x3 = x2;
 			y3 = y4;
 			x2 = x1 + rasterxadd*yscl*(float)h + (xbotscl/xtopscl)*(x2 - x1);
-			y2 = y3 - yscl*(float)h;
+			y2 = y3 - yscl*vscl*(float)h;
 			x1 = x1 + rasterxadd*yscl*(float)h;
 			if(abs(y1 - y2) < 0.01) break;
 			y1 = y2;
@@ -2393,15 +2955,21 @@ void drawTile(
 
 TUserFunc(
 	bool, RenderMugenGl, float rcy, float rcx, SDL_Rect* dstr, int alpha,
-	float angle, float rasterxadd, float yscl, float xbotscl, float xtopscl,
-	SDL_Rect* tile, float y, float x, SDL_Rect* rect,
-	int mask, uint8_t* ppal, uint32_t texid)
+	float angle, float rasterxadd, float vscl, float yscl,
+	float xbotscl, float xtopscl, SDL_Rect* tile, float y, float x,
+	SDL_Rect* rect, int mask, uint8_t* ppal, uint32_t texid)
 {
 	if(
 		texid == 0
-		|| _finite(x+y+rcx+rcy+xtopscl+xbotscl+yscl+rasterxadd+angle) == 0)
+		|| _finite(
+			x+y+rcx+rcy+xtopscl+xbotscl+yscl+vscl+rasterxadd+angle) == 0)
 	{
 		return false;
+	}
+	if(vscl < 0.0f){
+		vscl *= -1;
+		yscl *= -1;
+		angle *= -1;
 	}
 	SDL_Rect r = *rect, tl = *tile;
 	if(tl.x > 0) tl.x -= r.w;
@@ -2439,13 +3007,13 @@ TUserFunc(
 		glUniform1f(glGetUniformLocation(g_mugenshader, "alp"), 1.0);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, 1);
 	}else if(alpha == -2){
 		glUniform1f(glGetUniformLocation(g_mugenshader, "alp"), 1.0);
 		glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, 1);
 	}else if(alpha <= 0){
 	}else if(alpha < 255){
@@ -2454,14 +3022,14 @@ TUserFunc(
 			(GLfloat)alpha / 255.0f);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, (GLfloat)alpha / 255.0f);
 		glUseProgram(0);
 	}else if(alpha < 512){
 		glUniform1f(glGetUniformLocation(g_mugenshader, "alp"), 1.0);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, 1);
 	}else{
 		int src = alpha & 0xff;
@@ -2471,13 +3039,13 @@ TUserFunc(
 			1.0f - (GLfloat)dst / 255.0f);
 		glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, 1.0f - (GLfloat)dst / 255.0f);
 		glUniform1f(
 			glGetUniformLocation(g_mugenshader, "alp"), (GLfloat)src / 255.0f);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, rasterxadd,
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, (GLfloat)src / 255.0f);
 	}
 	//

@@ -573,14 +573,14 @@ public &Surface
   public void blitEx(&.Rect dr=, `self src, &.Rect sr=)
   {
     plugin void BlitSurfaceEx(:
-      `self, &.Rect=, `self, &.Rect=:) = "dll/sdlplugin.dll";
-    BlitSurfaceEx(:src, sr=, `, dr=:);
+      index, &.Rect=, index, &.Rect=:) = "dll/sdlplugin.dll";
+    BlitSurfaceEx(:src.sur, sr=, `sur, dr=:);
   }
   public void blit(&.Rect dr=, `self src)
   {
-    plugin void BlitSurface(:`self, `self, &.Rect=:) =
+    plugin void BlitSurface(:index, index, &.Rect=:) =
       "dll/sdlplugin.dll";
-    BlitSurface(:src, `, dr=:);
+    BlitSurface(:src.sur, `sur, dr=:);
   }
   public void createPaletteSurface(^ubyte img, ^uint pal, int w, int h)
   {
@@ -602,12 +602,25 @@ public &Surface
   {
     plugin bool RenderMugenZoom(:
       ^/ubyte, uint=, short, &.Rect=, float, float, &.Rect=,
-      float, float, float, float, uint, int, `self, &.Rect=,
+      float, float, float, float, uint, int, index, &.Rect=,
       float, float, int, %byte=:) = "dll/sdlplugin.dll";
     ret
       RenderMugenZoom(:
         pxl, pal<>=, ckey, sr=, cx, ty, tile=, xtopscl, xbotscl,
-        yscl, rasterxadd, roto, alpha, `, dr=, rcx, rcy, rle, pluginbuf=:);
+        yscl, rasterxadd, roto, alpha, `sur, dr=, rcx, rcy, rle, pluginbuf=:);
+  }
+  public bool renderMugenShadow(
+    &.Rect dr=, float rcx, float rcy, ^ubyte pxl, uint color,
+    &.Rect sr=, float cx, float ty, float xscl, float yscl, float vscl,
+    uint roto, int alpha, int rle, %byte pluginbuf=)
+  {
+    plugin bool RenderMugenShadow(:
+      ^/ubyte, uint, &.Rect=, float, float, float, float, float, uint, int,
+      index, &.Rect=, float, float, int, %byte=:) = "dll/sdlplugin.dll";
+    ret
+      RenderMugenShadow(:
+        pxl, color, sr=, cx, ty, xscl, yscl, vscl, roto, alpha,
+        `sur, dr=, rcx, rcy, rle, pluginbuf=:);
   }
 }
 
@@ -718,7 +731,7 @@ plugin void MugenFillGl(:&Rect, uint, int:) = "dll/sdlplugin.dll";
 plugin bool InitMugenGl(::) = "dll/sdlplugin.dll";
 plugin bool RenderMugenGl(:
   &GlTexture, uint=, int, &Rect=, float, float, &Rect=, float, float, float,
-  float, float, int, &Rect=, float, float:) = "dll/sdlplugin.dll";
+  float, float, float, int, &Rect=, float, float:) = "dll/sdlplugin.dll";
 plugin void GlSwapBuffers(::) = "dll/sdlplugin.dll";
 
 public bool bindGlContext()

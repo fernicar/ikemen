@@ -222,7 +222,6 @@ public void addShadowList(^&.AnimList al, int sc, float so, int alpha)
 public void drawShadowList(float x, float y)
 {
   ^&.ShadowList sl = .shadows;
-  ^uint pal, oldpal;
   loop{
     int intensity, color;
     while;
@@ -243,65 +242,26 @@ public void drawShadowList(float x, float y)
       }
     cond color < 0:
       color = (int).stg~sdw.color;
-      if(alpha >= 255){
-        pal = . stg~sdw.pal;
-        break, break;
-      }
+      if(alpha >= 255) break;
       intensity = intensity * alpha >> 8;
     else:
       intensity = 0;
     comm:
-      pal = .com.tmppl;
-      loop{
-        index i = 0;
-        uint c =
-          (uint)(
-            ((color&255)*alpha>>8&255) | ((color&255<<8)*alpha>>8&255<<8)
-            | ((color&255<<16)*alpha>>8)&255<<16)
-          & 0xffffff;
-      do:
-        pal[i] = c;
-      while ++i < 256:
-      }
+      color =
+        (
+          ((color&255)*alpha>>8&255) | ((color&255<<8)*alpha>>8&255<<8)
+          | ((color&255<<16)*alpha>>8)&255<<16)
+        & (int)0xffffff;
     }
     {
-      oldpal = sl~al~anim~ani.spr~colorPallet;
-      sl~al~anim~ani.spr~colorPallet = pal;
       float syscl = .stg~sdw.yscale;
-      ~$void() draw = [void(){
-        branch{
-          float cs = sl~al~cscl;
-        cond sl~al~angle != 0.0:
-          {
-            float agl = sl~al~angle*(.m.PI/180.0);
-            float ss = syscl < 0.0 ? -1.0 : 1.0;//pow用
-            sl~al~anim~ani.angleDraw(
-              .com.xoffset-(x-sl~al~x)*cs,
-              .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety)*cs,
-              cs*sl~al~xscl * #syscl**#.m.sin(agl),
-              cs*-sl~al~yscl * ss * #syscl**#.m.cos(agl), agl, sl~al~aset,
-              sl~al~axscl, sl~al~ayscl, .stage.bgPalFX, sl~al~oVer);
-          }
-        else:
-          sl~al~anim~ani.draw(
-            .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
-            (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y*syscl-sl~offsety),
-            cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl*syscl, 0.0,
-            (float).com.GameWidth/2.0, .stage.bgPalFX, sl~al~oVer);
-        }
-      }];
-      if(color > 0){
-        sl~al~anim~ani.salpha = 1;
-        sl~al~anim~ani.dalpha = 255;
-        draw(::);
-      }
-      if(intensity > 0){
-        sl~al~anim~ani.salpha = 0;
-        sl~al~anim~ani.dalpha = 255-intensity;
-        draw(::);
-      }
-    break:
-      sl~al~anim~ani.spr~colorPallet = oldpal;
+      float cs = sl~al~cscl;
+      sl~al~anim~ani.shadowDraw(
+        .com.xoffset-(x-sl~al~x)*cs,
+        .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety)*cs,
+        cs*sl~al~xscl, cs*-sl~al~yscl, syscl, sl~al~angle*(.m.PI/180.0),
+        sl~al~aset, sl~al~axscl, sl~al~ayscl, .stage.bgPalFX, sl~al~oVer,
+        (uint)color, intensity);
     }
   continue:
     sl = sl~next;
@@ -3280,7 +3240,6 @@ public &Char
               + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
           }
         }
-        if(!`isBound()) `bind();
         if(!`isHitPaused()){
           `stVal.time++;
           `posUpdate();
@@ -3412,7 +3371,10 @@ public &Char
       {
         `outTarget();
       }
-      if(`acttmp > 0 && #`ani > 0) `ani~ani.updateSprite();
+      if(`acttmp > 0){
+        if(#`ani > 0) `ani~ani.updateSprite();
+        if(!`isBound()) `bind();
+      }
       `atktmp =
         (
           (`stVal.typ != .StTy::L && `stVal.mov != .MovTy::I)
@@ -4610,9 +4572,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF(
-      (.chars[`playerno][0]~sysfvar[.fY] - .chars[`playerno][0]~getHeight())
-      - (`sysfvar[.fY] - `getHeight()));
+    .v.setF(.chars[`playerno][0]~sysfvar[.fY] - `sysfvar[.fY]);
   }
   public void trParentDistX()
   {
@@ -4630,8 +4590,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF(
-      (.c~sysfvar[.fY] - .c~getHeight()) - (`sysfvar[.fY] - `getHeight()));
+    .v.setF(.c~sysfvar[.fY] - `sysfvar[.fY]);
   }
   public void trStateType(|.StTy st)
   {

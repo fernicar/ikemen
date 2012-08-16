@@ -21,6 +21,7 @@ EXPORTS
     CreatePaletteSurface
     SetColorKey
     RenderMugenZoom
+    RenderMugenShadow
     ShareScreen
     SetSurfaceNull
     SetSndBuf

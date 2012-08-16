@@ -64,16 +64,10 @@ public &EnvShake envShake;
 
 &Shadow
 {
-  public ^uint pal;
   public int intensity = 128;
   public uint color = 0x808080;
   public float yscale = 0.4;
   public int fadeend = .consts.int_t::MIN, fadebgn = .consts.int_t::MIN;
-  new()
-  {
-    `pal.new(256);
-    loop{index i = 0; do: `pal[i] = `color; while ++i < 256:}
-  }
 }
 
 public &Stage
@@ -203,9 +197,6 @@ public &Stage
         b = .m.max!int?(0, .m.min!int?(255, c[2]));
       }
       `sdw.color = (uint)(r<<16 | g<<8 | b);
-      loop{index i = 0; do:
-        `sdw.pal[i] = `sdw.color;
-      while ++i < 256:}
       if(#(data = sc.get("yscale")) > 0) `sdw.yscale = .com.atof(data);
       if(#(data = sc.get("reflect")) > 0) `reflect = .com.atoi(data) != 0;
       if(#(data = sc.get("fade.range")) > 0){

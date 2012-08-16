@@ -70,7 +70,7 @@ public void layspr(
   .sdl.RenderMugenGl(:
     spr~pxl<>, pal<>=, 0, spr~rct=, -x2*.com.WidthScale,
     -y2*.com.HeightScale, tile=,
-    xs, xs, l.scale.y*(float)l.vfacing*.com.HeightScale,
+    xs, xs, l.scale.y*(float)l.vfacing*.com.HeightScale, 1.0,
     0.0, 0.0, .com.brightness*255>>8 | 1<<9, .com.scrrect=, 0.0, 0.0:);
 /*true:
   .sdl.screen.renderMugenZoom(
