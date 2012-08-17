@@ -2532,7 +2532,8 @@ template<typename Img> void mzShadowScreenBilt(
 	if((int16_t)dr.h <= 0) return;
 	int dstw = dst.pitch / sizeof(uint32_t);
 	int ysign = yscl < 0.0f ? -1 : 1;
-	fy += 0.5f;
+	fy += yscl < 0.0f ? -0.5f : 0.5f;
+	fx += xscl < 0.0f ? -0.5f : 0.5f;
 	int iy = (int)floor(fy);
 	if((iy < dr.y && ysign < 0) || (iy >= dr.h && ysign > 0)) return;
 	while(iy < dr.y || iy >= dr.h){
@@ -2593,7 +2594,7 @@ template<typename Img> void mzrShadowScreenBilt(
 	fy += yscl;
 	int tmpdx = 0, tmpdy = 1;
 	if(kakudoToKa){
-		ry -= tmpdy*ymul * min(1<<16, ivscl);
+		ry -= tmpdy*ymul * ivscl;
 	}else{
 		rx -= tmpdy*ymul;
 	}

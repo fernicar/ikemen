@@ -1214,7 +1214,7 @@ public &Anim<frame_t>
     if(uagl == 0x0 && !angleset){
       x2 += xs*(float)(h*`frames[`drawidx].x);
       if(xs < 0.0 && oVer) x2 -= xs;
-      if(ys < 0.0 && oVer) y2 -= ys;
+      if(ys*vscale < 0.0 && oVer) y2 -= ys*vscale;
     }
     .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
     .m.limRange!float?(
