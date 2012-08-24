@@ -5611,8 +5611,6 @@ public &StateBuilder
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
               ".bindtime=", "$.v.toI();")) ret false;
-          `state.ctrlList[-1].task .=
-            "if(" .= exp .= ".bindtime>0)" .= exp .= ".bindtime++;";
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "removetime", [`paraF_t(data=){
