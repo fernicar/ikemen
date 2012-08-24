@@ -766,9 +766,9 @@ public &FrameMethods<_t>
       {
         index di = @s.find("d", a);
         if(di < 0) break;
-        ushort tmp = (ushort).com.atoi(a[2..di]);
+        ushort tmp = .com.aton!ushort?(a[2..di]);
         `salpha = (tmp > 0d255 ? 0d255 : tmp);
-        tmp = (ushort).com.atoi(a[di+1..-1]);
+        tmp = .com.aton!ushort?(a[di+1..-1]);
         `dalpha = (tmp > 0d255 ? 0d255 : tmp);
         if(`salpha == 0d1 && `dalpha == 0d255) `salpha = 0d0;
       }
@@ -795,7 +795,7 @@ public &AirFileMethods<_t>
     sec = sec[fnd+1..-1];
     if(!@s.equ(name, "action ")) ret act;
     int no;
-    no = @com.atoi(sec);
+    no = @com.aton!int?(sec);
     act = `getAction(no);
     if(#act > 0) ret act;
     `actionList.new[-1].no = no;

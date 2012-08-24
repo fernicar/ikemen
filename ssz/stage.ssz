@@ -138,29 +138,61 @@ public &Stage
     public void camera(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("startx")) > 0) `cam.startx = .com.atoi(data);
-      if(#(data = sc.get("boundleft")) > 0){
-        `cam.boundleft = .com.atoi(data);
+      if(#(data = sc.get("startx")) > 0){
+        `cam.startx = .com.aton!`cam.startx.self?(data);
       }
-      if(#(data = sc.get("boundright")) > 0) `cam.boundright = .com.atoi(data);
-      if(#(data = sc.get("boundhigh")) > 0) `cam.boundhigh = .com.atoi(data);
+      if(#(data = sc.get("boundleft")) > 0){
+        `cam.boundleft = .com.aton!`cam.boundleft.self?(data);
+      }
+      if(#(data = sc.get("boundright")) > 0){
+        `cam.boundright = .com.aton!`cam.boundright.self?(data);
+      }
+      if(#(data = sc.get("boundhigh")) > 0){
+        `cam.boundhigh = .com.aton!`cam.boundhigh.self?(data);
+      }
       if(#(data = sc.get("verticalfollow")) > 0){
         `cam.verticalfollow = .com.atof(data);
       }
-      if(#(data = sc.get("tension")) > 0) `cam.tension = .com.atoi(data);
+      if(#(data = sc.get("tension")) > 0){
+        `cam.tension = .com.aton!`cam.tension.self?(data);
+      }
       if(#(data = sc.get("floortension")) > 0){
-        `cam.floortension = .com.atoi(data);
+        `cam.floortension = .com.aton!`cam.floortension.self?(data);
       }
     }
     public void playerinfo(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("p1startx")) > 0) `p1.startx = .com.atoi(data);
-      if(#(data = sc.get("p1starty")) > 0) `p1.starty = .com.atoi(data);
-      if(#(data = sc.get("p2startx")) > 0) `p2.startx = .com.atoi(data);
-      if(#(data = sc.get("p2starty")) > 0) `p2.starty = .com.atoi(data);
-      if(#(data = sc.get("leftbound")) > 0) `leftbound = .com.atoi(data)-160;
-      if(#(data = sc.get("rightbound")) > 0) `rightbound = .com.atoi(data)-160;
+      if(#(data = sc.get("p1startx")) > 0){
+        `p1.startx = .com.aton!`p1.startx.self?(data);
+      }
+      if(#(data = sc.get("p1starty")) > 0){
+        `p1.starty = .com.aton!`p1.starty.self?(data);
+      }
+      if(#(data = sc.get("p2startx")) > 0){
+        `p2.startx = .com.aton!`p2.startx.self?(data);
+      }
+      if(#(data = sc.get("p2starty")) > 0){
+        `p2.starty = .com.aton!`p2.starty.self?(data);
+      }
+      if(#(data = sc.get("leftbound")) > 0){
+        `leftbound = .com.aton!`leftbound.self?(data);
+        branch{
+        cond `leftbound < .consts.Signed!`leftbound.self?::MIN + 160:
+          `leftbound = .consts.Signed!`leftbound.self?::MIN;
+        else:
+          `leftbound -= 160;
+        }
+      }
+      if(#(data = sc.get("rightbound")) > 0){
+        `rightbound = .com.aton!`rightbound.self?(data);
+        branch{
+        cond `rightbound < .consts.Signed!`rightbound.self?::MIN + 160:
+          `rightbound = .consts.Signed!`rightbound.self?::MIN;
+        else:
+          `rightbound -= 160;
+        }
+      }
     }
     public void scaling(&.com.Section sc=)
     {
@@ -170,23 +202,36 @@ public &Stage
     public void bound(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("screenleft")) > 0) `screenleft = .com.atoi(data);
-      if(#(data = sc.get("screenright")) > 0) `screenright = .com.atoi(data);
+      if(#(data = sc.get("screenleft")) > 0){
+        `screenleft = .com.aton!`screenleft.self?(data);
+      }
+      if(#(data = sc.get("screenright")) > 0){
+        `screenright = .com.aton!`screenright.self?(data);
+      }
     }
     public void stageinfo(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("zoffset")) > 0) `zoffset = .com.atoi(data);
-      if(#(data = sc.get("zoffsetlink")) > 0) `zoffsetlink = .com.atoi(data);
-      if(#(data = sc.get("hires")) > 0) `hires = .com.atoi(data) != 0;
-      if(#(data = sc.get("resetbg")) > 0) `resetbg = .com.atoi(data) != 0;
+      if(#(data = sc.get("zoffset")) > 0){
+        `zoffset = .com.aton!`zoffset.self?(data);
+      }
+      if(#(data = sc.get("zoffsetlink")) > 0){
+        `zoffsetlink = .com.aton!`zoffsetlink.self?(data);
+      }
+      if(#(data = sc.get("hires")) > 0){
+        `hires = .com.aton!int?(data) != 0;
+      }
+      if(#(data = sc.get("resetbg")) > 0){
+        `resetbg = .com.aton!int?(data) != 0;
+      }
     }
     public void shadow(&.com.Section sc=)
     {
       ^/char data;
       int r = 0, g = 0, b = 0;
       if(#(data = sc.get("intensity")) > 0){
-        `sdw.intensity = .m.max!int?(0)<, .m.min!int?(255)<, .com.atoi(data);
+        `sdw.intensity =
+          .m.max!int?(0)<, .m.min!int?(255, .com.aton!int?(data));
       }
       if(#(data = sc.get("color")) > 0){
         ^int c = .bg.csvToAry!c<>.self?(data);
@@ -198,7 +243,7 @@ public &Stage
       }
       `sdw.color = (uint)(r<<16 | g<<8 | b);
       if(#(data = sc.get("yscale")) > 0) `sdw.yscale = .com.atof(data);
-      if(#(data = sc.get("reflect")) > 0) `reflect = .com.atoi(data) != 0;
+      if(#(data = sc.get("reflect")) > 0) `reflect = .com.aton!int?(data) != 0;
       if(#(data = sc.get("fade.range")) > 0){
         .bg.readPair!int?(`sdw.fadeend=, `sdw.fadebgn=, data);
       }
@@ -207,7 +252,7 @@ public &Stage
     {
       ^/char data;
       if(#(data = sc.get("intensity")) > 0){
-        `reflection = .m.max!int?(0)<, .m.min!int?(255)<, .com.atoi(data);
+        `reflection = .m.max!int?(0)<, .m.min!int?(255)<, .com.aton!int?(data);
       }
     }
     public void music(&.com.Section sc=, bool unicode)
@@ -221,7 +266,7 @@ public &Stage
     {
       ^/char data;
       if(#(data = sc.get("spr")) > 0) `spr = .com.readFileName(data, unicode);
-      if(#(data = sc.get("debugbg")) > 0) `debugbg = .com.atoi(data) != 0;
+      if(#(data = sc.get("debugbg")) > 0) `debugbg = .com.aton!int?(data) != 0;
     }
     public void bg(&.com.Section sc=, index link=)
     {
@@ -256,7 +301,9 @@ public &Stage
           i++;
         while i < #`bg:}
       }
-      if(#(data = sc.get("looptime")) > 0) `bgcdef.looptime = .com.atoi(data);
+      if(#(data = sc.get("looptime")) > 0){
+        `bgcdef.looptime = .com.aton!`bgcdef.looptime.self?(data);
+      }
     }
     public void bgctrl(&.com.Section sc=)
     {

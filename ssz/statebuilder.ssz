@@ -1716,7 +1716,7 @@ public &StateBuilder
           h ? "trProjTime(.ProjContact::Hit)"
           : (g ? "trProjTime(.ProjContact::Guarded)" : "trProjContactTime()");
         ^/char oldin;
-        int id = .com.atoi(token[(h?7:11)..-1]);
+        int id = .com.aton!int?(token[(h?7:11)..-1]);
         bool not;
         if(!`kyuushiki(not=, out=, in=)) ret false;
         out .= ".v.setB(";
@@ -7019,11 +7019,11 @@ public &StateBuilder
         }
       cond .s.equ(name, "persistent"):
         if(`state.no >= 0 && !`state.i){
-          `state.persistent = .com.atoi(text);
+          `state.persistent = .com.aton!`state.persistent.self?(text);
           if(`state.persistent > 128) `state.persistent = 1;
         }
       cond .s.equ(name, "ignorehitpause"):
-        `state.ignorehitpause = .com.atoi(text);
+        `state.ignorehitpause = .com.aton!`state.ignorehitpause.self?(text);
         if(`state.ignorehitpause < 0) `state.ignorehitpause = 1;
       else:
         if(`state.ctrlList[-1].typ == .CtrlTy::Unknown){
@@ -7084,7 +7084,7 @@ public &StateBuilder
         tmp[0] = '0';
         line = tmp;
       }
-      `state.no = .com.atoi(line);
+      `state.no = .com.aton!`state.no.self?(line);
       if(`existState(`state.no, `state.i)) continue;
       fname.new(0);
       branch{
@@ -7369,35 +7369,39 @@ public &StateBuilder
     void data(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("life")) > 0) `c.d.life = .com.atoi(data);
-      if(#(data = sc.get("power")) > 0) `c.d.power = .com.atoi(data);
-      if(#(data = sc.get("attack")) > 0) `c.d.attack = .com.atoi(data);
-      if(#(data = sc.get("defence")) > 0) `c.d.defence = .com.atoi(data);
+      if(#(data = sc.get("life")) > 0) `c.d.life = .com.aton!int?(data);
+      if(#(data = sc.get("power")) > 0) `c.d.power = .com.aton!int?(data);
+      if(#(data = sc.get("attack")) > 0) `c.d.attack = .com.aton!int?(data);
+      if(#(data = sc.get("defence")) > 0) `c.d.defence = .com.aton!int?(data);
       if(#(data = sc.get("fall.defence_up")) > 0){
         `c.d.fall_defence_mul = (.com.atof(data)+100.0) / 100.0;
       }
       if(#(data = sc.get("liedown.time")) > 0){
-        `c.d.liedown_time = .m.max!int?(1)<, .com.atoi(data);
+        `c.d.liedown_time = .m.max!int?(1)<, .com.aton!int?(data);
       }
-      if(#(data = sc.get("airjuggle")) > 0) `c.d.airjuggle = .com.atoi(data);
-      if(#(data = sc.get("sparkno")) > 0) `c.d.sparkno = .com.atoi(data);
+      if(#(data = sc.get("airjuggle")) > 0){
+        `c.d.airjuggle = .com.aton!int?(data);
+      }
+      if(#(data = sc.get("sparkno")) > 0) `c.d.sparkno = .com.aton!int?(data);
       if(#(data = sc.get("guard.sparkno")) > 0){
-        `c.d.guard_sparkno = .com.atoi(data);
+        `c.d.guard_sparkno = .com.aton!int?(data);
       }
-      if(#(data = sc.get("ko.echo")) > 0) `c.d.ko_echo = .com.atoi(data);
+      if(#(data = sc.get("ko.echo")) > 0) `c.d.ko_echo = .com.aton!int?(data);
       branch{
       cond `mver0 == 1:
         if(#(data = sc.get("volumescale")) > 0){
-          `c.d.volume = (.com.atoi(data)*64 / 25);
+          `c.d.volume = (.com.aton!short?(data)*64 / 25);
         }
       else:
-        if(#(data = sc.get("volume")) > 0) `c.d.volume = .com.atoi(data) + 256;
+        if(#(data = sc.get("volume")) > 0){
+          `c.d.volume = .com.aton!short?(data) + 256;
+        }
       }
       if(#(data = sc.get("intpersistindex")) > 0){
-        `c.d.intpersistindex = .com.atoi(data);
+        `c.d.intpersistindex = .com.aton!int?(data);
       }
       if(#(data = sc.get("floatpersistindex")) > 0){
-        `c.d.floatpersistindex = .com.atoi(data);
+        `c.d.floatpersistindex = .com.aton!int?(data);
       }
     }
     void size(&.com.Section sc=)
@@ -7406,22 +7410,26 @@ public &StateBuilder
       if(#(data = sc.get("xscale")) > 0) `c.s.xscale = .com.atof(data);
       if(#(data = sc.get("yscale")) > 0) `c.s.yscale = .com.atof(data);
       if(#(data = sc.get("ground.back")) > 0){
-        `c.s.ground_back = .com.atoi(data);
+        `c.s.ground_back = .com.aton!int?(data);
       }
       if(#(data = sc.get("ground.front")) > 0){
-        `c.s.ground_front = .com.atoi(data);
+        `c.s.ground_front = .com.aton!int?(data);
       }
-      if(#(data = sc.get("air.back")) > 0) `c.s.air_back = .com.atoi(data);
-      if(#(data = sc.get("air.front")) > 0) `c.s.air_front = .com.atoi(data);
-      if(#(data = sc.get("height")) > 0) `c.s.height = .com.atoi(data);
+      if(#(data = sc.get("air.back")) > 0){
+        `c.s.air_back = .com.aton!int?(data);
+      }
+      if(#(data = sc.get("air.front")) > 0){
+        `c.s.air_front = .com.aton!int?(data);
+      }
+      if(#(data = sc.get("height")) > 0) `c.s.height = .com.aton!int?(data);
       if(#(data = sc.get("attack.dist")) > 0){
-        `c.s.attack_dist = .com.atoi(data);
+        `c.s.attack_dist = .com.aton!int?(data);
       }
       if(#(data = sc.get("proj.attack.dist")) > 0){
-        `c.s.proj_attack_dist = .com.atoi(data);
+        `c.s.proj_attack_dist = .com.aton!int?(data);
       }
       if(#(data = sc.get("proj.doscale")) > 0){
-        `c.s.proj_doscale = .com.atoi(data);
+        `c.s.proj_doscale = .com.aton!int?(data);
       }
       if(#(data = sc.get("head.pos")) > 0){
         .com.readPair!int?(`c.s.head_posx=, `c.s.head_posy=, data);
@@ -7430,12 +7438,12 @@ public &StateBuilder
         .com.readPair!int?(`c.s.mid_posx=, `c.s.mid_posy=, data);
       }
       if(#(data = sc.get("shadowoffset")) > 0){
-        `c.s.shadowoffset = .com.atoi(data);
+        `c.s.shadowoffset = .com.aton!int?(data);
       }
       if(#(data = sc.get("draw.offset")) > 0){
         .com.readPair!int?(`c.s.draw_offsetx=, `c.s.draw_offsety=, data);
       }
-      if(#(data = sc.get("z.width")) > 0) `c.s.z_width = .com.atoi(data);
+      if(#(data = sc.get("z.width")) > 0) `c.s.z_width = .com.aton!int?(data);
       if(#(data = sc.get("attack.z.width")) > 0){
         .com.readPair!int?(
           `c.s.attack_z_width_front=, `c.s.attack_z_width_back=, data);
@@ -7528,10 +7536,10 @@ public &StateBuilder
     {
       ^/char data;
       if(#(data = sc.get("airjump.num")) > 0){
-        `c.m.airjump_num = .com.atoi(data);
+        `c.m.airjump_num = .com.aton!int?(data);
       }
       if(#(data = sc.get("airjump.height")) > 0){
-        `c.m.airjump_height = .com.atoi(data);
+        `c.m.airjump_height = .com.aton!int?(data);
       }
       if(#(data = sc.get("yaccel")) > 0) `c.m.yaccel = .com.atof(data);
       if(#(data = sc.get("stand.friction")) > 0){
@@ -7619,10 +7627,10 @@ public &StateBuilder
     ~$void(&.com.Section=) defaults = [void(&.com.Section sc=){
       ^/char data;
       if(#(data = sc.get("command.time")) > 0){
-        `cmdl~defaultTime = .com.atoi(data);
+        `cmdl~defaultTime = .com.aton!int?(data);
       }
       if(#(data = sc.get("command.buffer.time")) > 0){
-        `cmdl~defaultBufferTime = .m.max!int?(1)<, .com.atoi(data);
+        `cmdl~defaultBufferTime = .m.max!int?(1)<, .com.aton!int?(data);
       }
     }];
     ~$void(^^/char, index=) command = [void(^^/char lines, index i=){
@@ -7637,9 +7645,9 @@ public &StateBuilder
       `cmdl~ctmp~buffertime = `cmdl~defaultBufferTime;
       ^/char data;
       if(#(data = sc.getText("name")) > 0) `cmdl~ctmp~name = data;
-      if(#(data = sc.get("time")) > 0) `cmdl~ctmp~time = .com.atoi(data);
+      if(#(data = sc.get("time")) > 0) `cmdl~ctmp~time = .com.aton!int?(data);
       if(#(data = sc.get("buffer.time")) > 0){
-        `cmdl~ctmp~buffertime = .m.max!int?(1)<, .com.atoi(data);
+        `cmdl~ctmp~buffertime = .m.max!int?(1)<, .com.aton!int?(data);
       }
       if(#(data = sc.get("command")) > 0) `cmdl~ctmp~readCmd(data);
       if(#`cmdl~ctmp~cmd == 1 && `cmdl~ctmp~cmd~slash){

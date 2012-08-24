@@ -2433,7 +2433,7 @@ public &Char
     {:<-
       void foo(index k, ^/char p)
       {
-        `palkeymap[k] = .com.atoi(p)-1;
+        `palkeymap[k] = .com.aton!`palkeymap<>.self?(p)-1;
         if(!.m.inRange!index?(0, .sff.NumCharPalletes-1, `palkeymap[k])){
           `palkeymap[k] = 0;
         }

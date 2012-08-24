@@ -206,7 +206,7 @@ public &BackGround
     }
     if(typ == 4) ret;
     if(#(data = sc.get("layerno")) > 0){
-      int ln = .com.atoi(data);
+      int ln = .com.aton!int?(data);
       `toplayer = ln == 1;
       if(ln < 0 || ln > 1) typ = 3;
     }
@@ -216,11 +216,11 @@ public &BackGround
       `anim.frames[0].time = -1;
     }
     if(typ == 1 && #(data = sc.get("actionno")) > 0){
-      `actionno = .com.atoi(data);
+      `actionno = .com.aton!`actionno.self?(data);
       `anim.mask = 0;
     }
     if(#(data = sc.get("positionlink")) > 0){
-      `positionlink = .com.atoi(data) != 0;
+      `positionlink = .com.aton!int?(data) != 0;
       if(`positionlink = #link > 0){
         `startvx = link~startvx;
         `startvy = link~startvy;
@@ -235,7 +235,7 @@ public &BackGround
       .readPair!float?(`deltax=, `deltay=, data);
     }
     if(typ != 1 && #(data = sc.get("mask")) > 0){
-      `anim.mask = .com.atoi(data) != 0 ? 0 : -1;
+      `anim.mask = .com.aton!int?(data) != 0 ? 0 : -1;
     }
     if(typ != 1 && #(data = sc.get("trans")) > 0){
       branch{
@@ -284,7 +284,7 @@ public &BackGround
       if(typ == 2) `anim.tile.h = 0x0;
     }
     if(#(data = sc.get("tilespacing")) > 0){
-      `anim.tile.x = `anim.tile.y = .com.atoi(data);
+      `anim.tile.x = `anim.tile.y = .com.aton!`anim.tile.x.self?(data);
     }
     if(typ == 2 && #(data = sc.get("width")) > 0){
       .readPair!ushort?(`twidth=, `bwidth=, data);
@@ -313,7 +313,7 @@ public &BackGround
     if(#(data = sc.get("windowdelta")) > 0){
       .readPair!float?(`windowdeltax=, `windowdeltay=, data);
     }
-    if(#(data = sc.get("id")) > 0) `id = .com.atoi(data);
+    if(#(data = sc.get("id")) > 0) `id = .com.aton!`id.self?(data);
     if(#(data = sc.get("velocity")) > 0){
       .readPair!float?(`startvx=, `startvy=, data);
     }
@@ -494,7 +494,7 @@ public &BGCtrl
       `looptime = times[2];
     }
     if(#(data = sc.get("positionlink")) > 0){
-      `positionlink = .com.atoi(data) != 0;
+      `positionlink = .com.aton!int?(data) != 0;
     }
     if(#(data = sc.get("value")) > 0){
       ^float val = .csvToAry!float?(data);

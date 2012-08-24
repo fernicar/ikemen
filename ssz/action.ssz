@@ -71,7 +71,7 @@ public &Action
         {
           index f = .s.find(":", line);
           if(f < 0) break;
-          index siz = .com.atoi(line[f+1..-1]);
+          index siz = .com.aton!index?(line[f+1..-1]);
           if(siz < 0) break;
           ^&.Rect clsn;
           branch{
