@@ -1105,10 +1105,12 @@ public &Anim<frame_t>
     int h = `h*`frames[`drawidx].h, v = `v*`frames[`drawidx].v;
     float xs = (float)h*cscalex*xtscale, ys = (float)v*cscaley*yscale;
     float bs = xbscale;
+  /?/*!.cfg.OpenGL:
     .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
     .m.limRange!float?(
       ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
     .m.limRange!float?(bs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
+  /*?*/
     float x2 =
       cscalex*x - xs*(float)(`spr~rct.x - `frames[`drawidx].x) + rx;
     float y2 = cscaley*y - ys*(float)(`spr~rct.y - `frames[`drawidx].y);
@@ -1173,9 +1175,6 @@ public &Anim<frame_t>
     comm:
       ret;
     }
-    .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
-    .m.limRange!float?(
-      ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
   /?/*.cfg.OpenGL:
     ^uint pal = `palFoo(fx);
     .sdl.RenderMugenGl(:
@@ -1187,6 +1186,9 @@ public &Anim<frame_t>
       `alphaFoo(), .com.scrrect=, rx*.com.WidthScale,
       (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
   /*true:
+    .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
+    .m.limRange!float?(
+      ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
     .sdl.screen.renderMugenZoom(
       .com.scrrect=, rx*.com.WidthScale,
       (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
@@ -1216,9 +1218,6 @@ public &Anim<frame_t>
       if(xs < 0.0 && oVer) x2 -= xs;
       if(ys*vscale < 0.0 && oVer) y2 -= ys*vscale;
     }
-    .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
-    .m.limRange!float?(
-      ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
   /?/*.cfg.OpenGL:
     if(color != 0x0) loop{index i = 0; do:
       .com.tmppl[i] = color;
@@ -1236,6 +1235,9 @@ public &Anim<frame_t>
     if((int)color > 0) draw(:-2:);
     if(alpha > 0) draw(:(256-alpha) << 10 | 1 << 9:);
   /*true:
+    .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
+    .m.limRange!float?(
+      ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
     .sdl.screen.renderMugenShadow(
       .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
       (y2+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale,

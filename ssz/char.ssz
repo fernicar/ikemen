@@ -540,13 +540,13 @@ void mLrSet(float dl=, float dr=, float sl, float sr)
   /bool hantei(&.act.Rect c1, &.act.Rect c2)
   {
     float l1, r1, l2, r2;
-    `lrset1(:l1=, r1=, (float)c1.l, (float)(c1.r+1):);
-    `lrset2(:l2=, r2=, (float)c2.l, (float)(c2.r+1):);
+    `lrset1(:l1=, r1=, (float)c1.l, (float)c1.r+1.0:);
+    `lrset2(:l2=, r2=, (float)c2.l, (float)c2.r+1.0:);
     ret
       l1*`xscl1+`xofs1 <= r2*`xscl2+`xofs2
       && l2*`xscl2+`xofs2 <= r1*`xscl1+`xofs1
-      && (float)(c1.t-1)*`yscl1+`yofs1 <= (float)c2.b*`yscl2+`yofs2
-      && (float)(c2.t-1)*`yscl2+`yofs2 <= (float)c1.b*`yscl1+`yofs1;
+      && ((float)c1.t-1.0)*`yscl1+`yofs1 <= (float)c2.b*`yscl2+`yofs2
+      && ((float)c2.t-1.0)*`yscl2+`yofs2 <= (float)c1.b*`yscl1+`yofs1;
   }
 }
 
@@ -3638,7 +3638,7 @@ public &Char
   }
   void setHitdefDefault(&.Hitdef h=, bool proj)
   {
-    if((h.attr & 63) == 0 || (h.attr & !63) == 0) h.attr = 0;
+    if((h.attr & !63) == 0) h.attr = 0;
     if(!proj && h.guard_dist < 0) h.guard_dist = `sysivar[.iATTACK_DIST];
     if(h.guard_pausetime < 0) h.guard_pausetime = h.pausetime;
     if(h.guard_shaketime < 0) h.guard_shaketime = h.shaketime;

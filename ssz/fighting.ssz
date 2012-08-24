@@ -148,7 +148,7 @@ void game()
     if(!.com.debugdraw || #.fnt.debugFont == 0) ret;
     float pdraw(&.chr.Char p=, float x)
     {:<-
-      float y = 0.0;
+      float y = -(float)(.com.GameHeight-240);
       `put(x, y=, .s.iToS(p.stVal.time));
       `put(x, y=, .s.iToS(p.stVal.prevno));
       `put(x, y=, .s.iToS(p.stVal.no));
@@ -156,7 +156,7 @@ void game()
       `put(x, y=, .s.iToS(.chr.v.setI(0)$p.trAnimElemNo()$.chr.v.toI()));
       ret y;
     }
-    float y = 48.0;
+    float y = 48.0 - (float)(.com.GameHeight-240);
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0){
         y =
