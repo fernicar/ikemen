@@ -832,9 +832,8 @@ public &Anim<frame_t>
   public int totaltime = 0;
   public int looptime = 0;
   public int nazotime = 0;
-  public int mask = -1;
+  public short mask = -1;
   public short salpha = -1, dalpha = 0;
-  public byte h = 1, v = 1;
   public bool newframe = true, loopend = false;
   new()
   {
@@ -867,8 +866,6 @@ public &Anim<frame_t>
     `mask = a.mask;
     `salpha = a.salpha;
     `dalpha = a.dalpha;
-    `h = a.h;
-    `v = a.v;
     `newframe = a.newframe;
     `loopend = a.loopend;
   }
@@ -1102,7 +1099,7 @@ public &Anim<frame_t>
     float rx, ^&.com.PalFX fx, bool oVer)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
-    int h = `h*`frames[`drawidx].h, v = `v*`frames[`drawidx].v;
+    int h = `frames[`drawidx].h, v = `frames[`drawidx].v;
     float xs = (float)h*cscalex*xtscale, ys = (float)v*cscaley*yscale;
     float bs = xbscale;
   /?/*!.cfg.OpenGL:
@@ -1157,11 +1154,11 @@ public &Anim<frame_t>
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
     float rx = x + (float).com.GameWidth/2.0;
-    int h = `h*`frames[`drawidx].h;
-    int v = `v*`frames[`drawidx].v;
+    int h = `frames[`drawidx].h;
+    int v = `frames[`drawidx].v;
     float xs = xscale * axscl, ys = yscale * ayscl;
     float agl =
-      angle*(float)(`h * `v * (xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
+      angle*(float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
     uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
     if(uagl == 0x0) branch{
     cond angleset:
@@ -1207,11 +1204,11 @@ public &Anim<frame_t>
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
     float x2 = x, y2 = y;
-    int h = `h*`frames[`drawidx].h;
-    int v = `v*`frames[`drawidx].v;
+    int h = `frames[`drawidx].h;
+    int v = `frames[`drawidx].v;
     float xs = xscale * axscl, ys = yscale * ayscl;
     float agl =
-      angle*(float)(`h * `v * (xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
+      angle*(float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
     uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
     if(uagl == 0x0 && !angleset){
       x2 += xs*(float)(h*`frames[`drawidx].x);
@@ -1230,7 +1227,7 @@ public &Anim<frame_t>
         xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
         ys*(float)v*.com.HeightScale, vscale, 0.0, (double)uagl*.m.PI/512.0,
         alp, .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
-        (y2+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
+        (y2+ys*vscale*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
     }];
     if((int)color > 0) draw(:-2:);
     if(alpha > 0) draw(:(256-alpha) << 10 | 1 << 9:);
@@ -1240,7 +1237,7 @@ public &Anim<frame_t>
       ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
     .sdl.screen.renderMugenShadow(
       .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
-      (y2+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
+      (y2+ys*vscale*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
       `spr~pxl, color, `spr~rct=,
       #xs*(float)`spr~rct.x*.com.WidthScale,
       #ys*(float)`spr~rct.y*.com.HeightScale,
