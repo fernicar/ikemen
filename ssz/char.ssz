@@ -5481,7 +5481,7 @@ public void Explod::setPos(&.Char c=)
     else:
       if(`postype == 2){
         `postype = 4;
-        c.setPos!`self?(`=, `postype, `offsetx, `offsety, 1);
+        c.setPos!`self?(`=, `postype, `offsetx, `offsety, `relativef);
         break, break;
       }
       `postype = 4;
