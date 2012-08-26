@@ -156,10 +156,9 @@ public &DrawnClsn
       while;
     do:
       x = `x + `xscale*(float)`clsn[i].l + (float).com.GameWidth/2.0;
-      y =
-        `y + `yscale*((float)`clsn[i].t - 1.0) + (float)(.com.GameHeight-240);
-      w = ((float)`clsn[i].r + 1.0) - (float)`clsn[i].l;
-      h = (float)`clsn[i].b - ((float)`clsn[i].t - 1.0);
+      y = `y + `yscale*(float)`clsn[i].t + (float)(.com.GameHeight-240);
+      w = (float)`clsn[i].r - (float)`clsn[i].l;
+      h = (float)`clsn[i].b - (float)`clsn[i].t;
       if(`xscale < 0.0){
         x *= -1.0;
         x += 160.0*2.0;

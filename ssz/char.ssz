@@ -506,12 +506,12 @@ public void drawReflection(float x, float y)
 void pLrSet(float dl=, float dr=, float sl, float sr)
 {
   dl = sl;
-  dr = sr;
+  dr = sr + 1.0;
 }
 void mLrSet(float dl=, float dr=, float sl, float sr)
 {
   dl = -sr;
-  dr = -sl;
+  dr = -sl + 1.0;
 }
 
 &ClsnHantei
@@ -540,13 +540,13 @@ void mLrSet(float dl=, float dr=, float sl, float sr)
   /bool hantei(&.act.Rect c1, &.act.Rect c2)
   {
     float l1, r1, l2, r2;
-    `lrset1(:l1=, r1=, (float)c1.l, (float)c1.r+1.0:);
-    `lrset2(:l2=, r2=, (float)c2.l, (float)c2.r+1.0:);
+    `lrset1(:l1=, r1=, (float)c1.l, (float)c1.r:);
+    `lrset2(:l2=, r2=, (float)c2.l, (float)c2.r:);
     ret
-      l1*`xscl1+`xofs1 <= r2*`xscl2+`xofs2
-      && l2*`xscl2+`xofs2 <= r1*`xscl1+`xofs1
-      && ((float)c1.t-1.0)*`yscl1+`yofs1 <= (float)c2.b*`yscl2+`yofs2
-      && ((float)c2.t-1.0)*`yscl2+`yofs2 <= (float)c1.b*`yscl1+`yofs1;
+      l1*`xscl1+`xofs1 < r2*`xscl2+`xofs2
+      && l2*`xscl2+`xofs2 < r1*`xscl1+`xofs1
+      && (float)c1.t*`yscl1+`yofs1 < ((float)c2.b+1.0)*`yscl2+`yofs2
+      && (float)c2.t*`yscl2+`yofs2 < ((float)c1.b+1.0)*`yscl1+`yofs1;
   }
 }
 
@@ -2916,8 +2916,8 @@ public &Char
       if(`ls(.lsPLAYERPUSH)){
         clsn.new(1);
         clsn~l = (short)-`backw;
-        clsn~t = (short)-`getHeight() + 1;
-        clsn~r = (short)`frontw - 1;
+        clsn~t = (short)-`getHeight();
+        clsn~r = (short)`frontw;
         clsn~b = 0;
         .drawwh.new[-1].set(
           clsn, x-`offsetX(), y-`offsetY(), (float)`facing, 1.0);
@@ -4204,7 +4204,7 @@ public &Char
       branch{
       cond i2 < 0:
         branch{
-          float f = (float)i1**(float)i2;
+          float f = ((float)i1)**(float)i2;
         cond .chars[`stVal.playerno]<>~mver0 == 1:
           r.setF(f);
         else:
