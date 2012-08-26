@@ -62,7 +62,7 @@ void toggleDebugDraw(&.lua.State L=, int re=)
 void togglePause(&.lua.State L=, int re=)
 {
   re = 0;
-  if(#.cmd.net == 0 && #.cmd.replay == 0) .com.pause!!;
+  if(#.cmd.net == 0) .com.pause!!;
 }
 
 void step(&.lua.State L=, int re=)

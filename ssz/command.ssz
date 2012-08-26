@@ -561,7 +561,9 @@ public &FileInput
   }
   public bool update()
   {
-    if(`f.readAry!&.KeyInfo?(`ki) < #`ki) .se.esc = true;
+    if(
+      (!.com.pause || .com.step)
+      && `f.readAry!&.KeyInfo?(`ki) < #`ki) .se.esc = true;
     if(.se.esc) `f.close();
     ret !.se.end;
   }
