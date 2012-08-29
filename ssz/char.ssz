@@ -5476,8 +5476,8 @@ public void Explod::setPos(&.Char c=)
   case 2, 3:
     branch{
     cond (c.facing > 0 && `postype == 2) || (c.facing < 0 && `postype == 3):
-      `postype = 5;
       if(`postype == 3) `offsetx *= -1.0;
+      `postype = 5;
     else:
       if(`postype == 2){
         `postype = 4;
