@@ -2868,9 +2868,9 @@ public &Char
           `trSelfState(5020, -1, 0);
         }
       }
+      `changeState2();
     }
     if(!`isPaused()) branch{
-      `changeState2();
     cond `sysivar[.iHITPAUSETIME] > 0:
       `sysivar[.iHITPAUSETIME]--;
     else:
