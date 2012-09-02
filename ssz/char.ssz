@@ -2870,6 +2870,7 @@ public &Char
       }
     }
     if(!`isPaused()) branch{
+      `changeState2();
     cond `sysivar[.iHITPAUSETIME] > 0:
       `sysivar[.iHITPAUSETIME]--;
     else:
