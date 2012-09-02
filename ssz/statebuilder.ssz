@@ -376,7 +376,8 @@ public &StateBuilder
   public short mver0 = 0, mver1 = 0;
   ^&.cmd.CommandList cmdl;
   *.s.ptn_t pt2, pt3;
-  int kakko = 0;
+  int kakko = 0, valCnt = 0;
+  ^/char maeOp;
   type paraF_t = $bool(^/char=);
   new()
   {
@@ -568,6 +569,46 @@ public &StateBuilder
     ^/char tok = .s.toLower(text[0..i]);
     text = text[i..-1];
     ret tok;
+  }
+  int isOperator(^/char token)
+  {
+    if(.s.equ("||", token)) ret 1;
+    if(.s.equ("^^", token)) ret 2;
+    if(.s.equ("&&", token)) ret 3;
+    if(.s.equ("|", token)) ret 4;
+    if(.s.equ("^", token)) ret 5;
+    if(.s.equ("&", token)) ret 6;
+    if(.s.equ("=", token) || .s.equ("!=", token)) ret 7;
+    if(
+      .s.equ(">", token) || .s.equ(">=", token)
+      || .s.equ("<", token) || .s.equ("<=", token)) ret 8;
+    if(.s.equ("+", token) || .s.equ("-", token)) ret 9;
+    if(.s.equ("*", token) || .s.equ("/", token) || .s.equ("%", token)) ret 10;
+    if(.s.equ("**", token)) ret 11;
+    ret 0;
+  }
+  bool operator(^/char op=, ^/char in=)
+  {
+    if(#`maeOp == 0){
+      op = `tokenizer(in=);
+      ret true;
+    }
+    ^/char oldin = in;
+    op = `tokenizer(in=);
+    int ope = `isOperator(op);
+    if(ope <= `isOperator(`maeOp)){
+      if(
+        ope > 0 || #op == 0 || (
+          (op<> < 'A' || op<> > 'Z') && (op<> < 'a' || op<> > 'z')))
+      {
+        `lasterror = op + "が不正です";
+        ret false;
+      }
+      in = oldin;
+      op = `maeOp;
+      `maeOp = "";
+    }
+    ret true;
   }
   ^/char fToS(float f)
   {
@@ -1973,23 +2014,31 @@ public &StateBuilder
       || .s.equ("*", token) || .s.equ("**", token)
       || .s.equ("/", token) || .s.equ("%", token)
       :
-      if(!.cfg.IgnoreMostErrors) else;
+      if(!.cfg.IgnoreMostErrors || `valCnt > 0 || #`maeOp > 0) else;
       {
         ^/char oldin = in;
         ^/char old = token;
         token = `tokenizer(in=);
         index i = 0;
-        loop{while; do:
-          if((token[i] < '0' || token[i] > '9') && token[i] != '.') break;
+        loop{
+          bool ten = false;
+        while;
+          do:
+          if((token[i] < '0' || token[i] > '9') && (ten || token[i] != '.')){
+            break, break;
+          }
+          ten |= token[i] == '.';
           i++;
         while i < #token:}
-        num = `number(token[0..i]);
-        if(#num == 0 || i >= #token){
-          `lasterror = old + "が不正です";
-          ret false;
+        branch{
+        cond i > 0 && i < #token:
+          out .= `number(token[0..i]);
+          in = old + token[i..-1] + in;
+        else:
+          `maeOp = old;
+          in = oldin;
+          if(!`expValue(out=, in=)) ret false;
         }
-        out .= num;
-        in = old + token[i..-1] + in;
       }
     else:
       branch{
@@ -2000,6 +2049,7 @@ public &StateBuilder
         ret false;
       }
     }
+    `valCnt++;
     ret true;
   }
   bool expValue(%char out=, ^/char in=)
@@ -2029,7 +2079,7 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
         %char buf2;
       cond .s.equ("**", token):
@@ -2057,7 +2107,7 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
         %char buf2;
       cond .s.equ("*", token):
@@ -2089,7 +2139,7 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
         %char buf2;
       cond .s.equ("+", token):
@@ -2119,7 +2169,7 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
         %char buf2;
       cond .s.equ(">", token):
@@ -2221,7 +2271,7 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
         bool not;
       cond .s.equ("=", token):
@@ -2249,7 +2299,7 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
       cond !.s.equ("&", token):
         out .= buf;
@@ -2277,7 +2327,7 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
       cond !.s.equ("^", token):
         out .= buf;
@@ -2305,7 +2355,7 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
       cond !.s.equ("|", token):
         out .= buf;
@@ -2333,7 +2383,7 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
       cond !.s.equ("&&", token):
         out .= buf;
@@ -2361,7 +2411,7 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
       cond !.s.equ("^^", token):
         out .= buf;
@@ -2382,6 +2432,10 @@ public &StateBuilder
   }
   bool expBoolOr(%char out=, ^/char in=)
   {
+    ^/char oldMaeOp = `maeOp;
+    int oldValCnt = `valCnt;
+    `valCnt = 0;
+    `maeOp = "";
     %char buf;
     if(!`expBoolXor(buf=, in=)) ret false;
     loop{
@@ -2389,12 +2443,12 @@ public &StateBuilder
       ^/char token;
     do:
       oldin = in;
-      token = `tokenizer(in=);
+      if(!`operator(token=, in=)) ret false;
       branch{
       cond !.s.equ("||", token):
         out .= buf;
         in = oldin;
-        ret true;
+        break, break;
       comm:
         {
           %char buf2;
@@ -2406,6 +2460,12 @@ public &StateBuilder
       }
     while true:
     }
+    if(#`maeOp > 0){
+      `lasterror = `maeOp + "が不正です";
+      ret false;
+    }
+    `maeOp = oldMaeOp;
+    `valCnt = oldValCnt;
     ret true;
   }
   bool expression(%char out=, ^/char in=)
