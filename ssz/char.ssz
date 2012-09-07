@@ -3398,7 +3398,7 @@ public &Char
         cond `stVal.hb.guarded != 0:
           `getcombo = 0;
           if(
-            `addLife(-`stVal.hb.damage, true, true)
+            `addLife(-(double)`stVal.hb.damage, true, true)
             && `helperindex == 0) branch
           {
             ^`self by;
@@ -3414,7 +3414,7 @@ public &Char
           }
         else:
           if(
-            `addLife(-`stVal.hb.damage, true, true)
+            `addLife(-(double)`stVal.hb.damage, true, true)
             && `helperindex == 0) branch
           {
             ^`self by;
@@ -3531,23 +3531,23 @@ public &Char
   {
     `sysivar[.iLIFE] = .m.max!int?(0)<, .m.min!int?(`sysivar[.iLIFEMAX])<, l;
   }
-  public int getDamage(int damage, bool kill, bool absolute, float atkmul)
+  public int getDamage(double damage, bool kill, bool absolute, float atkmul)
   {
-    if(damage == 0 || (!absolute && atkmul == 0.0)) ret 0;
+    if(damage == 0.0 || (!absolute && atkmul == 0.0)) ret 0;
     type _t = double;
     ret
       (int).m.min!_t?((*_t)(.m.max!int?(0, `sysivar[.iLIFE]-(int)!kill)))<,
       .m.max!_t?((*_t)(`sysivar[.iLIFE]-`sysivar[.iLIFEMAX]))<,
-      .m.ceil((*_t)damage*(absolute ? 1.0 : atkmul/`defencemul));
+      .m.ceil(damage*(absolute ? 1.0 : atkmul/`defencemul));
   }
-  public bool addLife(int l, bool kill, bool absolute)
+  public bool addLife(double l, bool kill, bool absolute)
   {
-    if(l == 0 || `roundState() == 3) ret false;
+    if(l == 0.0 || `roundState() == 3) ret false;
     bool foo = `sysivar[.iLIFE] > 0;
     `sysivar[.iLIFE] +=
       (int).m.max!double?((double)-`sysivar[.iLIFE])<,
       .m.min!double?((double)(`sysivar[.iLIFEMAX]-`sysivar[.iLIFE]))<,
-      .m.floor((double)l / (absolute ? 1.0 : `defencemul));
+      .m.floor(l / (absolute ? 1.0 : `defencemul));
     if(!kill && foo && `sysivar[.iLIFE] <= 0) `sysivar[.iLIFE] = 1;
     if(`helperindex == 0 && `sysivar[.iLIFE] == 0){
       if(!foo) break;
@@ -4938,7 +4938,9 @@ public &Char
       if(#(c = .players.get(tar[i])) > 0){
         if(
           c~addLife(
-            -c~getDamage(-va, kill, absolute, `attackmul), true, true)) branch
+            -(double)c~getDamage(
+              -(double)va, kill, absolute, `attackmul), true, true)
+            ) branch
         {
         cond (`playerno&1) == (c~playerno&1):
           if(c~helperindex == 0) branch{
@@ -5017,7 +5019,10 @@ public &Char
   public void trHitFallDamage()
   {
     if(`stVal.mov != .MovTy::H) ret;
-    if(`addLife(-`stVal.hb.fall.damage, `stVal.hb.fall.kill != 0, false)){
+    if(
+      `addLife(
+        -(double)`stVal.hb.fall.damage, `stVal.hb.fall.kill != 0, false))
+    {
       `setEnemyWinty();
     }
   }
@@ -5810,7 +5815,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       bool kill = #hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
       `pyr.stVal.hb.damage +=
         `pyr.getDamage(
-          `pyr.stVal.hb.absdamage*hits, kill, false, by.attackmul);
+          (double)`pyr.stVal.hb.absdamage*(double)hits,
+          kill, false, by.attackmul);
       if(`pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
       cond kill || !live:
         if(!.gs(.gsNOKO)){

@@ -4763,7 +4763,7 @@ public &StateBuilder
             "va=", "$.v.toI();")) ret false;
         ret true;
       }])) ret false;
-      `state.ctrlList[-1].task .= "`addLife(va,k!=0,a!=0);";
+      `state.ctrlList[-1].task .= "`addLife((double)va,k!=0,a!=0);";
       ret true;
     }]);
   }
