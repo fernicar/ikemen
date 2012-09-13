@@ -194,6 +194,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       }
       `oldlife = life;
     }
+    if(`midlifelim < life) `midlifelim = life;
     if(`midlife < `midlifelim) `midlife = `midlifelim;
     `bg0.action();
     `bg1.action();
