@@ -184,17 +184,21 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       }
     else:
       if(`mlifetime > 0) `mlifetime--;
-      if(#`mid.frames == 0 || `mlifetime <= 0) `midlife -= 1.0 / 144.0;
       branch{
       cond #`mid.frames > 0 && `mlifetime <= 0 && life < `midlifelim:
         `midlifelim +=
           (life - `midlifelim) * (1.0 / (12.0 - (life - `midlifelim)*144.0));
       else:
-        `midlifelim += (life - `midlifelim) / 2.0;
+        `midlifelim = life;
+      }
+      if((#`mid.frames == 0 || `mlifetime <= 0) && `midlife > `midlifelim){
+        `midlife -= 1.0 / 144.0;
+        if(`midlife < `midlifelim) `midlife = `midlifelim;
       }
       `oldlife = life;
     }
-    .m.limMin!float?(`midlife=, .m.max!float?(`midlifelim, life));
+    float mlmin = .m.max!float?(`midlifelim, life);
+    if(`midlife < mlmin) `midlife += (mlmin - `midlife) / 2.0;
     `bg0.action();
     `bg1.action();
     `bg2.action();
