@@ -177,7 +177,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public void step(float life, bool hit)
   {
     branch{
-    cond #`mid.frames > 0 && hit:
+    cond #`mid.frames > 0 && hit && life < `oldlife:
       if(`mlifetime < 30){
         `mlifetime = 30;
         `midlife = `midlifelim = `oldlife;
@@ -194,7 +194,6 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       }
       `oldlife = life;
     }
-    if(`midlifelim < life) `midlifelim = life;
     if(`midlife < `midlifelim) `midlife = `midlifelim;
     `bg0.action();
     `bg1.action();
