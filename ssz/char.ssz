@@ -1485,7 +1485,7 @@ public int id = cfg.HelperMax;
 /int super = 0, supertime = 0, superpausebg = 0;
 int pauseplayer = -1, superplayer = -1;
 ^&.act.Action superanim;
-%index superpmap;
+^&.com.PalFX superpmap.new(1);
 float superposx = 0.0, superposy = 0.0;
 int superfacing = 1;
 int superdarken = 1;
@@ -1952,14 +1952,16 @@ public &Projectile
         if(`pausemovetime > 0) `pausemovetime--;
       }
     }
-    .com.pmapfx~remap = .chars[`playerno]<>~getPalMap();
-    .addAnimList(
-      .anims=, `ani, `sprpriority, `x, `y, .com.scale,
-      (float)`facing*`scalex, `scaley, 0.0, false, oVer, 1.0, 1.0, -1, 0,
-      256 >> (int)(
-        .super > 0 && .superdarken != 0 && `playerno != .superplayer),
-      .com.pmapfx,
-      `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
+    if(#`ani > 0 && #`ani~ani.spr > 0){
+      ^&.com.PalFX pfx.new(1);
+      pfx~remap = .chars[`playerno]<>~getPalMap();
+      .addAnimList(
+        .anims=, `ani, `sprpriority, `x, `y, .com.scale,
+        (float)`facing*`scalex, `scaley, 0.0, false, oVer, 1.0, 1.0, -1, 0,
+        256 >> (int)(
+          .super > 0 && .superdarken != 0 && `playerno != .superplayer),
+        pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
+    }
   }
 }
 public &Char
@@ -5456,13 +5458,20 @@ public void Explod::update(bool oVer)
   branch{
     type _t = $void(.anims.self=);
     ~_t aal = [_t(a=){
-      ^&.com.PalFX pfx = `ownpal == 0 ? c~getPalfx() : .com.pmapfx;
-      %index oldremap = pfx~remap;
+      ^&.com.PalFX pfx;
       branch{
+      cond `ownpal == 0 && `ani~ani.sff != .fight~fsf:
+        pfx = c~getPalfx();
+      cond `ownpal == 0:
+        {
+          ^&.com.PalFX tmp = c~getPalfx();
+          pfx.new(1);
+          pfx~copy(tmp<>);
+          pfx~remap.new(0);
+        }
       cond `ani~ani.sff != .fight~fsf:
+        pfx.new(1);
         pfx~remap = c~getPalMap();
-      else:
-        pfx~remap.new(0);
       }
       .addAnimList(
         a=, `ani, `sprpriority, `x+xofs, `y+yofs, cscl,
@@ -5472,7 +5481,6 @@ public void Explod::update(bool oVer)
           .super > 0 && .superdarken != 0 && c~playerno != .superplayer),
         pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
         `alphas < 0 ? 256 : `alphas, 0.0);
-      pfx~remap = oldremap;
     }];
   cond `ontop != 0:
     aal(:.topanims=:);
@@ -6632,12 +6640,11 @@ public float action(
   void sprite()
   {
     if(#.superanim > 0){
-      .com.pmapfx~remap = .superpmap;
       .addAnimList(
         .topanims=, .superanim, 5, .superposx, .superposy, .com.scale,
         (float).superfacing, 1.0, 0.0, false,
         .chars[.superplayer]<>~mver0 != 1, 1.0, 1.0, -1, 0, 256,
-        .com.pmapfx, 0, 0, 0.0);
+        .superpmap, 0, 0, 0.0);
       if(.superanim~ani.loopend) .superanim.new(0);
     }
     .anim();

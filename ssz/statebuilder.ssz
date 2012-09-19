@@ -4659,7 +4659,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".superpmap=`getPalMap();.superanim=`getAction (",
+              ".superpmap~remap=`getPalMap();.superanim=`getAction (",
               "$.v.toI());")) ret false;
         cond data[0] == 'F' || data[0] == 'f':
           data = data[1..-1];
@@ -4668,7 +4668,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".superpmap.new(0);.superanim=.fight~getAction(",
+              ".superpmap~remap.new(0);.superanim=.fight~getAction(",
               "$.v.toI());")) ret false;
         }
         ret true;
