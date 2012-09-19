@@ -2074,7 +2074,7 @@ public &Char
     `veloff = 0.0;
     `ticOldX = `drawX = `sysfvar[.fX];
     `ticOldY = `drawY = `sysfvar[.fY];
-    `palfx.new(0);
+    if(#`palfx > 0) `palfx~clear();
     `aimg.timegap = -1;
     `frontw = `defFW();
     `backw = `defBW();
@@ -7247,6 +7247,7 @@ public void nextRound()
       while j < #.chars:}
       if(.com.round == 1){
         c.sf~palList.resetRemap();
+        if(#c.palfx > 0) c.palfx~remap.new(0);
         c.trRemapPal(1, 1, 1, c.drawpalno);
       }
     }];
