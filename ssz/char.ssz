@@ -5387,13 +5387,14 @@ public void Explod::update(bool oVer)
   }
   bool act = !p && `ignorehitpause != 0;
   if(!p && !act) act = c~acttmp%2 != -1;
+  if(#`ani == 0){
+    `id = .com.IERR;
+    ret;
+  }
   if(.com.tickFrame()){
-    if(`removeongethit != 0 && c~stVal.mov == .MovTy::H){
-      `id = .com.IERR;
-      ret;
-    }
     if(
-      (`removetime >= 0 && `time >= `removetime) || #`ani == 0
+      (`removeongethit != 0 && c~stVal.mov == .MovTy::H)
+      || (`removetime >= 0 && `time >= `removetime)
       || (act && `removetime <= -2 && `ani~ani.loopend))
     {
       `id = .com.IERR;
