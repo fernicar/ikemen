@@ -2572,11 +2572,11 @@ public &Char
     while i < .sff.NumCharPalletes:
       if(tmp == 0){
         ^&.sff.Sprite spr = `sf~getSprite(9000, 0);
-        if(#spr > 0){
-          index i = spr~palidx;
-          spr = `sf~getSprite(0, 0);
-          if(#spr > 0) `sf~palList.remap(spr~palidx, i);
-        }
+        if(#spr == 0) spr = `sf~getSprite(0, 0);
+        if(#spr > 0) loop{index j = 0; while; do:
+          .s.copy!uint?(`sf~palList.get(j), `sf~palList.get(spr~palidx));
+          j++;
+        while j < .sff.NumCharPalletes:}
       }
     }
     `palno = `palkeymap[no-1]+1;
