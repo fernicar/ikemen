@@ -1485,6 +1485,7 @@ public int id = cfg.HelperMax;
 /int super = 0, supertime = 0, superpausebg = 0;
 int pauseplayer = -1, superplayer = -1;
 ^&.act.Action superanim;
+%index superpmap;
 float superposx = 0.0, superposy = 0.0;
 int superfacing = 1;
 int superdarken = 1;
@@ -1951,12 +1952,13 @@ public &Projectile
         if(`pausemovetime > 0) `pausemovetime--;
       }
     }
+    .com.pmapfx~remap = .chars[`playerno]<>~getPalMap();
     .addAnimList(
       .anims=, `ani, `sprpriority, `x, `y, .com.scale,
       (float)`facing*`scalex, `scaley, 0.0, false, oVer, 1.0, 1.0, -1, 0,
       256 >> (int)(
         .super > 0 && .superdarken != 0 && `playerno != .superplayer),
-      .consts.null!&.com.PalFX?(),
+      .com.pmapfx,
       `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
   }
 }
@@ -2388,6 +2390,11 @@ public &Char
       ret `palfx;
     }
     ret .chars[`playerno][`parentindex]~getPalfx();
+  }
+  public %index getPalMap()
+  {
+    ^&.com.PalFX pfx = `getPalfx();
+    ret pfx~remap;
   }
   public bool ls(int mask)
   {
@@ -5345,7 +5352,7 @@ public &Char
     if(#di == 0) di = si;
     branch{
       ^&.com.PalFX pfx;
-    cond<v1> `mver0 == 1:
+    cond<sf2> `sf~head.ver0 != 0d1:
       pfx = `getPalfx();
       if(#pfx~remap == 0) pfx~remap = `sf~palList.getPalMap();
       `sf~palList.swapPalMap(pfx~remap=);
@@ -5357,7 +5364,7 @@ public &Char
         spr = `sf~getSprite(9000, 0);
         if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
       }
-    diff<v1>:
+    diff<sf2>:
       `sf~palList.swapPalMap(pfx~remap=);
     }
   }
@@ -5366,7 +5373,11 @@ public &Char
 public void Explod::update(bool oVer)
 {
   if(`id == .com.IERR) ret;
-  ^&.Char c;
+  ^&.Char c = .players.get(`player);
+  if(#c == 0){
+    `id = .com.IERR;
+    ret;
+  }
   bool p = false;
   branch{
   cond .super > 0:
@@ -5375,17 +5386,11 @@ public void Explod::update(bool oVer)
     p = `pausemovetime >= 0 && `time >= `pausemovetime;
   }
   bool act = !p && `ignorehitpause != 0;
-  if(!p && !act){
-    if(#c == 0) c = .players.get(`player);
-    act = #c == 0 || c~acttmp%2 != -1;
-  }
+  if(!p && !act) act = c~acttmp%2 != -1;
   if(.com.tickFrame()){
-    if(`removeongethit != 0){
-      if(#c == 0) c = .players.get(`player);
-      if(#c == 0 || c~stVal.mov == .MovTy::H){
-        `id = .com.IERR;
-        ret;
-      }
+    if(`removeongethit != 0 && c~stVal.mov == .MovTy::H){
+      `id = .com.IERR;
+      ret;
     }
     if(
       (`removetime >= 0 && `time >= `removetime) || #`ani == 0
@@ -5450,20 +5455,23 @@ public void Explod::update(bool oVer)
   branch{
     type _t = $void(.anims.self=);
     ~_t aal = [_t(a=){
-      if(`ownpal == 0 && #c == 0){
-        if(#(c = .players.get(`player)) == 0) ret;
+      ^&.com.PalFX pfx = `ownpal == 0 ? c~getPalfx() : .com.pmapfx;
+      %index oldremap = pfx~remap;
+      branch{
+      cond `ani~ani.sff != .fight~fsf:
+        pfx~remap = c~getPalMap();
+      else:
+        pfx~remap.new(0);
       }
       .addAnimList(
         a=, `ani, `sprpriority, `x+xofs, `y+yofs, cscl,
         (float)`facing*`scalex*scl, (float)`vfacing*`scaley*scl,
         0.0, false, oVer, 1.0, 1.0, `alphas < 0 ? -1 : `alphas,
         `alphad, 256 >> (int)(
-          .super > 0 && .superdarken != 0
-          && (#c > 0 || #(c = .players.get(`player)) > 0)
-          && c~playerno != .superplayer),
-        `ownpal == 0 ? c~getPalfx() : .consts.null!&.com.PalFX?(),
-        `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
+          .super > 0 && .superdarken != 0 && c~playerno != .superplayer),
+        pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
         `alphas < 0 ? 256 : `alphas, 0.0);
+      pfx~remap = oldremap;
     }];
   cond `ontop != 0:
     aal(:.topanims=:);
@@ -5732,8 +5740,15 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     int hitting=, `pyr.self by=, &.Hitdef hit=,
     float x, float y, int pro, int hits)
   {
-    void expreset(&.Char p1=, &.Char p2=, float y, ^&.act.Action ani)
+    void expreset(&.Char p1=, &.Char p2=, float y, int animNo)
     {
+      ^&.act.Action ani;
+      branch{
+      cond animNo < 0:
+        ani = .fight~getAction(!animNo);
+      else:
+        ani = `by.getAction(animNo);
+      }
       float x =
         (float)p1.facing * (
          `pro != 0 ? `x
@@ -5894,20 +5909,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     branch{
       ^&.snd.Sound sou;
     cond<hit> #hitting == 1:
-      branch{
-        if(hit.sparkno == .com.IERR) break;
-        ^&.act.Action ani;
-      cond hit.sparkno < 0:
-        ani = .fight~getAction(!hit.sparkno);
+      if(hit.sparkno != .com.IERR) branch{
+      cond hit.reversal_attr > 0:
+        expreset(`pyr=, by=, y, hit.sparkno);
       else:
-        ani = by.getAction(hit.sparkno);
-      comm:
-        branch{
-        cond hit.reversal_attr > 0:
-          expreset(`pyr=, by=, y, ani);
-        else:
-          expreset(by=, `pyr=, y, ani);
-        }
+        expreset(by=, `pyr=, y, hit.sparkno);
       }
       branch{
         if(hit.hitsoundg == .com.IERR) break;
@@ -5932,20 +5938,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         .m.limRange!int?(`pyr.sysivar[.iPOWER]=, 0, `pyr.sysivar[.iPOWERMAX]);
       }
     else:
-      branch{
-        if(hit.guard_sparkno == .com.IERR) break;
-        ^&.act.Action ani;
-      cond hit.guard_sparkno < 0:
-        ani = .fight~getAction(!hit.guard_sparkno);
+      if(hit.guard_sparkno != .com.IERR) branch{
+      cond hit.reversal_attr > 0:
+        expreset(`pyr=, by=, y, hit.guard_sparkno);
       else:
-        ani = by.getAction(hit.guard_sparkno);
-      comm:
-        branch{
-        cond hit.reversal_attr > 0:
-          expreset(`pyr=, by=, y, ani);
-        else:
-          expreset(by=, `pyr=, y, ani);
-        }
+        expreset(by=, `pyr=, y, hit.guard_sparkno);
       }
       branch{
         if(hit.guardsoundg == .com.IERR) break;
@@ -6634,11 +6631,12 @@ public float action(
   void sprite()
   {
     if(#.superanim > 0){
+      .com.pmapfx~remap = .superpmap;
       .addAnimList(
         .topanims=, .superanim, 5, .superposx, .superposy, .com.scale,
         (float).superfacing, 1.0, 0.0, false,
         .chars[.superplayer]<>~mver0 != 1, 1.0, 1.0, -1, 0, 256,
-        .consts.null!&.com.PalFX?(), 0, 0, 0.0);
+        .com.pmapfx, 0, 0, 0.0);
       if(.superanim~ani.loopend) .superanim.new(0);
     }
     .anim();

@@ -570,7 +570,7 @@ public &PalFX
     ret .workpal;
   }
 }
-
+public ^&PalFX pmapfx.new(1);
 
 public ^/char loadFile(^/char deffile, ^/char file=, ~$^/char(^/char) load)
 {
