@@ -5423,7 +5423,7 @@ public void Explod::update(bool oVer)
     }
   }
   if(.com.tickFrame()){
-    if(act && #`ani > 0) `ani~ani.updateSprite();
+    if(act) `ani~ani.updateSprite();
     if(act && `bindtime == 0){
       `ticOldX = `x;
       `ticNewX = `x + `velocityx*(float)(`facing*`relativef);
@@ -5449,7 +5449,7 @@ public void Explod::update(bool oVer)
       `velocityx += `accelx;
       `velocityy += `accely;
     }
-    if(#`ani > 0) `ani~ani.action();
+    `ani~ani.action();
     `time++;
   }
   branch{
