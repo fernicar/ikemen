@@ -2532,7 +2532,6 @@ public &Char
   }
   public bool loadPallet(^/char def, int no)
   {
-    `sf~palList.resetRemap();
     index tmp = 0;
     if(`sf~head.ver0 == 0d1) loop{
       index i = 0;
@@ -2599,7 +2598,6 @@ public &Char
       if(i >= .sff.NumCharPalletes) i = 0;
     while i != `palno-1:
     }
-    `trRemapPal(1, 1, 1, `drawpalno);
     ret true;
   }
   public void clearDef()
@@ -7247,6 +7245,10 @@ public void nextRound()
         c.cmd[j].bufReset(c.key);
         j++;
       while j < #.chars:}
+      if(.com.round == 1){
+        c.sf~palList.resetRemap();
+        c.trRemapPal(1, 1, 1, c.drawpalno);
+      }
     }];
   continue:
     i++;
