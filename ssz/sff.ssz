@@ -101,6 +101,16 @@ public &SffHeader
   {
     loop{index i = 0; while; do: `palidxs[i] = i; i++; while i < #`palidxs:}
   }
+  public %index getPalMap()
+  {
+    ret `palidxs + (index)[];
+  }
+  public bool swapPalMap(%index map=)
+  {
+    if(#map != #`palidxs) ret false;
+    .m.swap!%index?(map=, `palidxs=);
+    ret true;
+  }
 }
 
 public &Sprite
@@ -1078,11 +1088,19 @@ public &Anim<frame_t>
   }
   ^uint palFoo(^&.com.PalFX fx)
   {
-    ^uint pal = `spr~getPal(`sff~palList=);
+    ^uint pal;
+    branch{
+    cond<remap> #fx > 0 && #fx~remap > 0:
+      `sff~palList.swapPalMap(fx~remap=);
+    comm:
+      pal = `spr~getPal(`sff~palList=);
+    diff<remap>:
+      `sff~palList.swapPalMap(fx~remap=);
+    }
     branch{
     cond #fx > 0 && fx~time != 0 && .allPalFX~time != 0:
       {
-        &.com.PalFX synth = fx<>;
+        &.com.PalFX synth.copy(fx<>);
         synth.synthesize(.allPalFX<>, `alphaFoo() == -2);
         pal = synth.getFxPal(pal, `alphaFoo() == -2);
       }

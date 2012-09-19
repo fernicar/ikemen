@@ -318,6 +318,7 @@ public void drawReflection(float x, float y)
     public float x = 0.0, y = 0.0, xscl = 1.0, yscl = 1.0;
     public float angle = 0.0, axscl = 1.0, ayscl = 1.0;
     public bool aset = false, oVer = false;
+    public %index remap;
     new()
     {
       `anim.new(1);
@@ -443,7 +444,7 @@ public void drawReflection(float x, float y)
   }
   public void recAfterImg(
     &.act.Action a=, float x, float y, float xs, float ys,
-    float an, bool as, bool oVer, float ax, float ay)
+    float an, bool as, bool oVer, float ax, float ay, ^&.com.PalFX cfx)
   {
     if(`time == 0){
       `reccount = `timegap = 0;
@@ -461,6 +462,7 @@ public void drawReflection(float x, float y)
       `imgs[`imgidx].oVer = oVer;
       `imgs[`imgidx].axscl = ax;
       `imgs[`imgidx].ayscl = ay;
+      `imgs[`imgidx].remap = cfx~remap + (index)[];
       `imgidx = `imgidx+1 & 63;
       if(`reccount < #`imgs) `reccount++;
       `restgap = `timegap;
@@ -469,8 +471,8 @@ public void drawReflection(float x, float y)
   }
   public void recAndAddAL(
     &.act.Action a=, int p,
-    float x, float y, float xs, float ys,
-    float an, bool as, bool oVer, float ax, float ay, bool rec, int br)
+    float x, float y, float xs, float ys, float an, bool as,
+    bool oVer, float ax, float ay, bool rec, int br, ^&.com.PalFX cfx)
   {
     if(
       `time == 0 || !.m.inRange!int?(1, 32767, `timegap)
@@ -481,11 +483,13 @@ public void drawReflection(float x, float y)
       ret;
     }
     loop{
-      index i = `framegap;
+      index i = `framegap, pfxi;
       index end = (.m.min!int?(`reccount, `length)/`framegap) * `framegap;
       .m.limMax!index?(end=, .cfg.AfterImageMax*`framegap);
       while;
     do:
+      pfxi = i/`framegap - 1;
+      `palfx[pfxi].remap = `imgs[`imgidx-i&63].remap;
       .addAnimList(
         .anims=, `imgs[`imgidx-i&63].anim, p-2,
         `imgs[`imgidx-i&63].x, `imgs[`imgidx-i&63].y, .com.scale,
@@ -493,12 +497,12 @@ public void drawReflection(float x, float y)
         `imgs[`imgidx-i&63].angle, `imgs[`imgidx-i&63].aset,
         `imgs[`imgidx-i&63].oVer,
         `imgs[`imgidx-i&63].axscl, `imgs[`imgidx-i&63].ayscl,
-        `alphas, `alphad, br, `palfx[i/`framegap - 1 .. i/`framegap],
+        `alphas, `alphad, br, `palfx[pfxi .. pfxi + 1],
         0, 0, 0.0);
       i += `framegap;
     while i <= end:
     }
-    if(rec) `recAfterImg(a=, x, y, xs, ys, an, as, oVer, ax, ay);
+    if(rec) `recAfterImg(a=, x, y, xs, ys, an, as, oVer, ax, ay, cfx);
   }
 }
 
@@ -2961,11 +2965,11 @@ public &Char
       `aimg.recAndAddAL(
         `ani<>=, sp, x, y, xs, ys, an, `angleset, `mver0 != 1,
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
-        .com.tickNextFrame() && `acttmp > 0, br);
+        .com.tickNextFrame() && `acttmp > 0, br, `getPalfx());
     cond .com.tickNextFrame() && `acttmp > 0:
       `aimg.recAfterImg(
         `ani<>=, x, y, xs, ys, an, `angleset, `mver0 != 1,
-        `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY]);
+        `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY], `getPalfx());
     }
     if(.com.tickNextFrame()){
       if(`roundState() == 4) `outTarget();
@@ -5340,12 +5344,22 @@ public &Char
     ^index di = `sf~palList.palTable.get((uint)dg << 0d16 | (ushort)dn);
     if(#si == 0) ret;
     if(#di == 0) di = si;
-    `sf~palList.remap(si<>, di<>);
-    if(sg == 1 && sn == 1 && `sf~head.ver0 == 0d1){
-      ^&.sff.Sprite spr = `sf~getSprite(0, 0);
-      if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
-      spr = `sf~getSprite(9000, 0);
-      if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
+    branch{
+      ^&.com.PalFX pfx;
+    cond<v1> `mver0 == 1:
+      pfx = `getPalfx();
+      if(#pfx~remap == 0) pfx~remap = `sf~palList.getPalMap();
+      `sf~palList.swapPalMap(pfx~remap=);
+    comm:
+      `sf~palList.remap(si<>, di<>);
+      if(sg == 1 && sn == 1 && `sf~head.ver0 == 0d1){
+        ^&.sff.Sprite spr = `sf~getSprite(0, 0);
+        if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
+        spr = `sf~getSprite(9000, 0);
+        if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
+      }
+    diff<v1>:
+      `sf~palList.swapPalMap(pfx~remap=);
     }
   }
 }
@@ -7033,8 +7047,10 @@ public void draw(float x, float y, float scl)
       facefx[i] = .chars[i][0]~getPalfx();
       .fight~fa[.com.tmode[i&1]][i].face_spr.[void(fs){
         if(#fs == 0) ret;
+        .chars[i][0]~sf~palList.swapPalMap(facefx[i]~remap=);
         fs~colorPallet.new(0);
         fs~colorPallet = fs~getPal(.chars[i][0]~sf~palList=);
+        .chars[i][0]~sf~palList.swapPalMap(facefx[i]~remap=);
       }];
     }
     i++;

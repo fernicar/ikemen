@@ -404,9 +404,30 @@ public &PalFX
   public float color;
   public int invertall;
   public int negType;
+  public %index remap;
   new()
   {
     `clear();
+  }
+  public void copy(`self x)
+  {
+    `player = x.player;
+    `time = x.time;
+    `mulr = x.mulr;
+    `mulg = x.mulg;
+    `mulb = x.mulb;
+    `addr = x.addr;
+    `addg = x.addg;
+    `addb = x.addb;
+    `amplr = x.amplr;
+    `amplg = x.amplg;
+    `amplb = x.amplb;
+    `cycletime = x.cycletime;
+    `sintime = x.sintime;
+    `color = x.color;
+    `invertall = x.invertall;
+    `negType = x.negType;
+    `remap = x.remap;
   }
   public void clear2(int negType)
   {

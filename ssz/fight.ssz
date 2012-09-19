@@ -192,8 +192,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         `midlifelim = life;
       }
       if((#`mid.frames == 0 || `mlifetime <= 0) && `midlife > `midlifelim){
-        `midlife -= 1.0 / 144.0;
-        if(`midlife < `midlifelim) `midlife = `midlifelim;
+        `midlife += (`midlifelim - `midlife) / 8.0;
       }
       `oldlife = life;
     }
