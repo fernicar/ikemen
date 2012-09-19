@@ -2537,6 +2537,7 @@ public &Char
       index i = 0;
       ubyte r, g, b;
       ^uint pl;
+      `sf~palList.resetRemap();
       while;
     do:
       pl = `sf~palList.get(i);
