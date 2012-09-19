@@ -7245,7 +7245,7 @@ public void nextRound()
         c.cmd[j].bufReset(c.key);
         j++;
       while j < #.chars:}
-      if(.com.round == 1){
+      if(.com.rexisted[c.playerno&1] == 0){
         c.sf~palList.resetRemap();
         if(#c.palfx > 0) c.palfx~remap.new(0);
         c.trRemapPal(1, 1, 1, c.drawpalno);
