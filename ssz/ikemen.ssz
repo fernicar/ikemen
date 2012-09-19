@@ -95,7 +95,7 @@ int game()
         `p[i] = .chr.chars[i]<>;
         `p[i]~id = .chr.id++;
         .chr.players.add(`p[i]);
-        `p[i]~loadPallet(`p[i]~def, `p[i]~palno);
+        if(.com.rexisted[i&1] == 0) `p[i]~loadPallet(`p[i]~def, `p[i]~palno);
         loop{index j = 0; while; do:
           if(#.chr.chars[j] > 0 && j != i){
             if(#.chr.chars[j]<>~cmd == 0) .chr.chars[j]<>~cmd.new(#.chr.chars);
