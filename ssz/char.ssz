@@ -2853,7 +2853,9 @@ public &Char
             ? `stVal.hb.snapy : 0.0/0.0;
         }
       }
-      if(!`cs1tmp) branch{
+      int p2st = `cs1tmp ? `stVal.no : -1;
+      int p2stpn = `stVal.playerno;
+      branch{
       cond `stVal.typ == .StTy::L:
         `trSelfState(5080, -1, 0);
       cond
@@ -2881,6 +2883,12 @@ public &Char
         }
       comm:
         `changeState2();
+      }
+      if(p2st >= 0){
+        `cs1tmp = true;
+        `stVal.prevno = `stVal.no;
+        `stVal.no = p2st;
+        `stVal.playerno = p2stpn;
       }
     }
     if(!`isPaused()) branch{
@@ -5881,33 +5889,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE];
       else:
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
-      }
-      if(ho || p2s) branch{
-      cond `pyr.stVal.typ == .StTy::L:
-        `pyr.stVal.prevno = 5080;
-      cond
-        `pyr.stVal.hb.guarded != 0
-        && (`pyr.stVal.hb.damage < `pyr.sysivar[.iLIFE] || .gs(.gsNOKO))
-        :
-        switch(`pyr.stVal.typ){
-        case .StTy::S:
-          `pyr.stVal.prevno = 150;
-        case .StTy::C:
-          `pyr.stVal.prevno = 152;
-        case .StTy::A:
-          `pyr.stVal.prevno = 154;
-        }
-      cond `pyr.stVal.hb.typ == 3:
-        `pyr.stVal.prevno = 5070;
-      else:
-        switch(`pyr.stVal.typ){
-        case .StTy::S:
-          `pyr.stVal.prevno = 5000;
-        case .StTy::C:
-          `pyr.stVal.prevno = 5010;
-        case .StTy::A:
-          `pyr.stVal.prevno = 5020;
-        }
       }
       if(
         (`pyr.facing < 0)
