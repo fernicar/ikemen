@@ -2879,8 +2879,9 @@ public &Char
         case .StTy::A:
           `trSelfState(5020, -1, 0);
         }
+      comm:
+        `changeState2();
       }
-      `changeState2();
     }
     if(!`isPaused()) branch{
     cond `sysivar[.iHITPAUSETIME] > 0:
