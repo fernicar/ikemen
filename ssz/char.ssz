@@ -4756,7 +4756,10 @@ public &Char
     `helproSetPos!h.self?(h=, pt, x, y, facing);
     h.sysfvar[.fVX] = 0.0;
     h.sysfvar[.fVY] = 0.0;
-    if(ownpal != 0) h.palfx.new(1);
+    if(ownpal != 0){
+      h.palfx.new(1);
+      h.palfx~remap = .chars[`playerno][`parentindex]~getPalMap() + (index)[];
+    }
     h.trChangeState2(st, `minus == -2 ? `playerno : `stVal.playerno, 0, 1);
   }
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
@@ -5364,23 +5367,17 @@ public &Char
     ^index di = `sf~palList.palTable.get((uint)dg << 0d16 | (ushort)dn);
     if(#si == 0) ret;
     if(#di == 0) di = si;
-    branch{
-      ^&.com.PalFX pfx;
-    cond<sf2> `sf~head.ver0 != 0d1:
-      pfx = `getPalfx();
-      if(#pfx~remap == 0) pfx~remap = `sf~palList.getPalMap();
-      `sf~palList.swapPalMap(pfx~remap=);
-    comm:
-      `sf~palList.remap(si<>, di<>);
-      if(sg == 1 && sn == 1 && `sf~head.ver0 == 0d1){
-        ^&.sff.Sprite spr = `sf~getSprite(0, 0);
-        if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
-        spr = `sf~getSprite(9000, 0);
-        if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
-      }
-    diff<sf2>:
-      `sf~palList.swapPalMap(pfx~remap=);
+    ^&.com.PalFX pfx = `getPalfx();
+    if(#pfx~remap == 0) pfx~remap = `sf~palList.getPalMap();
+    `sf~palList.swapPalMap(pfx~remap=);
+    `sf~palList.remap(si<>, di<>);
+    if(sg == 1 && sn == 1 && `sf~head.ver0 == 0d1){
+      ^&.sff.Sprite spr = `sf~getSprite(0, 0);
+      if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
+      spr = `sf~getSprite(9000, 0);
+      if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
     }
+    `sf~palList.swapPalMap(pfx~remap=);
   }
 }
 
@@ -5776,7 +5773,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           : p2.sysfvar[.fX] - p1.sysfvar[.fX] + (float)p2.facing * (
             (p1.facing < 0) ^ (p2.facing < 0) ? p2.frontw : -p2.backw));
       index tmp;
-      ^&.Explod e = `by.newExplod(tmp=);
+      ^&.Explod e = .chars[`by.playerno]<>~newExplod(tmp=);
       if(#e == 0) ret;
       e~ani = ani;
       e~postype = 0;
@@ -5785,14 +5782,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       e~offsety =
         y + `hit.sparky + (`by.id == p1.id ? 0.0 : p1.stVal.hit.sparky);
       e~relativef = 1;
-      e~player = `by.id;
       e~scalex = e~scaley = 1.0;
       e~ontop = 1;
       e~sprpriority = .consts.int_t::MIN;
       e~ownpal = 1;
       e~supermovetime = e~pausemovetime = -1;
       p1.setPos!e<>.self?(e<>=, e~postype, e~offsetx, e~offsety, e~relativef);
-      `by.insertExplod(tmp);
+      .chars[`by.playerno]<>~insertExplod(tmp);
     }
     bool guard =
       (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.ls(.lsGUARD);
