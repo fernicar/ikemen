@@ -1648,6 +1648,7 @@ public &Explod
     `ignorehitpause = 1;
     `ticOldX = `ticNewX = `x;
     `ticOldY = `ticNewY = `y;
+    `palfx.new(0);
   }
   public void setFacing(int f)
   {
