@@ -3384,13 +3384,6 @@ public &Char
         `destroySelf();
         ret;
       }
-      if(
-        (`acttmp > 0 && `stVal.mov != .MovTy::H) || (
-          `roundState() == 2 && `isKO()
-          && (`sysivar[.iSYSFLAG] & .sfOVER) != 0))
-      {
-        `outTarget();
-      }
       if(`acttmp > 0){
         if(#`ani > 0) `ani~ani.updateSprite();
         if(!`isBound()) `bind();
@@ -3448,10 +3441,17 @@ public &Char
         }
         `stVal.hb.damage = 0;
       }
-      if(`landCondition()){
-        `trSelfState(52, -1, -1);
+      if(`landCondition()) `trSelfState(52, -1, -1);
+      if(`cs1tmp){
         `changeState2();
-        `state(::);
+        if(!`cs1tmp) `state(::);
+      }
+      if(
+        (`acttmp > 0 && `stVal.mov != .MovTy::H) || (
+          `roundState() == 2 && `isKO()
+          && (`sysivar[.iSYSFLAG] & .sfOVER) != 0))
+      {
+        `outTarget();
       }
       `atktmp =
         (
