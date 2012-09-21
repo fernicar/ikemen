@@ -1606,6 +1606,7 @@ public &Explod
   public int ignorehitpause;
   public float ticOldX, ticNewX;
   public float ticOldY, ticNewY;
+  public ^&.com.PalFX palfx;
   new()
   {
     `clear();
@@ -2078,7 +2079,7 @@ public &Char
     `veloff = 0.0;
     `ticOldX = `drawX = `sysfvar[.fX];
     `ticOldY = `drawY = `sysfvar[.fY];
-    if(#`palfx > 0) `palfx~clear();
+    `palfx.new(0);
     `aimg.timegap = -1;
     `frontw = `defFW();
     `backw = `defBW();
@@ -2217,6 +2218,7 @@ public &Char
       .explods[`playerno][i].clear();
       .explods[`playerno][i].id = -1;
       .explods[`playerno][i].player = `id;
+      .explods[`playerno][i].palfx = `getPalfx();
       ret .explods[`playerno][i..i+1];
     }
     loop{idx = 0; while; do:
@@ -5470,17 +5472,17 @@ public void Explod::update(bool oVer)
       ^&.com.PalFX pfx;
       branch{
       cond `ownpal == 0 && `ani~ani.sff != .fight~fsf:
-        pfx = c~getPalfx();
+        pfx = `palfx;
       cond `ownpal == 0:
         {
-          ^&.com.PalFX tmp = c~getPalfx();
+          ^&.com.PalFX tmp = `palfx;
           pfx.new(1);
           pfx~copy(tmp<>);
           pfx~remap.new(0);
         }
       cond `ani~ani.sff != .fight~fsf:
         pfx.new(1);
-        pfx~remap = c~getPalMap();
+        pfx~remap = `palfx~remap;
       }
       .addAnimList(
         a=, `ani, `sprpriority, `x+xofs, `y+yofs, cscl,
@@ -5773,7 +5775,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           : p2.sysfvar[.fX] - p1.sysfvar[.fX] + (float)p2.facing * (
             (p1.facing < 0) ^ (p2.facing < 0) ? p2.frontw : -p2.backw));
       index tmp;
-      ^&.Explod e = .chars[`by.playerno]<>~newExplod(tmp=);
+      ^&.Explod e = `by.newExplod(tmp=);
       if(#e == 0) ret;
       e~ani = ani;
       e~postype = 0;
@@ -5782,6 +5784,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       e~offsety =
         y + `hit.sparky + (`by.id == p1.id ? 0.0 : p1.stVal.hit.sparky);
       e~relativef = 1;
+      e~player = .chars[`by.playerno]<>~id;
       e~scalex = e~scaley = 1.0;
       e~ontop = 1;
       e~sprpriority = .consts.int_t::MIN;
@@ -7226,6 +7229,7 @@ public void nextRound()
         (float)(.stg~p2.startx - .stg~cam.startx));
       c.setCtrl(false);
       c.stVal.clear();
+      %index tmppmap = c.getPalMap();
       c.clearSpSysVar();
       c.rangeSetIVar(0, c.sysivar[.iINTPERSISTINDEX]-1, 0);
       c.rangeSetFVar(0, c.sysivar[.iFLOATPERSISTINDEX]-1, 0.0);
@@ -7233,10 +7237,13 @@ public void nextRound()
         c.cmd[j].bufReset(c.key);
         j++;
       while j < #.chars:}
-      if(.com.rexisted[c.playerno&1] == 0){
+      branch{
+      cond .com.rexisted[c.playerno&1] == 0:
         c.sf~palList.resetRemap();
-        if(#c.palfx > 0) c.palfx~remap.new(0);
         c.trRemapPal(1, 1, 1, c.drawpalno);
+      else:
+        c.palfx.new(1);
+        c.palfx~remap = tmppmap;
       }
     }];
   continue:
