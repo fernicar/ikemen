@@ -3120,7 +3120,6 @@ public &Char
     }
     `acttmp = -(int)p * 2;
     if(!p){
-      bool lc = !`ls(.lsGETHIT) && `landCondition();
       if(!`isHitPaused()){
         `setFacing(`p1facing);
         `p1facing = 0;
@@ -3242,7 +3241,6 @@ public &Char
       if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       `changeState2();
       if(!`cs1tmp){
-        if(lc) `trSelfState(52, -1, -1);
         `minus = 0;
         `state(::);
         branch{
@@ -3397,11 +3395,6 @@ public &Char
         if(#`ani > 0) `ani~ani.updateSprite();
         if(!`isBound()) `bind();
       }
-      `atktmp =
-        (
-          (`stVal.typ != .StTy::L && `stVal.mov != .MovTy::I)
-          || `stVal.hit.reversal_attr > 0)
-        && `isActive() ? `stVal.no : -1;
       if(`stVal.mov == .MovTy::H){
         if(.super <= 0 && .pause <= 0){
           `sysivar[.iPAUSEMOVETIME] = 0;
@@ -3455,6 +3448,16 @@ public &Char
         }
         `stVal.hb.damage = 0;
       }
+      if(`landCondition()){
+        `trSelfState(52, -1, -1);
+        `changeState2();
+        `state(::);
+      }
+      `atktmp =
+        (
+          (`stVal.typ != .StTy::L && `stVal.mov != .MovTy::I)
+          || `stVal.hit.reversal_attr > 0)
+        && `isActive() ? `stVal.no : -1;
       if(
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
