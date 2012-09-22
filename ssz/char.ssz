@@ -3271,6 +3271,7 @@ public &Char
           `stVal.time++;
           `posUpdate();
         }
+        if(`landCondition()) `trSelfState(52, -1, -1);
       }
     }
     `xScreenBound();
@@ -3371,6 +3372,25 @@ public &Char
     float highest=, float lowest=, float leftest=, float rightest=)
   {
     if(.com.tickFrame()){
+      if(`destmp){
+        loop{
+          index i = 0;
+          ^`self c;
+          while;
+        do:
+          c = .players.get(`targets[i]);
+          if(
+            #c > 0 && c~stVal.playerno != c~playerno
+            && c~sysivar[.iBINDTOID] == `id)
+          {
+            c~trSelfState(5050, -1, -1);
+          }
+          i++;
+        while i < #`targets:
+        }
+        `destroySelf();
+        ret;
+      }
       if(`acttmp > 0){
         if(#`ani > 0) `ani~ani.updateSprite();
         if(!`isBound()) `bind();
@@ -3427,30 +3447,6 @@ public &Char
           }
         }
         `stVal.hb.damage = 0;
-      }
-      if(`landCondition()) `trSelfState(52, -1, -1);
-      if(`cs1tmp){
-        `changeState2();
-        if(!`cs1tmp) `state(::);
-      }
-      if(`destmp){
-        loop{
-          index i = 0;
-          ^`self c;
-          while;
-        do:
-          c = .players.get(`targets[i]);
-          if(
-            #c > 0 && c~stVal.playerno != c~playerno
-            && c~sysivar[.iBINDTOID] == `id)
-          {
-            c~trSelfState(5050, -1, -1);
-          }
-          i++;
-        while i < #`targets:
-        }
-        `destroySelf();
-        ret;
       }
       if(
         (`acttmp > 0 && `stVal.mov != .MovTy::H) || (
