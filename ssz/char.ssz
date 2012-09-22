@@ -3271,7 +3271,10 @@ public &Char
           `stVal.time++;
           `posUpdate();
         }
-        if(`landCondition()) `trSelfState(52, -1, -1);
+        if(`landCondition()){
+          `trSelfState(52, -1, -1);
+          `stVal.time++;
+        }
       }
     }
     `xScreenBound();
