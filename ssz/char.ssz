@@ -2799,7 +2799,6 @@ public &Char
       `tickBind();
     }
     if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
-    `enemyn.new(0);
     if(`stVal.hitdefContact != 0){
       `stVal.hit.invalidate();
       `stVal.hitdefContact = 0;
@@ -2821,34 +2820,34 @@ public &Char
         }
         if(!.m.isnan(`stVal.hb.mindistx)) branch{
         cond c~facing < 0:
-          `sysfvar[.fX] =
+          `setPosX(
             .m.min!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] - `stVal.hb.mindistx);
+            (c~sysfvar[.fX] - `stVal.hb.mindistx));
         else:
-          `sysfvar[.fX] =
+          `setPosX(
             .m.max!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] + `stVal.hb.mindistx);
+            (c~sysfvar[.fX] + `stVal.hb.mindistx));
         }
         if(!.m.isnan(`stVal.hb.maxdistx)) branch{
         cond c~facing < 0:
-          `sysfvar[.fX] =
+          `setPosX(
             .m.max!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] - `stVal.hb.maxdistx);
+            (c~sysfvar[.fX] - `stVal.hb.maxdistx));
         else:
-          `sysfvar[.fX] =
+          `setPosX(
             .m.min!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] + `stVal.hb.maxdistx);
+            (c~sysfvar[.fX] + `stVal.hb.maxdistx));
         }
         if(`stVal.hb.guarded == 0 || `stVal.typ == .StTy::A){
           if(!.m.isnan(`stVal.hb.mindisty)){
-            `sysfvar[.fY] =
+            `setPosY(
               .m.max!float?(`sysfvar[.fY])<,
-              (c~sysfvar[.fY] + `stVal.hb.mindisty);
+              (c~sysfvar[.fY] + `stVal.hb.mindisty));
           }
           if(!.m.isnan(`stVal.hb.maxdisty)){
-            `sysfvar[.fY] =
+            `setPosY(
               .m.min!float?(`sysfvar[.fY])<,
-              (c~sysfvar[.fY] + `stVal.hb.maxdisty);
+              (c~sysfvar[.fY] + `stVal.hb.maxdisty));
           }
         }
         if(`stVal.hb.snapt != 0){
@@ -3297,9 +3296,7 @@ public &Char
     if(nobindx) `ticOldX = `drawX = `sysfvar[.fX];
     if(nobindy) `ticOldY = `drawY = `sysfvar[.fY];
     if(!`ls(.lsPOSFREEZEX)){
-      if(nobindx){
-        `sysfvar[.fX] = `ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff;
-      }
+      if(nobindx) `setPosX(`ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff);
       `veloff *= `sysfvar[.fSTAND_FRICTION]**2.0;
       if(#`veloff < 1.0) `veloff = 0.0;
       switch(`stVal.phy){
@@ -3311,7 +3308,7 @@ public &Char
       }
     }
     if(!`ls(.lsPOSFREEZEY)){
-      if(nobindy) `sysfvar[.fY] = `ticOldY + `sysfvar[.fVY];
+      if(nobindy) `setPosY(`ticOldY + `sysfvar[.fVY]);
       if(`stVal.phy == .StTy::A) `gravity();
     }
   }
@@ -3353,6 +3350,7 @@ public &Char
   }
   public void xScreenBound()
   {
+    float x = `sysfvar[.fX];
     if(`ls(.lsSCREENBOUND)){
       float min, max;
       branch{
@@ -3363,35 +3361,16 @@ public &Char
         min = .com.xmin + `getEdge(`fedge);
         max = .com.xmax - `getEdge(`bedge);
       }
-      .m.limRange!float?(`sysfvar[.fX]=, min, max);
+      .m.limRange!float?(x=, min, max);
     }
-    .m.limRange!float?(
-      `sysfvar[.fX]=, (float).stg~leftbound, (float).stg~rightbound);
+    .m.limRange!float?(x=, (float).stg~leftbound, (float).stg~rightbound);
+    `setPosX(x);
   }
   public void update(
     float cvmin=, float cvmax=,
     float highest=, float lowest=, float leftest=, float rightest=)
   {
     if(.com.tickFrame()){
-      if(`destmp){
-        loop{
-          index i = 0;
-          ^`self c;
-          while;
-        do:
-          c = .players.get(`targets[i]);
-          if(
-            #c > 0 && c~stVal.playerno != c~playerno
-            && c~sysivar[.iBINDTOID] == `id)
-          {
-            c~trSelfState(5050, -1, -1);
-          }
-          i++;
-        while i < #`targets:
-        }
-        `destroySelf();
-        ret;
-      }
       if(`acttmp > 0){
         if(#`ani > 0) `ani~ani.updateSprite();
         if(!`isBound()) `bind();
@@ -3453,6 +3432,25 @@ public &Char
       if(`cs1tmp){
         `changeState2();
         if(!`cs1tmp) `state(::);
+      }
+      if(`destmp){
+        loop{
+          index i = 0;
+          ^`self c;
+          while;
+        do:
+          c = .players.get(`targets[i]);
+          if(
+            #c > 0 && c~stVal.playerno != c~playerno
+            && c~sysivar[.iBINDTOID] == `id)
+          {
+            c~trSelfState(5050, -1, -1);
+          }
+          i++;
+        while i < #`targets:
+        }
+        `destroySelf();
+        ret;
       }
       if(
         (`acttmp > 0 && `stVal.mov != .MovTy::H) || (
@@ -3789,6 +3787,7 @@ public &Char
   public void destroySelf()
   {:<-
     if(`helperindex <= 0) ret;
+    `outTarget();
     loop{
       index i = 0;
       ^`self c;
@@ -3825,23 +3824,31 @@ public &Char
     .players.destroy(`id);
     `helperindex = -1;
   }
+  public void setPosX(float x)
+  {
+    if(`sysfvar[.fX] != x){
+      `sysfvar[.fX] = x;
+      `enemyn.new(0);
+      if(`player) loop{index i = (`playerno+1) & 1; while; do:
+        loop{index j = 0; while; do:
+          .chars[i][j]~enemyn.new(0);
+          j++;
+        while j < #.chars[i]:}
+        i += 2;
+      while i < #.chars:}
+    }
+  }
+  public void setPosY(float y)
+  {
+    `sysfvar[.fY] = y;
+  }
   public void setX(float x)
   {
-    `sysfvar[.fX] = `ticOldX = `drawX = x;
-    `enemyn.new(0);
-    if(`player) loop{index i = (`playerno+1) & 1; while; do:
-      loop{index j = 0; while; do:
-        .chars[i][j]~enemyn.new(0);
-        j++;
-      while j < #.chars[i]:
-      }
-      i += 2;
-    while i < #.chars:
-    }
+    `setPosX(`ticOldX = `drawX = x);
   }
   public void setY(float y)
   {
-    `sysfvar[.fY] = `ticOldY = `drawY = y;
+    `setPosY(`ticOldY = `drawY = y);
   }
   public void setXV(float xv)
   {
@@ -6070,6 +6077,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     while;
   do:
     if(p~c~id < 0) continue;
+    p~c~enemyn.new(0);
     contact = 0;
     if(
       p~c~atktmp < 0 || p~c~id == pyr.id || (
