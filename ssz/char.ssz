@@ -3118,7 +3118,7 @@ public &Char
       i++;
     while i < #`stVal.hb.by:
     }
-    if(#`palfx > 0 && `palfx~player == `id && !`isPaused()) `palfx~step();
+    if(#`palfx > 0 && !`isPaused()) `palfx~step();
     bool p = isSuperPaused() || isNormalPaused();
     if(#`cmd == 0){
       `changeState2();

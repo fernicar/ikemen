@@ -1360,9 +1360,7 @@ void c.Char::s##_@@P()
     {
       `trChangeAnim(5035);
     }
-    if(`mver0 != 1 || `stVal.time > 0){
-      .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
-    }
+    .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
     if(
       `stVal.hb.hittime < 0 || `trAnimTime()$.v.toI() == 0
       || (
@@ -1412,9 +1410,7 @@ void c.Char::s##_@@P()
       `setCtrl(true);
       `stVal.mov = .MovTy::I;
     }
-    if(`mver0 != 1 || `stVal.time > 0){
-      .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
-    }
+    .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
     if(`sysfvar[.fVY] > 0.0 && `sysfvar[.fY] >= 0.0){
       `trChangeState(52, -1, -1);
       ret;
@@ -1455,9 +1451,7 @@ void c.Char::s##_@@P()
       `stVal.ps[0].p = .consts.int_t::MAX;
       `trChangeAnim(`animno + 10);
     }
-    if(`mver0 != 1 || `stVal.time > 0){
-      .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
-    }
+    .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
     if(`isAlive() && `trCanRecover()$.v.isT() && `commandByName("recovery")){
       branch{
       cond
@@ -1537,9 +1531,7 @@ void c.Char::s##_@@P()
       `trHitVelSetX();
       `trHitVelSetY();
     }
-    if(`mver0 != 1 || `stVal.time > 0){
-      .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
-    }
+    .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
     if(
       `sysfvar[.fVY] > 0.0
       && `sysfvar[.fY] >= `sysfvar[.fAIR_GETHIT_TRIP_GROUNDLEVEL])
@@ -1747,9 +1739,7 @@ void c.Char::s##_@@P()
       `setY(`sysfvar[.fDOWN_BOUNCE_OFFSETY]);
       .v.setF(`sysfvar[.fDOWN_BOUNCE_OFFSETX])$`trAddX();
     }
-    if(`mver0 != 1 || `stVal.time > 0){
-      .v.setF(`sysfvar[.fDOWN_BOUNCE_YACCEL])$`trVelAddY();
-    }
+    .v.setF(`sysfvar[.fDOWN_BOUNCE_YACCEL])$`trVelAddY();
     if(
       `sysfvar[.fVY] > 0.0
       && `sysfvar[.fY] >= `sysfvar[.fDOWN_BOUNCE_GROUNDLEVEL])
@@ -2002,9 +1992,7 @@ void c.Char::s##_@@P()
 {
   if(!`isHitPaused()){
     if(`animno == 5035 && `trAnimTime()$.v.toI() == 0) `trChangeAnim(5050);
-    if(`mver0 != 1 || `stVal.time > 0){
-      .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
-    }
+    .v.setF(`stVal.hb.getYaccel())$`trVelAddY();
     if(
       `sysfvar[.fVY] > 0.0
       && `sysfvar[.fY] >= `sysfvar[.fAIR_GETHIT_GROUNDRECOVER_GROUNDLEVEL])
