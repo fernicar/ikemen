@@ -1676,11 +1676,14 @@ void c.Char::s##_@@P()
         index idx;
         ^&.Explod e = `newExplod(idx=);
         if(#e > 0){
-          e~sprpriority =
-            `mver0 == 1 ? (`sysivar[1] <= 14 ? -10 : 10) : .consts.int_t::MIN;
           e~offsetx = 0.0;
           e~offsety = 0.0;
-          if(`mver0 != 1){
+          branch{
+          cond `mver0 == 1:
+            e~id = 0;
+            e~sprpriority = `sysivar[1] <= 14 ? -10 : 10;
+          else:
+            e~sprpriority = .consts.int_t::MIN;
             e~ownpal = 1;
             e~ontop = (int)(`sysivar[1] > 14);
             e~offsetx -= (float)`sysivar[.iDRAW_OFFSETX];
@@ -1809,11 +1812,14 @@ void c.Char::s##_@@P()
         index idx;
         ^&.Explod e = `newExplod(idx=);
         if(#e > 0){
-          e~sprpriority =
-            `mver0 == 1 ? (`sysivar[1] <= 14 ? -10 : 10) : .consts.int_t::MIN;
           e~offsetx = 0.0;
           e~offsety = 0.0;
-          if(`mver0 != 1){
+          branch{
+          cond `mver0 == 1:
+            e~id = 0;
+            e~sprpriority = `sysivar[1] <= 14 ? -10 : 10;
+          else:
+            e~sprpriority = .consts.int_t::MIN;
             e~ownpal = 1;
             e~ontop = (int)(`sysivar[1] > 14);
             e~offsetx -= (float)`sysivar[.iDRAW_OFFSETX];
@@ -2045,10 +2051,14 @@ void c.Char::s##_@@P()
         index idx;
         ^&.Explod e = `newExplod(idx=);
         if(#e > 0){
-          e~sprpriority = `mver0 == 1 ? -10 : .consts.int_t::MIN;
           e~offsetx = 0.0;
           e~offsety = 0.0;
-          if(`mver0 != 1){
+          branch{
+          cond `mver0 == 1:
+            e~id = 0;
+            e~sprpriority = -10;
+          else:
+            e~sprpriority = .consts.int_t::MIN;
             e~ownpal = 1;
             e~offsetx -= (float)`sysivar[.iDRAW_OFFSETX];
             e~offsety -= (float)`sysivar[.iDRAW_OFFSETY];

@@ -1705,7 +1705,7 @@ public &Projectile
   public int supermovetime;
   public int pausemovetime;
   public ^&.act.Action ani;
-  public int timemiss, hitpause, playerno;
+  public int timemiss, hitpause;
   public |.ProjContact pctyp;
   public int pctime;
   public float ticOldX, ticNewX;
@@ -1754,7 +1754,6 @@ public &Projectile
     `ani.new(0);
     `timemiss = 0;
     `hitpause = 0;
-    `playerno = 0;
     `pctyp = .ProjContact::Hit;
     `pctime = 0;
     `ticOldX = `ticNewX = `x;
@@ -1779,16 +1778,16 @@ public &Projectile
     `hits = 0;
     `prioritypoint = 0;
   }
-  public void update()
+  public void update(int playerNo)
   {
     if(.com.tickFrame()){
       branch{
       cond `anim >= 0:
         branch{
         cond `prioritypoint <= 0 && `remove != 0:
-          `ani = .chars[`playerno][0]~getAction(`cancelanim);
+          `ani = .chars[playerNo][0]~getAction(`cancelanim);
         cond `hits <= 0 && `remove != 0:
-          `ani = .chars[`playerno][0]~getAction(`hitanim);
+          `ani = .chars[playerNo][0]~getAction(`hitanim);
         cond
           (
             `x < .com.xmin-(float)`edgebound
@@ -1801,7 +1800,7 @@ public &Projectile
           || `removetime == 0
           || (`removetime <= -2 && (#`ani == 0 || `ani~ani.loopend))
           :
-          `ani = .chars[`playerno][0]~getAction(`remanim);
+          `ani = .chars[playerNo][0]~getAction(`remanim);
         else:
           break;
         comm:
@@ -1856,18 +1855,18 @@ public &Projectile
     while i < #clsn1:}
     ret false;
   }
-  public void projClsn()
+  public void projClsn(int playerNo)
   {
     if(`hit.attr < 0) ret;
     loop{index i = 0; while; do:
-      if(i != `playerno) loop{
+      if(i != playerNo) loop{
         index j = 0;
         while;
       do:
         if(
           .projs[i][j].id < 0 || (
             .projs[i][j].hit.affectteam != 0 && (
-              (`playerno&1) != (i&1)) != (.projs[i][j].hit.affectteam > 0))
+              (playerNo&1) != (i&1)) != (.projs[i][j].hit.affectteam > 0))
           ) continue;
         if(.projs[i][j].hit.attr >= 0 && `hitCheck(.projs[i][j]=)){
           `prioritypoint -= .projs[i][j].priority;
@@ -1921,7 +1920,7 @@ public &Projectile
       if(`timemiss > 0) `timemiss--;
     }
   }
-  public void anime(bool oVer)
+  public void anime(bool oVer, int playerNo)
   {
     if(
       .com.tickFrame() && #`ani > 0
@@ -1956,12 +1955,12 @@ public &Projectile
     }
     if(#`ani > 0 && #`ani~ani.spr > 0){
       ^&.com.PalFX pfx.new(1);
-      pfx~remap = .chars[`playerno]<>~getPalMap();
+      pfx~remap = .chars[playerNo]<>~getPalMap();
       .addAnimList(
         .anims=, `ani, `sprpriority, `x, `y, .com.scale,
         (float)`facing*`scalex, `scaley, 0.0, false, oVer, 1.0, 1.0, -1, 0,
         256 >> (int)(
-          .super > 0 && .superdarken != 0 && `playerno != .superplayer),
+          .super > 0 && .superdarken != 0 && playerNo != .superplayer),
         pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
     }
   }
@@ -3119,7 +3118,7 @@ public &Char
       i++;
     while i < #`stVal.hb.by:
     }
-    if(#`palfx > 0 && !`isPaused()) `palfx~step();
+    if(#`palfx > 0 && `palfx~player == `id && !`isPaused()) `palfx~step();
     bool p = isSuperPaused() || isNormalPaused();
     if(#`cmd == 0){
       `changeState2();
@@ -4791,7 +4790,6 @@ public &Char
       p.scalex *= `sysfvar[.fXSCALE];
       p.scaley *= `sysfvar[.fYSCALE];
     }
-    p.playerno = `playerno;
     if(p.velocityx < 0.0){
       p.facing *= -1;
       p.velocityx *= -1.0;
@@ -5395,14 +5393,11 @@ public &Char
   }
 }
 
-public void Explod::update(bool oVer)
+public void Explod::update(bool oVer, int playerNo)
 {
   if(`id == .com.IERR) ret;
-  ^&.Char c = .players.get(`player);
-  if(#c == 0){
-    `id = .com.IERR;
-    ret;
-  }
+  ^&.Char c;
+  if(`ignorehitpause != 0 || `removeongethit != 0) c = .players.get(`player);
   bool p = false;
   branch{
   cond .super > 0:
@@ -5411,14 +5406,14 @@ public void Explod::update(bool oVer)
     p = `pausemovetime >= 0 && `time >= `pausemovetime;
   }
   bool act = !p && `ignorehitpause != 0;
-  if(!p && !act) act = c~acttmp%2 != -1;
+  if(!p && !act) act = #c == 0 || c~acttmp%2 != -1;
   if(#`ani == 0){
     `id = .com.IERR;
     ret;
   }
   if(.com.tickFrame()){
     if(
-      (`removeongethit != 0 && c~stVal.mov == .MovTy::H)
+      (#c > 0 && `removeongethit != 0 && c~stVal.mov == .MovTy::H)
       || (`removetime >= 0 && `time >= `removetime)
       || (act && `removetime <= -2 && `ani~ani.loopend))
     {
@@ -5498,7 +5493,7 @@ public void Explod::update(bool oVer)
         (float)`facing*`scalex*scl, (float)`vfacing*`scaley*scl,
         0.0, false, oVer, 1.0, 1.0, `alphas < 0 ? -1 : `alphas,
         `alphad, 256 >> (int)(
-          .super > 0 && .superdarken != 0 && c~playerno != .superplayer),
+          .super > 0 && .superdarken != 0 && playerNo != .superplayer),
         pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
         `alphas < 0 ? 256 : `alphas, 0.0);
     }];
@@ -5793,14 +5788,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       e~offsety =
         y + `hit.sparky + (`by.id == p1.id ? 0.0 : p1.stVal.hit.sparky);
       e~relativef = 1;
-      e~player = .chars[`by.playerno]<>~id;
       e~scalex = e~scaley = 1.0;
       e~ontop = 1;
       e~sprpriority = .consts.int_t::MIN;
       e~ownpal = 1;
       e~supermovetime = e~pausemovetime = -1;
       p1.setPos!e<>.self?(e<>=, e~postype, e~offsetx, e~offsety, e~relativef);
-      .chars[`by.playerno]<>~insertExplod(tmp);
+      `by.insertExplod(tmp);
     }
     bool guard =
       (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.ls(.lsGUARD);
@@ -6468,7 +6462,7 @@ void update(
   .players.update(cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
-      if(.projs[i][j].id >= 0) .projs[i][j].update();
+      if(.projs[i][j].id >= 0) .projs[i][j].update(i);
       j++;
     while j < #.projs[i]:}
     i++;
@@ -6509,7 +6503,7 @@ void rootAction()
   if(.com.tickNextFrame()){
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
-        if(.projs[i][j].id >= 0) .projs[i][j].projClsn();
+        if(.projs[i][j].id >= 0) .projs[i][j].projClsn(i);
         j++;
       while j < #.projs[i]:
       }
@@ -6534,7 +6528,7 @@ void anim()
 {
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
-      if(.projs[i][j].id >= 0) .projs[i][j].anime(.chars[i]<>~mver0 != 1);
+      if(.projs[i][j].id >= 0) .projs[i][j].anime(.chars[i]<>~mver0 != 1, i);
       j++;
     while j < #.projs[i]:
     }
@@ -6647,7 +6641,7 @@ public float action(
       loop{index i = 0; while; do:
         loop{index j = #drawlist[i]-1; while; do:
           if(drawlist[i][j] < 0) continue;
-          .explods[i][drawlist[i][j]].update(.chars[i]<>~mver0 != 1);
+          .explods[i][drawlist[i][j]].update(.chars[i]<>~mver0 != 1, i);
           if(.explods[i][drawlist[i][j]].id == .com.IERR) branch{
           cond delI:
             .delIL(drawlist[i]=, j);
