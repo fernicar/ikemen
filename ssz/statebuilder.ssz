@@ -7045,18 +7045,9 @@ public &StateBuilder
             "", "$.v.isT()")) ret false;
       cond .s.equ(name[0..7], "trigger"):
         {
-          index idx;
-          if(
-            !.s.sToNumber!idx.self?(idx=, name[7..-1])
-            || idx <= 0 || idx > 65536)
-          {
-            if(.cfg.IgnoreMostErrors) loop{
-              index tail = #name-1;
-            do:
-              if(.s.sToNumber!idx.self?(idx=, name[7..tail])) break, break;
-            while --tail > 7:
-              break, break, break;
-            }
+          int idx;
+          if(!.com.readDigit(idx=, name[7..-1]) || idx <= 0 || idx > 65536){
+            if(.cfg.IgnoreMostErrors) break, break;
             `lasterror = "トリガー名が不正です";
             ret false;
           }

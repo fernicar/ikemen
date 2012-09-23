@@ -1808,12 +1808,8 @@ public &Projectile
           `remvel();
         }
       else:
-        branch{
-        cond #`ani > 0 && `ani~ani.loopend:
-          `ani.new(0);
-        cond `id >= 0 && `hitpause == 0 && `removetime <= 0:
-          `id = !`id;
-        }
+        if(#`ani > 0 && `ani~ani.loopend) `ani.new(0);
+        if(#`ani == 0 && `id >= 0) `id = !`id;
       }
       `ticOldX = `x;
       `ticNewX = `x + `velocityx*(float)`facing;

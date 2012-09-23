@@ -236,6 +236,17 @@ public ..aton<_t>(^/char str) _t
     .atof(str);
 }
 
+public bool readDigit(int i=, ^/char digit)
+{
+  if(#digit == 0 || digit<> == '0') ret false;
+  loop{index i = 0; do:
+    if(digit[i] < '0' || digit[i] > '9') ret false;
+    i++;
+  while i < #digit:}
+  i = .aton!int?(digit);
+  ret true;
+}
+
 public ..csvToAry<_t>(^/char csv) ^_t
 {
   ^^/char spl = .s.split(",", csv);
