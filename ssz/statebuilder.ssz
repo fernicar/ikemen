@@ -7207,20 +7207,7 @@ public &StateBuilder
           ret .errmes(fn, lines[i], i, `errorexp+\r\n+`lasterror);
         }
         buf .= \t"if(";
-        branch{
-        cond `state.ignorehitpause >= 0:
-          branch{
-          cond<ex> `state.ctrlList[-1].typ == .CtrlTy::Explod:
-            buf .= "(ih=(int)" .= .s.iToS(`state.ignorehitpause) .= ")$";
-          comm:
-            if(`state.ignorehitpause == 0) buf .= "nh&&";
-          }
-        else:
-          if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
-            buf .= "(ih=-1)$";
-          }
-          buf .= "nh&&";
-        }
+        if(`state.ignorehitpause <= 0) buf .= "nh&&";
         if(`state.persistent != 1){
           buf .= "--`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p<=0&&";
         }
@@ -7319,9 +7306,13 @@ public &StateBuilder
           buf .= '{';
         comm:
           if(`state.ctrlList[-1].typ == .CtrlTy::TagIn) buf .= "if(";
-          buf .=
-            '`' .= item<> .= (
-              `state.ctrlList[-1].typ == .CtrlTy::Explod ? "(ih)" : "()");
+          buf .= '`' .= item<>;
+          branch{
+          cond `state.ctrlList[-1].typ == .CtrlTy::Explod:
+            buf .= '(' .= .s.iToS(`state.ignorehitpause) .= ')';
+          else:
+            buf .= "()";
+          }
           buf .= `state.ctrlList[-1].typ == .CtrlTy::TagIn ? ')' : ';';
         diff<cs>:
            buf .= "ret;}";

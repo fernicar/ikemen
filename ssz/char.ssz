@@ -5397,7 +5397,7 @@ public void Explod::update(bool oVer, int playerNo)
 {
   if(`id == .com.IERR) ret;
   ^&.Char c;
-  if(`ignorehitpause != 0 || `removeongethit != 0) c = .players.get(`player);
+  if(`ignorehitpause == 0 || `removeongethit != 0) c = .players.get(`player);
   bool p = false;
   branch{
   cond .super > 0:
