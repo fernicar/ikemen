@@ -7189,8 +7189,7 @@ public &StateBuilder
         buf .=
           "void c.Char::" .= fname .= "()"\r\n
           "{"\r\n
-          \t"bool nh = !`isHitPaused();"\r\n
-          \t"byte ih;"\r\n;
+          \t"bool nh = !`isHitPaused();"\r\n;
         continue;
       do:
         line = .s.trim(lines[i][0.. .s.find(";", lines[i])]);
