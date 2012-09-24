@@ -3782,6 +3782,7 @@ public &Char
   {:<-
     if(`helperindex <= 0) ret;
     `outTarget();
+    `getcombo = 0;
     loop{
       index i = 0;
       ^`self c;
@@ -6607,8 +6608,7 @@ public float action(
     i++;
   while i < #.chars:
   }
-  ^int cb;
-  cb.new(2);
+  ^int cb.new(2);
   cb[0] = cb[1] = 0;
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:

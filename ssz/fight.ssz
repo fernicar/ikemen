@@ -754,8 +754,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     loop{
       index i = 0;
       float x;
-      ^/char t;
-      &.s.Format fm.set(`text_text);
+      &.s.Format fm;
     while; do:
       if(`resttime[i] <= 0 && `counterX[i] == `start_x*2.0) continue;
       x =
@@ -764,8 +763,8 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         + (float)`posx + haba(`cur[i], f)
         : (`start_x > 0.0 ? 0.0 : -`counterX[i])
         - (float)`posx + 320.0;
+      fm.set(`text_text);
       fm.d(`cur[i]);
-      t = fm.out;
       if(`text_fontn >= 0 && #f > `text_fontn){
         branch{
         cond (i&1) == 0:
@@ -780,11 +779,11 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         .laytext(
           x*(1.0/.cfg.LifebarFontScale),
           (float)`posy*(1.0/.cfg.LifebarFontScale),
-          .cfg.LifebarFontScale, layerno, t,
+          .cfg.LifebarFontScale, layerno, fm.out,
           f[`text_fontn]=, `text_fontb, (i&1)==0?1:-1, `text_lay=);
         if((i&1) != 0){
           x -=
-            (float)f[`text_fontn].textWidth(t)
+            (float)f[`text_fontn].textWidth(fm.out)
             * `text_lay.scale.x * .cfg.LifebarFontScale;
         }
       }
