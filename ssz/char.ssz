@@ -3134,13 +3134,13 @@ public &Char
     }
     if(#`palfx > 0 && !`isPaused()) `palfx~step();
     bool p = isSuperPaused() || isNormalPaused();
-    if(`cs1tmp) `furimukiToka();
     if(#`cmd == 0){
       `changeState2();
       p = false;
     }
     `acttmp = -(int)p * 2;
     if(!p){
+      if(`cs1tmp) `furimukiToka();
       if(!`isHitPaused()){
         `setFacing(`p1facing);
         `p1facing = 0;
@@ -4507,7 +4507,7 @@ public &Char
       `stVal.prevno = 11;
       `stVal.no = 12;
     }
-    `furimuki();
+    if(!`isHitPaused()) `furimuki();
   }
   public void changeState2()
   {
