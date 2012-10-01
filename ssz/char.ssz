@@ -3090,6 +3090,24 @@ public &Char
       `stVal.phy == .StTy::A && `isActive() && `sysfvar[.fVY] > 0.0
       && `sysfvar[.fY] >= 0.0 && `stVal.no != 105 && `stVal.no != 52;
   }
+  void furimuki()
+  {
+    if(
+      (`sysivar[.iSYSFLAG] & .sfOVER) == 0
+      && `ctrl && `helperindex == 0 && !`ls(.lsNOAUTOTURN)
+      && (`stVal.no == 0 || `stVal.no == 11 || `stVal.no == 20))
+    {
+      ^`self e = .players.enemyNear(`=, 0);
+      if((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX]) >= 0) break;
+      branch{
+      cond `stVal.typ == .StTy::S:
+        `trChangeAnim(5);
+      cond `stVal.typ == .StTy::C:
+        `trChangeAnim(6);
+      }
+      `setFacing(-`facing);
+    }
+  }
   public void action()
   {:<-
     bool isSuperPaused()
@@ -3116,6 +3134,7 @@ public &Char
     }
     if(#`palfx > 0 && !`isPaused()) `palfx~step();
     bool p = isSuperPaused() || isNormalPaused();
+    if(`cs1tmp) `furimukiToka();
     if(#`cmd == 0){
       `changeState2();
       p = false;
@@ -3129,18 +3148,7 @@ public &Char
       if(`isBound()) `bind();
       `changeState2();
       if(!`isHitPaused()){
-        if(
-          (`sysivar[.iSYSFLAG] & .sfOVER) == 0
-          && `ctrl && `helperindex == 0
-          && `stVal.typ != .StTy::A  && !`ls(.lsNOAUTOTURN))
-        {
-          ^`self e = .players.enemyNear(`=, 0);
-          if((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX]) >= 0) break;
-          if(`stVal.typ != .StTy::L){
-            `trChangeAnim(`stVal.typ == .StTy::S ? 5 : 6);
-          }
-          `setFacing(-`facing);
-        }
+        `furimuki();
         if(`keyctrl && #`cmd > 0) branch{
           branch{
           cond `stVal.typ == .StTy::A:
@@ -4489,9 +4497,22 @@ public &Char
   {
     ret `changeState1(p, .m.max!int?(0, no));
   }
+  void furimukiToka()
+  {
+    if(
+      `stVal.no == 11 && `stVal.typ == .StTy::C && (
+        `canCtrl() && (`key >= 0 || `helperindex == 0)
+        ? `cmd~buffer~U > 0 : `ctrl))
+    {
+      `stVal.prevno = 11;
+      `stVal.no = 12;
+    }
+    `furimuki();
+  }
   public void changeState2()
   {
-    if(`cs1tmp && (!`isHitPaused() || `mver0 == 1)){
+    if(`cs1tmp && (!`isHitPaused() || `helperindex > 0)){
+      `furimukiToka();
       ^&`State st = .states[`stVal.playerno].get(`stVal.no);
       branch{
       cond #st > 0:
