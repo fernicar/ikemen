@@ -3093,8 +3093,7 @@ public &Char
   void furimuki()
   {
     if(
-      (`sysivar[.iSYSFLAG] & .sfOVER) == 0
-      && `ctrl && `helperindex == 0 && !`ls(.lsNOAUTOTURN)
+      `ctrl && `helperindex == 0 && !`isHitPaused() && !`ls(.lsNOAUTOTURN)
       && (`stVal.no == 0 || `stVal.no == 11 || `stVal.no == 20))
     {
       ^`self e = .players.enemyNear(`=, 0);
@@ -3140,68 +3139,67 @@ public &Char
     }
     `acttmp = -(int)p * 2;
     if(!p){
-      if(`cs1tmp) `furimukiToka();
       if(!`isHitPaused()){
         `setFacing(`p1facing);
         `p1facing = 0;
       }
       if(`isBound()) `bind();
       `changeState2();
-      if(!`isHitPaused()){
-        `furimuki();
-        if(`keyctrl && #`cmd > 0) branch{
-          branch{
-          cond `stVal.typ == .StTy::A:
-            if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
-          else:
-            `sysivar[.iAIRJUMP_CNT] = 0;
-            `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-          }
-        cond `canCtrl() && (`key >= 0 || `helperindex == 0):
-          branch{
-          cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
-            if(`stVal.no != 10) `trSelfState(10, -1, -1);
-          cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
-            if(`stVal.no != 12) `trSelfState(12, -1, -1);
-          cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
-            if(`stVal.no != 40) `trSelfState(40, -1, -1);
-          cond
-            `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
-            && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
-            && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
-            && `cmd~buffer~U > 0
-            :
-            if(`stVal.no != 45){
-              `sysivar[.iAIRJUMP_CNT]++;
-              `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-              `trSelfState(45, -1, -1);
-            }
-          cond
-            !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
-              `cmd~buffer~F > 0 || (
-                (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
-            :
-            if(`stVal.no != 20) `trSelfState(20, -1, -1);
-          cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
-            `trSelfState(0, -1, -1);
-          }
-          if(
-            `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
-              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-            && `cmd~buffer~B > 0)
-          {
-            `trSelfState(120, -1, -1);
-          }
-        cond `ctrl:
-          switch(`stVal.no){
-          case 11:
-            `trSelfState(12, -1, 1);
-          case 20:
-            `trSelfState(0, -1, 1);
-          }
+      `furimuki();
+      if(`keyctrl && #`cmd > 0) branch{
+        branch{
+        cond `stVal.typ == .StTy::A:
+          if(`cmd~buffer~U < 0) `sysivar[.iSYSFLAG] |= .sfAIRJUMP;
+        else:
+          `sysivar[.iAIRJUMP_CNT] = 0;
+          `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
         }
+      cond `canCtrl() && (`key >= 0 || `helperindex == 0):
+        branch{
+        cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
+          if(`stVal.no != 10) `trSelfState(10, -1, -1);
+        cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
+          if(`stVal.no != 12) `trSelfState(12, -1, -1);
+        cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
+          if(`stVal.no != 40) `trSelfState(40, -1, -1);
+        cond
+          `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
+          && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
+          && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
+          && `cmd~buffer~U > 0
+          :
+          if(`stVal.no != 45){
+            `sysivar[.iAIRJUMP_CNT]++;
+            `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
+            `trSelfState(45, -1, -1);
+          }
+        cond
+          !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
+            `cmd~buffer~F > 0 || (
+              (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
+          :
+          if(`stVal.no != 20) `trSelfState(20, -1, -1);
+        cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
+          `trSelfState(0, -1, -1);
+        }
+        if(
+          `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
+            (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+            || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+            || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
+          && `cmd~buffer~B > 0)
+        {
+          `trSelfState(120, -1, -1);
+        }
+      cond `ctrl:
+        switch(`stVal.no){
+        case 11:
+          `trSelfState(12, -1, 1);
+        case 20:
+          `trSelfState(0, -1, 1);
+        }
+      }
+      if(!`isHitPaused()){
         if(!.roundEnd()){
           if(!`isKO() && `sysivar[.iLIFE] > 0){
             `sysivar[.iSYSFLAG] &= !.sfOVER;
@@ -4480,7 +4478,7 @@ public &Char
       ret false;
     }
     if(n < 0) ret false;
-    if(!`cs1tmp) `stVal.prevno = `stVal.no;
+    `stVal.prevno = `stVal.no;
     if(`stVal.playerno != `playerno && p != `stVal.playerno){
       `enemyExplodsRemove(`stVal.playerno);
     }
@@ -4497,22 +4495,9 @@ public &Char
   {
     ret `changeState1(p, .m.max!int?(0, no));
   }
-  void furimukiToka()
-  {
-    if(
-      `stVal.no == 11 && `stVal.typ == .StTy::C && (
-        `canCtrl() && (`key >= 0 || `helperindex == 0)
-        ? `cmd~buffer~U > 0 : `ctrl))
-    {
-      `stVal.prevno = 11;
-      `stVal.no = 12;
-    }
-    if(!`isHitPaused()) `furimuki();
-  }
   public void changeState2()
   {
     if(`cs1tmp && (!`isHitPaused() || `helperindex > 0)){
-      `furimukiToka();
       ^&`State st = .states[`stVal.playerno].get(`stVal.no);
       branch{
       cond #st > 0:
