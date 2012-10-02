@@ -3093,7 +3093,7 @@ public &Char
   void furimuki()
   {
     if(
-      `ctrl && `helperindex == 0 && !`isHitPaused() && !`ls(.lsNOAUTOTURN)
+      `ctrl && `helperindex == 0 && !`ls(.lsNOAUTOTURN)
       && (`stVal.no == 0 || `stVal.no == 11 || `stVal.no == 20))
     {
       ^`self e = .players.enemyNear(`=, 0);
