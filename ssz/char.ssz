@@ -3107,6 +3107,12 @@ public &Char
       `setFacing(-`facing);
     }
   }
+  public bool isHouchied()
+  {
+    ret
+      (`sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE) != 0
+      || (!.roundEnd() && `stVal.no == 5150);
+  }
   public void action()
   {:<-
     bool isSuperPaused()
@@ -3215,8 +3221,8 @@ public &Char
               .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY
               | (`roundState() > 0 ? .lsPLAYERPUSH : 0))
             : (
-              (`sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE) == 0
-              ? .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY : 0))
+              `isHouchied()
+              ? 0 : .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY))
           : 0;
         `sysfvar[.fANGLESCALEX] = `sysfvar[.fANGLESCALEY] = 1.0;
         `attackdist = (float)`sysivar[.iATTACK_DIST];
@@ -3254,6 +3260,10 @@ public &Char
         branch{
         cond `stVal.no == 5110:
           if(`sysivar[.iRECOVERTIME] <= 0 && !`isKO()){
+            `trSelfState(5120, -1, -1);
+          }
+        cond `stVal.no == 5150:
+          if(`stVal.time + (int)!`isHitPaused() >= 90 && !`isKO()){
             `trSelfState(5120, -1, -1);
           }
         cond
@@ -5645,8 +5655,7 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
             #(e~sysfvar[.fX] - `pyr.sysfvar[.fX]),
             #(`en[i]~sysfvar[.fX] - `pyr.sysfvar[.fX]), e~id, `en[i]~id)
           : `en[i]~isKO() && foo!int?(
-            -(`en[i]~sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE),
-            -(e~sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE), e~id, `en[i]~id)))
+            -(int)`en[i]~isHouchied(), -(int)e~isHouchied(), e~id, `en[i]~id)))
       {
         self(`en[i], i+1);
         `en[i] = e;
