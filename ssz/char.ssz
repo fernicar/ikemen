@@ -2785,14 +2785,20 @@ public &Char
   }
   public void tickBind()
   {
-    if(`sysivar[.iBINDTIME] > 0) `setBindTime(`sysivar[.iBINDTIME]-1);
+    if(`sysivar[.iBINDTIME] > 0) branch{
+      ^`self c;
+    cond `isBound():
+      if(#(c = .players.get(`sysivar[.iBINDTOID])) > 0 && c~acttmp > 0){
+        `setBindTime(`sysivar[.iBINDTIME]-1);
+      }
+    else:
+      if(`acttmp > 0) `setBindTime(`sysivar[.iBINDTIME]-1);
+    }
   }
   public void tick()
   {
-    if(`acttmp > 0){
-      if(#`ani > 0) `ani~ani.action();
-      `tickBind();
-    }
+    if(`acttmp > 0 && #`ani > 0) `ani~ani.action();
+    `tickBind();
     if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
     if(`stVal.hitdefContact != 0){
       `stVal.hit.invalidate();
