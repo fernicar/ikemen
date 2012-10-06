@@ -111,7 +111,7 @@ public &Stage
   void getBG(%^&.bg.BackGround bgl=, int id)
   {
     loop{index i = 0; while; do:
-      if(`bg[i].id == id) bgl.new[-1] = `bg[i..i+1];
+      if(`bg[i].id == id) bgl .= `bg[i..i+1];
       i++;
     while i < #`bg:
     }
@@ -390,12 +390,16 @@ public &Stage
       cond .s.equ(secname, "bgdef"):
         if(bgdefflg) bgdef(sc=, unicode);
         bgdefflg = false;
-      cond .s.equ(secname, "bg "):
-        bg(sc=, link=);
-      cond .s.equ(secname, "bgctrldef "):
-        bgctrldef(sc=);
-      cond .s.equ(secname, "bgctrl "):
-        bgctrl(sc=);
+      else:
+        if(secname[-1] == ' ') secname = secname[0 .. #secname-1];
+        branch{
+        cond .s.equ(secname, "bg"):
+          bg(sc=, link=);
+        cond .s.equ(secname, "bgctrldef"):
+          bgctrldef(sc=);
+        cond .s.equ(secname, "bgctrl"):
+          bgctrl(sc=);
+        }
       }
     }];
     ^/char error;
