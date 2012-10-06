@@ -3335,7 +3335,7 @@ public &Char
   }
   public void gravity()
   {
-    if(!`ls(.lsPOSFREEZEY)) `sysfvar[.fVY] += `sysfvar[.fYACCEL];
+    `sysfvar[.fVY] += `sysfvar[.fYACCEL];
   }
   public void bind()
   {
