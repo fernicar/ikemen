@@ -2927,7 +2927,14 @@ public &Char
             .m.randI(1, (`sysivar[.iRECOVERTIME]+1)/2);
         }
       }
-      if(`stVal.no == 5150 && `stVal.time >= 90 && !`isKO()){
+      branch{
+      cond 
+        `helperid == 0 && !`isKO() && `sysivar[.iLIFE] <= 0
+        && `stVal.mov != .MovTy::H && `roundState() >= 2 && !.gs(.gsNOKO)
+        :
+        `stVal.hb.fallf = 1;
+        `trSelfState(5030, -1, -1);
+      cond `stVal.no == 5150 && `stVal.time >= 90 && !`isKO():
         `trSelfState(5120, -1, -1);
       }
     }
@@ -3273,12 +3280,6 @@ public &Char
         `minus = 0;
         `state(::);
         branch{
-        cond
-          `helperid == 0 && !`isKO() && `sysivar[.iLIFE] <= 0
-          && `stVal.mov != .MovTy::H && `roundState() >= 2 && !.gs(.gsNOKO)
-          :
-          `stVal.hb.fallf = 1;
-          `trSelfState(5030, -1, -1);
         cond `stVal.no == 5110:
           if(`sysivar[.iRECOVERTIME] <= 0 && !`isKO()){
             `trSelfState(5120, -1, -1);
