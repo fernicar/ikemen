@@ -318,7 +318,6 @@ public void drawReflection(float x, float y)
     public float x = 0.0, y = 0.0, xscl = 1.0, yscl = 1.0;
     public float angle = 0.0, axscl = 1.0, ayscl = 1.0;
     public bool aset = false, oVer = false;
-    public %index remap;
     new()
     {
       `anim.new(1);
@@ -452,17 +451,25 @@ public void drawReflection(float x, float y)
     }
     if(`time > 0) `time--;
     if(`restgap <= 0){
-      `imgs[`imgidx].anim~copy(a=);
-      `imgs[`imgidx].x = x;
-      `imgs[`imgidx].y = y;
-      `imgs[`imgidx].xscl = xs;
-      `imgs[`imgidx].yscl = ys;
-      `imgs[`imgidx].angle = an;
-      `imgs[`imgidx].aset = as;
-      `imgs[`imgidx].oVer = oVer;
-      `imgs[`imgidx].axscl = ax;
-      `imgs[`imgidx].ayscl = ay;
-      `imgs[`imgidx].remap = cfx~remap + (index)[];
+      `imgs[`imgidx].[void(i=){
+        i.anim~copy(a=);
+        if(#a.ani.spr > 0){
+          i.anim~ani.spr.new(1);
+          i.anim~ani.spr~copy(a.ani.spr<>=);
+          a.ani.sff~palList.swapPalMap(cfx~remap=);
+          i.anim~ani.spr~colorPallet = a.ani.spr~getPal(a.ani.sff~palList=);
+          a.ani.sff~palList.swapPalMap(cfx~remap=);
+        }
+        i.x = x;
+        i.y = y;
+        i.xscl = xs;
+        i.yscl = ys;
+        i.angle = an;
+        i.aset = as;
+        i.oVer = oVer;
+        i.axscl = ax;
+        i.ayscl = ay;
+      }];
       `imgidx = `imgidx+1 & 63;
       if(`reccount < #`imgs) `reccount++;
       `restgap = `timegap;
@@ -489,7 +496,6 @@ public void drawReflection(float x, float y)
       while;
     do:
       pfxi = i/`framegap - 1;
-      `palfx[pfxi].remap = `imgs[`imgidx-i&63].remap;
       .addAnimList(
         .anims=, `imgs[`imgidx-i&63].anim, p-2,
         `imgs[`imgidx-i&63].x, `imgs[`imgidx-i&63].y, .com.scale,
@@ -2921,6 +2927,9 @@ public &Char
             .m.randI(1, (`sysivar[.iRECOVERTIME]+1)/2);
         }
       }
+      if(`stVal.no == 5150 && `stVal.time >= 90 && !`isKO()){
+        `trSelfState(5120, -1, -1);
+      }
     }
     `minus = 11;
     `state_i1(::);
@@ -3264,19 +3273,16 @@ public &Char
         `minus = 0;
         `state(::);
         branch{
-        cond `stVal.no == 5110:
-          if(`sysivar[.iRECOVERTIME] <= 0 && !`isKO()){
-            `trSelfState(5120, -1, -1);
-          }
-        cond `stVal.no == 5150:
-          if(`stVal.time + (int)!`isHitPaused() >= 90 && !`isKO()){
-            `trSelfState(5120, -1, -1);
-          }
         cond
           `helperid == 0 && !`isKO() && `sysivar[.iLIFE] <= 0
           && `stVal.mov != .MovTy::H && `roundState() >= 2 && !.gs(.gsNOKO)
           :
-          `trSelfState(5050, -1, -1);
+          `stVal.hb.fallf = 1;
+          `trSelfState(5030, -1, -1);
+        cond `stVal.no == 5110:
+          if(`sysivar[.iRECOVERTIME] <= 0 && !`isKO()){
+            `trSelfState(5120, -1, -1);
+          }
         cond `stVal.no == 140:
           if(`trAnimTime()$.v.toI() == 0){
             `trSelfState(
