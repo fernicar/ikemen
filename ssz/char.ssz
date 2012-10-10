@@ -3350,16 +3350,17 @@ public &Char
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     branch{
-    cond `isBound():
-      if(#c == 0 || c~destmp){
-        `trSelfState(5050, -1, -1);
-        break, else;
-      }
-      if(!.m.isnan(`sysfvar[.fBINDPOSX])){
-        `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
-      }
-      if(!.m.isnan(`sysfvar[.fBINDPOSY])) `setYV(c~sysfvar[.fVY]);
     cond #c > 0:
+      if(c~isTarget(`id)){
+        if(c~destmp){
+          `trSelfState(5050, -1, -1);
+          break, break, else;
+        }
+        if(!.m.isnan(`sysfvar[.fBINDPOSX])){
+          `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
+        }
+        if(!.m.isnan(`sysfvar[.fBINDPOSY])) `setYV(c~sysfvar[.fVY]);
+      }
     else:
       `setBindTime(0);
       ret;
