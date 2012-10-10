@@ -2934,6 +2934,7 @@ public &Char
         :
         `stVal.hb.fallf = 1;
         `trSelfState(5030, -1, -1);
+        `stVal.time = 1;
       cond `stVal.no == 5150 && `stVal.time >= 90 && !`isKO():
         `trSelfState(5120, -1, -1);
       }
@@ -3348,7 +3349,18 @@ public &Char
   {
     if(`sysivar[.iBINDTIME] == 0) ret;
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
-    if(#c == 0 || `destmp){
+    branch{
+    cond `isBound():
+      if(#c == 0 || c~destmp){
+        `trSelfState(5050, -1, -1);
+        break, else;
+      }
+      if(!.m.isnan(`sysfvar[.fBINDPOSX])){
+        `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
+      }
+      if(!.m.isnan(`sysfvar[.fBINDPOSY])) `setYV(c~sysfvar[.fVY]);
+    cond #c > 0:
+    else:
       `setBindTime(0);
       ret;
     }
@@ -3366,14 +3378,8 @@ public &Char
       `ticOldY += c~ticOldY - c~sysfvar[.fY];
     }
     if(#`sysivar[.iBINDFACING] == 1) branch{
-    cond `sysivar[.iBINDFACING] > 0: `facing = c~facing;
-    cond `sysivar[.iBINDFACING] < 0: `facing = -c~facing;
-    }
-    if(c~isTarget(`id)){
-      if(!.m.isnan(`sysfvar[.fBINDPOSX])){
-        `setXV((float)(`facing*c~facing)*c~sysfvar[.fVX]);
-      }
-      if(!.m.isnan(`sysfvar[.fBINDPOSY])) `setYV(c~sysfvar[.fVY]);
+    cond `sysivar[.iBINDFACING] > 0: `setFacing(c~facing);
+    cond `sysivar[.iBINDFACING] < 0: `setFacing(-c~facing);
     }
   }
   public void xScreenBound()
@@ -3400,21 +3406,6 @@ public &Char
   {
     if(.com.tickFrame()){
       if(`destmp){
-        loop{
-          index i = 0;
-          ^`self c;
-          while;
-        do:
-          c = .players.get(`targets[i]);
-          if(
-            #c > 0 && c~stVal.playerno != c~playerno
-            && c~sysivar[.iBINDTOID] == `id)
-          {
-            c~trSelfState(5050, -1, -1);
-          }
-          i++;
-        while i < #`targets:
-        }
         `destroySelf();
         ret;
       }
