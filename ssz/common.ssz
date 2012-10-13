@@ -226,7 +226,7 @@ public ..aton<_t>(^/char str) _t
     || typeid(_t) == typeid(index)
     :
     (*_t).m.max!double?((double).consts.Signed!_t?::MIN)<,
-    .m.min!double?((double).consts.Signed!_t?::MAX)<, 
+    .m.min!double?((double).consts.Signed!_t?::MAX)<,
   /* typeid(_t) <= typeid(ubyte) && typeid(_t) >= typeid(char):
     (*_t).m.max!double?((double).consts.Unsigned!_t?::MIN)<,
     .m.min!double?((double).consts.Unsigned!_t?::MAX)<,

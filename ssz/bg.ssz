@@ -6,6 +6,43 @@ lib m = <math.ssz>;
 lib sff = "sff.ssz";
 lib cfg = "config.ssz";
 lib com = "common.ssz";
+lib consts = <consts.ssz>;
+
+public int atoi(^/char str)
+{
+  int n = 0;
+  branch{
+    ^/char a = str;
+  cond<minus> a<> == '-':
+    a = a[1 .. -1];
+  comm:
+    loop{int i = 0; while; do:
+      n = n*10 + (int)(a[i] - '0');
+      i++;
+    while i < #a && a[i] >= '0' && a[i] <= '9':}
+  diff<minus>:
+    n *= -1;
+  }
+  ret n;
+}
+
+public ..aton<_t>(^/char str) _t
+{
+  ret
+  /?/*
+    (typeid(_t) <= typeid(byte) && typeid(_t) >= typeid(long))
+    || typeid(_t) == typeid(index)
+    :
+    (*_t).m.max!double?((double).consts.Signed!_t?::MIN)<,
+    .m.min!double?((double).consts.Signed!_t?::MAX)<, (double).atoi(str);
+  /* typeid(_t) <= typeid(ubyte) && typeid(_t) >= typeid(char):
+    (*_t).m.max!double?((double).consts.Unsigned!_t?::MIN)<,
+    .m.min!double?((double).consts.Unsigned!_t?::MAX)<,
+    (double)(uint).atoi(str);
+  /* true:
+    .com.aton!_t?(str);
+  /*?*/
+}
 
 public ^^/char splitParams(^/char paramStr)
 {
@@ -34,7 +71,7 @@ public ..csvToAry<_t>(^/char csv) ^_t
   ^^/char spl = .splitParams(csv);
   ^_t ary.new(#spl);
   loop{index i = 0; while; do:
-    ary[i] = .com.aton!_t?(spl[i]);
+    ary[i] = .aton!_t?(spl[i]);
     i++;
   while i < #ary:
   }
@@ -206,7 +243,7 @@ public &BackGround
     }
     if(typ == 4) ret;
     if(#(data = sc.get("layerno")) > 0){
-      int ln = .com.aton!int?(data);
+      int ln = .aton!int?(data);
       `toplayer = ln == 1;
       if(ln < 0 || ln > 1) typ = 3;
     }
@@ -216,11 +253,11 @@ public &BackGround
       `anim.frames[0].time = -1;
     }
     if(typ == 1 && #(data = sc.get("actionno")) > 0){
-      `actionno = .com.aton!`actionno.self?(data);
+      `actionno = .aton!`actionno.self?(data);
       `anim.mask = 0;
     }
     if(#(data = sc.get("positionlink")) > 0){
-      `positionlink = .com.aton!int?(data) != 0;
+      `positionlink = .aton!int?(data) != 0;
       if(`positionlink = #link > 0){
         `startvx = link~startvx;
         `startvy = link~startvy;
@@ -235,7 +272,7 @@ public &BackGround
       .readPair!float?(`deltax=, `deltay=, data);
     }
     if(typ != 1 && #(data = sc.get("mask")) > 0){
-      `anim.mask = .com.aton!int?(data) != 0 ? 0 : -1;
+      `anim.mask = .aton!int?(data) != 0 ? 0 : -1;
     }
     if(typ != 1 && #(data = sc.get("trans")) > 0){
       branch{
@@ -284,7 +321,7 @@ public &BackGround
       if(typ == 2) `anim.tile.h = 0x0;
     }
     if(#(data = sc.get("tilespacing")) > 0){
-      `anim.tile.x = `anim.tile.y = .com.aton!`anim.tile.x.self?(data);
+      `anim.tile.x = `anim.tile.y = .aton!`anim.tile.x.self?(data);
     }
     if(typ == 2 && #(data = sc.get("width")) > 0){
       .readPair!ushort?(`twidth=, `bwidth=, data);
@@ -313,7 +350,7 @@ public &BackGround
     if(#(data = sc.get("windowdelta")) > 0){
       .readPair!float?(`windowdeltax=, `windowdeltay=, data);
     }
-    if(#(data = sc.get("id")) > 0) `id = .com.aton!`id.self?(data);
+    if(#(data = sc.get("id")) > 0) `id = .aton!`id.self?(data);
     if(#(data = sc.get("velocity")) > 0){
       .readPair!float?(`startvx=, `startvy=, data);
     }
@@ -494,7 +531,7 @@ public &BGCtrl
       `looptime = times[2];
     }
     if(#(data = sc.get("positionlink")) > 0){
-      `positionlink = .com.aton!int?(data) != 0;
+      `positionlink = .aton!int?(data) != 0;
     }
     if(#(data = sc.get("value")) > 0){
       ^float val = .csvToAry!float?(data);
