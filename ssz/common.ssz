@@ -254,8 +254,7 @@ public ..csvToAry<_t>(^/char csv) ^_t
   loop{index i = 0; while; do:
     ary[i] = .aton!_t?(spl[i]);
     i++;
-  while i < #ary:
-  }
+  while i < #ary:}
   ret ary;
 }
 
@@ -282,6 +281,60 @@ public &FXY
 public void readPair<_t>(_t x=, _t y=, ^/char data)
 {
   ^_t xy = .csvToAry!_t?(data);
+  x = xy[0];
+  if(#xy >= 2) y = xy[1];
+}
+
+public int atoi(^/char str)
+{
+  int n = 0;
+  branch{
+    ^/char a = .s.trim(str);
+  cond<minus> #a > 0 && a<> == '-':
+    a = a[1 .. -1];
+  comm:
+    loop{int i = 0; while; do:
+      n = n*10 + (int)(a[i] - '0');
+      i++;
+    while i < #a && a[i] >= '0' && a[i] <= '9':}
+  diff<minus>:
+    n *= -1;
+  }
+  ret n;
+}
+
+public ..atonOF<_t>(^/char str) _t
+{
+  ret
+  /?/*
+    (typeid(_t) <= typeid(byte) && typeid(_t) >= typeid(long))
+    || typeid(_t) == typeid(index)
+    :
+    (*_t).m.max!double?((double).consts.Signed!_t?::MIN)<,
+    .m.min!double?((double).consts.Signed!_t?::MAX)<, (double).atoi(str);
+  /* typeid(_t) <= typeid(ubyte) && typeid(_t) >= typeid(char):
+    (*_t).m.max!double?((double).consts.Unsigned!_t?::MIN)<,
+    .m.min!double?((double).consts.Unsigned!_t?::MAX)<,
+    (double)(uint).atoi(str);
+  /* true:
+    .aton!_t?(str);
+  /*?*/
+}
+
+public ..csvToAryOF<_t>(^/char csv) ^_t
+{
+  ^^/char spl = .s.split(",", csv);
+  ^_t ary.new(#spl);
+  loop{index i = 0; while; do:
+    ary[i] = .atonOF!_t?(spl[i]);
+    i++;
+  while i < #ary:}
+  ret ary;
+}
+
+public void readPairOF<_t>(_t x=, _t y=, ^/char data)
+{
+  ^_t xy = .csvToAryOF!_t?(data);
   x = xy[0];
   if(#xy >= 2) y = xy[1];
 }

@@ -100,13 +100,13 @@ public &ActionList
 public void readSpr(&.sff.Anim!&.bg.Frame? a=, ^/char data)
 {
   a.frames.new(1);
-  .com.readPair!short?(a.frames~group=, a.frames~number=, data);
+  .com.readPairOF!short?(a.frames~group=, a.frames~number=, data);
   a.mask = 0;
 }
 
 public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
 {
-  int ary = .com.aton!int?(data);
+  int ary = .com.atonOF!int?(data);
   ^&.bg.Action act = al.getAction(ary);
   if(#act == 0) ret;
   a.setFrames(act~frames, act~loopstart);
@@ -138,10 +138,10 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     ^/char data;
     if(#(data = sc.benri(p, "pos")) > 0){
-      .com.readPair!int?(`posx=, `posy=, data);
+      .com.readPairOF!int?(`posx=, `posy=, data);
     }
     if(#(data = sc.benri(p, "range.x")) > 0){
-      .com.readPair!int?(`range_xz=, `range_xm=, data);
+      .com.readPairOF!int?(`range_xz=, `range_xm=, data);
     }
     if(#(data = sc.benri(p, "bg0.spr")) > 0) .readSpr(`bg0=, data);
     if(#(data = sc.benri(p, "bg0.anim")) > 0) .readAnim(`bg0=, `al=, data);
@@ -308,10 +308,10 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     ^/char data;
     if(#(data = sc.benri(p, "pos")) > 0){
-      .com.readPair!int?(`posx=, `posy=, data);
+      .com.readPairOF!int?(`posx=, `posy=, data);
     }
     if(#(data = sc.benri(p, "range.x")) > 0){
-      .com.readPair!int?(`range_xz=, `range_xm=, data);
+      .com.readPairOF!int?(`range_xz=, `range_xm=, data);
     }
     if(#(data = sc.benri(p, "bg0.spr")) > 0) .readSpr(`bg0=, data);
     if(#(data = sc.benri(p, "bg0.anim")) > 0) .readAnim(`bg0=, `al=, data);
@@ -344,7 +344,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       `front_lay.read(buf, sc=);
     }
     if(#(data = sc.benri(p, "counter.font")) > 0){
-      ^int nba = .com.csvToAry!int?(data);
+      ^int nba = .com.csvToAryOF!int?(data);
       if(#nba < 2) break;
       `counter_fontn = nba[0];
       `counter_fontb = nba[1];
@@ -355,13 +355,13 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       `counter_lay.read(buf, sc=);
     }
     if(#(data = sc.get("level1.snd")) > 0){
-      .com.readPair!int?(`level_snd[0].x=, `level_snd[0].y=, data);
+      .com.readPairOF!int?(`level_snd[0].x=, `level_snd[0].y=, data);
     }
     if(#(data = sc.get("level2.snd")) > 0){
-      .com.readPair!int?(`level_snd[1].x=, `level_snd[1].y=, data);
+      .com.readPairOF!int?(`level_snd[1].x=, `level_snd[1].y=, data);
     }
     if(#(data = sc.get("level3.snd")) > 0){
-      .com.readPair!int?(`level_snd[2].x=, `level_snd[2].y=, data);
+      .com.readPairOF!int?(`level_snd[2].x=, `level_snd[2].y=, data);
     }
   }
   public void step(float power, int level)
@@ -491,7 +491,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     ^/char data;
     if(#(data = sc.benri(p, "pos")) > 0){
-      .com.readPair!int?(`posx=, `posy=, data);
+      .com.readPairOF!int?(`posx=, `posy=, data);
     }
     if(#(data = sc.benri(p, "bg.spr")) > 0) .readSpr(`bg=, data);
     if(#(data = sc.benri(p, "bg.anim")) > 0) .readAnim(`bg=, `al=, data);
@@ -500,21 +500,21 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       `bg_lay.read(buf, sc=);
     }
     if(#(data = sc.benri(p, "face.spr")) > 0){
-      .com.readPair!int?(`face_sprg=, `face_spri=, data);
+      .com.readPairOF!int?(`face_sprg=, `face_spri=, data);
     }
     {
       %char buf .= p .= "face.";
       `face_lay.read(buf, sc=);
     }
     if(#(data = sc.benri(p, "teammate.pos")) > 0){
-      .com.readPair!int?(`teammate_posx=, `teammate_posy=, data);
+      .com.readPairOF!int?(`teammate_posx=, `teammate_posy=, data);
     }
     if(#(data = sc.benri(p, "teammate.spacing")) > 0){
-      .com.readPair!int?(
+      .com.readPairOF!int?(
         `teammate_spacingx=, `teammate_spacingy=, data);
     }
     if(#(data = sc.benri(p, "teammate.spacing")) > 0){
-      .com.readPair!int?(
+      .com.readPairOF!int?(
         `teammate_spacingx=, `teammate_spacingy=, data);
     }
     if(#(data = sc.benri(p, "teammate.bg.spr")) > 0){
@@ -538,7 +538,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       `teammate_ko_lay.read(buf, sc=);
     }
     if(#(data = sc.benri(p, "teammate.face.spr")) > 0){
-      .com.readPair!int?(`teammate_face_sprg=, `teammate_face_spri=, data);
+      .com.readPairOF!int?(`teammate_face_sprg=, `teammate_face_spri=, data);
     }
     {
       %char buf .= p .= "teammate.face.";
@@ -619,10 +619,10 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     ^/char data;
     if(#(data = sc.benri(p, "pos")) > 0){
-      .com.readPair!int?(`posx=, `posy=, data);
+      .com.readPairOF!int?(`posx=, `posy=, data);
     }
     if(#(data = sc.benri(p, "name.font")) > 0){
-      ^int nba = .com.csvToAry!int?(data);
+      ^int nba = .com.csvToAryOF!int?(data);
       if(#nba < 2) break;
       `name_fontn = nba[0];
       `name_fontb = nba[1];
@@ -702,22 +702,22 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public void read(&.com.Section sc=)
   {
     ^/char data;
-    if(#(data = sc.get("pos")) > 0) .com.readPair!int?(`posx=, `posy=, data);
+    if(#(data = sc.get("pos")) > 0) .com.readPairOF!int?(`posx=, `posy=, data);
     if(#(data = sc.get("start.x")) > 0) `start_x = .com.atof(data);
     if(#(data = sc.get("counter.font")) > 0){
-      .com.readPair!int?(`counter_fontn=, `counter_fontb=, data);
+      .com.readPairOF!int?(`counter_fontn=, `counter_fontb=, data);
     }
     if(#(data = sc.get("counter.shake")) > 0){
-      `counter_shake = .com.aton!`counter_shake.self?(data);
+      `counter_shake = .com.atonOF!`counter_shake.self?(data);
     }
     `counter_lay.read("counter.", sc=);
     if(#(data = sc.get("text.font")) > 0){
-      .com.readPair!int?(`text_fontn=, `text_fontb=, data);
+      .com.readPairOF!int?(`text_fontn=, `text_fontb=, data);
     }
     if(#(data = sc.get("text.text")) > 0) `text_text = data;
     `text_lay.read("text.", sc=);
     if(#(data = sc.get("displaytime")) > 0){
-      `displaytime = .com.aton!`displaytime.self?(data);
+      `displaytime = .com.atonOF!`displaytime.self?(data);
     }
   }
   public void step(^/int combo)
@@ -834,10 +834,10 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     ^/char data;
     if(#(data = sc.benri(h, "snd")) > 0){
-      .com.readPair!int?(`sndg=, `sndi=, data);
+      .com.readPairOF!int?(`sndg=, `sndi=, data);
     }
     if(#(data = sc.benri(h, "font")) > 0){
-      ^int nba = .com.csvToAry!int?(data);
+      ^int nba = .com.csvToAryOF!int?(data);
       if(#nba < 2) break;
       `fontn = nba[0];
       `fontb = nba[1];
@@ -951,21 +951,21 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public void read(&.com.Section sc=)
   {
     ^/char data;
-    if(#(data = sc.get("pos")) > 0) .com.readPair!int?(`posx=, `posy=, data);
+    if(#(data = sc.get("pos")) > 0) .com.readPairOF!int?(`posx=, `posy=, data);
     if(#(data = sc.get("match.wins")) > 0){
-      `match_wins = .com.aton!`match_wins.self?(data);
+      `match_wins = .com.atonOF!`match_wins.self?(data);
     }
     if(#(data = sc.get("match.maxdrawgames")) > 0){
-      `match_maxdrawgames = .com.aton!`match_maxdrawgames.self?(data);
+      `match_maxdrawgames = .com.atonOF!`match_maxdrawgames.self?(data);
     }
     if(#(data = sc.get("start.waittime")) > 0){
-      `start_waittime = .m.max!int?(1, .com.aton!`start_waittime.self?(data));
+      `start_waittime = .m.max!int?(1, .com.atonOF!`start_waittime.self?(data));
     }
     if(#(data = sc.get("round.time")) > 0){
-      `round_time = .com.aton!`round_time.self?(data);
+      `round_time = .com.atonOF!`round_time.self?(data);
     }
     if(#(data = sc.get("round.sndtime")) > 0){
-      `round_sndtime = .com.aton!`round_sndtime.self?(data);
+      `round_sndtime = .com.atonOF!`round_sndtime.self?(data);
     }
     `round_default.read("round.default.", sc=, `al=);
     `round[0].read("round1.", sc=, `al=);
@@ -978,45 +978,45 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     `round[7].read("round8.", sc=, `al=);
     `round[8].read("round9.", sc=, `al=);
     if(#(data = sc.get("fight.time")) > 0){
-      `fight_time = .com.aton!`fight_time.self?(data);
+      `fight_time = .com.atonOF!`fight_time.self?(data);
     }
     if(#(data = sc.get("fight.sndtime")) > 0){
-      `fight_sndtime = .com.aton!`fight_sndtime.self?(data);
+      `fight_sndtime = .com.atonOF!`fight_sndtime.self?(data);
     }
     `fight.read("fight.", sc=, `al=);
     if(#(data = sc.get("ctrl.time")) > 0){
-      `ctrl_time = .m.max!int?(1, .com.aton!int?(data));
+      `ctrl_time = .m.max!int?(1, .com.atonOF!int?(data));
     }
     if(#(data = sc.get("ko.time")) > 0){
-      `ko_time = .com.aton!`ko_time.self?(data);
+      `ko_time = .com.atonOF!`ko_time.self?(data);
     }
     if(#(data = sc.get("ko.sndtime")) > 0){
-      `ko_sndtime = .com.aton!`ko_sndtime.self?(data);
+      `ko_sndtime = .com.atonOF!`ko_sndtime.self?(data);
     }
     `ko.read("ko.", sc=, `al=);
     `dko.read("dko.", sc=, `al=);
     `to.read("to.", sc=, `al=);
     if(#(data = sc.get("slow.time")) > 0){
-      `slow_time = .com.aton!`slow_time.self?(data);
+      `slow_time = .com.atonOF!`slow_time.self?(data);
     }
     if(#(data = sc.get("over.hittime")) > 0){
-      `over_hittime = .m.max!int?(0, .com.aton!int?(data));
+      `over_hittime = .m.max!int?(0, .com.atonOF!int?(data));
     }
     if(#(data = sc.get("over.waittime")) > 0){
-      `over_waittime = .m.max!int?(0, .com.aton!int?(data));
+      `over_waittime = .m.max!int?(0, .com.atonOF!int?(data));
     }
     if(#(data = sc.get("over.wintime")) > 0){
-      `over_wintime = .m.max!int?(1, .com.aton!int?(data));
+      `over_wintime = .m.max!int?(1, .com.atonOF!int?(data));
     }
     if(#(data = sc.get("over.time")) > 0){
       `over_time =
-        .m.max!int?(`over_wintime+1, .com.aton!int?(data));
+        .m.max!int?(`over_wintime+1, .com.atonOF!int?(data));
     }
     if(#(data = sc.get("win.time")) > 0){
-      `win_time = .com.aton!`win_time.self?(data);
+      `win_time = .com.atonOF!`win_time.self?(data);
     }
     if(#(data = sc.get("win.sndtime")) > 0){
-      `win_sndtime = .com.aton!`win_sndtime.self?(data);
+      `win_sndtime = .com.atonOF!`win_sndtime.self?(data);
     }
     `win.read("win.", sc=, `al=);
     `win2.read("win2.", sc=, `al=);
@@ -1284,13 +1284,13 @@ public void setPerfect(|.WinTy wt=)
   {
     ^/char data;
     if(#(data = sc.benri(p, "pos")) > 0){
-      .com.readPair!int?(`posx=, `posy=, data);
+      .com.readPairOF!int?(`posx=, `posy=, data);
     }
     if(#(data = sc.benri(p, "iconoffset")) > 0){
-      .com.readPair!int?(`iconoffsetx=, `iconoffsety=, data);
+      .com.readPairOF!int?(`iconoffsetx=, `iconoffsety=, data);
     }
     if(#(data = sc.benri(p, "counter.font")) > 0){
-      ^int nba = .com.csvToAry!int?(data);
+      ^int nba = .com.csvToAryOF!int?(data);
       if(#nba < 2) break;
       `counter_fontn = nba[0];
       `counter_fontb = nba[1];
@@ -1391,7 +1391,7 @@ public void setPerfect(|.WinTy wt=)
       `icon_lay[(index).WinTy::Perfect].read(buf, sc=);
     }
     if(#(data = sc.get("useiconupto")) > 0){
-      `useiconupto = .com.aton!`useiconupto.self?(data);
+      `useiconupto = .com.atonOF!`useiconupto.self?(data);
     }
   }
   public void step(int numwin)
@@ -1505,9 +1505,9 @@ public void setPerfect(|.WinTy wt=)
   public void read(&.com.Section sc=)
   {
     ^/char data;
-    if(#(data = sc.get("pos")) > 0) .com.readPair!int?(`posx=, `posy=, data);
+    if(#(data = sc.get("pos")) > 0) .com.readPairOF!int?(`posx=, `posy=, data);
     if(#(data = sc.get("counter.font")) > 0){
-      ^int nba = .com.csvToAry!int?(data);
+      ^int nba = .com.csvToAryOF!int?(data);
       if(#nba < 2) break;
       `counter_fontn = nba[0];
       `counter_fontb = nba[1];
@@ -1518,7 +1518,7 @@ public void setPerfect(|.WinTy wt=)
     if(#(data = sc.get("bg.anim")) > 0) .readAnim(`bg=, `al=, data);
     `bg_lay.read("bg.", sc=);
     if(#(data = sc.get("framespercount")) > 0){
-      `framespercount = .com.aton!`framespercount.self?(data);
+      `framespercount = .com.atonOF!`framespercount.self?(data);
     }
   }
   public void step()
