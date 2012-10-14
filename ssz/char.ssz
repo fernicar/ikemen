@@ -1016,6 +1016,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public float snapz;
   public int snapt;
   public &.Fall fall;
+  public int player;
   public void clear()
   {
     `by.new(0);
@@ -1053,6 +1054,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `snapz = 0.0;
     `snapt = 0;
     `fall.clear();
+    `player = -1;
   }
   /float getYaccel()
   {
@@ -1183,6 +1185,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `hb.by = bi;
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
+    `hb.player = hit.player;
     `hb.fall = hit.fall;
     `fallTime = 0;
     `hb.yaccel = hit.yaccel;
@@ -2646,6 +2649,19 @@ public &Char
   {
     if(`helperindex != 0) ret;
     branch{
+    cond `stVal.mov != .MovTy::H:
+      branch{
+      cond `playerno == `stVal.playerno:
+        .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
+      cond (`playerno&1) == (`stVal.playerno&1):
+        .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
+      }
+    cond `playerno == `stVal.hb.player:
+      .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
+    cond `stVal.hb.player >= 0 && (`playerno&1) == (`stVal.hb.player&1):
+      .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
+    cond `stVal.hb.guarded != 0:
+      .winty[(`playerno+1)&1] = .fgt.WinTy::C;
     cond
       (`stVal.hb.attr&((int).AtTy::HA|(int).AtTy::HT|(int).AtTy::HP))
       != 0
@@ -3230,9 +3246,7 @@ public &Char
       }
       if(!`isHitPaused()){
         if(!.roundEnd()){
-          if(!`isKO() && `sysivar[.iLIFE] > 0){
-            `sysivar[.iSYSFLAG] &= !.sfOVER;
-          }
+          if(!`isKO() && `sysivar[.iLIFE] > 0) `sysivar[.iSYSFLAG] &= !.sfOVER;
           if((`sysivar[.iSYSFLAG] & .sfOVER) != 0){
             `sysivar[.iSYSFLAG] |= .sfKO_ROUND_MIDDLE;
           }
@@ -3427,43 +3441,9 @@ public &Char
           `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
           `stVal.hb.fallcount++;
         }
-        if(`stVal.hb.damage != 0) branch{
-        cond `stVal.hb.guarded != 0:
-          `getcombo = 0;
-          if(
-            `addLife(-(double)`stVal.hb.damage, true, true)
-            && `helperindex == 0) branch
-          {
-            ^`self by;
-            if(#`stVal.hb.by == 0) else;
-            by = .players.get(`stVal.hb.by[-1].id);
-            if(#by == 0) else;
-          cond by~playerno == `playerno:
-            .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
-          cond (by~playerno&1) == (`playerno&1):
-            .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
-          else:
-            .winty[(`playerno+1)&1] = .fgt.WinTy::C;
-          }
-        else:
-          if(
-            `addLife(-(double)`stVal.hb.damage, true, true)
-            && `helperindex == 0) branch
-          {
-            ^`self by;
-            if(#`stVal.hb.by == 0) else;
-            by = .players.get(`stVal.hb.by[-1].id);
-            if(#by == 0) else;
-          cond (by~playerno&1) == (`playerno&1):
-            branch{
-            cond by~playerno == `playerno:
-              .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
-            else:
-              .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
-            }
-          else:
-            `setEnemyWinty();
-          }
+        if(`stVal.hb.damage != 0){
+          if(`stVal.hb.guarded != 0) `getcombo = 0;
+          `addLife(-(double)`stVal.hb.damage, true, true);
         }
         `stVal.hb.damage = 0;
       }
@@ -3575,6 +3555,7 @@ public &Char
   public void setLife(int l)
   {
     `sysivar[.iLIFE] = .m.max!int?(0)<, .m.min!int?(`sysivar[.iLIFEMAX])<, l;
+    if(!`isKO() && `sysivar[.iLIFE] == 0) `setEnemyWinty();
   }
   public int getDamage(double damage, bool kill, bool absolute, float atkmul)
   {
@@ -3585,26 +3566,15 @@ public &Char
       .m.max!_t?((*_t)(`sysivar[.iLIFE]-`sysivar[.iLIFEMAX]))<,
       .m.ceil(damage*(absolute ? 1.0 : atkmul/`defencemul));
   }
-  public bool addLife(double l, bool kill, bool absolute)
+  public void addLife(double l, bool kill, bool absolute)
   {
-    if(l == 0.0 || `roundState() == 3) ret false;
-    bool foo = `sysivar[.iLIFE] > 0;
-    `sysivar[.iLIFE] +=
-      (int).m.max!double?((double)-`sysivar[.iLIFE])<,
+    if(l == 0.0 || `roundState() == 3) ret;
+    `setLife(
+      `sysivar[.iLIFE]
+      + (int).m.max!double?(
+        (double)(-`sysivar[.iLIFE] + (int)(!kill && `sysivar[.iLIFE] > 0)))<,
       .m.min!double?((double)(`sysivar[.iLIFEMAX]-`sysivar[.iLIFE]))<,
-      .m.floor(l / (absolute ? 1.0 : `defencemul));
-    if(!kill && foo && `sysivar[.iLIFE] <= 0) `sysivar[.iLIFE] = 1;
-    if(`helperindex == 0 && `sysivar[.iLIFE] == 0){
-      if(!foo) break;
-      branch{
-      cond `stVal.mov == .MovTy::H || `stVal.playerno != `playerno:
-        `setEnemyWinty();
-      else:
-        if(`helperindex == 0) .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
-      }
-      ret true;
-    }
-    ret false;
+      .m.floor(l / (absolute ? 1.0 : `defencemul)));
   }
   public void setPower(int p)
   {
@@ -4993,22 +4963,9 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       if(#(c = .players.get(tar[i])) > 0){
-        if(
-          c~addLife(
-            -(double)c~getDamage(
-              -(double)va, kill, absolute, `attackmul), true, true)
-            ) branch
-        {
-        cond (`playerno&1) == (c~playerno&1):
-          if(c~helperindex == 0) branch{
-          cond `playerno == c~playerno:
-            .winty[(c~playerno+1)&1] = .fgt.WinTy::Suicide;
-          else:
-            .winty[(c~playerno+1)&1] = .fgt.WinTy::Teammate;
-          }
-        else:
-          c~setEnemyWinty();
-        }
+        c~addLife(
+          -(double)c~getDamage(
+            -(double)va, kill, absolute, `attackmul), true, true);
       }
       i++;
     while i < #tar:
@@ -5076,12 +5033,7 @@ public &Char
   public void trHitFallDamage()
   {
     if(`stVal.mov != .MovTy::H) ret;
-    if(
-      `addLife(
-        -(double)`stVal.hb.fall.damage, `stVal.hb.fall.kill != 0, false))
-    {
-      `setEnemyWinty();
-    }
+    `addLife(-(double)`stVal.hb.fall.damage, `stVal.hb.fall.kill != 0, false);
   }
   public void trHitVelSetX()
   {
@@ -5860,6 +5812,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     if(pro == 0) by.sprpriority = hit.p1sprpriority;
     `pyr.sprpriority = hit.p2sprpriority;
     `pyr.stVal.hb.hitid = hit.id;
+    `pyr.stVal.hb.player = hit.player;
     if(hitting > 0){
       `pyr.stVal.setHb(
         hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));

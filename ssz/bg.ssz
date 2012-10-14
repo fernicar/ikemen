@@ -13,7 +13,7 @@ public int atoi(^/char str)
   int n = 0;
   branch{
     ^/char a = str;
-  cond<minus> a<> == '-':
+  cond<minus> #a > 0 && a<> == '-':
     a = a[1 .. -1];
   comm:
     loop{int i = 0; while; do:
