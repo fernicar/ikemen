@@ -2951,7 +2951,7 @@ public &Char
         `stVal.hb.fallf = 1;
         `trSelfState(5030, -1, -1);
         `stVal.time = 1;
-      cond `stVal.no == 5150 && `stVal.time >= 90 && !`isKO():
+      cond `stVal.no == 5150 && `stVal.time >= 90 && `isAlive():
         `trSelfState(5120, -1, -1);
       }
     }
@@ -3296,7 +3296,7 @@ public &Char
         `state(::);
         branch{
         cond `stVal.no == 5110:
-          if(`sysivar[.iRECOVERTIME] <= 0 && !`isKO()){
+          if(`sysivar[.iRECOVERTIME] <= 0 && `isAlive()){
             `trSelfState(5120, -1, -1);
           }
         cond `stVal.no == 140:
