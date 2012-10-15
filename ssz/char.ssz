@@ -919,7 +919,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `ground_fall = 0;
     `air_fall = .com.IERR;
     `down_velocityx = 0.0/0.0;
-    `down_velocityy = -4.5;
+    `down_velocityy = 0.0/0.0;
     `down_hittime = 0;
     `down_bounce = 0;
     `id = 0;
@@ -3680,6 +3680,7 @@ public &Char
       h.airguard_velocityy = h.air_velocityy*0.5;
     }
     if(.m.isnan(h.down_velocityx)) h.down_velocityx = h.air_velocityx;
+    if(.m.isnan(h.down_velocityy)) h.down_velocityy = h.air_velocityy;
     if(h.air_fall == .com.IERR) h.air_fall = h.ground_fall;
     if(h.fall.animtype == .AnimTy::Unknown) branch{
     cond h.air_animtype != .AnimTy::Unknown:
