@@ -4,7 +4,6 @@ lib s = <string.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
 lib m = <math.ssz>;
 lib sff = "sff.ssz";
-lib cfg = "config.ssz";
 lib com = "common.ssz";
 
 public ^^/char splitParams(^/char paramStr)
@@ -401,8 +400,8 @@ public &BackGround
   public void draw(
     float posx, float posy, float scl, ^&.com.PalFX fx, float bgscl)
   {
-    float x = .cfg.Zoom ? posx : .m.ceil(posx-0.5);
-    float y = .cfg.Zoom ? posy : .m.ceil(posy-0.5);
+    float x = .com.zoom ? posx : .m.ceil(posx-0.5);
+    float y = .com.zoom ? posy : .m.ceil(posy-0.5);
     &.sdl.Rect rect;
     rect = `startrect;
     rect.x += -(short).m.floor((x+`camstartx) * `windowdeltax + 0.5);
@@ -424,7 +423,7 @@ public &BackGround
         0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `deltay*bgscl)));
     float x2 = `startx - ((x+`camstartx) * `deltax - `bga.xoffset);
     float y2 = `starty - (y * `deltay - `bga.yoffset);
-    if(!.cfg.Zoom){
+    if(!.com.zoom){
       if(`rasterxbspeed == `rasterxtspeed) x2 = .m.floor(x2);
       y2 = .m.floor(y2);
     }

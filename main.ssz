@@ -11,11 +11,6 @@ if(#file.find(conffile) == 0){
   f.open(conffile, "wb");
   f.writeAry!ubyte?()<, s.sToU8(
 \xfeff"
-
-const int Time = 999 * 6;//frames
-const int Life = 100;
-const int Team_1VS2Life = 100;
-
 const int HelperMax = 56;
 const int PlayerProjectileMax = 50;
 const int ExplodMax = 256;
@@ -31,8 +26,6 @@ const float Super_TargetDefenceMul = 1.5;
 
 const int GameSpeed = 60;//frames/second
 
-const float TurnsRecoveryRate = 1.0 / 300.0;//for rest time(seconds)
-
 const float LifebarFontScale = 0.5;
 
 
@@ -46,10 +39,6 @@ in.new[0].set(
   (int)k_t::z, (int)k_t::x, (int)k_t::c, (int)k_t::a, (int)k_t::s, (int)k_t::d,
   (int)k_t::RETURN);
 
-
-const bool Zoom = false;
-const float MinScale = 5.0 / 6.0;
-const float MaxScale = 15.0 / 14.0;
 
 const bool SaveMemory = true;
 

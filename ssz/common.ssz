@@ -10,6 +10,16 @@ lib file = <file.ssz>;
 lib se = <alpha/sdlevent.ssz>;
 
 
+public int roundTime = 999 * 6;
+public float life = 1.0;
+public float team1VS2Life = 1.0;
+public float turnsRecoveryRate = 1.0 / 300.0;
+
+public bool zoom = false;
+public float zoomMin = 5.0 / 6.0;
+public float zoomMax = 15.0 / 14.0;
+public float zoomSpeed = 12.0;
+
 //チームモードの種類
 |TeamMode
 {

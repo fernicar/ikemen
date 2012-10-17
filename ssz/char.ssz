@@ -6906,7 +6906,7 @@ public float action(
               c.sysivar[.iLIFE] +=
                 (int)(
                   (float)c.sysivar[.iLIFEMAX]
-                  * (float).com.time * (1.0/60.0) * .cfg.TurnsRecoveryRate);
+                  * (float).com.time * (1.0/60.0) * .com.turnsRecoveryRate);
               .m.limMax!int?(c.sysivar[.iLIFE]=, c.sysivar[.iLIFEMAX]);
             }
             if(
@@ -6955,16 +6955,17 @@ public float action(
   float foobar =
     .m.max!float?(220.0/.com.scale)<, .m.sqrt(
       (rightest - leftest)**2.0 + (lowest - highest)**2.0);
-  const float barbaz = 12.0;
   float tmp =
     (foobar*.com.scale) / .m.max!float?(.com.scale)<, (
-      (400.0 - 80.0*.m.max!float?(1.0, .com.scale)) * 2.0**(barbaz-2.0));
+      (400.0 - 80.0*.m.max!float?(1.0, .com.scale))
+      * 2.0**(.com.zoomSpeed-2.0));
   branch{
-  cond tmp >= 3.0/2.0**barbaz:
-    tmp = .m.max!float?(15.0/16.0)<, (67.0/64.0 - tmp*2.0**(barbaz-6.0));
+  cond tmp >= 3.0/2.0**.com.zoomSpeed:
+    tmp = .m.max!float?(3.0/4.0)<, (67.0/64.0 - tmp*2.0**(.com.zoomSpeed-6.0));
   else:
     tmp =
-      .m.min!float?(129.0/128.0)<, ((2.0**barbaz+3.0)/2.0**barbaz - tmp)**64.0;
+      .m.min!float?(4.0/3.0)<,
+      ((2.0**.com.zoomSpeed+3.0)/2.0**.com.zoomSpeed - tmp)**64.0;
   }
   branch{
   cond zoomReset:
@@ -7189,7 +7190,7 @@ public void nextRound()
 {
   .resetGbl();
   .com.intro = .fight~ro.start_waittime + .fight~ro.ctrl_time+1;
-  .com.time = .cfg.Time;
+  .com.time = .com.roundTime;
   .id = .cfg.HelperMax;
   if(.stg~resetbg) .stg~reset();
   .gSetNormal(1.0, 0.0, 0.0);

@@ -1,4 +1,14 @@
 ﻿
+setRoundTime(999 * 6)--frames
+setLifeMul(1.0)
+setTeam1VS2Life(1.0)
+setTurnsRecoveryRate(1.0 / 300.0)
+
+setZoom(false)
+setZoomMin(0.25)
+setZoomMax(1.0)
+setZoomSpeed(1.0)
+
 loadLifebar('data/gms_lifebar/fight.def')
 loadDebugFont('data/gms_lifebar/font2.fnt')
 setDebugScript('script/debug.lua')

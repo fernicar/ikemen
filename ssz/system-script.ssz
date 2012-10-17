@@ -641,6 +641,61 @@ void setDebugScript(&.lua.State L=, int re=)
   .com.debugScript = dscript;
 }
 
+void setRoundTime(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  int rt = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  .com.roundTime = rt;
+}
+
+void setLifeMul(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  float l = .sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  .com.life = l;
+}
+
+void setTeam1VS2Life(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  float t12 = .sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  .com.team1VS2Life = t12;
+}
+
+void setTurnsRecoveryRate(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  float tr = .sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  .com.turnsRecoveryRate = tr;
+}
+
+void setZoom(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  bool z = .sc.blArg(L=, re=, argc=, nret); if(re < 0) ret;
+  .com.zoom = z;
+}
+
+void setZoomMin(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  float zmi = .sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  .com.zoomMin = zmi;
+}
+
+void setZoomMax(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  float zma = .sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  .com.zoomMax = zma;
+}
+
+void setZoomSpeed(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  float zs = .sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  .com.zoomSpeed = 12.0 - zs;
+}
 public void init(&.lua.State L=)
 {
   .sc.init(L=);
@@ -690,6 +745,14 @@ public void init(&.lua.State L=)
   L.register("loadLifebar", .loadLifebar);
   L.register("loadDebugFont", .loadDebugFont);
   L.register("setDebugScript", .setDebugScript);
+  L.register("setRoundTime", .setRoundTime);
+  L.register("setLifeMul", .setLifeMul);
+  L.register("setTeam1VS2Life", .setTeam1VS2Life);
+  L.register("setTurnsRecoveryRate", .setTurnsRecoveryRate);
+  L.register("setZoom", .setZoom);
+  L.register("setZoomMin", .setZoomMin);
+  L.register("setZoomMax", .setZoomMax);
+  L.register("setZoomSpeed", .setZoomSpeed);
 }
 
 

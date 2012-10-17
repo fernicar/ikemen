@@ -331,13 +331,13 @@ void game()
       .chr.players.add(.chr.chars[i][0]);
       {
         float lm = (float).chr.chars[i][0]~sysivar[.chr.iLIFEMAX];
-        lm *= (float).cfg.Life / 100.0;
+        lm *= .com.life;
         switch(.com.tmode[i&1]){
         case (int).com.TeamMode::Single, (int).com.TeamMode::Simul:
           branch{
           cond .com.tmode[i&1] == (int).com.TeamMode::Single:
             if(.com.tmode[i+1 & 1] == (int).com.TeamMode::Simul){
-              lm *= (float).cfg.Team_1VS2Life / 100.0;
+              lm *= .com.team1VS2Life;
             }
           else:
             lm *= 0.5;
@@ -349,7 +349,7 @@ void game()
           lm *=
             2.0 * (
               .com.tmode[i+1 & 1] == (int).com.TeamMode::Simul
-              ? (float).cfg.Team_1VS2Life / 100.0 : 1.0)
+              ? .com.team1VS2Life : 1.0)
             / (float).com.numturns[i&1];
         }
         double hoge = .lvmul**((double)-level[i]);
@@ -390,7 +390,7 @@ void game()
     float xminscl = (float).com.GameWidth / (320.0+(float)(-bl + br));
     float yminscl = (float).com.GameHeight / (240.0-bt);
     float minscl =
-      .m.max!float?(.cfg.MinScale)<, .m.min!float?(.cfg.MaxScale)<,
+      .m.max!float?(.com.zoomMin)<, .m.min!float?(.com.zoomMax)<,
       .m.max!float?(xminscl, yminscl);
     float tmp;
   do:
@@ -484,10 +484,10 @@ void game()
     if(.com.turbo < 1.0) sclmul **= .com.turbo;
     scl *= sclmul;
     branch{
-    cond !.cfg.Zoom:
+    cond !.com.zoom:
       scl = 1.0;
     else:
-      scl = .m.max!float?(minscl)<, .m.min!float?(.cfg.MaxScale)<, scl;
+      scl = .m.max!float?(minscl)<, .m.min!float?(.com.zoomMax)<, scl;
     }
     tmp =
       #((l + r) - (newx - x)*2.0) < ((float).com.GameWidth/4.0)/scl
