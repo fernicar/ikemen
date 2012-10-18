@@ -6952,9 +6952,13 @@ public float action(
   }
   .sdl.pauseBGM(.gs(.gsNOMUSIC));
   .playSound();
-  float foobar =
+  leftest -= .com.screenleft;
+  rightest += .com.screenright;
+  float foobar = (rightest - leftest) - (float)(.com.GameWidth-320);
+  if(foobar < 0.0) foobar = 0.0;
+  foobar =
     .m.max!float?(220.0/.com.scale)<, .m.sqrt(
-      (rightest - leftest)**2.0 + (lowest - highest)**2.0);
+      foobar**2.0 + (lowest - highest)**2.0);
   float tmp =
     (foobar*.com.scale) / .m.max!float?(.com.scale)<, (
       (400.0 - 80.0*.m.max!float?(1.0, .com.scale))
@@ -6981,8 +6985,6 @@ public float action(
   else:
     .zoomdelay = 0.0;
   }
-  leftest -= .com.screenleft;
-  rightest += .com.screenright;
   leftest *= .stg~ztopscale;
   rightest *= .stg~ztopscale;
   ret tmp;
