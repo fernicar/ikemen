@@ -2841,8 +2841,9 @@ public &Char
     if(`sysivar[.iBINDTIME] > 0) branch{
       ^`self c;
     cond `isBound():
-      if(#(c = .players.get(`sysivar[.iBINDTOID])) > 0 && c~acttmp > 0){
-        `setBindTime(`sysivar[.iBINDTIME]-1);
+      if(#(c = .players.get(`sysivar[.iBINDTOID])) > 0){
+        if(c~mver0 == 1) break, else;
+        if(c~acttmp > 0) `setBindTime(`sysivar[.iBINDTIME]-1);
       }
     else:
       if(`acttmp > 0) `setBindTime(`sysivar[.iBINDTIME]-1);
@@ -3282,6 +3283,12 @@ public &Char
           if((`sysivar[.iSYSFLAG] & .sfOVER) != 0){
             `sysivar[.iSYSFLAG] |= .sfKO_ROUND_MIDDLE;
           }
+        }
+        if(
+          (`stVal.no >= 170 && `stVal.no < 190)
+          || (`stVal.no >= 5150 && `stVal.no < 5160))
+        {
+          `sysivar[.iSYSFLAG] |= .sfOVER;
         }
         `sysivar[.iSPECIALFLAG] =
           `player ? (
@@ -4504,9 +4511,6 @@ public &Char
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
-    if((n >= 170 && n < 190) || (n >= 5150 && n < 5160)){
-      `sysivar[.iSYSFLAG] |= .sfOVER;
-    }
     `cs1tmp = true;
     ret true;
   }
