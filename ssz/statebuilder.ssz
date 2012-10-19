@@ -3099,15 +3099,15 @@ public &StateBuilder
       bool sys = false;
       ~$bool(^/char=) set = [bool(^/char data=){
         if(data[0] != '('){
-           `lasterror = "'('がありません";
-           ret false;
+          `lasterror = "'('がありません";
+          ret false;
         }
         `kakko = 0;
         if(!`expValue(`state.ctrlList[-1].task=, data=)) ret false;
         index f = .s.find("=", data);
         if(f < 0){
-           `lasterror = "'='がありません";
-           ret false;
+          `lasterror = "'='がありません";
+          ret false;
         }
         data = data[f+1..-1];
         `state.ctrlList[-1].task .=
@@ -3854,6 +3854,7 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             ".p2stateno=", "$.v.toI();")) ret false;
+        `state.ctrlList[-1].task .= obj .= ".p2getp1state=1;";
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "p2getp1state", [`paraF_t(data=){

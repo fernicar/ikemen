@@ -914,7 +914,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `p2facing = 0;
     `p1stateno = -1;
     `p2stateno = -1;
-    `p2getp1state = 1;
+    `p2getp1state = 0;
     `forcestand = .com.IERR;
     `ground_fall = 0;
     `air_fall = .com.IERR;
@@ -1017,6 +1017,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public int snapt;
   public &.Fall fall;
   public int player;
+  public int p2getp1state;
   public void clear()
   {
     `by.new(0);
@@ -1055,6 +1056,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `snapt = 0;
     `fall.clear();
     `player = -1;
+    `p2getp1state = 0;
   }
   /float getYaccel()
   {
@@ -1186,6 +1188,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
     `hb.player = hit.player;
+    `hb.p2getp1state = hit.p2getp1state;
     `hb.fall = hit.fall;
     `fallTime = 0;
     `hb.yaccel = hit.yaccel;
@@ -1994,7 +1997,6 @@ public &Char
   public ^&.cmd.CommandList cmd;
   public &.StateVal stVal;
   public &.AfterImage aimg;
-  public int key;
   public int id, helperindex, helperid, parentindex;
   public %int children;
   public %int targets;
@@ -2007,8 +2009,9 @@ public &Char
   public bool destmp, cs1tmp, angleset;
   public bool ctrl, standby;
   public byte hittmp, acttmp;
-  public int atktmp;
-  public int minus;
+  public byte key;
+  public byte atktmp;
+  public short minus;
   public int sprpriority;
   public int animno;
   public int getcombo;
@@ -2119,7 +2122,7 @@ public &Char
     `p1facing = 0;
     `animpno = -1;
     `animno = 0;
-    `atktmp = -1;
+    `atktmp = 0;
     `hittmp = 0;
     `acttmp = 0;
     `destmp = false;
@@ -2695,7 +2698,7 @@ public &Char
     }
     if(hit.reversal_attr > 0){
       ret
-        `atktmp >= 0 && `stVal.hit.attr > 0
+        `atktmp != 0 && `stVal.hit.attr > 0
         && (`stVal.hit.attr & hit.reversal_attr & 63) != 0
         && (`stVal.hit.attr & hit.reversal_attr & !63) != 0;
     }
@@ -2721,20 +2724,42 @@ public &Char
   public bool hittable(
     &.Hitdef hit=, int cid, |.StTy styp, ~$bool(&.Hitdef=) countercheck)
   {
+    if(!`attrCheck(hit=, cid, styp)) ret false;
     if(
-      `atktmp >= 0 && (`stVal.hit.attr != 0 || `stVal.hit.reversal_attr > 0)
+      `atktmp != 0 && (`stVal.hit.attr != 0 || `stVal.hit.reversal_attr > 0)
       && hit.reversal_attr <= 0)
     {
-      if(
-        (
-          `stVal.hit.reversal_attr > 0 || (
-            hit.priority <= `stVal.hit.priority && (
-              hit.priority < `stVal.hit.priority
-              || `stVal.hit.bothhittype == .PriTy::Dodge
-              || hit.bothhittype != .PriTy::Hit)))
-        && countercheck(:`stVal.hit=:)) ret false;
+      branch{
+      cond `stVal.hit.reversal_attr > 0:
+      cond hit.priority < `stVal.hit.priority:
+      cond hit.priority == `stVal.hit.priority:
+        branch{
+        cond `stVal.hit.bothhittype == .PriTy::Dodge:
+        cond hit.bothhittype != .PriTy::Hit:
+        cond `stVal.hit.bothhittype == .PriTy::Hit:
+          if(
+            (
+              `stVal.hit.p1stateno >= 0 || (
+                (
+                  `stVal.hit.attr
+                  &((int).AtTy::NT|(int).AtTy::ST|(int).AtTy::HT)) != 0
+                && hit.hitonce != 0))
+            && countercheck(:`stVal.hit=:))
+          {
+            `atktmp = -1;
+            ret .m.rand(0, 1) == 1;
+          }
+          else;
+        else:
+          break, else;
+        }
+      else:
+        break;
+      comm:
+        if(countercheck(:`stVal.hit=:)) ret false;
+      }
     }
-    ret `attrCheck(hit=, cid, styp);
+    ret true;
   }
   public bool clsnCheck(`self atk=, bool c1atk, bool c1slf)
   {
@@ -2883,42 +2908,38 @@ public &Char
             ? `stVal.hb.snapy : 0.0/0.0;
         }
       }
-      int p2st = `cs1tmp ? `stVal.no : -1;
-      int p2stpn = `stVal.playerno;
       branch{
+        int pn = `stVal.hb.p2getp1state != 0 ? `stVal.hb.player : `playerno;
+      cond `cs1tmp:
+        `stVal.mov = .MovTy::H;
+        `stVal.prevno = 0;
       cond `stVal.typ == .StTy::L:
-        `trSelfState(5080, -1, 0);
+        `trChangeState2(5080, pn, -1, 0);
       cond
         `stVal.hb.guarded != 0
         && (`stVal.hb.damage < `sysivar[.iLIFE] || .gs(.gsNOKO))
         :
         switch(`stVal.typ){
         case .StTy::S:
-          `trSelfState(150, -1, 0);
+          `trChangeState2(150, pn, -1, 0);
         case .StTy::C:
-          `trSelfState(152, -1, 0);
+          `trChangeState2(152, pn, -1, 0);
         case .StTy::A:
-          `trSelfState(154, -1, 0);
+          `trChangeState2(154, pn, -1, 0);
         }
       cond `stVal.hb.typ == 3:
-        `trSelfState(5070, -1, 0);
+        `trChangeState2(5070, pn, -1, 0);
       else:
         switch(`stVal.typ){
         case .StTy::S:
-          `trSelfState(5000, -1, 0);
+          `trChangeState2(5000, pn, -1, 0);
         case .StTy::C:
-          `trSelfState(5010, -1, 0);
+          `trChangeState2(5010, pn, -1, 0);
         case .StTy::A:
-          `trSelfState(5020, -1, 0);
+          `trChangeState2(5020, pn, -1, 0);
         }
       comm:
         `changeState2();
-      }
-      if(p2st >= 0){
-        `cs1tmp = true;
-        `stVal.prevno = `stVal.no;
-        `stVal.no = p2st;
-        `stVal.playerno = p2stpn;
       }
     }
     if(!`isPaused()) branch{
@@ -2968,7 +2989,7 @@ public &Char
       float ys = `sysfvar[.fCLSNYSCALE];
       ^&.act.Frame frm = `curFrame;
       ^&.act.Rect clsn = frm~clsn1;
-      if(#clsn > 0 && `atktmp >= 0) .drawc1.new[-1].set(clsn, x, y, xs, ys);
+      if(#clsn > 0 && `atktmp != 0) .drawc1.new[-1].set(clsn, x, y, xs, ys);
       clsn = frm~clsn2;
       if(#clsn > 0) branch{
       cond `stVal.hb.hitt1 != 0 || `stVal.hb.hitt2 != 0:
@@ -3202,11 +3223,11 @@ public &Char
       cond `canCtrl() && (`key >= 0 || `helperindex == 0):
         branch{
         cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
-          if(`stVal.no != 10) `trSelfState(10, -1, -1);
+          if(`stVal.no != 10) `trChangeState(10, -1, -1);
         cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
-          if(`stVal.no != 12) `trSelfState(12, -1, -1);
+          if(`stVal.no != 12) `trChangeState(12, -1, -1);
         cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
-          if(`stVal.no != 40) `trSelfState(40, -1, -1);
+          if(`stVal.no != 40) `trChangeState(40, -1, -1);
         cond
           `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
           && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
@@ -3216,16 +3237,16 @@ public &Char
           if(`stVal.no != 45){
             `sysivar[.iAIRJUMP_CNT]++;
             `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
-            `trSelfState(45, -1, -1);
+            `trChangeState(45, -1, -1);
           }
         cond
           !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
             `cmd~buffer~F > 0 || (
               (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
           :
-          if(`stVal.no != 20) `trSelfState(20, -1, -1);
+          if(`stVal.no != 20) `trChangeState(20, -1, -1);
         cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
-          `trSelfState(0, -1, -1);
+          `trChangeState(0, -1, -1);
         }
         if(
           `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
@@ -3234,14 +3255,14 @@ public &Char
             || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
           && `cmd~buffer~B > 0)
         {
-          `trSelfState(120, -1, -1);
+          `trChangeState(120, -1, -1);
         }
       cond `ctrl:
         switch(`stVal.no){
         case 11:
-          `trSelfState(12, -1, 1);
+          `trChangeState(12, -1, 1);
         case 20:
-          `trSelfState(0, -1, 1);
+          `trChangeState(0, -1, 1);
         }
       }
       if(!`isHitPaused()){
@@ -3297,11 +3318,11 @@ public &Char
         branch{
         cond `stVal.no == 5110:
           if(`sysivar[.iRECOVERTIME] <= 0 && `isAlive()){
-            `trSelfState(5120, -1, -1);
+            `trChangeState(5120, -1, -1);
           }
         cond `stVal.no == 140:
           if(`trAnimTime()$.v.toI() == 0){
-            `trSelfState(
+            `trChangeState(
               (int)(`stVal.typ == .StTy::C)*11
               + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
           }
@@ -3311,7 +3332,7 @@ public &Char
           `posUpdate();
         }
         if(`landCondition()){
-          `trSelfState(52, -1, -1);
+          `trChangeState(52, -1, -1);
           `stVal.time++;
         }
       }
@@ -3458,7 +3479,7 @@ public &Char
         (
           (`stVal.typ != .StTy::L && `stVal.mov != .MovTy::I)
           || `stVal.hit.reversal_attr > 0)
-        && `isActive() ? `stVal.no : -1;
+        && `isActive() ? 1 : 0;
       if(
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
@@ -5783,9 +5804,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           && (`pyr.stVal.ho[i].attr & hit.attr & !63) != 0)
         {
           if(
-            pro == 0 && #hitting == 1 && (
-              (hit.p2stateno >= 0 && hit.p2getp1state != 0)
-              || hit.p1stateno >= 0))
+            pro == 0 && #hitting == 1
+            && (hit.p2stateno >= 0 || hit.p1stateno >= 0))
           {
             ret false;
           }
@@ -5803,8 +5823,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         i++;
       while i < #`pyr.stVal.ho:
       }
-      if(#hitting == 1 && hit.p2stateno >= 0 && hit.p2getp1state != 0){
-        if(`pyr.changeState1(hit.player, hit.p2stateno)){
+      if(#hitting == 1 && hit.p2stateno >= 0){
+        if(
+          `pyr.changeState1(
+            hit.p2getp1state != 0 ? hit.player : `pyr.playerno, hit.p2stateno))
+        {
           `pyr.setCtrl(false);
           p2s = true;
         }
@@ -6044,7 +6067,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     p~c~enemyn.new(0);
     contact = 0;
     if(
-      p~c~atktmp < 0 || p~c~id == pyr.id || (
+      p~c~atktmp == 0 || p~c~id == pyr.id || (
         p~c~stVal.hit.affectteam != 0
         && ((pyr.playerno&1) != (p~c~playerno&1))
         != (p~c~stVal.hit.affectteam > 0))) continue;
@@ -6065,7 +6088,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           p~c~stVal.juggle))
       && pyr.hittable(
         p~c~stVal.hit=, p~c~id, p~c~stVal.typ, [bool(&.Hitdef h=){
-          ret p~c~attrCheck(h=, pyr.id, pyr.stVal.typ)&&p~c~hitCheck(pyr=);}]))
+          ret
+            (p~c~atktmp >= 0 || !pyr.isTarget(p~c~id))
+            && p~c~attrCheck(h=, pyr.id, pyr.stVal.typ)&&p~c~hitCheck(pyr=);
+        }]))
     {
       if(
         .m.inRange!float?(
@@ -6212,7 +6238,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         }
         hoge = true;
         if(
-          proj.hit.hitonce >= 0
+          !pyr.cs1tmp && proj.hit.hitonce >= 0
           && (
             .chars[i][0]~ls(.lsNOJUGGLECHECK)
             || juggcheck(
@@ -6267,7 +6293,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           pyr.hittmp = oldhittmp;
         }
         if(
-          proj.prioritypoint > 0 && pyr.atktmp >= 0
+          proj.prioritypoint > 0 && pyr.atktmp != 0
           && (
             pyr.stVal.hit.affectteam == 0 || (
             ((i&1) != (pyr.playerno&1)) == (pyr.stVal.hit.affectteam > 0)))
