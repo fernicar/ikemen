@@ -4511,6 +4511,9 @@ public &Char
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
+    if((n >= 170 && n < 190) || (n >= 5150 && n < 5160)){
+      `sysivar[.iSYSFLAG] |= .sfOVER;
+    }
     `cs1tmp = true;
     ret true;
   }
