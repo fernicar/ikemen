@@ -2928,11 +2928,11 @@ public &Char
         :
         switch(`stVal.typ){
         case .StTy::S:
-          `trChangeState2(150, pn, -1, 0);
+          `trSelfState(150, -1, 0);
         case .StTy::C:
-          `trChangeState2(152, pn, -1, 0);
+          `trSelfState(152, -1, 0);
         case .StTy::A:
-          `trChangeState2(154, pn, -1, 0);
+          `trSelfState(154, -1, 0);
         }
       cond `stVal.hb.typ == 3:
         `trChangeState2(5070, pn, -1, 0);
@@ -5835,6 +5835,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         {
           `pyr.setCtrl(false);
           p2s = true;
+          `pyr.ho = -1;
         }
       }
     }
