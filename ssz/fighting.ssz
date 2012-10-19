@@ -151,7 +151,7 @@ void game()
       float y = -(float)(.com.GameHeight-240);
       `put(x, y=, .s.iToS(p.stVal.time));
       `put(x, y=, .s.iToS(p.stVal.prevno));
-      `put(x, y=, .s.iToS(p.stVal.no));
+      `put(x, y=, .s.iToS(p.stVal.no) + " P" + .s.iToS(p.stVal.playerno+1));
       `put(x, y=, .s.iToS(p.animno));
       `put(x, y=, .s.iToS(.chr.v.setI(0)$p.trAnimElemNo()$.chr.v.toI()));
       ret y;
