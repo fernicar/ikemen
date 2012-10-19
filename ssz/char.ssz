@@ -2728,9 +2728,9 @@ public &Char
     ret true;
   }
   public bool hittable(
-    &.Hitdef hit=, int cid, |.StTy styp, ~$bool(&.Hitdef=) countercheck)
+    &.Hitdef hit=, `self c=, |.StTy styp, ~$bool(&.Hitdef=) countercheck)
   {
-    if(!`attrCheck(hit=, cid, styp)) ret false;
+    if(!`attrCheck(hit=, c.id, styp)) ret false;
     if(
       `atktmp != 0 && (`stVal.hit.attr != 0 || `stVal.hit.reversal_attr > 0)
       && hit.reversal_attr <= 0)
@@ -2753,7 +2753,7 @@ public &Char
             && countercheck(:`stVal.hit=:))
           {
             `atktmp = -1;
-            ret .m.rand(0, 1) == 1;
+            ret c.atktmp < 0 || .m.rand(0, 1) == 1;
           }
           else;
         else:
@@ -5752,17 +5752,9 @@ public void PlayerList!&Char?::update(
   while #p > 0:
   }
 }
-public void PlayerList!&Char?::clsn(&.Char pyr=)
+public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
 {
   float pxmi, pxma;
-  branch{
-  cond pyr.facing > 0:
-    pxmi = .com.xmin + pyr.getEdge(pyr.bedge);
-    pxma = .com.xmax - pyr.getEdge(pyr.fedge);
-  else:
-    pxmi = .com.xmin + pyr.getEdge(pyr.fedge);
-    pxma = .com.xmax - pyr.getEdge(pyr.bedge);
-  }
   bool foo(
     int hitting=, `pyr.self by=, &.Hitdef hit=,
     float x, float y, int pro, int hits)
@@ -5799,13 +5791,16 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       p1.setPos!e<>.self?(e<>=, e~postype, e~offsetx, e~offsety, e~relativef);
       `by.insertExplod(tmp);
     }
+    if(
+      (`pyr.cs1tmp && `pyr.stVal.playerno != hit.player)
+      || (
+        hit.p1stateno >= 0 && (
+          by.ls(.lsGETHIT)
+          || (by.cs1tmp && by.stVal.playerno != hit.player)))) ret false;
     bool guard =
       (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.ls(.lsGUARD);
     hitting = `pyr.stVal.hitCheck(hit=, guard);
     bool p2s = false;
-    if(
-      (!`pyr.cs1tmp && `pyr.ho < 0) || `pyr.stVal.playerno == by.playerno
-      || `pyr.stVal.playerno == `pyr.playerno || !`pyr.ls(.lsGETHIT))
     {
       loop{index i = 0; while; do:
         if(
@@ -5893,8 +5888,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
       }
       if(
-        (`pyr.facing < 0)
-        == ((pro != 0 ? pro : by.facing*(hit.p1facing < 0 ? -1 : 1)) < 0))
+        (`pyr.facing < 0) == (
+          (pro != 0 ? pro 
+          : by.facing*(hit.p1facing < 0 && #hitting == 1 ? -1 : 1)) < 0))
       {
         `pyr.stVal.hb.xvel *= -1.0;
       }
@@ -5961,6 +5957,12 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }
     comm:
       if(`pyr.ho >= 0) break;
+      by.addTarget(`pyr.id);
+      `pyr.stVal.hb.addByid(by.id, by.sysivar[.iAIRJUGGLE]);
+      if(`pyr.hittmp < 2){
+        `pyr.stVal.hb.by[-1].juggle = by.sysivar[.iAIRJUGGLE];
+      }
+    diff<hit>:
       branch{
         int byf;
       cond pro == 0:
@@ -5974,22 +5976,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       comm:
         `pyr.setFacing(byf * -hit.p2facing);
       }
-      if(
-        #hitting == 1 && hit.p1stateno >= 0 && !by.ls(.lsGETHIT)
-        && by.changeState1(hit.player, hit.p1stateno))
-      {
+      if(hit.p1stateno >= 0 && by.changeState1(hit.player, hit.p1stateno)){
         by.setCtrl(false);
       }
-      by.addTarget(`pyr.id);
-      `pyr.stVal.hb.addByid(by.id, by.sysivar[.iAIRJUGGLE]);
-      if(`pyr.hittmp < 2){
-        `pyr.stVal.hb.by[-1].juggle = by.sysivar[.iAIRJUGGLE];
-      }
-      if(`pyr.isFall() && #hitting == 1 && !by.ls(.lsNOJUGGLECHECK)){
+      if(`pyr.isFall() && !by.ls(.lsNOJUGGLECHECK)){
         `pyr.stVal.hb.by[-1].juggle -=
           pro != 0 ? hit.air_juggle : by.stVal.juggle;
       }
-    diff<hit>:
       if(hit.palfx_time > 0){
         ^&.com.PalFX fx = `pyr.getPalfx();
         fx~clear2(1);
@@ -6046,14 +6039,18 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     }
     ret true;
   }
-  bool juggcheck(int h, int a)
-  {
-    ret a <= h;
-  }
-  pyr.inguarddist = false;
-  pyr.sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
-  loop{
+  if(!pro) loop{
     *`top.self p = `top;
+    branch{
+    cond pyr.facing > 0:
+      pxmi = .com.xmin + pyr.getEdge(pyr.bedge);
+      pxma = .com.xmax - pyr.getEdge(pyr.fedge);
+    else:
+      pxmi = .com.xmin + pyr.getEdge(pyr.fedge);
+      pxma = .com.xmax - pyr.getEdge(pyr.bedge);
+    }
+    pyr.inguarddist = false;
+    pyr.sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     float pl, pr;
     int contact = 0;
     branch{
@@ -6086,11 +6083,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       && (
         pyr.hittmp < 2
         || p~c~ls(.lsNOJUGGLECHECK)
-        || juggcheck(
-          pyr.stVal.hb.getJuggle(p~c~id, p~c~sysivar[.iAIRJUGGLE]),
-          p~c~stVal.juggle))
+        || pyr.stVal.hb.getJuggle(p~c~id, p~c~sysivar[.iAIRJUGGLE])
+        >= p~c~stVal.juggle)
       && pyr.hittable(
-        p~c~stVal.hit=, p~c~id, p~c~stVal.typ, [bool(&.Hitdef h=){
+        p~c~stVal.hit=, p~c<>=, p~c~stVal.typ, [bool(&.Hitdef h=){
           ret
             (p~c~atktmp >= 0 || !pyr.isTarget(p~c~id))
             && p~c~attrCheck(h=, pyr.id, pyr.stVal.typ)&&p~c~hitCheck(pyr=);
@@ -6218,39 +6214,39 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     p = p~next;
   while #p > 0:
   }
-  loop{
+  if(pro) loop{
     index i = 0;
     while;
   do:
-    loop{
+    if(pyr.playerno != i && #.chars[i] > 0) loop{
       index j = 0;
-      bool hoge;
+      int orgatktmp = .chars[i]<>~atktmp;
+      .chars[i]<>~atktmp = -1;
       while;
     do:
       .projs[i][j].[void(proj=){
         if(
-          pyr.playerno == i || proj.id < 0 || proj.hits <= 0 || (
+          proj.id < 0 || proj.hits <= 0 || (
             proj.hit.affectteam != 0 && ((pyr.playerno&1) != (i&1))
             != (proj.hit.affectteam > 0))) ret;
         if(
           .m.inRange!float?(
-            0.0, (float).chars[i][0]~sysivar[.iPROJ_ATTACK_DIST],
+            0.0, (float).chars[i]<>~sysivar[.iPROJ_ATTACK_DIST],
             (pyr.sysfvar[.fX] - proj.x) * (float)proj.facing))
         {
           pyr.inguarddist = true;
         }
-        hoge = true;
+        bool hoge = true;
         if(
           !pyr.cs1tmp && proj.hit.hitonce >= 0
           && (
-            .chars[i][0]~ls(.lsNOJUGGLECHECK)
-            || juggcheck(
-              pyr.stVal.hb.getJuggle(
-                .chars[i][0]~id, .chars[i][0]~sysivar[.iAIRJUGGLE]),
-              proj.hit.air_juggle))
+            .chars[i]<>~ls(.lsNOJUGGLECHECK)
+            || pyr.stVal.hb.getJuggle(
+              .chars[i]<>~id, .chars[i]<>~sysivar[.iAIRJUGGLE])
+            >= proj.hit.air_juggle)
           && proj.timemiss <= 0
           && proj.hitpause <= 0 && pyr.hittable(
-            proj.hit=, .chars[i][0]~id, .StTy::N,
+            proj.hit=, .chars[i]<><>=, .StTy::N,
             [bool(&.Hitdef h=){
               ret (h.hitflag&(int).StTy::U) != 0 && pyr.hitProjCheck(proj=);
             }]))
@@ -6261,8 +6257,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           if(
             .m.inRange!float?(
               0.0, (float)proj.hit.guard_dist,
-              (pyr.sysfvar[.fX] - .chars[i][0]~sysfvar[.fX])
-              * (float).chars[i][0]~facing))
+              (pyr.sysfvar[.fX] - .chars[i]<>~sysfvar[.fX])
+              * (float).chars[i]<>~facing))
           {
             pyr.inguarddist = true;
           }
@@ -6270,9 +6266,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
             int hit;
             if(
               foo(
-                hit=, .chars[i][0]<>=, proj.hit=,
-                proj.x - .chars[i][0]~sysfvar[.fX],
-                proj.y - .chars[i][0]~sysfvar[.fY],
+                hit=, .chars[i]<><>=, proj.hit=,
+                proj.x - .chars[i]<>~sysfvar[.fX],
+                proj.y - .chars[i]<>~sysfvar[.fY],
                 proj.facing, proj.misstime <= 0 && (
                   #hit == 1 ? proj.hit.pausetime
                   : proj.hit.guard_pausetime) <= 0
@@ -6315,23 +6311,22 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       }];
       j++;
     while j < #.projs[i]:
+    break:
+      .chars[i]<>~atktmp = orgatktmp;
     }
     i++;
   while i < #.projs:
   }
 }
-public void PlayerList!&Char?::getHit()
+public void PlayerList!&Char?::getHit(bool pro)
 {
   loop{
     *`top.self p = `top;
     while;
   do:
-    if(p~c~id < 0) continue;
-    .players.clsn(p~c<>=);
-  continue:
+    if(p~c~id >= 0) .players.clsn(p~c<>=, pro);
     p = p~next;
-  while #p > 0:
-  }
+  while #p > 0:}
 }
 public void PlayerList!&Char?::tick()
 {
@@ -6339,12 +6334,9 @@ public void PlayerList!&Char?::tick()
     *`top.self p = `top;
     while;
   do:
-    if(p~c~id < 0) continue;
-    p~c~tick();
-  continue:
+    if(p~c~id >= 0) p~c~tick();
     p = p~next;
-  while #p > 0:
-  }
+  while #p > 0:}
 }
 
 void playSound()
@@ -6510,7 +6502,8 @@ void rootAction()
       i++;
     while i < #.projs:
     }
-    .players.getHit();
+    .players.getHit(false);
+    .players.getHit(true);
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
         if(.projs[i][j].id != .com.IERR) .projs[i][j].tick();
