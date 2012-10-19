@@ -1055,13 +1055,13 @@ void c.Char::s##_@@P()
       `trChangeAnim(`animno);
     }
     if(
-      (`stVal.time == 0 && (`stVal.hb.yvel != 0.0 || `stVal.hb.fallf != 0))
+      (`stVal.time == 0 && (`stVal.hb.yvel != 0.0 || `isFall()))
       || `sysfvar[.fY] != 0.0)
     {
       `stVal.typ=.StTy::A;
     }
     if(`trHitShakeOver()$.v.isT()){
-      if(`stVal.hb.yvel == 0.0 && `stVal.hb.fallf == 0){
+      if(`stVal.hb.yvel == 0.0 && !`isFall()){
         `trChangeState(5001, -1, -1);
         ret;
       }
@@ -1158,13 +1158,13 @@ void c.Char::s##_@@P()
       `trChangeAnim(`animno);
     }
     if(
-      (`stVal.time == 0 && (`stVal.hb.yvel != 0.0 || `stVal.hb.fallf != 0))
+      (`stVal.time == 0 && (`stVal.hb.yvel != 0.0 || `isFall()))
       || `sysfvar[.fY] != 0.0)
     {
       `stVal.typ=.StTy::A;
     }
     if(`trHitShakeOver()$.v.isT()){
-      if(`stVal.hb.yvel == 0.0 && `stVal.hb.fallf == 0){
+      if(`stVal.hb.yvel == 0.0 && !`isFall()){
         `trChangeState(5011, -1, -1);
         ret;
       }
@@ -1322,7 +1322,7 @@ void c.Char::s##_@@P()
         && `sysfvar[.fY] >= `sysfvar[.fAIR_GETHIT_GROUNDLEVEL]))
     {
       branch{
-      cond `stVal.hb.fallf == 0:
+      cond !`isFall():
         `trChangeState(5040, -1, -1);
       else:
         `trChangeState(5050, -1, -1);
@@ -1369,7 +1369,7 @@ void c.Char::s##_@@P()
       || (`stVal.time == 0 && `animno != 5035))
     {
       branch{
-      cond `stVal.hb.fallf == 0:
+      cond !`isFall():
         `trChangeState(5040, -1, -1);
       else:
         `trChangeState(5050, -1, -1);

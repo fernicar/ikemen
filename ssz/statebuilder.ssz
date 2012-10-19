@@ -1625,9 +1625,9 @@ public &StateBuilder
       cond .s.equ("hitid", token) || .s.equ("chainid", token):
         out .= ".v.setI(" .= obj .= "stVal.hb.hitid)";
       cond .s.equ("guarded", token):
-        out .= ".v.setI(" .= obj .= "stVal.hb.guarded)";
+        out .= ".v.setI((int)" .= obj .= "stVal.hb.guarded)";
       cond .s.equ("fall", token):
-        out .= ".v.setI(" .= obj .= "stVal.hb.fallf)";
+        out .= ".v.setI((int)" .= obj .= "stVal.hb.fallf)";
       cond .s.equ("fall.damage", token):
         out .= ".v.setI(" .= obj .= "stVal.hb.fall.damage)";
       cond .s.equ("fall.xvel", token):

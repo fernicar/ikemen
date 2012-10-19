@@ -1004,8 +1004,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public float yvel;
   public float yaccel;
   public int hitid;
-  public int guarded;
-  public int fallf;
   public int p1getp2facing;
   public float mindistx;
   public float maxdistx;
@@ -1017,7 +1015,10 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public int snapt;
   public &.Fall fall;
   public int player;
-  public int p2getp1state;
+  public bool fallf;
+  public bool guarded;
+  public bool p2getp1state;
+  public bool forcestand;
   public void clear()
   {
     `by.new(0);
@@ -1043,8 +1044,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `yvel = 0.0;
     `yaccel = 0.0/0.0;
     `hitid = -1;
-    `guarded = 0;
-    `fallf = 0;
     `p1getp2facing = 0;
     `mindistx = 0.0/0.0;
     `maxdistx = 0.0/0.0;
@@ -1056,7 +1055,10 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `snapt = 0;
     `fall.clear();
     `player = -1;
-    `p2getp1state = 0;
+    `fallf = false;
+    `guarded = false;
+    `p2getp1state = false;
+    `forcestand = false;
   }
   /float getYaccel()
   {
@@ -1180,15 +1182,17 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   }
   public int setHb(&.Hitdef hit=, bool guard, bool combo)
   {
-    bool cmb = combo && `hb.guarded == 0;
-    int fall = `hb.fallf, hc = `hb.hitcount, fc = `hb.fallcount;
+    bool cmb = combo && !`hb.guarded;
+    bool fall = `hb.fallf;
+    int hc = `hb.hitcount, fc = `hb.fallcount;
     %&`hb.ByData bi = `hb.by;
     `hb.clear();
     `hb.by = bi;
     `hb.attr = hit.attr;
     `hb.hitid = hit.id;
     `hb.player = hit.player;
-    `hb.p2getp1state = hit.p2getp1state;
+    `hb.p2getp1state = hit.p2getp1state != 0;
+    `hb.forcestand = hit.forcestand != 0;
     `hb.fall = hit.fall;
     `fallTime = 0;
     `hb.yaccel = hit.yaccel;
@@ -1201,7 +1205,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `hb.snapy = hit.snapy;
     `hb.snapz = hit.snapz;
     `hb.snapt = hit.snapt;
-    if(hit.forcenofall != 0) fall = 0;
+    if(hit.forcenofall != 0) fall = false;
     branch{
     cond `typ == .StTy::A:
       `hb.airtype = `hb.typ = (int)hit.air_type;
@@ -1214,7 +1218,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
       `hb.hitshaketime = .m.max!int?(0, hit.guard_shaketime);
       `hb.hittime = .m.max!int?(0, hit.guard_hittime);
       `hb.slidetime = hit.guard_slidetime;
-      `hb.guarded = 1;
+      `hb.guarded = true;
       branch{
       cond `typ == .StTy::A:
         `hb.ctrltime = hit.airguard_ctrltime;
@@ -1237,7 +1241,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
       `hb.ctrltime = hit.air_hittime;
       `hb.xvel = hit.air_velocityx;
       `hb.yvel = hit.air_velocityy;
-      `hb.fallf = hit.air_fall;
+      `hb.fallf = hit.air_fall != 0;
     cond `typ == .StTy::L:
       `hb.hittime = hit.down_hittime;
       `hb.ctrltime = hit.down_hittime;
@@ -1252,7 +1256,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
       `hb.ctrltime = hit.ground_hittime;
       `hb.xvel = hit.ground_velocityx;
       `hb.yvel = hit.ground_velocityy;
-      `hb.fallf = hit.ground_fall;
+      `hb.fallf = hit.ground_fall != 0;
     }
     if(`hb.hittime < 0) `hb.hittime = 0;
     `hb.absdamage = hit.hitdamage;
@@ -2011,7 +2015,8 @@ public &Char
   public byte hittmp, acttmp;
   public byte key;
   public byte atktmp;
-  public short minus;
+  public byte minus;
+  public byte ho;
   public int sprpriority;
   public int animno;
   public int getcombo;
@@ -2127,6 +2132,7 @@ public &Char
     `acttmp = 0;
     `destmp = false;
     `minus = 2;
+    `ho = -1;
     `cs1tmp = false;
     `angleset = false;
     `state = `dummy;
@@ -2644,7 +2650,7 @@ public &Char
   public int gethitAnimtype()
   {
     ret
-      `stVal.hb.fallf != 0 ? (int)`stVal.hb.fall.animtype : (
+      `isFall() ? (int)`stVal.hb.fall.animtype : (
         `stVal.typ == .StTy::A
         ? `stVal.hb.airanimtype : `stVal.hb.groundanimtype);
   }
@@ -2663,7 +2669,7 @@ public &Char
       .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
     cond `stVal.hb.player >= 0 && (`playerno&1) == (`stVal.hb.player&1):
       .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
-    cond `stVal.hb.guarded != 0:
+    cond `stVal.hb.guarded:
       .winty[(`playerno+1)&1] = .fgt.WinTy::C;
     cond
       (`stVal.hb.attr&((int).AtTy::HA|(int).AtTy::HT|(int).AtTy::HP))
@@ -2859,6 +2865,7 @@ public &Char
       }
     }
     if(`ls(.lsGETHIT)){
+      `stVal.mov = .MovTy::H;
       `sysivar[.iHITPAUSETIME] = 0;
       `p1facing = 0;
       ^`self c;
@@ -2886,7 +2893,7 @@ public &Char
             .m.min!float?(`sysfvar[.fX])<,
             (c~sysfvar[.fX] + `stVal.hb.maxdistx));
         }
-        if(`stVal.hb.guarded == 0 || `stVal.typ == .StTy::A){
+        if(!`stVal.hb.guarded || `stVal.typ == .StTy::A){
           if(!.m.isnan(`stVal.hb.mindisty)){
             `setPosY(
               .m.max!float?(`sysfvar[.fY])<,
@@ -2904,19 +2911,19 @@ public &Char
           `sysivar[.iBINDFACING] = 0;
           `sysfvar[.fBINDPOSX] = `stVal.hb.snapx;
           `sysfvar[.fBINDPOSY] =
-            `stVal.hb.guarded == 0 || `stVal.typ == .StTy::A
+            !`stVal.hb.guarded || `stVal.typ == .StTy::A
             ? `stVal.hb.snapy : 0.0/0.0;
         }
       }
+      if(`ho >= 0 && `stVal.ho[`ho].forceair != 0) `stVal.typ = .StTy::A;
       branch{
-        int pn = `stVal.hb.p2getp1state != 0 ? `stVal.hb.player : `playerno;
+        int pn = `stVal.hb.p2getp1state ? `stVal.hb.player : `playerno;
       cond `cs1tmp:
-        `stVal.mov = .MovTy::H;
         `stVal.prevno = 0;
       cond `stVal.typ == .StTy::L:
         `trChangeState2(5080, pn, -1, 0);
       cond
-        `stVal.hb.guarded != 0
+        `stVal.hb.guarded
         && (`stVal.hb.damage < `sysivar[.iLIFE] || .gs(.gsNOKO))
         :
         switch(`stVal.typ){
@@ -2930,6 +2937,9 @@ public &Char
       cond `stVal.hb.typ == 3:
         `trChangeState2(5070, pn, -1, 0);
       else:
+        if(`stVal.hb.forcestand && `stVal.typ == .StTy::C){
+          `stVal.typ = .StTy::S;
+        }
         switch(`stVal.typ){
         case .StTy::S:
           `trChangeState2(5000, pn, -1, 0);
@@ -2938,8 +2948,9 @@ public &Char
         case .StTy::A:
           `trChangeState2(5020, pn, -1, 0);
         }
-      comm:
-        `changeState2();
+      }
+      if(`ho >= 0){
+        `changeState1(`stVal.ho[`ho].player, `stVal.ho[`ho].stateno);
       }
     }
     if(!`isPaused()) branch{
@@ -2969,7 +2980,7 @@ public &Char
         `helperid == 0 && !`isKO() && `sysivar[.iLIFE] <= 0
         && `stVal.mov != .MovTy::H && `roundState() >= 2 && !.gs(.gsNOKO)
         :
-        `stVal.hb.fallf = 1;
+        `stVal.hb.fallf = true;
         `trSelfState(5030, -1, -1);
         `stVal.time = 1;
       cond `stVal.no == 5150 && `stVal.time >= 90 && `isAlive():
@@ -3107,7 +3118,7 @@ public &Char
   }
   public bool isFall()
   {
-    ret `stVal.hb.fallf != 0;
+    ret `stVal.hb.fallf;
   }
   public float getHeight()
   {
@@ -3463,7 +3474,7 @@ public &Char
           `stVal.hb.fallcount++;
         }
         if(`stVal.hb.damage != 0){
-          if(`stVal.hb.guarded != 0) `getcombo = 0;
+          if(`stVal.hb.guarded) `getcombo = 0;
           `addLife(-(double)`stVal.hb.damage, true, true);
         }
         `stVal.hb.damage = 0;
@@ -3480,6 +3491,7 @@ public &Char
           (`stVal.typ != .StTy::L && `stVal.mov != .MovTy::I)
           || `stVal.hit.reversal_attr > 0)
         && `isActive() ? 1 : 0;
+      `ho = -1;
       if(
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
@@ -3497,7 +3509,7 @@ public &Char
           `stVal.hb.damage = 0;
           `stVal.hb.hittime = -1;
           `stVal.hb.hitshaketime = 0;
-          `stVal.hb.fallf = 0;
+          `stVal.hb.fallf = false;
           `stVal.hb.fallcount = 0;
           `getcombo = 0;
         }
@@ -3505,7 +3517,7 @@ public &Char
         if(`stVal.hb.hitshaketime <= 0 && `stVal.hb.hittime >= 0){
           `stVal.hb.hittime--;
         }
-        if(`stVal.hb.fallf != 0) `stVal.fallTime++;
+        if(`isFall()) `stVal.fallTime++;
         if(
           (`stVal.mov == .MovTy::H || `stVal.no == 52) && `sysfvar[.fY] == 0.0
           && #(`sysfvar[.fX]-`ticOldX) >= 1.0 && `stVal.time % 3 == 0)
@@ -5037,7 +5049,7 @@ public &Char
   public void trHitFallSet(int f, float vx, float vy)
   {
     if(`stVal.mov != .MovTy::H) ret;
-    if(f >= 0) `stVal.hb.fallf = (int)(f != 0);
+    if(f >= 0) `stVal.hb.fallf = f != 0;
     if(!.m.isnan(vx)) `stVal.hb.fall.xvelocity = vx;
     if(!.m.isnan(vy)) `stVal.hb.fall.yvelocity = vy;
   }
@@ -5050,7 +5062,7 @@ public &Char
   public void trHitFall()
   {
     .v.typ = .VarTy::Int;
-    .v.i = (int)(`stVal.hb.fallf != 0);
+    .v.i = (int)`isFall();
   }
   public void trHitFallDamage()
   {
@@ -5790,9 +5802,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
     bool guard =
       (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.ls(.lsGUARD);
     hitting = `pyr.stVal.hitCheck(hit=, guard);
-    bool ho = false,  p2s = false;
+    bool p2s = false;
     if(
-      !`pyr.cs1tmp || `pyr.stVal.playerno == by.playerno
+      (!`pyr.cs1tmp && `pyr.ho < 0) || `pyr.stVal.playerno == by.playerno
       || `pyr.stVal.playerno == `pyr.playerno || !`pyr.ls(.lsGETHIT))
     {
       loop{index i = 0; while; do:
@@ -5809,20 +5821,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           {
             ret false;
           }
-          branch{
-          cond
-            `pyr.changeState1(
-              `pyr.stVal.ho[i].player, `pyr.stVal.ho[i].stateno)
-            :
-            if(`pyr.stVal.ho[i].forceair != 0) `pyr.stVal.typ = .StTy::A;
-            `pyr.setCtrl(false);
-            ho = true;
+          if(`pyr.stVal.ho[i].stateno >= 0){
+            `pyr.ho = i;
             break, break, break, break;
           }
         }
         i++;
-      while i < #`pyr.stVal.ho:
-      }
+      while i < #`pyr.stVal.ho:}
       if(#hitting == 1 && hit.p2stateno >= 0){
         if(
           `pyr.changeState1(
@@ -5850,12 +5855,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
           .m.max!int?(
             `pyr.sysivar[.iPAUSEMOVETIME], `pyr.stVal.hb.hitshaketime);
       }
-      if(!ho && !p2s && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
+      if(!p2s && !`pyr.ls(.lsGETHIT)) `pyr.cs1tmp = false;
       `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
       if(`pyr.sysivar[.iBINDTOID] == by.id) `pyr.setBindTime(0);
-      if(hit.forcestand != 0 && `pyr.stVal.typ == .StTy::C){
-        `pyr.stVal.typ = .StTy::S;
-      }
       bool live = `pyr.sysivar[.iLIFE] > 0;
       bool kill = #hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
       `pyr.stVal.hb.damage +=
@@ -5865,7 +5867,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
       if(`pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
       cond kill || !live:
         if(!.gs(.gsNOKO)){
-          `pyr.stVal.hb.fallf = 1;
+          `pyr.stVal.hb.fallf = true;
           if((int)`pyr.stVal.hb.fall.animtype < (int).AnimTy::Back){
             `pyr.stVal.hb.fall.animtype = .AnimTy::Back;
           }
@@ -5957,7 +5959,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=)
         .m.limRange!int?(`pyr.sysivar[.iPOWER]=, 0, `pyr.sysivar[.iPOWERMAX]);
       }
     comm:
-      if(ho) break;
+      if(`pyr.ho >= 0) break;
       branch{
         int byf;
       cond pro == 0:
