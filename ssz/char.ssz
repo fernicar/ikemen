@@ -4528,7 +4528,7 @@ public &Char
         `trDestroySelf();
         `state = `dummy;
       }
-      `furimuki();
+      if(`stVal.typ != .StTy::A) `furimuki();
       `state(::);
       `cs1tmp = false;
     }
