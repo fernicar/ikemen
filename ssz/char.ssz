@@ -3234,7 +3234,7 @@ public &Char
           if(`stVal.no != 10) `trChangeState(10, -1, -1);
         cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
           if(`stVal.no != 12) `trChangeState(12, -1, -1);
-        cond !.roundEnd() && `stVal.typ != .StTy::A && `cmd~buffer~U > 0:
+        cond !.roundEnd() && `stVal.typ == .StTy::S && `cmd~buffer~U > 0:
           if(`stVal.no != 40) `trChangeState(40, -1, -1);
         cond
           `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
@@ -4528,7 +4528,7 @@ public &Char
         `trDestroySelf();
         `state = `dummy;
       }
-      if(`stVal.typ != .StTy::A) `furimuki();
+      if(`stVal.typ == .StTy::S || `stVal.typ == .StTy::C) `furimuki();
       `state(::);
       `cs1tmp = false;
     }
@@ -6471,8 +6471,7 @@ void commandUpdate()
     if(#.chars[i] == 0) continue;
     .chars[i].[void(p){
       if(p<>~cmd~input(p<>~key, p<>~facing)) loop{index i = 0; while; do:
-        p<>~cmd[i].step(
-          p<>~key, p<>~facing, p<>~key < 0, p<>~acttmp%2 == -1);
+        p<>~cmd[i].step(p<>~key, p<>~facing, p<>~key < 0, p<>~acttmp%2 == -1);
         i++;
       while i < #p<>~cmd:}
       if(p<>~key < 0) loop{
