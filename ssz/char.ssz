@@ -3163,10 +3163,7 @@ public &Char
   }
   void furimuki()
   {
-    if(
-      `ctrl && `helperindex == 0 && !`ls(.lsNOAUTOTURN)
-      && (`stVal.no == 0 || `stVal.no == 11 || `stVal.no == 20))
-    {
+    if(`ctrl && `helperindex == 0 && !`ls(.lsNOAUTOTURN)){
       ^`self e = .players.enemyNear(`=, 0);
       if((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX]) >= 0) break;
       branch{
@@ -3222,7 +3219,7 @@ public &Char
       }
       if(`isBound()) `bind();
       `changeState2();
-      `furimuki();
+      if((`stVal.no == 0 || `stVal.no == 11 || `stVal.no == 20)) `furimuki();
       if(`keyctrl && #`cmd > 0) branch{
         branch{
         cond `stVal.typ == .StTy::A:
@@ -4531,6 +4528,7 @@ public &Char
         `trDestroySelf();
         `state = `dummy;
       }
+      `furimuki();
       `state(::);
       `cs1tmp = false;
     }
