@@ -117,10 +117,7 @@ int game()
       share~stt = 0;
     }
     .mes.SetSharedString(:ss:);
-    bool b;
-    {
-      b = .ld.sszc~run();
-    }
+    bool b = .ld.sszc~run();
     .sdl.shareScreen(.cfg.OpenGL);
     share~push();
     bool w1 = .com.p1wins >= .com.p1mw;
@@ -154,14 +151,12 @@ int game()
     {
       loop{while; do:
         if(p[0]~sysivar[.chr.iLIFE] <= 0){
-          if(.com.p2wins >= .com.p2mw) break, break;
           if(.com.tmode[0] == (int).com.TeamMode::Turns){
             .chr.fight~fa[.com.tmode[0]][0].numko++;
             .com.rexisted[0] = 0;
           }
         }
         if(p[1]~sysivar[.chr.iLIFE] <= 0){
-          if(.com.p1wins >= .com.p1mw) break, break;
           if(.com.tmode[1] == (int).com.TeamMode::Turns){
             .chr.fight~fa[.com.tmode[1]][1].numko++;
             .com.rexisted[1] = 0;
@@ -170,8 +165,7 @@ int game()
         ss = buf;
         .ld.reset();
         if((res = fight(ss=, share)) < 0) ret res;
-      while !.se.end:
-      }
+      while .com.p1wins < .com.p1mw && .com.p2wins < .com.p2mw && !.se.end:}
     }
   break:
     .cmd.synchronize();
