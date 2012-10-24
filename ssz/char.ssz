@@ -6554,7 +6554,7 @@ public float action(
   float highest = 0.0, lowest = .com.screeny;
   rightest = leftest = x;
   int rs4t = -(.fight~ro.over_hittime + .fight~ro.over_waittime);
-  bool zoomReset = false;
+  bool introSkip = false;
   branch{
   cond .com.tickFrame():
     .oldx = x;
@@ -6762,73 +6762,68 @@ public float action(
   }
   void posreset()
   {
-    loop{
-      index i = 0;
-      float ox = `x;
-      while;
-    do:
+    loop{index i = 0; while; do:
       if(#.chars[i] > 0){
-        if(.gs(.gsINTRO)){
-          .charClear(i);
-          .chars[i][0]~trSelfState(0, -1, 1);
-        }
         .chars[i][0]~posReset(
           (float)(.stg~p1.startx - .stg~cam.startx),
           (float)(.stg~p2.startx - .stg~cam.startx));
       }
       i++;
-    while i < #.chars:
-      if(.gs(.gsINTRO)){
-        `x = 0.0;
-        `leftest =
-          .m.max!float?(
-            (float).m.min!int?(.stg~p1.startx, .stg~p2.startx),
-            -((float).com.GameWidth/2.0)/.stg~ztopscale + .com.screenleft)
-          - ox;
-        `rightest =
-          .m.min!float?(
-            (float).m.max!int?(.stg~p1.startx, .stg~p2.startx),
-            ((float).com.GameWidth/2.0)/.stg~ztopscale - .com.screenright)
-          - ox;
-        `zoomReset = true;
-      }
-    }
+    while i < #.chars:}
   }
-  int slowfade = .fight~ro.slow_time * 2 / 5;
-  branch{
-  cond .shuttertime > 0 ? .com.tickNextFrame() : .fight~ro.act(.ko):
+  if(.com.tickNextFrame()) branch{
+  cond .fight~ro.cur < 1:
     branch{
-    cond .com.intro > .fight~ro.ctrl_time:
-      .com.intro--;
-      if(.gs(.gsINTRO) && .com.intro <= .fight~ro.ctrl_time){
-        branch{
-        cond .shuttertime > 0 || .cmd.anybutton():
-          if(.shuttertime < 15) .shuttertime++;
-          branch{
-          cond .shuttertime == 15:
-            posreset();
-            .resetGblEffect();
-          else:
-            break, else;
-          }
-        else:
-          .com.intro = .fight~ro.ctrl_time+1;
-        }
-      }
-    else:
-      if(.shuttertime == 0 && .com.intro >= 1){
-        .com.intro--;
-        if(.com.intro == 0) loop{index i = 0; while; do:
-          if(#.chars[i] > 0) branch{
-          cond .chars[i][0]~stVal.no == 0:
-            .chars[i][0]~setCtrl(true);
-          else:
+    cond
+      .shuttertime > 0
+      || (.cmd.anybutton() && .com.intro > .fight~ro.ctrl_time):
+      if(++.shuttertime == 15){
+        .resetGblEffect();
+        .com.intro = .fight~ro.ctrl_time;
+        loop{index i = 0; while; do:
+          if(#.chars[i] > 0){
+            .charClear(i);
             .chars[i][0]~trSelfState(0, -1, 1);
           }
           i++;
         while i < #.chars:}
+        float ox = x;
+        x = 0.0;
+        leftest =
+          .m.max!float?(
+            (float).m.min!int?(.stg~p1.startx, .stg~p2.startx),
+            -((float).com.GameWidth/2.0)/.stg~ztopscale + .com.screenleft)
+          - ox;
+        rightest =
+          .m.min!float?(
+            (float).m.max!int?(.stg~p1.startx, .stg~p2.startx),
+            ((float).com.GameWidth/2.0)/.stg~ztopscale - .com.screenright)
+          - ox;
+        introSkip = true;
+        .fight~ro.callFight();
       }
-      if(.shuttertime > 0) .shuttertime--;
+    }
+  else:
+    if(.shuttertime > 0) .shuttertime--;
+  }
+  if(!introSkip && .fight~ro.act(.ko)){
+    branch{
+    cond .com.intro > .fight~ro.ctrl_time:
+      .com.intro--;
+      if(.gs(.gsINTRO) && .com.intro <= .fight~ro.ctrl_time){
+        .com.intro = .fight~ro.ctrl_time + 1;
+      }
+    cond .com.intro > 0:
+      .com.intro--;
+      if(.com.intro == 0) loop{index i = 0; while; do:
+        if(#.chars[i] > 0) branch{
+        cond .chars[i][0]~stVal.no == 0:
+          .chars[i][0]~setCtrl(true);
+        else:
+          .chars[i][0]~trSelfState(0, -1, 1);
+        }
+        i++;
+      while i < #.chars:}
     }
     if(
       .com.intro == 0 && .com.time > 0 && !.gs(.gsTIMERFREEZE)
@@ -6951,25 +6946,17 @@ public float action(
     else:
       if(.com.intro < 0) .com.intro = 0;
     }
-    sprite();
-  cond .fight~ro.cur == 1 && .com.tickNextFrame():
-    sprite();
-    posreset();
-  else:
-    sprite();
   }
+  sprite();
+  if(.com.tickNextFrame() && .com.intro == .fight~ro.ctrl_time) posreset();
   if(.com.turbo == 0.0 || .com.tickNextFrame()) branch{
     int slowt = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
     float spd = .com.pause && !.com.step ? 0.0 : .com.Speed*.com.accel;
-  cond
-    !.gs(.gsNOKOSLOW) && .com.time != 0
-    && .m.inRange!int?(slowt, -.fight~ro.over_hittime-1, .com.intro)
-    :
+    int slowfade = .fight~ro.slow_time * 2 / 5;
+    if(.gs(.gsNOKOSLOW) || .com.time == 0) else;
+  cond .m.inRange!int?(slowt, -.fight~ro.over_hittime-1, .com.intro):
     .com.turbo = spd * 0.25;
-  cond
-    !.gs(.gsNOKOSLOW) && .com.time != 0
-    && .m.inRange!int?(slowt-slowfade, slowt-1, .com.intro)
-    :
+  cond .m.inRange!int?(slowt-slowfade, slowt-1, .com.intro):
     .com.turbo =
       spd*(0.25 + 0.75 * (float)(-.com.intro + slowt)/(float)slowfade);
   else:
@@ -6997,7 +6984,7 @@ public float action(
       ((2.0**.com.zoomSpeed+3.0)/2.0**.com.zoomSpeed - tmp)**64.0;
   }
   branch{
-  cond zoomReset:
+  cond introSkip:
     tmp = 1.0 / scl;
   cond .super > 0 || .pause > 0:
     tmp = 1.0;

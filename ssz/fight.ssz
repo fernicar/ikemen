@@ -959,7 +959,8 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       `match_maxdrawgames = .com.atonOF!`match_maxdrawgames.self?(data);
     }
     if(#(data = sc.get("start.waittime")) > 0){
-      `start_waittime = .m.max!int?(1, .com.atonOF!`start_waittime.self?(data));
+      `start_waittime =
+        .m.max!int?(1, .com.atonOF!`start_waittime.self?(data));
     }
     if(#(data = sc.get("round.time")) > 0){
       `round_time = .com.atonOF!`round_time.self?(data);
@@ -1022,6 +1023,14 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     `win2.read("win2.", sc=, `al=);
     `drawn.read("draw.", sc=, `al=);
   }
+  public void callFight()
+  {
+    `fight.reset();
+    `cur = 1;
+    `wt = `fight_time;
+    `swt = `fight_sndtime;
+    `dt = 0;
+  }
   public bool act(|.KOTy ko)
   {
     branch{
@@ -1051,10 +1060,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
           `round_default.action();
           if(!`round_default.end(`dt)) break;
         comm:
-          `cur = 1;
-          `wt = `fight_time;
-          `swt = `fight_sndtime;
-          `dt = 0;
+          `callFight();
         }
         ret false;
       case 1:
