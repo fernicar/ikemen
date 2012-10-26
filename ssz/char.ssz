@@ -1801,9 +1801,11 @@ public &Projectile
       cond `anim >= 0:
         branch{
         cond `prioritypoint <= 0 && `remove != 0:
-          `ani = .chars[playerNo][0]~getAction(`cancelanim);
+          if(`cancelanim != `anim){
+            `ani = .chars[playerNo][0]~getAction(`cancelanim);
+          }
         cond `hits <= 0 && `remove != 0:
-          `ani = .chars[playerNo][0]~getAction(`hitanim);
+          if(`hitanim != `anim) `ani = .chars[playerNo][0]~getAction(`hitanim);
         cond
           (
             `x < .com.xmin-(float)`edgebound
@@ -1816,7 +1818,7 @@ public &Projectile
           || `removetime == 0
           || (`removetime <= -2 && (#`ani == 0 || `ani~ani.loopend))
           :
-          `ani = .chars[playerNo][0]~getAction(`remanim);
+          if(`remanim != `anim) `ani = .chars[playerNo][0]~getAction(`remanim);
         else:
           break;
         comm:
@@ -5172,7 +5174,7 @@ public &Char
     ret
       .explods[`playerno][i].id >= 0 && (
         .explods[`playerno][i].player == `id
-        && (id <= 0 || .explods[`playerno][i].id == id));
+        && (id < 0 || .explods[`playerno][i].id == id));
   }
   public void trExplodBindTime(int id, int bt)
   {

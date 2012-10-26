@@ -531,7 +531,6 @@ public &Sprite
       i++;
     while i < l:
     }
-    if(#`colorPallet == 0) `colorPallet.new(256);
     `palidx = -1;
     ret "";
   }
