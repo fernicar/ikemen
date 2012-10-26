@@ -5877,7 +5877,7 @@ public &StateBuilder
             "`trRemoveExplod(", "$.v.toI());")) ret false;
         ret true;
       }])) ret false;
-      if(!id) `state.ctrlList[-1].task .= "`trRemoveExplod(0);";
+      if(!id) `state.ctrlList[-1].task .= "`trRemoveExplod(-1);";
       ret true;
     }]);
   }
