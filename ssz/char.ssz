@@ -1826,7 +1826,7 @@ public &Projectile
           `remvel();
         }
       else:
-        if(#`ani > 0 && `ani~ani.loopend) `ani.new(0);
+        if(#`ani > 0 && `ani~ani.animTime() == 0) `ani.new(0);
         if(#`ani == 0 && `id >= 0) `id = !`id;
       }
       `ticOldX = `x;
