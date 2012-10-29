@@ -832,7 +832,7 @@ public &StateBuilder
         token = `tokenizer(in=);
         num = `number("-" + token, typ=);
         if(#num == 0) break, else;
-        out .= num;
+        out .= ' ' .= num;
       else:
         if(`expPostNot(temp=, in=)=>typ < 0) ret -1;
         branch{
