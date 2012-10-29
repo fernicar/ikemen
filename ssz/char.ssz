@@ -4644,9 +4644,7 @@ public &Char
     else:
       foo = (no - 1) ^ (`playerno & 1);
     }
-    ret
-      #.chars[foo] > 0 && .s.equ(
-        .s.toLower(name), .s.toLower(.chars[foo][0]~name));
+    ret #.chars[foo] > 0 && .s.equ(name, .s.toLower(.chars[foo][0]~name));
   }
   public int trFrontEdgeDist()
   {

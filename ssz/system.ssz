@@ -133,23 +133,19 @@ public &Select
       ret true;
     }
     ^/char d = defs[0];
-    {
-      if(
-        #.com.loadFile("chars/", d=)=>error <, [^/char(^/char f){
-          ret
-            #.com.loadText(f, unicode=)=>mainbuf > 0
-            ? "" : .com.FileReadError;
-        }] == 0) break;
-      %char buf;
-      d = (buf .= d .= '/' .= d .= ".def");
-      if(
-        #.com.loadFile("chars/", d=)=>error <, [^/char(^/char f){
-          ret
-            #.com.loadText(f, unicode=)=>mainbuf > 0
-            ? "" : .com.FileReadError;
-        }] == 0) break;
-      ret true;
+    index delimiter = .s.cFind("\/", d);
+    branch{
+    cond .s.equ(.s.toLower(d[#d-4 .. -1]), ".def"):
+      if(delimiter < 0) ret true;
+    cond delimiter < 0:
+      d = d + "/" + d + ".def";
+    else:
+      d = d + ".def";
     }
+    if(delimiter < 0 || (delimiter > 0 &&.s.find(":", d[0 .. delimiter]) < 0)){
+      d = "chars/" + d;
+    }
+    if(#.com.loadText(d, unicode=)=>mainbuf == 0) ret true;
     `charlist[-1].def = d;
     %^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
