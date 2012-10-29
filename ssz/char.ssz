@@ -4,7 +4,6 @@ lib s = <string.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
 lib consts = <consts.ssz>;
 lib m = <math.ssz>;
-lib se = <alpha/sdlevent.ssz>;
 lib sff = "sff.ssz";
 lib cmd = "command.ssz";
 lib stage = "stage.ssz";
@@ -23,6 +22,7 @@ int changeStateNest = 0;
 float oldx = 0.0;
 int waitdown = 0, shuttertime = 0;
 bool winskipped = false;
+void none;
 
 public float zoomdelay = 0.0;
 
@@ -3337,7 +3337,7 @@ public &Char
             `trChangeState(5120, -1, -1);
           }
         cond `stVal.no == 140:
-          if(`trAnimTime()$.v.toI() == 0){
+          if(`trAnimTime() == 0){
             `trChangeState(
               (int)(`stVal.typ == .StTy::C)*11
               + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
@@ -3983,17 +3983,17 @@ public &Char
     e~setPos(`=);
     `insertExplod(i);
   }
-  public void trPlayerID()
+  public void trPlayerID(int id)
   {
-    .c = .players.get(.v.toI());
+    .c = .players.get(id);
   }
-  public void trEnemy()
+  public void trEnemy(int id)
   {
-    .c = .players.enemy(`playerno, .v.toI());
+    .c = .players.enemy(`playerno, id);
   }
-  public void trEnemyNear()
+  public void trEnemyNear(int id)
   {
-    .c = .players.enemyNear(`=, .v.toI());
+    .c = .players.enemyNear(`=, id);
   }
   public void trRoot()
   {
@@ -4012,9 +4012,9 @@ public &Char
       .c = .chars[`playerno][#`parentindex];
     }
   }
-  public void trPartner()
+  public void trPartner(int id)
   {
-    if(.v.toI() > 0){
+    if(id > 0){
       .c.new(0);
       ret;
     }
@@ -4022,9 +4022,8 @@ public &Char
       #.chars[`playerno+2 & 3] > 0
       ? .chars[`playerno+2 & 3][0] : .consts.null!`self?();
   }
-  public void trHelper()
+  public void trHelper(int id)
   {
-    int id = .v.toI();
     loop{index i = 1; while; do:
       if(
         .chars[`playerno][i]~helperindex > 0 && !.chars[`playerno][i]~destmp
@@ -4034,19 +4033,16 @@ public &Char
         ret;
       }
       i++;
-    while i < #.chars[`playerno]:
-    }
+    while i < #.chars[`playerno]:}
     .c = .consts.null!`self?();
   }
-  public void trTarget()
+  public void trTarget(int id)
   {
-    int id = .v.toI();
     loop{index i = 0; while; do:
       .c = .players.get(`targets[i]);
       if(#.c > 0 && (id < 0 || .c~stVal.hb.hitid == id)) ret;
       i++;
-    while i < #`targets:
-    }
+    while i < #`targets:}
     .c = .consts.null!`self?();
   }
   public void trRange(
@@ -4092,47 +4088,13 @@ public &Char
     void f(&.Var r=, float f1, float f2){r.setB(f1 <= f2);}
     `nikou!i, f?(.v=, v1, v2);
   }
-  public void trAnd(&.Var v1, &.Var v2)
-  {:<-
-    void i(&.Var r=, int   i1, int   i2){r.setI(r.i = i1 & i2);}
-    void f(&.Var r=, float f1, float f2){r.setI((int)f1 & (int)f2);}
-    `nikou!i, f?(.v=, v1, v2);
-  }
-  public void trXor(&.Var v1, &.Var v2)
-  {:<-
-    void i(&.Var r=, int   i1, int   i2){r.setI(i1 ^ i2);}
-    void f(&.Var r=, float f1, float f2){r.setI((int)f1 ^ (int)f2);}
-    `nikou!i, f?(.v=, v1, v2);
-  }
-  public void trOr(&.Var v1, &.Var v2)
-  {:<-
-    void i(&.Var r=, int   i1, int   i2){r.setI(i1 | i2);}
-    void f(&.Var r=, float f1, float f2){r.setI((int)f1 | (int)f2);}
-    `nikou!i, f?(.v=, v1, v2);
-  }
-  public void trNot()
+  public void trIfelse(bool b, &.Var v1, &.Var v2)
   {
-    if(.v.isSF()) ret;
-    .v.setI(!.v.toI());
-  }
-  public void trBoolAnd(&.Var v1, &.Var v2)
-  {
-    .v.setB(v1.isT() && v2.isT());
-  }
-  public void trBoolOr(&.Var v1, &.Var v2)
-  {
-    .v.setB(v1.isT() || v2.isT());
-  }
-  public void trIfelse(&.Var b, &.Var v1, &.Var v2)
-  {
-    .v = b.isT() ? v1 : v2;
-  }
-  public void trBoolNot()
-  {
-    .v.setB(!.v.isT());
+    .v = b ? v1 : v2;
   }
   public void trMinus()
   {
+    if(.v.isSF()) .v.setB(false);
     .v.i *= -1;
     .v.f *= -1.0;
   }
@@ -4155,7 +4117,7 @@ public &Char
   }
   public void trSin()
   {
-    .v.setF(.m.sin(.v.toF()));
+    if(!.v.isSF()) .v.setF(.m.sin(.v.toF()));
   }
   public void trCos()
   {
@@ -4305,75 +4267,45 @@ public &Char
   {
     ret `id < 0 ? !`id : `id;
   }
-  public void trSetX()
+  public void addX(float x)
   {
-    `setX(.v.toF());
+    `setX(`sysfvar[.fX] + (float)`facing*x);
   }
-  public void trSetY()
+  public void addY(float y)
   {
-    `setY(.v.toF());
+    `setY(`sysfvar[.fY] + y);
   }
-  public void trAddX()
+  public void addXV(float x)
   {
-    `setX(`sysfvar[.fX] + (float)`facing*.v.toF());
+    `sysfvar[.fVX] += x;
   }
-  public void trAddY()
+  public void addYV(float y)
   {
-    `setY(`sysfvar[.fY] + .v.toF());
+    `sysfvar[.fVY] += y;
   }
-  public void trVelSetX()
+  public void mulXV(float x)
   {
-    `setXV(.v.toF());
+    `sysfvar[.fVX] *= x;
   }
-  public void trVelSetY()
+  public void mulYV(float y)
   {
-    `setYV(.v.toF());
+    `sysfvar[.fVY] *= y;
   }
-  public void trVelAddX()
+  public int trAnimTime()
   {
-    `sysfvar[.fVX] += .v.toF();
+    if(`animpno < 0 || #`ani == 0 || #`ani~ani.frames == 0) ret 0;
+    ret `ani~ani.animTime();
   }
-  public void trVelAddY()
+  public void trAnimElemTime(int e)
   {
-    `sysfvar[.fVY] += .v.toF();
-  }
-  public void trVelMulX()
-  {
-    `sysfvar[.fVX] *= .v.toF();
-  }
-  public void trVelMulY()
-  {
-    `sysfvar[.fVY] *= .v.toF();
-  }
-  public void trAngleSet()
-  {
-    `setAngle(.v.toF());
-  }
-  public void trAnim()
-  {
-    .v.setI(`animno);
-  }
-  public void trAnimTime()
-  {
-    branch{
-    cond `animpno < 0 || #`ani == 0 || #`ani~ani.frames == 0:
-      .v.setI(0);
-    else:
-      .v.setI(`ani~ani.animTime());
-    }
-  }
-  public void trAnimElemTime()
-  {
-    int e = .v.toI();
     if(e < 1 || #`ani == 0 || e > #`ani~ani.frames){
       .v.setSF();
       ret;
     }
     .v.setI(`ani~ani.animElemTime(e));
   }
-  public void trAnimElemNo()
+  public void trAnimElemNo(int tim)
   {
-    int tim = .v.toI();
     if(#`ani == 0 || tim < -`ani~ani.sumtime){
       .v.setSF();
       ret;
@@ -4420,77 +4352,77 @@ public &Char
     if(.v.isSF()) ret;
     .v.setB(#.players.get(.v.toI()) > 0);
   }
-  public void trSysIVar()
+  public void trSysIVar(int idx)
   {
-    int i = .v.toI();
-    if(.v.isSF() || i < 0 || (`minus != 11 && i >= 5)){
+    if(idx < 0 || (`minus != 11 && idx >= 5)){
       .v.setSF();
       ret;
     }
-    .v.setI(`sysivar[i]);
+    .v.setI(`sysivar[idx]);
   }
-  public void trSetSysIVar(&.Var idx, &.Var v)
+  public int trSetSysIVar(int idx, int v)
   {
-    int i = idx.toI();
-    if(.v.isSF() || i < 0 || (`minus != 11 && i >= 5)){
-      .v.setI(v.toI());
-      ret;
-    }
-    .v.setI(`sysivar[i] = v.toI());
+    if(idx >= 0 && (`minus == 11 || idx < 5)) `sysivar[idx] = v;
+    ret v;
   }
-  public void trSysFVar()
+  public int trAddSysIVar(int idx, int v)
   {
-    int i = .v.toI();
-    if(.v.isSF() || i < 0 || (`minus != 11 && i >= 5)){
+    if(idx >= 0 && (`minus == 11 || idx < 5)) `sysivar[idx] += v;
+    ret v;
+  }
+  public void trSysFVar(int idx)
+  {
+    if(idx < 0 || (`minus != 11 && idx >= 5)){
       .v.setSF();
       ret;
     }
-    .v.setF(`sysfvar[i]);
+    .v.setF(`sysfvar[idx]);
   }
-  public void trSetSysFVar(&.Var idx, &.Var v)
+  public float trSetSysFVar(int idx, float v)
   {
-    int i = idx.toI();
-    if(.v.isSF() || i < 0 || (`minus != 11 && i >= 5)){
-      .v.setF(v.toF());
-      ret;
-    }
-    .v.setF(`sysfvar[i] = v.toF());
+    if(idx >= 0 && (`minus == 11 || idx < 5)) `sysfvar[idx] = v;
+    ret v;
   }
-  public void trIVar()
+  public float trAddSysFVar(int idx, float v)
   {
-    int i = .v.toI();
-    if(.v.isSF() || i < 0 || i >= 60){
+    if(idx >= 0 && (`minus == 11 || idx < 5)) `sysfvar[idx] += v;
+    ret v;
+  }
+  public void trIVar(int idx)
+  {
+    if(idx < 0 || idx >= 60){
       .v.setSF();
       ret;
     }
-    .v.setI(`ivar[i]);
+    .v.setI(`ivar[idx]);
   }
-  public void trSetIVar(&.Var idx, &.Var v)
+  public int trSetIVar(int idx, int v)
   {
-    int i = idx.toI();
-    if(.v.isSF() || i < 0 || i >= 60){
-      .v.setI(v.toI());
-      ret;
-    }
-    .v.setI(`ivar[i] = v.toI());
+    if(idx >= 0 && idx < 60) `ivar[idx] = v;
+    ret v;
   }
-  public void trFVar()
+  public int trAddIVar(int idx, int v)
   {
-    int i = .v.toI();
-    if(.v.isSF() || i < 0 || i >= 40){
+    if(idx >= 0 && idx < 60) `ivar[idx] += v;
+    ret v;
+  }
+  public void trFVar(int idx)
+  {
+    if(idx < 0 || idx >= 40){
       .v.setSF();
       ret;
     }
-    .v.setF(`fvar[i]);
+    .v.setF(`fvar[idx]);
   }
-  public void trSetFVar(&.Var idx, &.Var v)
+  public float trSetFVar(int idx, float v)
   {
-    int i = idx.toI();
-    if(.v.isSF() || i < 0 || i >= 40){
-      .v.setF(v.toF());
-      ret;
-    }
-    .v.setF(`fvar[i] = v.toF());
+    if(idx >= 0 && idx < 40) `fvar[idx] = v;
+    ret v;
+  }
+  public float trAddFVar(int idx, float v)
+  {
+    if(idx >= 0 && idx < 40) `fvar[idx] += v;
+    ret v;
   }
   public bool changeState1(int p, int n)
   {:<-
@@ -4578,17 +4510,17 @@ public &Char
     if(#ci == 0) ret false;
     ret `commandSub(`stVal.playerno, ci<>);
   }
-  public void trCommand(int pno, int i)
+  public bool trCommand(int pno, int i)
   {
-    if(!`keyctrl || #`cmd == 0){
-      .v.setI(0);
-      ret;
-    }
-    .v.setI((int)`commandSub(pno, i));
+    ret `keyctrl && #`cmd > 0 && `commandSub(pno, i);
   }
   public void trP2Life()
   {
     ^`self e = .players.enemyNear(`=, 0);
+    if(#e == 0){
+      .v.setSF();
+      ret;
+    }
     .v.setI(e~sysivar[.iLIFE]);
   }
   public void trTurn()
@@ -4598,6 +4530,10 @@ public &Char
   public void trP2DistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
+    if(#e == 0){
+      .v.setSF();
+      ret;
+    }
     if(!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
       .v.setF(0.0);
       ret;
@@ -4607,11 +4543,19 @@ public &Char
   public void trP2DistY()
   {
     ^`self e = .players.enemyNear(`=, 0);
+    if(#e == 0){
+      .v.setSF();
+      ret;
+    }
     .v.setF(e~sysfvar[.fY] - `sysfvar[.fY]);
   }
   public void trP2BodyDistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
+    if(#e == 0){
+      .v.setSF();
+      ret;
+    }
     if(!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
       .v.setF(0.0);
       ret;
@@ -4658,19 +4602,14 @@ public &Char
     }
     .v.setF(.c~sysfvar[.fY] - `sysfvar[.fY]);
   }
-  public void trStateType(|.StTy st)
+  public bool trStateType(|.StTy st)
   {
-    .v.typ = .VarTy::Int;
-    .v.i = (int)(st == `stVal.typ);
+    ret st == `stVal.typ;
   }
-  public void trP2StateType(|.StTy st)
+  public bool trP2StateType(|.StTy st)
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0){
-      .v.setSF();
-      ret;
-    }
-    .v.setB(st == e~stVal.typ);
+    ret #e > 0 && st == e~stVal.typ;
   }
   public void trP2StateNo()
   {
@@ -4681,22 +4620,18 @@ public &Char
     }
     .v.setI(e~stVal.no);
   }
-  public void trMoveType(|.MovTy mt)
+  public bool trMoveType(|.MovTy mt)
   {
-    .v.setB(mt == `stVal.mov);
+    ret mt == `stVal.mov;
   }
-  public void trP2MoveType(|.MovTy mt)
+  public bool trP2MoveType(|.MovTy mt)
   {
     ^`self e = .players.enemyNear(`=, 0);
-    .v.setB(mt == e~stVal.mov);
+    ret #e > 0 && mt == e~stVal.mov;
   }
-  public void trPName(int no, ^/char name)
+  public bool trPName(int no, ^/char name)
   {
-    if(no <= 0 || #.chars < no){
-      .v.typ = .VarTy::Int;
-      .v.i = 0;
-      ret;
-    }
+    if(no <= 0 || #.chars < no) ret false;
     int foo;
     branch{
     cond (no & 1) == 1 && no - 1 <= `playerno:
@@ -4709,36 +4644,35 @@ public &Char
     else:
       foo = (no - 1) ^ (`playerno & 1);
     }
-    .v.setI(
-      (int)(
-        #.chars[foo] > 0 && .s.equ(
-          .s.toLower(name), .s.toLower(.chars[foo][0]~name))));
+    ret
+      #.chars[foo] > 0 && .s.equ(
+        .s.toLower(name), .s.toLower(.chars[foo][0]~name));
   }
-  public void trFrontEdgeDist()
+  public int trFrontEdgeDist()
   {
-    .v.setI(
+    ret
       (int)(
-        `facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin));
+        `facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin);
   }
-  public void trFrontEdgeBodyDist()
+  public int trFrontEdgeBodyDist()
   {
-    .v.setI(
+    ret
       (int)(
         (`facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
-        - `getEdge(`fedge)));
+        - `getEdge(`fedge));
   }
-  public void trBackEdgeDist()
+  public int trBackEdgeDist()
   {
-    .v.setI(
+    ret
       (int)(
-        `facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin));
+        `facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin);
   }
-  public void trBackEdgeBodyDist()
+  public int trBackEdgeBodyDist()
   {
-    .v.setI(
+    ret
       (int)(
         (`facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
-        - `getEdge(`bedge)));
+        - `getEdge(`bedge));
   }
   public void trIsHelper()
   {
@@ -4746,13 +4680,9 @@ public &Char
     int id = .v.toI();
     .v.setB(`helperindex != 0 && (id <= 0 || `helperid == id));
   }
-  public void trActive()
+  public bool trTeamMode(|.com.TeamMode tm)
   {
-    .v.setB(`isActive());
-  }
-  public void trTeamMode(|.com.TeamMode tm)
-  {
-    .v.setB(.com.tmode[`playerno&1] == (int)tm);
+    ret .com.tmode[`playerno&1] == (int)tm;
   }
   public void trNewHelper(^`self c=)
   {
@@ -5032,25 +4962,22 @@ public &Char
     while i < #`targets:
     }
   }
-  public void trNumEnemy()
+  public int  trNumEnemy()
   {
-    .v.setI(.players.numEnemy(`playerno));
+    ret .players.numEnemy(`playerno);
   }
-  public void trNumPartner()
+  public int trNumPartner()
   {
-    .v.setI(#.chars[`playerno+2 & 3]);
+    ret #.chars[`playerno+2 & 3];
   }
-  public void trHitXvel()
+  public float trHitXvel()
   {
-    .v.setF(`stVal.hb.xvel * (float)`facing);
+    ret `stVal.hb.xvel * (float)`facing;
   }
-  public void trFallXvel()
+  public float trFallXvel()
   {
-    if(.m.isnan(`stVal.hb.fall.xvelocity)){
-      .v.setF(-32760.0);
-      ret;
-    }
-    .v.setF(`stVal.hb.fall.xvelocity);
+    if(.m.isnan(`stVal.hb.fall.xvelocity)) ret -32760.0;
+    ret `stVal.hb.fall.xvelocity;
   }
   public void trHitFallSet(int f, float vx, float vy)
   {
@@ -5064,11 +4991,6 @@ public &Char
     if(`stVal.mov != .MovTy::H) ret;
     if(!.m.isnan(`stVal.hb.fall.xvelocity)) `setXV(`stVal.hb.fall.xvelocity);
     `setYV(`stVal.hb.fall.yvelocity);
-  }
-  public void trHitFall()
-  {
-    .v.typ = .VarTy::Int;
-    .v.i = (int)`isFall();
   }
   public void trHitFallDamage()
   {
@@ -5085,13 +5007,13 @@ public &Char
     if(`stVal.mov != .MovTy::H) ret;
     `setYV(`stVal.hb.yvel);
   }
-  public void trHitVelX()
+  public float trHitVelX()
   {
-    .v.setF(`stVal.mov != .MovTy::H ? -`stVal.hb.xvel : 0.0);
+    ret `stVal.mov != .MovTy::H ? -`stVal.hb.xvel : 0.0;
   }
-  public void trHitVelY()
+  public float trHitVelY()
   {
-    .v.setF(`stVal.mov != .MovTy::H ? -`stVal.hb.yvel : 0.0);
+    ret `stVal.mov != .MovTy::H ? -`stVal.hb.yvel : 0.0;
   }
   public void trProjTime(|.ProjContact pct)
   {
@@ -5146,14 +5068,13 @@ public &Char
       }
     }
   }
-  public void trHitDefAttr(int flg)
+  public bool trHitDefAttr(int flg)
   {
     const int mask = (int).AtTy::NA - 1;
     int attr = `stVal.hit.attr & (int)0x7fffffff;
-    .v.setI(
-      (int)(
-        `stVal.mov == .MovTy::A
-        && (mask & attr & flg) != 0  && (!mask & attr & flg) != 0));
+    ret 
+      `stVal.mov == .MovTy::A
+      && (mask & attr & flg) != 0  && (!mask & attr & flg) != 0;
   }
   public void trNumHelper()
   {
@@ -5258,82 +5179,60 @@ public &Char
     while i < #.projs[`playerno]:
     }
   }
-  public void trNumProj()
+  public int trNumProj()
   {
-    .v.typ = .VarTy::Int;
-    .v.i = 0;
+    int n = 0;
     loop{index i = 0; while; do:
-      if(.projs[`playerno][i].id >= 0 && .projs[`playerno][i].hits > 0) .v.i++;
+      if(.projs[`playerno][i].id >= 0 && .projs[`playerno][i].hits > 0) n++;
       i++;
-    while i < #.projs[`playerno]:
-    }
+    while i < #.projs[`playerno]:}
+    ret n;
   }
-  public void trHitPauseTime()
+  public int trHitPauseTime()
   {
-    .v.setI(.m.max!int?(0, `sysivar[.iHITPAUSETIME]));
+    ret `sysivar[.iHITPAUSETIME];
   }
-  public void trInGuardDist()
+  public bool trHitOver()
   {
-    .v.setB(`inguarddist);
+    ret `stVal.hb.hittime < 0;
   }
-  public void trHitOver()
+  public bool trHitShakeOver()
   {
-    .v.setB(`stVal.hb.hittime < 0);
+    ret `stVal.hb.hitshaketime <= 0;
   }
-  public void trHitShakeOver()
+  public bool trCanRecover()
   {
-    .v.setI((int)(`stVal.hb.hitshaketime <= 0));
+    ret
+      `stVal.hb.fall.recover != 0
+      && `stVal.fallTime >= `stVal.hb.fall.recovertime;
   }
-  public void trCanRecover()
+  public int trMoveContact()
   {
-    .v.setI(
-      (int)(
-        `stVal.hb.fall.recover != 0
-        && `stVal.fallTime >= `stVal.hb.fall.recovertime));
+    ret `stVal.mctyp != .MoveContact::Reversed ? #`stVal.mctime : 0;
   }
-  public void trMoveContact()
+  public int trMoveReversed()
   {
-    .v.typ = .VarTy::Int;
-    .v.i = `stVal.mctyp != .MoveContact::Reversed ? #`stVal.mctime : 0;
+    ret `stVal.mctyp == .MoveContact::Reversed ? #`stVal.mctime : 0;
   }
-  public void trMoveReversed()
+  public int trMoveHit()
   {
-    .v.typ = .VarTy::Int;
-    .v.i = `stVal.mctyp == .MoveContact::Reversed ? #`stVal.mctime : 0;
+    ret `stVal.mctyp == .MoveContact::Hit ? #`stVal.mctime : 0;
   }
-  public void trMoveHit()
+  public int trMoveGuarded()
   {
-    .v.typ = .VarTy::Int;
-    .v.i = `stVal.mctyp == .MoveContact::Hit ? #`stVal.mctime : 0;
+    ret `stVal.mctyp == .MoveContact::Guarded ? #`stVal.mctime : 0;
   }
-  public void trMoveGuarded()
+  public bool trMatchOver()
   {
-    .v.typ = .VarTy::Int;
-    .v.i = `stVal.mctyp == .MoveContact::Guarded ? #`stVal.mctime : 0;
+    ret .com.p1wins >= .com.p1mw || .com.p2wins >= .com.p2mw;
   }
-  public void trPalNo()
-  {
-    .v.setI(`palno);
-  }
-  public void trMatchOver()
-  {
-    .v.setB(.com.p1wins >= .com.p1mw || .com.p2wins >= .com.p2mw);
-  }
-  public void trMatchNo()
+  public int trMatchNo()
   {////////////////////////////////////////////////////////////////////////////
-    .v.setI(1);
+    ret 1;
   }
-  public void trRoundNo()
+  public int trRoundsExisted()
   {
-    .v.setI(.com.round);
-  }
-  public void trRoundState()
-  {
-    .v.setI(`roundState());
-  }
-  public void trRoundsExisted()
-  {
-    .v.setI(.com.rexisted[`playerno&1]);
+    ret .com.rexisted[`playerno&1];
   }
   public bool isWin()
   {
@@ -5350,37 +5249,29 @@ public &Char
         `ctrlOver() && `ctrl
         && `stVal.typ != .StTy::A && `stVal.phy != .StTy::A);
   }
-  public void trWin()
+  public bool trWinKO()
   {
-    .v.setB(`isWin());
+    ret `isWin() && .ko == .fgt.KOTy::KO;
   }
-  public void trWinKO()
+  public bool trWinTime()
   {
-    .v.setB(`isWin() && .ko == .fgt.KOTy::KO);
+    ret `isWin() && .ko == .fgt.KOTy::TO;
   }
-  public void trWinTime()
+  public bool trWinPerfect()
   {
-    .v.setB(`isWin() && .ko == .fgt.KOTy::TO);
+    ret `isWin() && .winty[`playerno&1] >= .fgt.WinTy::PN;
   }
-  public void trWinPerfect()
+  public bool trLoseKO()
   {
-    .v.setI((int)(`isWin() && .winty[`playerno&1] >= .fgt.WinTy::PN));
+    ret `isLose() && .ko == .fgt.KOTy::KO;
   }
-  public void trLose()
+  public bool trLoseTime()
   {
-    .v.setB(`isLose());
+    ret `isLose() && .ko == .fgt.KOTy::TO;
   }
-  public void trLoseKO()
+  public bool trDrawGame()
   {
-    .v.setB(`isLose() && .ko == .fgt.KOTy::KO);
-  }
-  public void trLoseTime()
-  {
-    .v.setB(`isLose() && .ko == .fgt.KOTy::TO);
-  }
-  public void trDrawGame()
-  {
-    .v.setB(`roundState() >= 3 && .com.win < 0);
+    ret `roundState() >= 3 && .com.win < 0;
   }
   public void trRemapPal(int sg, int sn, int dg, int dn)
   {
@@ -5929,8 +5820,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       }
       if(hitting > 0){
         by.addPower(hit.hitgetpower);
-        `pyr.sysivar[.iPOWER] += hit.hitgivepower;
-        .m.limRange!int?(`pyr.sysivar[.iPOWER]=, 0, `pyr.sysivar[.iPOWERMAX]);
+        `pyr.setPower(`pyr.sysivar[.iPOWER] + hit.hitgivepower);
       }
     else:
       if(hit.guard_sparkno != .com.IERR) branch{
@@ -5958,8 +5848,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       }
       if(hitting > 0){
         by.addPower(hit.guardgetpower);
-        `pyr.sysivar[.iPOWER] += hit.guardgivepower;
-        .m.limRange!int?(`pyr.sysivar[.iPOWER]=, 0, `pyr.sysivar[.iPOWERMAX]);
+        `pyr.setPower(`pyr.sysivar[.iPOWER] + hit.guardgivepower);
       }
     comm:
       if(`pyr.ho >= 0) break;

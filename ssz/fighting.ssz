@@ -152,8 +152,8 @@ void game()
       `put(x, y=, .s.iToS(p.stVal.time));
       `put(x, y=, .s.iToS(p.stVal.prevno));
       `put(x, y=, .s.iToS(p.stVal.no) + " P" + .s.iToS(p.stVal.playerno+1));
-      `put(x, y=, .s.iToS(p.animno));
-      `put(x, y=, .s.iToS(.chr.v.setI(0)$p.trAnimElemNo()$.chr.v.toI()));
+      `put(x, y=, .s.iToS(p.animno) + " P" + .s.iToS(p.animpno+1));
+      `put(x, y=, .s.iToS(p.trAnimElemNo(0)$.chr.v.toI()));
       ret y;
     }
     float y = 48.0 - (float)(.com.GameHeight-240);

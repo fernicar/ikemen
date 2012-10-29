@@ -4,7 +4,6 @@ lib m = <math.ssz>;
 lib lua = <alpha/lua.ssz>;
 lib sc = "script.ssz";
 lib chr = "char.ssz";
-lib al = <alert.ssz>;
 lib com = "common.ssz";
 lib cfg = "config.ssz";
 
@@ -77,8 +76,7 @@ void helper(&.lua.State L=, int re=)
     L.pushBoolean(false);
     ret;
   }
-  .chr.v.setI(id);
-  .cwc~trHelper();
+  .cwc~trHelper(id);
   if(#.chr.c > 0) .cwc = .chr.c;
   L.pushBoolean(#.chr.c > 0);
 }
@@ -95,8 +93,7 @@ void target(&.lua.State L=, int re=)
     L.pushBoolean(false);
     ret;
   }
-  .chr.v.setI(id);
-  .cwc~trTarget();
+  .cwc~trTarget(id);
   if(#.chr.c > 0) .cwc = .chr.c;
   L.pushBoolean(#.chr.c > 0);
 }
@@ -108,7 +105,7 @@ void partner(&.lua.State L=, int re=)
     L.pushBoolean(false);
     ret;
   }
-  .cwc~trPartner();
+  .cwc~trPartner(0);
   if(#.chr.c > 0) .cwc = .chr.c;
   L.pushBoolean(#.chr.c > 0);
 }
@@ -125,8 +122,7 @@ void enemy(&.lua.State L=, int re=)
     L.pushBoolean(false);
     ret;
   }
-  .chr.v.setI(n);
-  .cwc~trEnemy();
+  .cwc~trEnemy(n);
   if(#.chr.c > 0) .cwc = .chr.c;
   L.pushBoolean(#.chr.c > 0);
 }
@@ -143,8 +139,7 @@ void enemynear(&.lua.State L=, int re=)
     L.pushBoolean(false);
     ret;
   }
-  .chr.v.setI(n);
-  .cwc~trEnemyNear();
+  .cwc~trEnemyNear(n);
   if(#.chr.c > 0) .cwc = .chr.c;
   L.pushBoolean(#.chr.c > 0);
 }
@@ -157,8 +152,7 @@ void playerid(&.lua.State L=, int re=)
     L.pushBoolean(false);
     ret;
   }
-  .chr.v.setI(id);
-  .cwc~trPlayerID();
+  .cwc~trPlayerID(id);
   if(#.chr.c > 0) .cwc = .chr.c;
   L.pushBoolean(#.chr.c > 0);
 }
@@ -186,16 +180,14 @@ void animelemno(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
   int t = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .chr.v.setI(t);
-  L.pushNumber(#.cwc > 0 ? .cwc~trAnimElemNo()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? .cwc~trAnimElemNo(t)$.chr.v.toF() : 0.0);
 }
 
 void animelemtime(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
   int n = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .chr.v.setI(n);
-  L.pushNumber(#.cwc > 0 ? .cwc~trAnimElemTime()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? .cwc~trAnimElemTime(n)$.chr.v.toF() : 0.0);
 }
 
 void animexist(&.lua.State L=, int re=)
@@ -209,7 +201,7 @@ void animexist(&.lua.State L=, int re=)
 void animtime(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trAnimTime()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trAnimTime() : 0.0);
 }
 
 void authorname(&.lua.State L=, int re=)
@@ -221,19 +213,19 @@ void authorname(&.lua.State L=, int re=)
 void backedgebodydist(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trBackEdgeBodyDist()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trBackEdgeBodyDist() : 0.0);
 }
 
 void backedgedist(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trBackEdgeDist()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trBackEdgeDist() : 0.0);
 }
 
 void canrecover(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trCanRecover()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~trCanRecover());
 }
 
 void command(&.lua.State L=, int re=)
@@ -414,7 +406,7 @@ void ctrl(&.lua.State L=, int re=)
 void drawgame(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trDrawGame()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~trDrawGame());
 }
 
 void facing(&.lua.State L=, int re=)
@@ -426,21 +418,20 @@ void facing(&.lua.State L=, int re=)
 void frontedgebodydist(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trFrontEdgeBodyDist()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trFrontEdgeBodyDist() : 0.0);
 }
 
 void frontedgedist(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trFrontEdgeDist()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trFrontEdgeDist() : 0.0);
 }
 
 void fvar(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
   int i = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .chr.v.setI(i);
-  L.pushNumber(#.cwc > 0 ? .cwc~trFVar()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? .cwc~trFVar(i)$.chr.v.toF() : 0.0);
 }
 
 void gameheight(&.lua.State L=, int re=)
@@ -504,7 +495,7 @@ void gethitvar(&.lua.State L=, int re=)
   cond .s.equ("yoff", ghv):
     n = (double).cwc~stVal.hb.snapy;
   cond .s.equ("xvel", ghv):
-    n = .cwc~trHitXvel()$.chr.v.toF();
+    n = .cwc~trHitXvel();
   cond .s.equ("yvel", ghv):
     n = (double).cwc~stVal.hb.yvel;
   cond .s.equ("yaccel", ghv):
@@ -520,7 +511,7 @@ void gethitvar(&.lua.State L=, int re=)
   cond .s.equ("fall.damage", ghv):
     n = (double).cwc~stVal.hb.fall.damage;
   cond .s.equ("fall.xvel", ghv):
-    n = .cwc~trFallXvel()$.chr.v.toF();
+    n = .cwc~trFallXvel();
   cond .s.equ("fall.yvel", ghv):
     n = (double).cwc~stVal.hb.fall.yvelocity;
   cond .s.equ("fall.recover", ghv):
@@ -559,37 +550,37 @@ void hitdefattr(&.lua.State L=, int re=)
 void hitfall(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trHitFall()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~isFall());
 }
 
 void hitover(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trHitOver()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~trHitOver());
 }
 
 void hitpausetime(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trHitPauseTime()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trHitPauseTime() : 0.0);
 }
 
 void hitshakeover(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trHitShakeOver()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~trHitShakeOver());
 }
 
 void hitvelX(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trHitVelX()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? .cwc~trHitVelX() : 0.0);
 }
 
 void hitvelY(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trHitVelY()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? .cwc~trHitVelY() : 0.0);
 }
 
 void id(&.lua.State L=, int re=)
@@ -601,7 +592,7 @@ void id(&.lua.State L=, int re=)
 void inguarddist(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 ? .cwc~trInGuardDist()$.chr.v.isT() : false);
+  L.pushBoolean(#.cwc > 0 ? .cwc~inguarddist : false);
 }
 
 void ishelper(&.lua.State L=, int re=)
@@ -637,49 +628,49 @@ void lifemax(&.lua.State L=, int re=)
 void lose(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trLose()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~isLose());
 }
 
 void loseko(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trLoseKO()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~trLoseKO());
 }
 
 void losetime(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trLoseTime()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~trLoseTime());
 }
 
 void matchno(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trMatchNo()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trMatchNo() : 0.0);
 }
 
 void matchover(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trMatchOver()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~trMatchOver());
 }
 
 void movecontact(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trMoveContact()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trMoveContact() : 0.0);
 }
 
 void moveguarded(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trMoveGuarded()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trMoveGuarded() : 0.0);
 }
 
 void movehit(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trMoveHit()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trMoveHit() : 0.0);
 }
 
 void movetype(&.lua.State L=, int re=)
@@ -697,7 +688,7 @@ void movetype(&.lua.State L=, int re=)
 void movereversed(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trMoveReversed()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trMoveReversed() : 0.0);
 }
 
 void name(&.lua.State L=, int re=)
@@ -709,7 +700,7 @@ void name(&.lua.State L=, int re=)
 void numenemy(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trNumEnemy()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trNumEnemy() : 0.0);
 }
 
 void numexplod(&.lua.State L=, int re=)
@@ -739,13 +730,13 @@ void numhelper(&.lua.State L=, int re=)
 void numpartner(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trNumPartner()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trNumPartner() : 0.0);
 }
 
 void numproj(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trNumProj()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trNumProj() : 0.0);
 }
 
 void numprojid(&.lua.State L=, int re=)
@@ -771,7 +762,7 @@ void numtarget(&.lua.State L=, int re=)
 void palno(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trPalNo()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~palno : 0.0);
 }
 
 void physics(&.lua.State L=, int re=)
@@ -869,13 +860,13 @@ void roundno(&.lua.State L=, int re=)
 void roundsexisted(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trRoundsExisted()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trRoundsExisted() : 0.0);
 }
 
 void roundstate(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~trRoundState()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~roundState() : 0.0);
 }
 
 void screenposX(&.lua.State L=, int re=)
@@ -943,16 +934,14 @@ void sysfvar(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
   int i = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .chr.v.setI(i);
-  L.pushNumber(#.cwc > 0 ? .cwc~trSysFVar()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? .cwc~trSysFVar(i)$.chr.v.toF() : 0.0);
 }
 
 void sysvar(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
   int i = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .chr.v.setI(i);
-  L.pushNumber(#.cwc > 0 ? .cwc~trSysIVar()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? .cwc~trSysIVar(i)$.chr.v.toF() : 0.0);
 }
 
 void teammode(&.lua.State L=, int re=)
@@ -995,8 +984,7 @@ void var(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
   int i = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .chr.v.setI(i);
-  L.pushNumber(#.cwc > 0 ? .cwc~trIVar()$.chr.v.toF() : 0.0);
+  L.pushNumber(#.cwc > 0 ? .cwc~trIVar(i)$.chr.v.toF() : 0.0);
 }
 
 void velX(&.lua.State L=, int re=)
@@ -1014,25 +1002,25 @@ void velY(&.lua.State L=, int re=)
 void win(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trWin()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~isWin());
 }
 
 void winko(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trWinKO()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~trWinKO());
 }
 
 void wintime(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trWinTime()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~trWinTime());
 }
 
 void winperfect(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trWinPerfect()$.chr.v.isT());
+  L.pushBoolean(#.cwc > 0 && .cwc~trWinPerfect());
 }
 
 
