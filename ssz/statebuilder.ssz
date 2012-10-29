@@ -1841,7 +1841,7 @@ public &StateBuilder
         typ = 2;
       cond .s.equ("fall.envshake.freq", token):
         out .= obj .= "stVal.hb.fall.envshake_freq";
-        typ = 2;
+        typ = 1;
       cond .s.equ("fall.envshake.ampl", token):
         out .= obj .= "stVal.hb.fall.envshake_ampl";
         typ = 2;
