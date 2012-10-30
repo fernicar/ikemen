@@ -717,17 +717,27 @@ public &FrameMethods<_t>
 {
   public void _t::action(`anim_t ani=)
   {
-    ani.time++;
-    if(ani.time >= `time){
-      if(ani.totaltime == -1 && ani.current == #ani.frames-1) break;
-      ani.time = 0;
-      ani.newframe = true;
+    void next()
+    {
+      if(`ani.totaltime == -1 && `ani.current == #`ani.frames-1) ret;
+      `ani.time = 0;
+      `ani.newframe = true;
       loop{do:
-        ani.current++;
-        if(ani.totaltime == -1 && ani.current == #ani.frames-1) break;
-      while ani.frames[ani.current].time <= 0 && ani.current < #ani.frames:
+        `ani.current++;
+        if(`ani.totaltime == -1 && `ani.current == #`ani.frames-1) break;
+      while `ani.frames[`ani.current].time <= 0 && `ani.current < #`ani.frames:
       }
-      if(ani.current >= #ani.frames) ani.current = ani.loopstart;
+    }
+    if(ani.frames[ani.current].time <= 0) next();
+    branch{
+    cond ani.current < #ani.frames:
+      ani.time++;
+      if(ani.time >= `time){
+        next();
+        if(ani.current >= #ani.frames) break, else;
+      }
+    else:
+      ani.current = ani.loopstart;
     }
     if(ani.totaltime != -1 && ani.sumtime >= ani.totaltime){
       ani.sumtime = ani.totaltime - ani.looptime;
