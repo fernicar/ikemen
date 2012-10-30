@@ -861,10 +861,10 @@ public &StateBuilder
       cond typ == 0:
         out .= temp .= "$`trAbs()";
       cond typ == 3:
-        out .= '#' .= "(int)" .= temp;
+        out .= "#(int)(" .= temp .= ')';
         typ = 2;
       else:
-        out .= '#' .= temp;
+        out .= "#(" .= temp .= ')';
       }
     cond .s.equ("floor", token):
       if(`oneArg(token, temp=, in=)=>typ < 0) ret -1;
