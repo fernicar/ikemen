@@ -489,6 +489,7 @@ void game()
     else:
       scl = .m.max!float?(minscl)<, .m.min!float?(.com.zoomMax)<, scl;
     }
+    newx = .m.ceil(newx*4.0 - 0.5)/4.0;
     tmp =
       #((l + r) - (newx - x)*2.0) < ((float).com.GameWidth/4.0)/scl
       ? ((float).com.GameWidth/2.0)/scl
