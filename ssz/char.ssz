@@ -1822,7 +1822,10 @@ public &Projectile
         else:
           break;
         comm:
-          if(#`ani > 0 && `ani~ani.totaltime == -1) `ani.new(0);
+          if(
+            #`ani > 0 && (
+              `ani~ani.totaltime == -1
+              || `ani~ani.animTime() == 0)) `ani.new(0);
           `remvel();
         }
       else:
