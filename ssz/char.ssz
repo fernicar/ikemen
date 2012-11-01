@@ -1822,10 +1822,7 @@ public &Projectile
         else:
           break;
         comm:
-          if(
-            #`ani > 0 && (
-              `ani~ani.totaltime == -1
-              || `ani~ani.animTime() == 0)) `ani.new(0);
+          if(#`ani > 0 && `ani~ani.totaltime <= 0) `ani.new(0);
           `remvel();
         }
       else:
@@ -2983,7 +2980,7 @@ public &Char
       branch{
       cond 
         `helperid == 0 && !`isKO() && `sysivar[.iLIFE] <= 0
-        && `stVal.mov != .MovTy::H && `roundState() >= 2 && !.gs(.gsNOKO)
+        && `stVal.mov != .MovTy::H && !.gs(.gsNOKO)
         :
         `stVal.hb.fallf = true;
         `trSelfState(5030, -1, -1);
@@ -6600,6 +6597,7 @@ public float action(
   }
   bool finish()
   {
+    if(.com.intro > 0) ret false;
     bool p1 = false, p2 = false;
     loop{index i = 0; while; do:
       if(#.chars[i] > 0 && !.chars[i][0]~isKO()) break;
@@ -6709,6 +6707,7 @@ public float action(
       .com.intro--;
       if(.com.intro == 0) loop{index i = 0; while; do:
         if(#.chars[i] > 0) branch{
+          .chars[i][0]~sysivar[.iSYSFLAG] &= !.sfKO;
         cond .chars[i][0]~stVal.no == 0:
           .chars[i][0]~setCtrl(true);
         else:
@@ -6823,7 +6822,7 @@ public float action(
             }
             if(
               (c.sysivar[.iSYSFLAG] & .sfOVER) == 0
-              && c.isActive() && !c.isKO() && (c.isOver() || .waitdown <= 0))
+              && c.isActive() && !c.isKO())
             {
               c.trSelfState(c.isWin() ? 180 : (c.isLose() ? 170 : 175), -1, 1);
             }
