@@ -1004,7 +1004,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       `over_hittime = .m.max!int?(0, .com.atonOF!int?(data));
     }
     if(#(data = sc.get("over.waittime")) > 0){
-      `over_waittime = .m.max!int?(0, .com.atonOF!int?(data));
+      `over_waittime = .m.max!int?(1, .com.atonOF!int?(data));
     }
     if(#(data = sc.get("over.wintime")) > 0){
       `over_wintime = .m.max!int?(1, .com.atonOF!int?(data));
