@@ -7071,7 +7071,7 @@ void resetGbl()
   .zoomdelay = 0.0;
   .playerid.new(0);
   .resetNumenemy();
-  .waitdown = 900;
+  .waitdown = .fight~ro.over_hittime + .fight~ro.over_waittime + 900;
   .shuttertime = 0;
   .winskipped = false;
 }
