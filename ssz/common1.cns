@@ -1949,7 +1949,7 @@ void c.Char::s##_@@P()
       }
     }
     if(
-      --`stVal.ps[0].p <= 0 && `trMatchOver()
+      --`stVal.ps[0].p <= 0 && .com.matchOver()
       && .m.inRange!int?(5140, 5149, `animno) && #`getAction(`animno + 10) > 0)
     {
       `stVal.ps[0].p = .consts.int_t::MAX;

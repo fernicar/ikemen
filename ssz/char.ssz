@@ -5220,10 +5220,6 @@ public &Char
   {
     ret `stVal.mctyp == .MoveContact::Guarded ? #`stVal.mctime : 0;
   }
-  public bool trMatchOver()
-  {
-    ret .com.p1wins >= .com.p1mw || .com.p2wins >= .com.p2mw;
-  }
   public int trMatchNo()
   {////////////////////////////////////////////////////////////////////////////
     ret 1;
@@ -6575,6 +6571,19 @@ public float action(
   else:
     y = 0.0;
   }
+  void addWinCount(bool p1, bool p2)
+  {
+    branch{
+    cond
+      .com.tmode[0] != (int).com.TeamMode::Turns
+      && .com.tmode[1] != (int).com.TeamMode::Turns
+      && .com.draws < .fight~ro.match_maxdrawgames && p1 && p2
+      :
+    else:
+      if(p2) .com.p1wins += 1;
+      if(p1) .com.p2wins += 1;
+    }
+  }
   void setWinType(bool p1, bool p2)
   {
     branch{
@@ -6585,14 +6594,8 @@ public float action(
       :
       .com.draws++;
     else:
-      if(p2){
-        .fight~wi[0].add(.winty[0]);
-        .com.p1wins += 1;
-      }
-      if(p1){
-        .fight~wi[1].add(.winty[1]);
-        .com.p2wins += 1;
-      }
+      if(p2) .fight~wi[0].add(.winty[0]);
+      if(p1) .fight~wi[1].add(.winty[1]);
     }
   }
   bool finish()
@@ -6722,71 +6725,13 @@ public float action(
       && (.pause <= 0 || .pausebg == 0)) .com.time--;
     branch{
     cond .roundEnd() || finish():
+      if(.com.intro == -.fight~ro.over_hittime && .ko != .fgt.KOTy::NotYet){
+        addWinCount(!.chars[0]<>~isWin(), !.chars[1]<>~isWin());
+      }
       if(
         .winskipped || !.gs(.gsROUNDNOTOVER)
         || .com.intro >= rs4t - .fight~ro.over_wintime)
       {
-        if(.ko == .fgt.KOTy::NotYet && .com.intro == rs4t){
-          bool p1 = false, p2 = false;
-          float l1 = 0.0, l2 = 0.0;
-          loop{index i = 0; while; do:
-            if(#.chars[i] > 0){
-              l1 +=
-                (.com.tmode[0] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
-                * (float).chars[i][0]~sysivar[.iLIFE]
-                / (float).chars[i][0]~sysivar[.iLIFEMAX];
-            }
-            i += 2;
-          while i < #.chars:
-          }
-          loop{index i = 1; while; do:
-            if(#.chars[i] > 0){
-              l2 +=
-                (.com.tmode[1] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
-                * (float).chars[i][0]~sysivar[.iLIFE]
-                / (float).chars[i][0]~sysivar[.iLIFEMAX];
-            }
-            i += 2;
-          while i < #.chars:
-          }
-          branch{
-          cond l1 > l2:
-            p2 = true;
-          cond l2 > l1:
-            p1 = true;
-          else:
-            p1 = p2 = true;
-          }
-          if(p1) loop{index i = 1; while; do:
-            if(
-              #.chars[i] > 0
-              && .chars[i][0]~sysivar[.iLIFE]
-              < .chars[i][0]~sysivar[.iLIFEMAX]) break;
-            i += 2;
-          while i < #.chars:
-            .fgt.setPerfect(.winty[1]=);
-          }
-          if(p2) loop{index i = 0; while; do:
-            if(
-              #.chars[i] > 0
-              && .chars[i][0]~sysivar[.iLIFE]
-              < .chars[i][0]~sysivar[.iLIFEMAX]) break;
-            i += 2;
-          while i < #.chars:
-            .fgt.setPerfect(.winty[0]=);
-          }
-          branch{
-          cond p1 && p2:
-            .ko = .fgt.KOTy::TODraw;
-            .com.win = -1;
-          cond p1:
-            .ko = .fgt.KOTy::TO;
-            .com.win = 1;
-          cond p2:
-            .ko = .fgt.KOTy::TO;
-            .com.win = 0;
-          }
-        }
         .com.intro--;
         if(.com.intro == rs4t-1) loop{
           if(.com.time == 0) .com.intro -= .fight~ro.over_wintime;
@@ -6801,6 +6746,66 @@ public float action(
         if(.waitdown <= 0 || .com.intro < rs4t - .fight~ro.over_wintime) loop{
           index i = 0;
           if(.waitdown >= 0){
+            if(.ko == .fgt.KOTy::NotYet){
+              bool p1 = false, p2 = false;
+              float l1 = 0.0, l2 = 0.0;
+              loop{index i = 0; while; do:
+                if(#.chars[i] > 0){
+                  l1 +=
+                    (.com.tmode[0] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
+                    * (float).chars[i][0]~sysivar[.iLIFE]
+                    / (float).chars[i][0]~sysivar[.iLIFEMAX];
+                }
+                i += 2;
+              while i < #.chars:}
+              loop{index i = 1; while; do:
+                if(#.chars[i] > 0){
+                  l2 +=
+                    (.com.tmode[1] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
+                    * (float).chars[i][0]~sysivar[.iLIFE]
+                    / (float).chars[i][0]~sysivar[.iLIFEMAX];
+                }
+                i += 2;
+              while i < #.chars:}
+              branch{
+              cond l1 > l2:
+                p2 = true;
+              cond l2 > l1:
+                p1 = true;
+              else:
+                p1 = p2 = true;
+              }
+              if(p1) loop{index i = 1; while; do:
+                if(
+                  #.chars[i] > 0
+                  && .chars[i][0]~sysivar[.iLIFE]
+                  < .chars[i][0]~sysivar[.iLIFEMAX]) break;
+                i += 2;
+              while i < #.chars:
+                .fgt.setPerfect(.winty[1]=);
+              }
+              if(p2) loop{index i = 0; while; do:
+                if(
+                  #.chars[i] > 0
+                  && .chars[i][0]~sysivar[.iLIFE]
+                  < .chars[i][0]~sysivar[.iLIFEMAX]) break;
+                i += 2;
+              while i < #.chars:
+                .fgt.setPerfect(.winty[0]=);
+              }
+              branch{
+              cond p1 && p2:
+                .ko = .fgt.KOTy::TODraw;
+                .com.win = -1;
+              cond p1:
+                .ko = .fgt.KOTy::TO;
+                .com.win = 1;
+              cond p2:
+                .ko = .fgt.KOTy::TO;
+                .com.win = 0;
+              }
+              addWinCount(!.chars[0]<>~isWin(), !.chars[1]<>~isWin());
+            }
             setWinType(!.chars[0]<>~isWin(), !.chars[1]<>~isWin());
           }
           while;
@@ -6809,8 +6814,7 @@ public float action(
           .chars[i][0]~[void(c=){
             if(
               .waitdown >= 0 && .com.time > 0 && c.isWin() && !c.isKO()
-              && .com.p1wins < .com.p1mw && .com.p2wins < .com.p2mw
-              && (
+              && !.com.matchOver() && (
                 .com.tmode[0] == (int).com.TeamMode::Turns
                 || .com.tmode[1] == (int).com.TeamMode::Turns))
             {

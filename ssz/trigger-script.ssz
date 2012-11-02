@@ -652,7 +652,7 @@ void matchno(&.lua.State L=, int re=)
 void matchover(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushBoolean(#.cwc > 0 && .cwc~trMatchOver());
+  L.pushBoolean(.com.matchOver());
 }
 
 void movecontact(&.lua.State L=, int re=)

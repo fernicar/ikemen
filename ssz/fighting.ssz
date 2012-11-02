@@ -56,9 +56,7 @@ const double lvmul = 2.0**(1.0/12.0);
   }
   delete()
   {:<-
-    if(
-      !.com.autolevel
-      || (.com.p1wins < .com.p1mw && .com.p2wins < .com.p2mw)) ret;
+    if(!.com.autolevel || !.com.matchOver()) ret;
     void foo(index i)
     {
       if(#.chr.chars[i] > 0) branch{
@@ -419,7 +417,7 @@ void game()
       while i < #.com.tmode:
       }
     cond
-      .com.p1wins < .com.p1mw && .com.p2wins < .com.p2mw
+      !.com.matchOver()
       && (
         .com.tmode[0] != (int).com.TeamMode::Turns
         || .chr.chars[0][0]~isWin())

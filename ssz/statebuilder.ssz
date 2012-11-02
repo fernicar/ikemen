@@ -1016,7 +1016,7 @@ public &StateBuilder
       out .= ".com.gametime";
       typ = 2;
     cond .s.equ("matchover", token):
-      out .= "`trMatchOver()";
+      out .= ".com.matchOver()";
       typ = 3;
     cond .s.equ("matchno", token):
       out .= "`trMatchNo()";

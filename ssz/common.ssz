@@ -172,6 +172,11 @@ public bool addHotkey(
 }
 
 
+public bool matchOver()
+{
+  ret .p1wins >= .p1mw || .p2wins >= .p2mw;
+}
+
 public int nextLine(index i=, ^/char str)
 {
   loop{while; do:
