@@ -3107,15 +3107,10 @@ public &Char
   }
   public bool isBound()
   {
-    loop{
-      index i = 0;
-      ^`self by;
-      while;
-    do:
+    loop{index i = 0; while; do:
       if(`sysivar[.iBINDTOID] == `stVal.hb.by[i].id) ret true;
       i++;
-    while i < #`stVal.hb.by:
-    }
+    while i < #`stVal.hb.by:}
     ret false;
   }
   public bool isFall()
@@ -5604,7 +5599,7 @@ public void PlayerList!&Char?::action(
   .commandUpdate();
   loop{*`top.self p = `top; while; do:
     if(p~c~id < 0) p~c~id ^= -1;
-    if(p~c~stVal.typ == .StTy::A) p~c~action();
+    if(p~c~stVal.mov == .MovTy::A) p~c~action();
     p = p~next;
   while #p > 0:}
   loop{*`top.self p = `top; while; do:
