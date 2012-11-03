@@ -6659,7 +6659,7 @@ public float action(
         loop{index i = 0; while; do:
           if(#.chars[i] > 0){
             .charClear(i);
-            .chars[i][0]~trSelfState(0, -1, 1);
+            .chars[i][0]~trSelfState(0, -1, 0);
           }
           i++;
         while i < #.chars:}
@@ -6682,7 +6682,7 @@ public float action(
   else:
     if(.shuttertime > 0) .shuttertime--;
   }
-  if(!introSkip && .fight~ro.act(.ko)){
+  if(.fight~ro.act(.ko)){
     branch{
     cond .com.intro > .fight~ro.ctrl_time:
       .com.intro--;
@@ -6690,6 +6690,7 @@ public float action(
         .com.intro = .fight~ro.ctrl_time + 1;
       }
     cond .com.intro > 0:
+      if(.com.intro == .fight~ro.ctrl_time) posreset();
       .com.intro--;
       if(.com.intro == 0) loop{index i = 0; while; do:
         if(#.chars[i] > 0) branch{
@@ -6826,7 +6827,6 @@ public float action(
     }
   }
   sprite();
-  if(.com.tickNextFrame() && .com.intro == .fight~ro.ctrl_time) posreset();
   if(.com.turbo == 0.0 || .com.tickNextFrame()) branch{
     int slowt = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
     float spd = .com.pause && !.com.step ? 0.0 : .com.Speed*.com.accel;
