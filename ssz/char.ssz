@@ -5664,7 +5664,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       `by.insertExplod(tmp);
     }
     if(
-      (hit.p2stateno >= 0 && `pyr.cs1tmp && `pyr.stVal.playerno != hit.player)
+      (
+        `pyr.cs1tmp && `pyr.stVal.playerno != hit.player
+        && (hit.p2stateno >= 0 || !`pyr.ls(.lsGETHIT)))
       || (
         hit.p1stateno >= 0 && (
           by.ls(.lsGETHIT)
@@ -5674,7 +5676,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
     hitting = `pyr.stVal.hitCheck(hit=, guard);
     bool p2s = false;
     {
-      loop{index i = 0; while; do:
+      if(!`pyr.cs1tmp || !`pyr.ls(.lsGETHIT)) loop{
+        index i = 0;
+        while;
+      do:
         if(
           `pyr.stVal.ho[i].time != 0
           && (
