@@ -993,7 +993,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public int airtype;
   public int groundtype;
   public int damage;
-  public int absdamage;
   public int hitcount;
   public int fallcount;
   public int hitshaketime;
@@ -1033,7 +1032,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `airtype = 0;
     `groundtype = 0;
     `damage = 0;
-    `absdamage = 0;
     `hitcount = 0;
     `fallcount = 0;
     `hitshaketime = 0;
@@ -1180,7 +1178,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
         || hit.reversal_attr > 0
         ? -1 : 1);
   }
-  public int setHb(&.Hitdef hit=, bool guard, bool combo)
+  public int setHb(&.Hitdef hit=, bool guard, bool combo, int absdamage=)
   {
     bool cmb = combo && !`hb.guarded;
     bool fall = `hb.fallf;
@@ -1229,7 +1227,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
         `hb.xvel = hit.guard_velocity;
         `hb.yvel = hit.ground_velocityy;
       }
-      `hb.absdamage = hit.guarddamage;
+      absdamage = hit.guarddamage;
       `hb.hitcount = hc;
       ret 2 * (`hb.typ == 0 || hit.reversal_attr > 0 ? -1 : 1);
     }
@@ -1259,7 +1257,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
       `hb.fallf = hit.ground_fall != 0;
     }
     if(`hb.hittime < 0) `hb.hittime = 0;
-    `hb.absdamage = hit.hitdamage;
+    absdamage = hit.hitdamage;
     `hb.hitcount = cmb ? hc+1 : 1;
     `hb.fallcount = fc;
     `hb.fallf |= fall;
@@ -5666,7 +5664,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       `by.insertExplod(tmp);
     }
     if(
-      (`pyr.cs1tmp && `pyr.stVal.playerno != hit.player)
+      (hit.p2stateno >= 0 && `pyr.cs1tmp && `pyr.stVal.playerno != hit.player)
       || (
         hit.p1stateno >= 0 && (
           by.ls(.lsGETHIT)
@@ -5708,13 +5706,23 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         }
       }
     }
-    if(pro == 0) by.sprpriority = hit.p1sprpriority;
-    `pyr.sprpriority = hit.p2sprpriority;
-    `pyr.stVal.hb.hitid = hit.id;
-    `pyr.stVal.hb.player = hit.player;
+    bool hbset = !`pyr.cs1tmp || p2s || !`pyr.ls(.lsGETHIT);
+    if(hbset){
+      if(pro == 0) by.sprpriority = hit.p1sprpriority;
+      `pyr.sprpriority = hit.p2sprpriority;
+      `pyr.stVal.hb.hitid = hit.id;
+      `pyr.stVal.hb.player = hit.player;
+    }
     if(hitting > 0){
-      `pyr.stVal.setHb(
-        hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT));
+      int absdamage = 0;
+      branch{
+      cond hbset:
+        `pyr.stVal.setHb(
+          hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT),
+          absdamage=);
+      else:
+        absdamage = hitting == 1 ? hit.hitdamage : hit.guarddamage;
+      }
       branch{
       cond .super > 0:
         `pyr.sysivar[.iSUPERMOVETIME] =
@@ -5732,9 +5740,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       bool kill = #hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
       `pyr.stVal.hb.damage +=
         `pyr.getDamage(
-          (double)`pyr.stVal.hb.absdamage*(double)hits,
+          (double)absdamage*(double)hits,
           kill, false, by.attackmul);
-      if(`pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
+      if(hbset && `pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
       cond kill || !live:
         if(!.gs(.gsNOKO)){
           `pyr.stVal.hb.fallf = true;
@@ -5762,7 +5770,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
       }
       if(
-        (`pyr.facing < 0) == (
+        hbset && (`pyr.facing < 0) == (
           (pro != 0 ? pro 
           : by.facing*(hit.p1facing < 0 && #hitting == 1 ? -1 : 1)) < 0))
       {
@@ -5828,7 +5836,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         `pyr.setPower(`pyr.sysivar[.iPOWER] + hit.guardgivepower);
       }
     comm:
-      if(`pyr.ho >= 0) break;
+      if(!hbset || `pyr.ho >= 0) break;
       by.addTarget(`pyr.id);
       `pyr.stVal.hb.addByid(by.id, by.sysivar[.iAIRJUGGLE]);
       if(`pyr.hittmp < 2){
