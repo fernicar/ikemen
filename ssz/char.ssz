@@ -2975,7 +2975,7 @@ public &Char
             .m.randI(1, (`sysivar[.iRECOVERTIME]+1)/2);
         }
       }
-      branch{
+      if(!`cs1tmp) branch{
       cond 
         `helperid == 0 && !`isKO() && `sysivar[.iLIFE] <= 0
         && `stVal.mov != .MovTy::H && !.gs(.gsNOKO)
@@ -3454,7 +3454,7 @@ public &Char
         }
         `hittmp = (int)`isFall() + 1;
         if(
-          `isActive()
+          `acttmp > 0
           && (`stVal.no == 5100 || `stVal.no == 5070) && `stVal.time == 1)
         {
           `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
@@ -3477,19 +3477,19 @@ public &Char
         (
           (`stVal.typ != .StTy::L && `stVal.mov != .MovTy::I)
           || `stVal.hit.reversal_attr > 0)
-        && `isActive() ? 1 : 0;
+        && `acttmp > 0 ? 1 : 0;
       `ho = -1;
       if(
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
-            `isActive() && `canCtrl() && #`cmd > 0 && `cmd~buffer~B > 0 && (
+            `acttmp > 0 && `canCtrl() && #`cmd > 0 && `cmd~buffer~B > 0 && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
               || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
               || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
       {
         `sysivar[.iSPECIALFLAG] |= .lsGUARD;
       }
-      if(`isActive()){
+      if(`acttmp > 0){
         if(`stVal.mov != .MovTy::H){
           if(`hittmp > 0) `hittmp = 0;
           `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
@@ -3528,7 +3528,7 @@ public &Char
       rightest = .m.min!float?(.com.xmax)<, .m.max!float?(
         `drawX+`getEdge(`facing > 0 ? `fedge : `bedge), rightest);
       if(
-        `isActive() && !`ls(.lsPOSFREEZEX)
+        `acttmp > 0 && !`ls(.lsPOSFREEZEX)
         && (`sysivar[.iBINDTIME] == 0 || .m.isnan(`sysfvar[.fBINDPOSX])))
       {
         cvmin = .m.min!float?(cvmin, `sysfvar[.fVX]*(float)`facing);
@@ -5666,7 +5666,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
     if(
       (
         `pyr.cs1tmp && `pyr.stVal.playerno != hit.player
-        && (hit.p2stateno >= 0 || !`pyr.ls(.lsGETHIT)))
+        && (`pyr.ls(.lsGETHIT) ? hit.p2stateno >= 0 : `pyr.acttmp > 0))
       || (
         hit.p1stateno >= 0 && (
           by.ls(.lsGETHIT)
@@ -6123,7 +6123,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         }
         bool hoge = true;
         if(
-          !pyr.cs1tmp && proj.hit.hitonce >= 0
+          !(pyr.cs1tmp && (pyr.ls(.lsGETHIT) || pyr.acttmp > 0))
+          && proj.hit.hitonce >= 0
           && (
             .chars[i]<>~ls(.lsNOJUGGLECHECK)
             || pyr.stVal.hb.getJuggle(
