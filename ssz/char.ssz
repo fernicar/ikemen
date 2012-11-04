@@ -16,6 +16,7 @@ lib mes = <alpha/mesdialog.ssz>;
 lib fnt = "font.ssz";
 lib al = <alert.ssz>;
 lib tbl = <table.ssz>;
+lib se = <alpha/sdlevent.ssz>;
 
 
 int changeStateNest = 0;
@@ -127,6 +128,7 @@ public void addAnimList(
     anl~fx = `fx;
     if(`sc != 0) .addShadowList(anl, `sc, `so, `salp);
   }
+  if(.se.fskip) ret;
   ^&.AnimList tmp = al;
   branch{
   cond<a> #al == 0:
@@ -6536,6 +6538,7 @@ public float action(
     expUpdate(.expdrawlist=, true);
     expUpdate(.topexpdrawlist=, false);
   }
+  sprite();
   leftest -= x;
   rightest -= x;
   branch{
@@ -6840,7 +6843,6 @@ public float action(
       if(.com.intro < 0) .com.intro = 0;
     }
   }
-  sprite();
   if(.com.turbo == 0.0 || .com.tickNextFrame()) branch{
     int slowt = -(.fight~ro.over_hittime+((.fight~ro.slow_time+3)>>2));
     float spd = .com.pause && !.com.step ? 0.0 : .com.Speed*.com.accel;
