@@ -3203,7 +3203,6 @@ public &Char
         `setFacing(`p1facing);
         `p1facing = 0;
       }
-      if(`isBound()) `bind();
       `changeState2();
       if((`stVal.no == 0 || `stVal.no == 11 || `stVal.no == 20)) `furimuki();
       if(`keyctrl && #`cmd > 0) branch{
@@ -3338,6 +3337,11 @@ public &Char
       }
     }
     `xScreenBound();
+    if(!p) loop{index i = 0; ^`self c; while; do:
+      c = .players.get(`targets[i]);
+      if(#c > 0 && c~sysivar[.iBINDTOID] == `id) c~bind();
+      i++;
+    while i < #`targets:}
     `minus = 1;
     `acttmp += (int)`isActive() - (int)`isHitPaused();
     if(`acttmp > 0) branch{
