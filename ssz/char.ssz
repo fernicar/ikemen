@@ -5745,7 +5745,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
       if(`pyr.sysivar[.iBINDTOID] == by.id) `pyr.setBindTime(0);
       bool live = `pyr.sysivar[.iLIFE] > 0;
-      bool kill = #hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
+      bool kill = hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
       `pyr.stVal.hb.damage +=
         `pyr.getDamage(
           (double)absdamage*(double)hits,
@@ -5780,7 +5780,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       if(
         hbset && (`pyr.facing < 0) == (
           (pro != 0 ? pro 
-          : by.facing*(hit.p1facing < 0 && #hitting == 1 ? -1 : 1)) < 0))
+          : by.facing*(hit.p1facing < 0 && hitting == 1 ? -1 : 1)) < 0))
       {
         `pyr.stVal.hb.xvel *= -1.0;
       }
@@ -5998,6 +5998,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           if(p~c~stVal.hit.reversal_attr > 0){
             pyr.stVal.mctyp = .MoveContact::Reversed;
             pyr.stVal.mctime = -1;
+            pyr.stVal.hitdefContact = 1;
             if(pyr.hittmp == 0) pyr.hittmp = -1;
             if(!pyr.ls(.lsGETHIT)){
               pyr.sysivar[.iHITPAUSETIME] =
