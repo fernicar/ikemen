@@ -1921,7 +1921,10 @@ public &Projectile
       }
       `hit.air_juggle = 0;
     }
-    if(`hits <= 0) `hit.attr = -1;
+    if(`hits <= 0){
+      `hit.attr = -1;
+      `hitpause = 0;
+    }
     if(`paused()) ret;
     branch{
     cond `pctime > 0:
@@ -1936,10 +1939,7 @@ public &Projectile
   }
   public void anime(bool oVer, int playerNo)
   {
-    if(
-      .com.tickFrame() && #`ani > 0
-      && !`paused() && (`hitpause == 0 || `anim < 0))
-    {
+    if(.com.tickFrame() && #`ani > 0 && !`paused() && `hitpause == 0){
       `ani~ani.updateSprite();
     }
     if(.com.clsndraw && #`ani > 0){
@@ -1954,11 +1954,8 @@ public &Projectile
         .drawc2.new[-1].set(clsn, `x, `y, (float)`facing*`scalex, `scaley);
       }
     }
-    if(.com.tickNextFrame()){
-      if(#`ani > 0 && !`paused() && (`hitpause == 0 || `anim < 0)){
-        `ani~ani.action();
-      }
-      if(`paused()) break;
+    if(.com.tickNextFrame() && !`paused()){
+      if(#`ani > 0 && `hitpause == 0) `ani~ani.action();
       branch{
       cond `hitpause > 0:
         `hitpause--;
