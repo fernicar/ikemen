@@ -5993,8 +5993,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         branch{
           int h;
           if(!foo(h=, p~c<>=, p~c~stVal.hit=, 0.0, 0.0, 0, 1)) break;
+          bool mvh = h > 0 || p~c~stVal.hit.reversal_attr > 0;
         cond #h == 1:
-          p~c~stVal.mctyp = .MoveContact::Hit;
+          if(mvh) p~c~stVal.mctyp = .MoveContact::Hit;
           if(p~c~stVal.hit.reversal_attr > 0){
             pyr.stVal.mctyp = .MoveContact::Reversed;
             pyr.stVal.mctime = -1;
@@ -6012,7 +6013,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           }
           p~c~sysivar[.iUNIQHITCOUNT]++;
         else:
-          p~c~stVal.mctyp = .MoveContact::Guarded;
+          if(mvh) p~c~stVal.mctyp = .MoveContact::Guarded;
           if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
               .m.max!int?(
@@ -6020,7 +6021,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           }
         comm:
           if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
-          if(h > 0 || p~c~stVal.hit.reversal_attr > 0) p~c~stVal.mctime = -1;
+          if(mvh) p~c~stVal.mctime = -1;
           p~c~stVal.hitdefContact = 1;
         }
       }
