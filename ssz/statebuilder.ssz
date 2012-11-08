@@ -7220,7 +7220,7 @@ public &StateBuilder
   {
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .=
-        "^`self p=`trPartner()$.c;if(#p==0)ret false;int sn=-1,psn=-1;";
+        "^`self p=`trPartner(0)$.c;if(#p==0)ret false;int sn=-1,psn=-1;";
       if(!`stateParam(param=, "stateno", [`paraF_t(data=){
         if(
           !`fullExpression(
