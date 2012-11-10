@@ -5722,6 +5722,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       `pyr.stVal.hb.player = hit.player;
     }
     if(hitting > 0){
+      if(hitting == 1 && #`pyr.sounds > 0) `pyr.sounds[0].sound.new(0);
       int absdamage = 0;
       branch{
       cond hbset:
