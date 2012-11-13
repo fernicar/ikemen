@@ -21,7 +21,6 @@ triggerall = sysvar(9)
 triggerall = !nokosnd
 trigger1 = !(sysvar(56) & 4);SYSFLAG,KO
 value = 11, 0
-channel = 0
 
 [State -I1, KO2]
 type = VarSet

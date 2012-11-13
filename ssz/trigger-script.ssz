@@ -707,7 +707,7 @@ void numexplod(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
   re = nret;
-  int id = 0;
+  int id = -1;
   if(L.getTop() > argc){
     id = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   }
