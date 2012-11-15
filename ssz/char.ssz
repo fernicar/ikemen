@@ -3754,16 +3754,19 @@ public &Char
     int vo, float p, float fr, ^float x)
   {
     if(g < 0) ret;
-    ^&.snd.Sound sou = `newChannel(ch, lw);
-    if(#sou == 0) ret;
+    ^&.snd.Wave w;
     branch{
     cond f:
       if(#.fight~fsn == 0) break;
-      sou~sound = .fight~fsn~getSound(g, s);
+      w = .fight~fsn~getSound(g, s);
     else:
       if(#`sn == 0) break;
-      sou~sound = `sn~getSound(g, s);
+      w = `sn~getSound(g, s);
     }
+    if(#w == 0) ret;
+    ^&.snd.Sound sou = `newChannel(ch, lw);
+    if(#sou == 0) ret;
+    sou~sound = w;
     sou~chrx = x;
     branch{
     cond `mver0 == 1:
