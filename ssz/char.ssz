@@ -3212,10 +3212,6 @@ public &Char
         }
       cond `canCtrl() && (`key >= 0 || `helperindex == 0):
         branch{
-        cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
-          if(`stVal.no != 10) `trChangeState(10, -1, -1);
-        cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
-          if(`stVal.no != 12) `trChangeState(12, -1, -1);
         cond !.roundEnd() && `stVal.typ == .StTy::S && `cmd~buffer~U > 0:
           if(`stVal.no != 40) `trChangeState(40, -1, -1);
         cond
@@ -3229,23 +3225,30 @@ public &Char
             `sysivar[.iSYSFLAG] &= !.sfAIRJUMP;
             `trChangeState(45, -1, -1);
           }
-        cond
-          !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
-            `cmd~buffer~F > 0 || (
-              (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
-          :
-          if(`stVal.no != 20) `trChangeState(20, -1, -1);
-        cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
-          `trChangeState(0, -1, -1);
-        }
-        if(
-          `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
-            (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-            || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-            || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-          && `cmd~buffer~B > 0)
-        {
-          `trChangeState(120, -1, -1);
+        else:
+          branch{
+          cond `stVal.typ == .StTy::S && `cmd~buffer~D > 0:
+            if(`stVal.no != 10) `trChangeState(10, -1, -1);
+          cond `stVal.typ == .StTy::C && `cmd~buffer~D < 0:
+            if(`stVal.no != 12) `trChangeState(12, -1, -1);
+          cond
+            !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
+              `cmd~buffer~F > 0 || (
+                (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
+            :
+            if(`stVal.no != 20) `trChangeState(20, -1, -1);
+          cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
+            `trChangeState(0, -1, -1);
+          }
+          if(
+            `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
+              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
+            && `cmd~buffer~B > 0)
+          {
+            `trChangeState(120, -1, -1);
+          }
         }
       cond `ctrl:
         switch(`stVal.no){
