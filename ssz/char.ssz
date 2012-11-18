@@ -1481,10 +1481,39 @@ void insIL(%index l=, index i, index x)
   public int n, pn, hi;
 }
 %&RdCacheInfo playerid;
-^int numenemy.new(#.chars);
+
+public &CharGlobalInfo
+{
+  public ^/char def, displayname, author;
+  public ^/char sprite;
+  public ^/char anim;
+  public ^/char sound;
+  public ^^/char pal;
+  public ^index palkeymap;
+  public ^&.sff.Sff sf;
+  public ^&.snd.Snd sn;
+  public %&.act.Action actionList;
+  public int palno, drawpalno;
+  public int numenemy;
+  public short mver0 = 0, mver1 = 0;
+  public |.ProjContact pctyp;
+  public int pctime, pcid;
+  new()
+  {
+    `clearPCTime();
+  }
+  public void clearPCTime()
+  {
+    `pctyp = .ProjContact::Hit;
+    `pctime = -1;
+    `pcid = 0;
+  }
+}
+public ^&CharGlobalInfo cgi.new(#.chars);
+
 void resetNumenemy()
 {
-  loop{index i = 0; do: .numenemy[i] = -1; while ++i < #.numenemy:}
+  loop{index i = 0; do: .cgi[i].numenemy = -1; while ++i < #.cgi:}
 }
 resetNumenemy();
 
@@ -1722,8 +1751,6 @@ public &Projectile
   public int pausemovetime;
   public ^&.act.Action ani;
   public int timemiss, hitpause;
-  public |.ProjContact pctyp;
-  public int pctime;
   public float ticOldX, ticNewX;
   public float ticOldY, ticNewY;
   new()
@@ -1770,8 +1797,6 @@ public &Projectile
     `ani.new(0);
     `timemiss = 0;
     `hitpause = 0;
-    `pctyp = .ProjContact::Hit;
-    `pctime = 0;
     `ticOldX = `ticNewX = `x;
     `ticOldY = `ticNewY = `y;
   }
@@ -1926,12 +1951,6 @@ public &Projectile
       `hitpause = 0;
     }
     if(`paused()) ret;
-    branch{
-    cond `pctime > 0:
-      `pctime++;
-    cond `pctime < 0:
-      `pctime *= -1;
-    }
     if(`hitpause <= 0){
       if(`removetime > 0) `removetime--;
       if(`timemiss > 0) `timemiss--;
@@ -1984,23 +2003,15 @@ public &Char
   {
     public .Char::stateMethod_t state = .Char::dummy;
   }
-  public ^/char def, name, displayname, author;
-  public ^/char sprite;
-  public ^/char anim;
-  public ^/char sound;
-  public ^^/char pal;
-  public ^index palkeymap;
-  public ^&.sff.Sff sf;
-  public ^&.snd.Snd sn;
+  public ^/char name;
   public ^&.com.PalFX palfx;
-  public %&.act.Action actionList;
   public ^&.act.Action ani;
   public ^int ivar, sysivar;
   public ^float fvar, sysfvar;
   public ^&.cmd.CommandList cmd;
   public &.StateVal stVal;
   public &.AfterImage aimg;
-  public int id, helperindex, helperid, parentindex;
+  public int id, helperindex, helperid, parentindex, key;
   public %int children;
   public %int targets;
   public byte playerno;
@@ -2008,14 +2019,13 @@ public &Char
   public bool keyctrl;
   public bool player;
   public bool inguarddist;
-  public byte palno, drawpalno, p1facing, animpno;
+  public byte p1facing, animpno;
   public bool destmp, cs1tmp, angleset;
   public bool ctrl, standby;
   public byte hittmp, acttmp;
-  public byte key;
   public byte atktmp;
   public byte minus;
-  public byte ho;
+  public int ho;
   public int sprpriority;
   public int animno;
   public int getcombo;
@@ -2027,7 +2037,6 @@ public &Char
   public %&.RdCacheInfo enemyn;
   public ^&.act.Frame curFrame;
   public %&.snd.Sound sounds;
-  public short mver0 = 0, mver1 = 0;
   public index cpucmd = -1;
   public method$void() state = dummy, state_1 = dummy,
     state_2 = dummy, state_3 = dummy, state_i1 = dummy;
@@ -2045,14 +2054,7 @@ public &Char
   {
     %char buf;
     `name = (buf .= c.name .= "'s helper");
-    `displayname = c.displayname;
-    `author = c.author;
-    `sf = c.sf;
-    `sn = c.sn;
-    `actionList = c.actionList;
     `key = c.key;
-    `palno = c.palno;
-    `drawpalno = c.drawpalno;
     `state_1 = c.state_1;
     `state_2 = c.state_2;
     `state_3 = c.state_3;
@@ -2061,8 +2063,6 @@ public &Char
     .s.copy!float?(`sysfvar[10..-1], c.sysfvar[10..-1]);
     `sysivar[.iLIFE] = `sysivar[.iLIFEMAX];
     `sysivar[.iPOWER] = 0;
-    `mver0 = c.mver0;
-    `mver1 = c.mver1;
     `clearSpSysVar();
   }
   public void clearSpSysVar()
@@ -2121,8 +2121,6 @@ public &Char
     `keyctrl = false;
     `player = false;
     `inguarddist = false;
-    `palno = 0;
-    `drawpalno = 0;
     `p1facing = 0;
     `animpno = -1;
     `animno = 0;
@@ -2148,12 +2146,7 @@ public &Char
       *.projs<>.self pj = .projs[`playerno];
       while;
     do:
-      branch{
-      cond pj[i].id < 0:
-        pj[i].id = .com.IERR;
-      cond pj[i].hits <= 0:
-        pj[i].pctime = 0;
-      }
+      if(pj[i].id < 0) pj[i].id = .com.IERR;
       i++;
     while i < #pj:
     }
@@ -2199,15 +2192,20 @@ public &Char
   {
     *`ani.self a;
     loop{index i = 0; while; do:
-      if(`actionList[i].no == no){
+      if(.cgi[`playerno].actionList[i].no == no){
         a.new(1);
-        a~copy(`actionList[i]=);
+        a~copy(.cgi[`playerno].actionList[i]=);
         break, break;
       }
       i++;
-    while i< #`actionList:
+    while i< #.cgi[`playerno].actionList:
     }
     ret a;
+  }
+  public ^action_t newAction(int no)
+  {
+    .cgi[`playerno].actionList.new[-1].no = no;
+    ret .cgi[`playerno].actionList[#.cgi[`playerno].actionList-1..-1];
   }
   public ^&.snd.Sound newChannel(int ch, bool lowpriority)
   {
@@ -2430,15 +2428,15 @@ public &Char
       if(#(data = sc.getText("name")) > 0) `name = data;
       branch{
       cond #(data = sc.getText("displayname")) > 0:
-        `displayname = data;
+        .cgi[`playerno].displayname = data;
       else:
-        `displayname = `name;
+        .cgi[`playerno].displayname = `name;
       }
-      if(#(data = sc.getText("author")) > 0) `author = data;
+      if(#(data = sc.getText("author")) > 0) .cgi[`playerno].author = data;
     }
     void files(&.com.Section sc=, bool unicode)
     {
-      bool oVer = `mver0 != 1;
+      bool oVer = `mver0() != 1;
       ^/char f(^/char str)
       {
         ^/char s = .com.readFileName(str, `unicode);
@@ -2446,29 +2444,34 @@ public &Char
         ret s;
       }
       ^/char data;
-      if(#(data = sc.get("sprite")) > 0) `sprite = f(data);
-      if(#(data = sc.get("anim")) > 0) `anim = f(data);
-      if(#(data = sc.get("sound")) > 0) `sound = f(data);
-      if(#(data = sc.get("pal1")) > 0) `pal[0] = f(data);
-      if(#(data = sc.get("pal2")) > 0) `pal[1] = f(data);
-      if(#(data = sc.get("pal3")) > 0) `pal[2] = f(data);
-      if(#(data = sc.get("pal4")) > 0) `pal[3] = f(data);
-      if(#(data = sc.get("pal5")) > 0) `pal[4] = f(data);
-      if(#(data = sc.get("pal6")) > 0) `pal[5] = f(data);
-      if(#(data = sc.get("pal7")) > 0) `pal[6] = f(data);
-      if(#(data = sc.get("pal8")) > 0) `pal[7] = f(data);
-      if(#(data = sc.get("pal9")) > 0) `pal[8] = f(data);
-      if(#(data = sc.get("pal10")) > 0) `pal[9] = f(data);
-      if(#(data = sc.get("pal11")) > 0) `pal[10] = f(data);
-      if(#(data = sc.get("pal12")) > 0) `pal[11] = f(data);
+      .cgi[`playerno].[void(c=){
+        if(#(data = sc.get("sprite")) > 0) c.sprite = f(data);
+        if(#(data = sc.get("anim")) > 0) c.anim = f(data);
+        if(#(data = sc.get("sound")) > 0) c.sound = f(data);
+        if(#(data = sc.get("pal1")) > 0) c.pal[0] = f(data);
+        if(#(data = sc.get("pal2")) > 0) c.pal[1] = f(data);
+        if(#(data = sc.get("pal3")) > 0) c.pal[2] = f(data);
+        if(#(data = sc.get("pal4")) > 0) c.pal[3] = f(data);
+        if(#(data = sc.get("pal5")) > 0) c.pal[4] = f(data);
+        if(#(data = sc.get("pal6")) > 0) c.pal[5] = f(data);
+        if(#(data = sc.get("pal7")) > 0) c.pal[6] = f(data);
+        if(#(data = sc.get("pal8")) > 0) c.pal[7] = f(data);
+        if(#(data = sc.get("pal9")) > 0) c.pal[8] = f(data);
+        if(#(data = sc.get("pal10")) > 0) c.pal[9] = f(data);
+        if(#(data = sc.get("pal11")) > 0) c.pal[10] = f(data);
+        if(#(data = sc.get("pal12")) > 0) c.pal[11] = f(data);
+      }];
     }
     void keymap(&.com.Section sc=)
     {:<-
       void foo(index k, ^/char p)
       {
-        `palkeymap[k] = .com.aton!`palkeymap<>.self?(p)-1;
-        if(!.m.inRange!index?(0, .sff.NumCharPalletes-1, `palkeymap[k])){
-          `palkeymap[k] = 0;
+        .cgi[`playerno].palkeymap[k] = .com.aton!.cgi<>.palkeymap<>.self?(p)-1;
+        if(
+          !.m.inRange!index?(
+            0, .sff.NumCharPalletes-1, .cgi[`playerno].palkeymap[k]))
+        {
+          .cgi[`playerno].palkeymap[k] = 0;
         }
       }
       ^/char data;
@@ -2513,26 +2516,26 @@ public &Char
       }
     }];
     ^/char error;
-    `def = def;
+    .cgi[`playerno].def = def;
     ^char mainbuf = .com.loadText(def, unicode=);
     ^^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
-    .com.mugenversion(lines, `mver0=, `mver1=);
+    .com.mugenversion(lines, .cgi[`playerno].mver0=, .cgi[`playerno].mver1=);
     `clearDef();
     loop{index i = 0; while; do:
       section(:lines, i=:);
       i++;
     while i < #lines:
     }
-    `sf.new(1);
+    .cgi[`playerno].sf.new(1);
     if(
-      #.com.loadFile(def, `sprite=)=>error <,
-      [^/char(^/char f){ret `sf~loadFile(f, true);}] > 0)
+      #.com.loadFile(def, .cgi[`playerno].sprite=)=>error <,
+      [^/char(^/char f){ret .cgi[`playerno].sf~loadFile(f, true);}] > 0)
     {
       ret def + ":"\r\n + error;
     }
     if(
-      #.com.loadFile(def, `anim=)=>error <, [^/char(^/char f){
+      #.com.loadFile(def, .cgi[`playerno].anim=)=>error <, [^/char(^/char f){
         ret
           #.com.loadText(f, unicode=)=>mainbuf > 0
           ? "" : .com.FileReadError;
@@ -2542,38 +2545,42 @@ public &Char
     }
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
-    `actionList.new(0);
+    .cgi[`playerno].actionList.new(0);
     loop{index i = 0; while; do:
       `readAction(lines, i=);
       i++;
     while i < #lines:
     }
     loop{index i = 0; while; do:
-      `actionList[i].ani.setup(`sf);
+      .cgi[`playerno].actionList[i].ani.setup(.cgi[`playerno].sf);
       i++;
-    while i < #`actionList:
+    while i < #.cgi[`playerno].actionList:
     }
-    `sn.new(1);
+    .cgi[`playerno].sn.new(1);
     if(
-      #`sound > 0 && #.com.loadFile(def, `sound=)=>error <,
-      [^/char(^/char f){ret `sn~loadFile(f);}] > 0) ret def + ":"\r\n + error;
+      #.cgi[`playerno].sound > 0
+      && #.com.loadFile(def, .cgi[`playerno].sound=)=>error <,
+      [^/char(^/char f){ret .cgi[`playerno].sn~loadFile(f);}] > 0)
+    {
+      ret def + ":"\r\n + error;
+    }
     ret "";
   }
   public bool loadPallet(^/char def, int no)
   {
     index tmp = 0;
-    if(`sf~head.ver0 == 0d1) loop{
+    if(.cgi[`playerno].sf~head.ver0 == 0d1) loop{
       index i = 0;
       ubyte r, g, b;
       ^uint pl;
-      `sf~palList.resetRemap();
+      .cgi[`playerno].sf~palList.resetRemap();
       while;
     do:
-      pl = `sf~palList.get(i);
+      pl = .cgi[`playerno].sf~palList.get(i);
       branch{
         &.file.File f;
       cond
-        #.com.loadFile(def, `pal[i]=)<, [^/char(^/char fn){
+        #.com.loadFile(def, .cgi[`playerno].pal[i]=)<, [^/char(^/char fn){
           f.open(fn, "rb"); ret f.read!ubyte?(r=) ? "" : "error";
         }] == 0
         :
@@ -2590,60 +2597,63 @@ public &Char
         while j >= 0:
         }
         if(tmp == 0) loop{index j = 0; while; do:
-          .s.copy!uint?(`sf~palList.get(j), pl);
+          .s.copy!uint?(.cgi[`playerno].sf~palList.get(j), pl);
           j++;
         while j < i:
         }
         tmp = i+1;
       cond tmp > 0:
-        .s.copy!uint?(pl, `sf~palList.get(i >= 6 ? i % 6 : i - 1));
+        .s.copy!uint?(
+          pl, .cgi[`playerno].sf~palList.get(i >= 6 ? i % 6 : i - 1));
       }
       i++;
     while i < .sff.NumCharPalletes:
       if(tmp == 0){
-        ^&.sff.Sprite spr = `sf~getSprite(9000, 0);
-        if(#spr == 0) spr = `sf~getSprite(0, 0);
+        ^&.sff.Sprite spr = .cgi[`playerno].sf~getSprite(9000, 0);
+        if(#spr == 0) spr = .cgi[`playerno].sf~getSprite(0, 0);
         if(#spr > 0) loop{index j = 0; while; do:
-          .s.copy!uint?(`sf~palList.get(j), `sf~palList.get(spr~palidx));
+          .s.copy!uint?(.cgi[`playerno].sf~palList.get(j),
+          .cgi[`playerno].sf~palList.get(spr~palidx));
           j++;
         while j < .sff.NumCharPalletes:}
       }
     }
-    `palno = `palkeymap[no-1]+1;
-    `drawpalno = `palno;
-    if(`sf~head.ver0 == 0d1 && tmp == 0) ret false;
+    .cgi[`playerno].palno = .cgi[`playerno].palkeymap[no-1]+1;
+    .cgi[`playerno].drawpalno = `palno();
+    if(.cgi[`playerno].sf~head.ver0 == 0d1 && tmp == 0) ret false;
     loop{
-      index i = `palno-1;
+      index i = `palno()-1;
     do:
       loop{index j = 0; while; do:
         if(
-          j != `playerno && #.chars[j] > 0 && .s.equ(.chars[j][0]~def, `def)
-          && .chars[j][0]~drawpalno == i+1) break;
+          j != `playerno && #.chars[j] > 0
+          && .s.equ(.cgi[j].def, .cgi[`playerno].def)
+          && .cgi[j].drawpalno == i+1) break;
         j++;
       while j < #.chars:
-        `drawpalno = i+1;
+        .cgi[`playerno].drawpalno = i+1;
         break, break;
       }
       i++;
       if(i >= .sff.NumCharPalletes) i = 0;
-    while i != `palno-1:
+    while i != `palno()-1:
     }
     ret true;
   }
   public void clearDef()
   {
     `name = "";
-    `displayname = "";
-    `author = "";
-    `sprite = "";
-    `anim = "";
-    `sound = "";
-    `pal.new(.sff.NumCharPalletes);
-    `palkeymap.new(.sff.NumCharPalletes);
+    .cgi[`playerno].displayname = "";
+    .cgi[`playerno].author = "";
+    .cgi[`playerno].sprite = "";
+    .cgi[`playerno].anim = "";
+    .cgi[`playerno].sound = "";
+    .cgi[`playerno].pal.new(.sff.NumCharPalletes);
+    .cgi[`playerno].palkeymap.new(.sff.NumCharPalletes);
     loop{index i = 0; while; do:
-      `palkeymap[i] = i;
+      .cgi[`playerno].palkeymap[i] = i;
       i++;
-    while i < #`palkeymap:
+    while i < #.cgi[`playerno].palkeymap:
     }
   }
   public int gethitAnimtype()
@@ -2955,8 +2965,6 @@ public &Char
     if(!`isPaused()) branch{
     cond `sysivar[.iHITPAUSETIME] > 0:
       `sysivar[.iHITPAUSETIME]--;
-    else:
-      if(`stVal.mctime > 0) `stVal.mctime++;
     comm:
       if(`sysivar[.iHITPAUSETIME] <= 0){
         if(
@@ -3044,7 +3052,7 @@ public &Char
         .anims=, `ani, sp,
         x - (float)(
           (int)(`stVal.hb.hitshaketime > 0 && (`stVal.time&1) != 0) * `facing),
-        y, .com.scale, xs, ys, an, `angleset, `mver0 != 1,
+        y, .com.scale, xs, ys, an, `angleset, `mver0() != 1,
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
         `ls(.lsTRANS) ? `sysivar[.iALPHAS] : -1,
         `sysivar[.iALPHAD], br, `getPalfx(),
@@ -3052,12 +3060,12 @@ public &Char
         `ls(.lsTRANS) ? `sysivar[.iALPHAS] : 256,
         (float)`sysivar[.iSHADOWOFFSET]);
       `aimg.recAndAddAL(
-        `ani<>=, sp, x, y, xs, ys, an, `angleset, `mver0 != 1,
+        `ani<>=, sp, x, y, xs, ys, an, `angleset, `mver0() != 1,
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
         .com.tickNextFrame() && `acttmp > 0, br, `getPalfx());
     cond .com.tickNextFrame() && `acttmp > 0:
       `aimg.recAfterImg(
-        `ani<>=, x, y, xs, ys, an, `angleset, `mver0 != 1,
+        `ani<>=, x, y, xs, ys, an, `angleset, `mver0() != 1,
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY], `getPalfx());
     }
     if(.com.tickNextFrame()){
@@ -3122,7 +3130,7 @@ public &Char
   {
     ret
       base + (
-        `mver0 == 1 ? 0.0
+        `mver0() == 1 ? 0.0
         : `stVal.typ == .StTy::A ? 1.0
         : `stVal.typ == .StTy::L ? 2.0
         : 0.0);
@@ -3148,6 +3156,14 @@ public &Char
   public float offsetY()
   {
     ret (float)`sysivar[.iDRAW_OFFSETY] + `offsety;
+  }
+  public int palno()
+  {
+    ret .cgi[`playerno].palno;
+  }
+  public int mver0()
+  {
+    ret .cgi[`playerno].mver0;
   }
   public bool landCondition()
   {
@@ -3298,7 +3314,7 @@ public &Char
           `sysivar[.iPAUSEMOVETIME]--;
         }
       }
-      if(`mver0 == 1){
+      if(`mver0() == 1){
         `sysivar[.iSPECIALFLAG] &= !.lasMask;
         `sysfvar[.fANGLESCALEX] = `sysfvar[.fANGLESCALEY] = 1.0;
         `offsetx = 0.0;
@@ -3326,13 +3342,14 @@ public &Char
               + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
           }
         }
+        if(!`isHitPaused()) `posUpdate();
+        if(`landCondition()) `trChangeState(52, -1, -1);
         if(!`isHitPaused()){
           `stVal.time++;
-          `posUpdate();
+          if(`stVal.mctime > 0) `stVal.mctime++;
         }
-        if(`landCondition()){
-          `trChangeState(52, -1, -1);
-          `stVal.time++;
+        if(`helperindex == 0 && .cgi[`playerno].pctime >= 0){
+          .cgi[`playerno].pctime++;
         }
       }
     }
@@ -3763,8 +3780,8 @@ public &Char
       if(#.fight~fsn == 0) break;
       w = .fight~fsn~getSound(g, s);
     else:
-      if(#`sn == 0) break;
-      w = `sn~getSound(g, s);
+      if(#.cgi[`playerno].sn == 0) break;
+      w = .cgi[`playerno].sn~getSound(g, s);
     }
     if(#w == 0) ret;
     ^&.snd.Sound sou = `newChannel(ch, lw);
@@ -3772,7 +3789,7 @@ public &Char
     sou~sound = w;
     sou~chrx = x;
     branch{
-    cond `mver0 == 1:
+    cond `mver0() == 1:
       sou~setVol(!f ? `sysivar[.iVOLUME]*vo/100 : 256);
     else:
       sou~setVol(vo + (!f ? `sysivar[.iVOLUME] : 256));
@@ -4221,7 +4238,7 @@ public &Char
       cond i2 < 0:
         branch{
           float f = ((float)i1)**(float)i2;
-        cond .chars[`stVal.playerno]<>~mver0 == 1:
+        cond .chars[`stVal.playerno]<>~mver0() == 1:
           r.setF(f);
         else:
           .mes.veryUnsafeCopy!int, float?(r.i=, f=);
@@ -4237,7 +4254,7 @@ public &Char
             if(
               (
                 i2 & (int)1<<(
-                  bit == hb || .chars[`stVal.playerno]<>~mver0 == 1
+                  bit == hb || .chars[`stVal.playerno]<>~mver0() == 1
                   ? bit : (hb-1)-bit))
               != 0)
             {
@@ -4321,7 +4338,7 @@ public &Char
     `animpno = `stVal.playerno;
     `sysfvar[.fCLSNXSCALE] = .chars[`stVal.playerno][0]~sysfvar[.fXSCALE];
     `sysfvar[.fCLSNYSCALE] = .chars[`stVal.playerno][0]~sysfvar[.fYSCALE];
-    `ani~ani.sff = `sf;
+    `ani~ani.sff = .cgi[`playerno].sf;
     `ani~ani.updateSprite();
   }
   public void trAnimExist(int pid)
@@ -4635,6 +4652,10 @@ public &Char
     }
     ret #.chars[foo] > 0 && .s.equ(name, .s.toLower(.chars[foo][0]~name));
   }
+  public bool trAuthor(^/char name)
+  {
+    ret .s.equ(name, .s.toLower(.cgi[`playerno].author));
+  }
   public int trFrontEdgeDist()
   {
     ret
@@ -4723,6 +4744,7 @@ public &Char
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
   {
     `helproSetPos!p.self?(p=, pt, x, y, 1);
+    if(p.anim < -1) p.anim = 0;
     p.ani = `getAction(p.anim);
     if(#p.ani == 0 && #`ani > 0){
       p.ani.new(1);
@@ -5006,54 +5028,17 @@ public &Char
   {
     if(.v.isSF()) ret;
     int id = .v.toI();
-    .v.typ = .VarTy::Int;
-    branch{
-    cond id < 0:
-      .v.i = 0;
-    else:
-      .v.i = -1;
-      loop{index i = 0; while; do:
-        if(
-          .projs[`playerno][i].id != .com.IERR
-          && (
-            id == 0 
-            || .projs[`playerno][i].id == id || !.projs[`playerno][i].id == id)
-          && .projs[`playerno][i].pctyp == pct
-          && .projs[`playerno][i].pctime != 0
-          && (.v.i <= 0 || .v.i > #.projs[`playerno][i].pctime))
-        {
-          .v.i = #.projs[`playerno][i].pctime;
-        }
-        i++;
-      while i < #.projs[`playerno]:
-      }
-    }
+    .v.setI(
+      (id <= 0  || id == .cgi[`playerno].pcid)
+      && .cgi[`playerno].pctyp == pct
+      ? .cgi[`playerno].pctime : -1);
   }
   public void trProjContactTime()
   {
     if(.v.isSF()) ret;
     int id = .v.toI();
-    .v.typ = .VarTy::Int;
-    branch{
-    cond id < 0:
-      .v.i = 0;
-    else:
-      .v.i = -1;
-      loop{index i = 0; while; do:
-        if(
-          .projs[`playerno][i].id != .com.IERR
-          && (
-            id == 0
-            || .projs[`playerno][i].id == id || !.projs[`playerno][i].id == id)
-          && .projs[`playerno][i].pctime != 0
-          && (.v.i <= 0 || .v.i > #.projs[`playerno][i].pctime))
-        {
-          .v.i = #.projs[`playerno][i].pctime;
-        }
-        i++;
-      while i < #.projs[`playerno]:
-      }
-    }
+    .v.setI(
+      id <= 0 || id == .cgi[`playerno].pcid ? .cgi[`playerno].pctime : -1);
   }
   public bool trHitDefAttr(int flg)
   {
@@ -5259,21 +5244,23 @@ public &Char
   public void trRemapPal(int sg, int sn, int dg, int dn)
   {
     if(sg < 0 || sn < 0 || dg < 0 || dn < 0) ret;
-    ^index si = `sf~palList.palTable.get((uint)sg << 0d16 | (ushort)sn);
-    ^index di = `sf~palList.palTable.get((uint)dg << 0d16 | (ushort)dn);
+    ^index si =
+      .cgi[`playerno].sf~palList.palTable.get((uint)sg << 0d16 | (ushort)sn);
+    ^index di =
+      .cgi[`playerno].sf~palList.palTable.get((uint)dg << 0d16 | (ushort)dn);
     if(#si == 0) ret;
     if(#di == 0) di = si;
     ^&.com.PalFX pfx = `getPalfx();
-    if(#pfx~remap == 0) pfx~remap = `sf~palList.getPalMap();
-    `sf~palList.swapPalMap(pfx~remap=);
-    `sf~palList.remap(si<>, di<>);
-    if(sg == 1 && sn == 1 && `sf~head.ver0 == 0d1){
-      ^&.sff.Sprite spr = `sf~getSprite(0, 0);
-      if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
-      spr = `sf~getSprite(9000, 0);
-      if(#spr > 0) `sf~palList.remap(spr~palidx, di<>);
+    if(#pfx~remap == 0) pfx~remap = .cgi[`playerno].sf~palList.getPalMap();
+    .cgi[`playerno].sf~palList.swapPalMap(pfx~remap=);
+    .cgi[`playerno].sf~palList.remap(si<>, di<>);
+    if(sg == 1 && sn == 1 && .cgi[`playerno].sf~head.ver0 == 0d1){
+      ^&.sff.Sprite spr = .cgi[`playerno].sf~getSprite(0, 0);
+      if(#spr > 0) .cgi[`playerno].sf~palList.remap(spr~palidx, di<>);
+      spr = .cgi[`playerno].sf~getSprite(9000, 0);
+      if(#spr > 0) .cgi[`playerno].sf~palList.remap(spr~palidx, di<>);
     }
-    `sf~palList.swapPalMap(pfx~remap=);
+    .cgi[`playerno].sf~palList.swapPalMap(pfx~remap=);
   }
 }
 
@@ -5552,7 +5539,7 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
 }
 public int PlayerList!&Char?::numEnemy(int pno)
 {
-  if(.numenemy[pno] >= 0) ret .numenemy[pno];
+  if(.cgi[pno].numenemy >= 0) ret .cgi[pno].numenemy;
   int cnt = 0;
   loop{
     *`top.self p = `top;
@@ -5562,7 +5549,7 @@ public int PlayerList!&Char?::numEnemy(int pno)
     p = p~next;
   while #p > 0:
   }
-  ret .numenemy[pno] = cnt;
+  ret .cgi[pno].numenemy = cnt;
 }
 public void PlayerList!&Char?::add(^&.Char c)
 {
@@ -5810,8 +5797,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           sou~sound = .fight~fsn~getSound(!hit.hitsoundg, hit.hitsoundn);
         }
       else:
-        if(#by.sn > 0){
-          sou~sound = by.sn~getSound(hit.hitsoundg, hit.hitsoundn);
+        if(#.cgi[by.playerno].sn > 0){
+          sou~sound =
+            .cgi[by.playerno].sn~getSound(hit.hitsoundg, hit.hitsoundn);
         }
       comm:
         sou~chrx = `pyr.sysfvar[.fX...fX+1];
@@ -5838,8 +5826,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           sou~sound = .fight~fsn~getSound(!hit.guardsoundg, hit.guardsoundn);
         }
       else:
-        if(#by.sn > 0){
-          sou~sound = by.sn~getSound(hit.guardsoundg, hit.guardsoundn);
+        if(#.cgi[by.playerno].sn > 0){
+          sou~sound =
+            .cgi[by.playerno].sn~getSound(hit.guardsoundg, hit.guardsoundn);
         }
       comm:
         sou~chrx = `pyr.sysfvar[.fX...fX+1];
@@ -6011,12 +6000,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
             if(!pyr.ls(.lsGETHIT)){
               pyr.sysivar[.iHITPAUSETIME] =
                 .m.max!int?(
-                  1, p~c~stVal.hit.shaketime + (int)(p~c~mver0 == 1));
+                  1, p~c~stVal.hit.shaketime + (int)(p~c~mver0() == 1));
             }
           }
           if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
-              .m.max!int?(1, p~c~stVal.hit.pausetime + (int)(p~c~mver0 == 1));
+              .m.max!int?(
+                1, p~c~stVal.hit.pausetime + (int)(p~c~mver0() == 1));
           }
           p~c~sysivar[.iUNIQHITCOUNT]++;
         else:
@@ -6024,7 +6014,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           if(!p~c~ls(.lsGETHIT)){
             p~c~sysivar[.iHITPAUSETIME] =
               .m.max!int?(
-                1, p~c~stVal.hit.guard_pausetime + (int)(p~c~mver0 == 1));
+                1, p~c~stVal.hit.guard_pausetime + (int)(p~c~mver0() == 1));
           }
         comm:
           if(p~c~stVal.hit.hitonce > 0) p~c~stVal.hit.hitonce = -1;
@@ -6175,12 +6165,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
               proj.timemiss = !.m.max!int?(0, proj.misstime);
               branch{
               cond #hit == 1:
-                proj.pctyp == .ProjContact::Hit;
-                proj.pctime = -1;
+                .cgi[i].pctyp == .ProjContact::Hit;
+                .cgi[i].pctime = 0;
+                .cgi[i].pcid = proj.id;
                 proj.hitpause = .m.max!int?(0, proj.hit.pausetime);
               else:
-                proj.pctyp == .ProjContact::Guarded;
-                proj.pctime = -1;
+                .cgi[i].pctyp == .ProjContact::Guarded;
+                .cgi[i].pctime = 0;
+                .cgi[i].pcid = proj.id;
                 proj.hitpause = .m.max!int?(0, proj.hit.guard_pausetime);
               }
               if(proj.hit.hitonce > 0) proj.hit.hitonce = -1;
@@ -6203,8 +6195,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         {
           proj.hits = 0;
           proj.prioritypoint = 0;
-          proj.pctyp == .ProjContact::Cancel;
-          proj.pctime = -1;
+          .cgi[i].pctyp == .ProjContact::Cancel;
+          .cgi[i].pctime = 0;
+          .cgi[i].pcid = proj.id;
         }
       }];
       j++;
@@ -6418,7 +6411,7 @@ void anim()
 {
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
-      if(.projs[i][j].id >= 0) .projs[i][j].anime(.chars[i]<>~mver0 != 1, i);
+      if(.projs[i][j].id >= 0) .projs[i][j].anime(.chars[i]<>~mver0() != 1, i);
       j++;
     while j < #.projs[i]:
     }
@@ -6520,7 +6513,7 @@ public float action(
       .addAnimList(
         .topanims=, .superanim, 5, .superposx, .superposy, .com.scale,
         (float).superfacing, 1.0, 0.0, false,
-        .chars[.superplayer]<>~mver0 != 1, 1.0, 1.0, -1, 0, 256,
+        .chars[.superplayer]<>~mver0() != 1, 1.0, 1.0, -1, 0, 256,
         .superpmap, 0, 0, 0.0);
       if(.superanim~ani.loopend) .superanim.new(0);
     }
@@ -6530,7 +6523,7 @@ public float action(
       loop{index i = 0; while; do:
         loop{index j = #drawlist[i]-1; while; do:
           if(drawlist[i][j] < 0) continue;
-          .explods[i][drawlist[i][j]].update(.chars[i]<>~mver0 != 1, i);
+          .explods[i][drawlist[i][j]].update(.chars[i]<>~mver0() != 1, i);
           if(.explods[i][drawlist[i][j]].id == .com.IERR) branch{
           cond delI:
             .delIL(drawlist[i]=, j);
@@ -6916,23 +6909,23 @@ public void draw(float x, float y, float scl)
   px<> = 0d0;
   %^/char winner;
   if(.com.win >= 0){
-    winner.new[-1] = .chars[.com.win][0]~displayname;
+    winner.new[-1] = .cgi[.com.win].displayname;
     if(.com.tmode[.com.win] == (int).com.TeamMode::Simul){
-      winner.new[-1] = .chars[.com.win+2][0]~displayname;
+      winner.new[-1] = .cgi[.com.win+2].displayname;
     }
   }
   ^^/char names.new(#.chars);
   ^^&.com.PalFX facefx.new(#.chars);
   loop{index i = 0; while; do:
     if(#.chars[i] > 0){
-      names[i] = .chars[i][0]~displayname;
+      names[i] = .cgi[i].displayname;
       facefx[i] = .chars[i][0]~getPalfx();
       .fight~fa[.com.tmode[i&1]][i].face_spr.[void(fs){
         if(#fs == 0) ret;
-        .chars[i][0]~sf~palList.swapPalMap(facefx[i]~remap=);
+        .cgi[i].sf~palList.swapPalMap(facefx[i]~remap=);
         fs~colorPallet.new(0);
-        fs~colorPallet = fs~getPal(.chars[i][0]~sf~palList=);
-        .chars[i][0]~sf~palList.swapPalMap(facefx[i]~remap=);
+        fs~colorPallet = fs~getPal(.cgi[i].sf~palList=);
+        .cgi[i].sf~palList.swapPalMap(facefx[i]~remap=);
       }];
     }
     i++;
@@ -7130,9 +7123,12 @@ public void nextRound()
         j++;
       while j < #.chars:}
       if(.com.rexisted[c.playerno&1] == 0){
-        c.sf~palList.resetRemap();
-        c.trRemapPal(1, 1, 1, c.drawpalno);
+        .cgi[c.playerno].sf~palList.resetRemap();
+        if(.cgi[c.playerno].sf~head.ver0 == 0d1){
+          c.trRemapPal(1, 1, 1, .cgi[c.playerno].drawpalno);
+        }
       }
+      .cgi[c.playerno].clearPCTime();
     }];
   continue:
     i++;

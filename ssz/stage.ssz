@@ -108,6 +108,11 @@ public &Stage
     }
     ret .consts.null!&.bg.Action?();
   }
+  public ^action_t newAction(int no)
+  {
+    `actionList.new[-1].no = no;
+    ret `actionList[#`actionList-1..-1];
+  }
   void getBG(%^&.bg.BackGround bgl=, int id)
   {
     loop{index i = 0; while; do:

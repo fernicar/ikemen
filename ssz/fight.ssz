@@ -95,6 +95,11 @@ public &ActionList
     }
     ret .consts.null!&.bg.Action?();
   }
+  public ^action_t newAction(int no)
+  {
+    `actionList.new[-1].no = no;
+    ret `actionList[#`actionList-1..-1];
+  }
 }
 
 public void readSpr(&.sff.Anim!&.bg.Frame? a=, ^/char data)
@@ -1614,6 +1619,11 @@ public &Fight
     while i< #`actionList:
     }
     ret a;
+  }
+  public ^action_t newAction(int no)
+  {
+    `actionList.new[-1].no = no;
+    ret `actionList[#`actionList-1..-1];
   }
   public ^/char load(^/char def)
   {:<-

@@ -347,7 +347,7 @@ const ^/char kuuhaktokigou = " !=<>()|&+-*/%,[]^|:"\"\t\r\n;
 }
 
 const ^/char sndstart =
-  "bool f=false,lw=false,lp=false;int g=-1,s=0,ch=-1,vo=`mver0==1?100:0;"
+  "bool f=false,lw=false,lp=false;int g=-1,s=0,ch=-1,vo=`mver0()==1?100:0;"
   "float p=0.0,fr=1.0;^float x=`sysfvar[.fX...fX+1];";
 const ^/char sndend = "`playSound(f,lw,lp,g,s,ch,vo,p,fr,x);";
 public &StateBuilder
@@ -1343,9 +1343,7 @@ public &StateBuilder
         in = in[fnd+1..-1];
         branch{
         cond a:
-          out .=
-            ".s.equ(.s.toLower(" .= obj .= "author)"
-            .= ","\" .= .s.toLower(token) .= \"")";
+          out .=  obj .= "trAuthor("\" .= .s.toLower(token) .= \"")";
         else:
           out .=
             obj .= "trPName(" .= .s.iToS(pn) .= ","\"
@@ -2068,7 +2066,7 @@ public &StateBuilder
       out .= obj .= "trBackEdgeBodyDist()";
       typ = 2;
     cond .s.equ("palno", token):
-      out .= obj .= "palno";
+      out .= obj .= "palno()";
       typ = 2;
     cond .s.equ("inguarddist", token):
       out .= obj .= "inguarddist";

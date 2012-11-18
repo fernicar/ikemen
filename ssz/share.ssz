@@ -11,6 +11,7 @@ lib snd = "sound.ssz";
 public &Share
 {
   public ^%^&.chr.Char c;
+  public ^&.chr.CharGlobalInfo cgi;
   public ^&.chr.fgt.Fight f;
   public ^&.stage.Stage st;
   public ^int tm, nt, re;
@@ -35,6 +36,7 @@ public &Share
   public void copy()
   {
     `c = .chr.chars;
+    `cgi = .chr.cgi;
     `f = .chr.fight;
     `st = .chr.stg;
     `tm = .com.tmode;
@@ -70,6 +72,7 @@ public &Share
   public void push()
   {
     .chr.chars = `c;
+    .chr.cgi = `cgi;
     .chr.fight = `f;
     .chr.stg = `st;
     .com.tmode = `tm;

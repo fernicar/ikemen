@@ -92,24 +92,24 @@ const double lvmul = 2.0**(1.0/12.0);
   }
   void win(index i)
   {
-    ^int item = `getItem(.chr.chars[i][0]~def);
-    item[.chr.chars[i][0]~palno-1] +=
+    ^int item = `getItem(.chr.cgi[i].def);
+    item[.chr.chars[i][0]~palno()-1] +=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
       && .com.tmode[i&1] != (int).com.TeamMode::Simul ? 2 : 1;
-    `winct.set(.chr.chars[i][0]~def, item);
+    `winct.set(.chr.cgi[i].def, item);
   }
   void lose(index i)
   {
-    ^int item = `getItem(.chr.chars[i][0]~def);
-    item[.chr.chars[i][0]~palno-1] -=
+    ^int item = `getItem(.chr.cgi[i].def);
+    item[.chr.chars[i][0]~palno()-1] -=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
       && .com.tmode[i&1] != (int).com.TeamMode::Simul ? 2 : 1;
-    `winct.set(.chr.chars[i][0]~def, item);
+    `winct.set(.chr.cgi[i].def, item);
   }
   public int getLevel(index i)
   {
-    ^int item = `getItem(.chr.chars[i][0]~def);
-    ret item[.chr.chars[i][0]~palno-1];
+    ^int item = `getItem(.chr.cgi[i].def);
+    ret item[.chr.cgi[i].palno-1];
   }
 }
 &WincntMgr wm;
@@ -166,7 +166,7 @@ void game()
     while i < #.chr.chars:
     }
     loop{index i = 0; while; do:
-      if(#.chr.chars[i] > 0) `put(0.0, y=, .chr.chars[i][0]~def + \n);
+      if(#.chr.chars[i] > 0) `put(0.0, y=, .chr.cgi[i].def + \n);
       i++;
     while i < #.chr.chars:}
     `put(0.0, y=, .chr.stg~def);

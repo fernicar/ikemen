@@ -207,7 +207,7 @@ void animtime(&.lua.State L=, int re=)
 void authorname(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushString(#.cwc > 0 ? .cwc~author : "");
+  L.pushString(#.cwc > 0 ? .chr.cgi[.cwc~playerno].author : "");
 }
 
 void backedgebodydist(&.lua.State L=, int re=)
@@ -762,7 +762,7 @@ void numtarget(&.lua.State L=, int re=)
 void palno(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? (double).cwc~palno : 0.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~palno() : 0.0);
 }
 
 void physics(&.lua.State L=, int re=)

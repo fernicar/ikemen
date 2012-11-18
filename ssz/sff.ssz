@@ -817,8 +817,7 @@ public &AirFileMethods<_t>
     no = @com.aton!int?(sec);
     act = `getAction(no);
     if(#act > 0) ret act;
-    `actionList.new[-1].no = no;
-    act = `actionList[#`actionList-1..-1];
+    act = `newAction(no);
     act~read(lines, i=);
     if(#act~numFrames() > 0) ret act;
     loop{

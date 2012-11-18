@@ -74,7 +74,7 @@ int chara(int pn)
   ^/char cha = .sc.syst.selinf.sel.charlist[idx[memberNo]].def;
   ^&.chr.Char p;
   branch{
-  cond #.chr.chars[pn] > 0 && .s.equ(cha, .chr.chars[pn][0]~def):
+  cond #.chr.chars[pn] > 0 && .s.equ(cha, .chr.cgi[pn].def):
     p = .chr.chars[pn][0];
     p~key = .com.com[pn] != 0 ? !pn : pn;
   else:
@@ -83,21 +83,19 @@ int chara(int pn)
   }
   .chr.chars[pn].new(1);
   .chr.chars[pn][0] = p;
-  p~palno = pal;
+  .chr.cgi[pn].palno = pal;
   ^/char error;
-  if(#p~sf == 0){
-    &.stb.StateBuilder chara;
-    if(
-      #chara.build(p~playerno, cha, .code[pn]=)=>error > 0
-      || #p~load(cha)=>error > 0)
-    {
-      .error(error);
-      .chr.chars[pn].new(0);
-      ret -1;
-    }
+  &.stb.StateBuilder chara;
+  if(
+    #chara.build(p~playerno, cha, .code[pn]=)=>error > 0
+    || #p~load(cha)=>error > 0)
+  {
+    .error(error);
+    .chr.chars[pn].new(0);
+    ret -1;
   }
   .chr.fight~fa[.com.tmode[pn&1]][pn].face_spr =
-    p~sf~getOwnPalSprite(
+    .chr.cgi[pn].sf~getOwnPalSprite(
       .chr.fight~fa[.com.tmode[pn&1]][pn].face_sprg,
       .chr.fight~fa[.com.tmode[pn&1]][pn].face_spri);
   if(.com.tmode[pn&1] == (int).com.TeamMode::Turns && .com.round == 1){
