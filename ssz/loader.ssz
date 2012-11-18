@@ -79,20 +79,23 @@ int chara(int pn)
     p~key = .com.com[pn] != 0 ? !pn : pn;
   else:
     p.new(1);
+    .chr.cgi[pn].sf.new(0);
     .chr.charInit(p<>=, pn, 0);
   }
   .chr.chars[pn].new(1);
   .chr.chars[pn][0] = p;
   .chr.cgi[pn].palno = pal;
   ^/char error;
-  &.stb.StateBuilder chara;
-  if(
-    #chara.build(p~playerno, cha, .code[pn]=)=>error > 0
-    || #p~load(cha)=>error > 0)
-  {
-    .error(error);
-    .chr.chars[pn].new(0);
-    ret -1;
+  if(#.chr.cgi[pn].sf == 0){
+    &.stb.StateBuilder chara;
+    if(
+      #chara.build(p~playerno, cha, .code[pn]=)=>error > 0
+      || #p~load(cha)=>error > 0)
+    {
+      .error(error);
+      .chr.chars[pn].new(0);
+      ret -1;
+    }
   }
   .chr.fight~fa[.com.tmode[pn&1]][pn].face_spr =
     .chr.cgi[pn].sf~getOwnPalSprite(
