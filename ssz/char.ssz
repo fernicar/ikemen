@@ -2962,10 +2962,8 @@ public &Char
         `changeState1(`stVal.ho[`ho].player, `stVal.ho[`ho].stateno);
       }
     }
-    if(!`isPaused()) branch{
-    cond `sysivar[.iHITPAUSETIME] > 0:
-      `sysivar[.iHITPAUSETIME]--;
-    comm:
+    if(!`isPaused()){
+      if(`sysivar[.iHITPAUSETIME] > 0) `sysivar[.iHITPAUSETIME]--;
       if(`sysivar[.iHITPAUSETIME] <= 0){
         if(
           `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0

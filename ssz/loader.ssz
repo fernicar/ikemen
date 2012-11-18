@@ -84,7 +84,7 @@ int chara(int pn)
   }
   .chr.chars[pn].new(1);
   .chr.chars[pn][0] = p;
-  .chr.cgi[pn].palno = pal;
+  if(.com.rexisted[pn&1] == 0) .chr.cgi[pn].palno = pal;
   ^/char error;
   if(#.chr.cgi[pn].sf == 0){
     &.stb.StateBuilder chara;
