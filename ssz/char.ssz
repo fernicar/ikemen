@@ -2569,62 +2569,76 @@ public &Char
   public bool loadPallet(^/char def, int no)
   {
     index tmp = 0;
-    if(.cgi[`playerno].sf~head.ver0 == 0d1) loop{
-      index i = 0;
-      ubyte r, g, b;
-      ^uint pl;
-      .cgi[`playerno].sf~palList.resetRemap();
-      while;
-    do:
-      pl = .cgi[`playerno].sf~palList.get(i);
-      branch{
-        &.file.File f;
-      cond
-        #.com.loadFile(def, .cgi[`playerno].pal[i]=)<, [^/char(^/char fn){
-          f.open(fn, "rb"); ret f.read!ubyte?(r=) ? "" : "error";
-        }] == 0
-        :
-        loop{
-          index j = 255;
-          continue;
-        do:
-          if(!f.read!ubyte?(r=)) ret false;
-        continue:
-          if(!f.read!ubyte?(g=)) ret false;
-          if(!f.read!ubyte?(b=)) ret false;
-          pl[j] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
-          j--;
-        while j >= 0:
+    ^bool palExist.new(.sff.NumCharPalletes);
+    branch{
+    cond .cgi[`playerno].sf~head.ver0 == 0d1:
+      loop{
+        index i = 0;
+        ubyte r, g, b;
+        ^uint pl;
+        .cgi[`playerno].sf~palList.resetRemap();
+        while;
+      do:
+        pl = .cgi[`playerno].sf~palList.get(i);
+        branch{
+          &.file.File f;
+        cond
+          #.com.loadFile(def, .cgi[`playerno].pal[i]=)<, [^/char(^/char fn){
+            f.open(fn, "rb"); ret f.read!ubyte?(r=) ? "" : "error";
+          }] == 0
+          :
+          loop{
+            index j = 255;
+            continue;
+          do:
+            if(!f.read!ubyte?(r=)) break, else;
+          continue:
+            if(!f.read!ubyte?(g=)) break, else;
+            if(!f.read!ubyte?(b=)) break, else;
+            pl[j] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
+            j--;
+          while j >= 0:}
+          if(tmp == 0) loop{index j = 0; while; do:
+            .s.copy!uint?(.cgi[`playerno].sf~palList.get(j), pl);
+            j++;
+          while j < i:}
+          tmp = i+1;
+          palExist[i] = true;
+        else:
+          palExist[i] = false;
+          if(tmp > 0){
+            .s.copy!uint?(
+              pl, .cgi[`playerno].sf~palList.get(i >= 6 ? i % 6 : 0));
+          }
         }
-        if(tmp == 0) loop{index j = 0; while; do:
-          .s.copy!uint?(.cgi[`playerno].sf~palList.get(j), pl);
-          j++;
-        while j < i:
+        i++;
+      while i < .sff.NumCharPalletes:
+        if(tmp == 0){
+          ^&.sff.Sprite spr = .cgi[`playerno].sf~getSprite(9000, 0);
+          if(#spr == 0) spr = .cgi[`playerno].sf~getSprite(0, 0);
+          if(#spr > 0) loop{index j = 0; while; do:
+            .s.copy!uint?(.cgi[`playerno].sf~palList.get(j),
+            .cgi[`playerno].sf~palList.get(spr~palidx));
+            j++;
+          while j < .sff.NumCharPalletes:}
         }
-        tmp = i+1;
-      cond tmp > 0:
-        .s.copy!uint?(
-          pl, .cgi[`playerno].sf~palList.get(i >= 6 ? i % 6 : i - 1));
       }
-      i++;
-    while i < .sff.NumCharPalletes:
-      if(tmp == 0){
-        ^&.sff.Sprite spr = .cgi[`playerno].sf~getSprite(9000, 0);
-        if(#spr == 0) spr = .cgi[`playerno].sf~getSprite(0, 0);
-        if(#spr > 0) loop{index j = 0; while; do:
-          .s.copy!uint?(.cgi[`playerno].sf~palList.get(j),
-          .cgi[`playerno].sf~palList.get(spr~palidx));
-          j++;
-        while j < .sff.NumCharPalletes:}
-      }
+    else:
+      loop{int i = 0; while; do:
+        palExist[i] =
+          #.cgi[`playerno].sf~palList.palTable.get(
+            (uint)1 << 0d16 | (ushort)(i+1))
+          > 0;
+        i++;
+      while i < .sff.NumCharPalletes:}
     }
     .cgi[`playerno].palno = .cgi[`playerno].palkeymap[no-1]+1;
     .cgi[`playerno].drawpalno = `palno();
-    if(.cgi[`playerno].sf~head.ver0 == 0d1 && tmp == 0) ret false;
     loop{
-      index i = `palno()-1;
+      index starti = palExist[`palno()-1] ? `palno()-1 : (`palno()-1) % 6;
+      index i = starti;
     do:
-      loop{index j = 0; while; do:
+      if(palExist[i]) loop{index j = 0; while; do:
         if(
           j != `playerno && #.chars[j] > 0
           && .s.equ(.cgi[j].def, .cgi[`playerno].def)
@@ -2632,12 +2646,24 @@ public &Char
         j++;
       while j < #.chars:
         .cgi[`playerno].drawpalno = i+1;
+        if(!palExist[`palno()-1]){
+          .cgi[`playerno].palno = .cgi[`playerno].drawpalno;
+        }
         break, break;
       }
       i++;
       if(i >= .sff.NumCharPalletes) i = 0;
-    while i != `palno()-1:
-    }
+    while i != starti:
+      if(!palExist[`palno()-1]) loop{int i = 0; while; do:
+        if(palExist[i]){
+          .cgi[`playerno].palno = .cgi[`playerno].drawpalno = i+1;
+          break, break;
+        }
+        i++;
+      while i < .sff.NumCharPalletes:
+        .cgi[`playerno].palno = 1;
+      }
+   }
     ret true;
   }
   public void clearDef()
