@@ -26,6 +26,7 @@ void loaderReset()
   .com.round = 1;
   .com.p1wins = 0;
   .com.p2wins = 0;
+  .com.rexisted[0] = .com.rexisted[1] = 0;
   .ld.reset();
 }
 
