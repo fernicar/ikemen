@@ -46,8 +46,10 @@ const double lvmul = 2.0**(1.0/12.0);
       tmp = .s.split(",", lines[i]);
       if(#tmp < 2) continue;
       item = .s.svToAry!int?(" ", .s.trim(tmp[1]));
-      item = item[0..12];
-      if(#item < 12) item = item + `zeroAry(12-#item);
+      item = item[0 .. .sff.NumCharPalletes];
+      if(#item < .sff.NumCharPalletes){
+        item = item + `zeroAry(.sff.NumCharPalletes-#item);
+      }
       `winct.set(tmp[0], item);
     continue:
       i++;
@@ -77,7 +79,7 @@ const double lvmul = 2.0**(1.0/12.0);
       loop{index i = 0; while; do:
         buf .= ' ' .= .s.iToS(cnt[i]);
         i++;
-      while i < 12:}
+      while i < .sff.NumCharPalletes:}
       buf .= \r\n;
     }];
     &.file.File f;
@@ -87,8 +89,32 @@ const double lvmul = 2.0**(1.0/12.0);
   ^int getItem(^/char name)
   {
     ^int item = `winct.get(name);
-    if(#item < 12) item = item + `zeroAry(12-#item);
+    if(#item < .sff.NumCharPalletes){
+      item = item + `zeroAry(.sff.NumCharPalletes-#item);
+    }
     ret item;
+  }
+  void setItem(int pn, ^int item)
+  {
+    int ave = 0;
+    loop{
+      index i = 0;
+      int palcnt = 0;
+      while;
+    do:
+      if(.chr.cgi[pn].palExist[i]){
+        ave += item[i];
+        palcnt++;
+      }
+      i++;
+    while i < #item:
+      ave /= palcnt;
+    }
+    loop{index i = 0; while; do:
+      if(!.chr.cgi[pn].palExist[i]) item[i] = ave;
+      i++;
+    while i < #item:}
+    `winct.set(.chr.cgi[pn].def, item);
   }
   void win(index i)
   {
@@ -96,7 +122,7 @@ const double lvmul = 2.0**(1.0/12.0);
     item[.chr.chars[i][0]~palno()-1] +=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
       && .com.tmode[i&1] != (int).com.TeamMode::Simul ? 2 : 1;
-    `winct.set(.chr.cgi[i].def, item);
+    `setItem(i, item);
   }
   void lose(index i)
   {
@@ -104,7 +130,7 @@ const double lvmul = 2.0**(1.0/12.0);
     item[.chr.chars[i][0]~palno()-1] -=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
       && .com.tmode[i&1] != (int).com.TeamMode::Simul ? 2 : 1;
-    `winct.set(.chr.cgi[i].def, item);
+    `setItem(i, item);
   }
   public int getLevel(index i)
   {

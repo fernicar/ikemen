@@ -140,6 +140,9 @@ bool stateCompile()
   %char codeBuf .=
     "lib c = "\""char.ssz"\"", f = "\""fighting.ssz"\"";"\r\n
     "f.main();"\r\n .= .code[0] .= .code[1] .= .code[2] .= .code[3];
+  //lib file = <file.ssz>;
+  //&file.File f.open("state.ssz", "wb");
+  //f.writeAry!ubyte?(.s.sToU8(codeBuf));
   .sszc.new(1);
   ^/char error = .sszc~compileString(codeBuf, "ssz");
   if(#error > 0){

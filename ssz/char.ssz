@@ -1494,6 +1494,7 @@ public &CharGlobalInfo
   public ^&.snd.Snd sn;
   public %&.act.Action actionList;
   public int palno, drawpalno;
+  public ^bool palExist;
   public int numenemy;
   public short mver0 = 0, mver1 = 0;
   public |.ProjContact pctyp;
@@ -2569,7 +2570,7 @@ public &Char
   public bool loadPallet(^/char def, int no)
   {
     index tmp = 0;
-    ^bool palExist.new(.sff.NumCharPalletes);
+    .cgi[`playerno].palExist.new(.sff.NumCharPalletes);
     branch{
     cond .cgi[`playerno].sf~head.ver0 == 0d1:
       loop{
@@ -2603,9 +2604,9 @@ public &Char
             j++;
           while j < i:}
           tmp = i+1;
-          palExist[i] = true;
+          .cgi[`playerno].palExist[i] = true;
         else:
-          palExist[i] = false;
+          .cgi[`playerno].palExist[i] = false;
           if(tmp > 0){
             .s.copy!uint?(
               pl, .cgi[`playerno].sf~palList.get(i >= 6 ? i % 6 : 0));
@@ -2625,7 +2626,7 @@ public &Char
       }
     else:
       loop{int i = 0; while; do:
-        palExist[i] =
+        .cgi[`playerno].palExist[i] =
           #.cgi[`playerno].sf~palList.palTable.get(
             (uint)1 << 0d16 | (ushort)(i+1))
           > 0;
@@ -2635,10 +2636,11 @@ public &Char
     .cgi[`playerno].palno = .cgi[`playerno].palkeymap[no-1]+1;
     .cgi[`playerno].drawpalno = `palno();
     loop{
-      index starti = palExist[`palno()-1] ? `palno()-1 : (`palno()-1) % 6;
+      index starti =
+        .cgi[`playerno].palExist[`palno()-1] ? `palno()-1 : (`palno()-1) % 6;
       index i = starti;
     do:
-      if(palExist[i]) loop{index j = 0; while; do:
+      if(.cgi[`playerno].palExist[i]) loop{index j = 0; while; do:
         if(
           j != `playerno && #.chars[j] > 0
           && .s.equ(.cgi[j].def, .cgi[`playerno].def)
@@ -2646,7 +2648,7 @@ public &Char
         j++;
       while j < #.chars:
         .cgi[`playerno].drawpalno = i+1;
-        if(!palExist[`palno()-1]){
+        if(!.cgi[`playerno].palExist[`palno()-1]){
           .cgi[`playerno].palno = .cgi[`playerno].drawpalno;
         }
         break, break;
@@ -2654,14 +2656,15 @@ public &Char
       i++;
       if(i >= .sff.NumCharPalletes) i = 0;
     while i != starti:
-      if(!palExist[`palno()-1]) loop{int i = 0; while; do:
-        if(palExist[i]){
+      if(!.cgi[`playerno].palExist[`palno()-1]) loop{int i = 0; while; do:
+        if(.cgi[`playerno].palExist[i]){
           .cgi[`playerno].palno = .cgi[`playerno].drawpalno = i+1;
           break, break;
         }
         i++;
       while i < .sff.NumCharPalletes:
         .cgi[`playerno].palno = 1;
+        .cgi[`playerno].palExist[0] = true;
       }
    }
     ret true;

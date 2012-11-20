@@ -795,10 +795,28 @@ public &StateBuilder
       `expCast(buf=, 2, typ, temp);
       ^/char oldin = in;
       branch{
+        int tmp;
       cond .s.equ(`tokenizer(in=), ":="):
         out .= obj .= "trSet" .= v .= '(' .= buf .= ',';
         if(!`typeExp!`expEqu?(out=, in=, vtyp)) ret -1;
         out .= ')';
+        typ = vtyp;
+      cond <consteval>(tmp=, buf) && tmp >= 0:
+        branch{
+        cond .s.equ(v, "IVar"):
+          if(tmp >= 60) break, else;
+          out .= obj .= "ivar[" .= .s.iToS(tmp) .= ']';
+        cond .s.equ(v, "FVar"):
+          if(tmp >= 40) break, else;
+          out .= obj .= "fvar[" .= .s.iToS(tmp) .= ']';
+        cond .s.equ(v, "SysIVar"):
+          if(tmp >= 5) break, else;
+          out .= obj .= "sysivar[" .= .s.iToS(tmp) .= ']';
+        cond .s.equ(v, "SysFVar"):
+          if(tmp >= 5) break, else;
+          out .= obj .= "sysfvar[" .= .s.iToS(tmp) .= ']';
+        }
+        in = oldin;
         typ = vtyp;
       else:
         in = oldin;
