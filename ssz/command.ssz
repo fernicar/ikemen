@@ -492,7 +492,7 @@ public &NetInput
         int foo;
         continue;
       do:
-        if(.se.esc || !.se.event() || `st<> != .NetState::Playing){
+        if(.se.esc || !.se.event(60) || `st<> != .NetState::Playing){
           break, break;
         }
       continue:
@@ -645,14 +645,15 @@ public ^&FileInput replay;
 
 public bool update()
 {
-  bool b = .se.event();
   branch{
   cond #.replay > 0:
-    b = .replay~update();
+    .se.event(.anyHardButton() ? 240 : 60);
+    ret .replay~update();
   cond #.net > 0:
-    b = .net~update();
+    .se.event(60);
+    ret .net~update();
   }
-  ret b;
+  ret .se.event(60);
 }
 
 public bool synchronize()
@@ -1165,10 +1166,8 @@ public &CommandList
   }
 }
 
-public bool anybutton()
+bool anyHardButton()
 {
-  if(#.replay > 0) ret .replay~anybutton();
-  if(#.net > 0) ret .net~anybutton();
   loop{
     index i = 0;
     int jn;
@@ -1187,5 +1186,12 @@ public bool anybutton()
   while i < #.cfg.in:
   }
   ret false;
+}
+
+public bool anybutton()
+{
+  if(#.replay > 0) ret .replay~anybutton();
+  if(#.net > 0) ret .net~anybutton();
+  ret .anyHardButton();
 }
 

@@ -1494,7 +1494,7 @@ public &CharGlobalInfo
   public ^&.snd.Snd sn;
   public %&.act.Action actionList;
   public int palno, drawpalno;
-  public ^bool palExist;
+  public ^bool palExist, palSelectable;
   public int numenemy;
   public short mver0 = 0, mver1 = 0;
   public |.ProjContact pctyp;
@@ -2599,17 +2599,16 @@ public &Char
             pl[j] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
             j--;
           while j >= 0:}
-          if(tmp == 0) loop{index j = 0; while; do:
-            .s.copy!uint?(.cgi[`playerno].sf~palList.get(j), pl);
-            j++;
-          while j < i:}
+          if(tmp == 0 && i > 0){
+            .s.copy!uint?(.cgi[`playerno].sf~palList.get(0), pl);
+          }
           tmp = i+1;
           .cgi[`playerno].palExist[i] = true;
         else:
           .cgi[`playerno].palExist[i] = false;
-          if(tmp > 0){
-            .s.copy!uint?(
-              pl, .cgi[`playerno].sf~palList.get(i >= 6 ? i % 6 : 0));
+          if(i > 0){
+            .cgi[`playerno].sf~palList.palTable.remove(
+              (uint)1 << 0d16 | (ushort)(i+1));
           }
         }
         i++;
@@ -2617,11 +2616,11 @@ public &Char
         if(tmp == 0){
           ^&.sff.Sprite spr = .cgi[`playerno].sf~getSprite(9000, 0);
           if(#spr == 0) spr = .cgi[`playerno].sf~getSprite(0, 0);
-          if(#spr > 0) loop{index j = 0; while; do:
-            .s.copy!uint?(.cgi[`playerno].sf~palList.get(j),
-            .cgi[`playerno].sf~palList.get(spr~palidx));
-            j++;
-          while j < .sff.NumCharPalletes:}
+          if(#spr > 0){
+            .s.copy!uint?(
+              .cgi[`playerno].sf~palList.get(0),
+              .cgi[`playerno].sf~palList.get(spr~palidx));
+          }
         }
       }
     else:
@@ -2633,6 +2632,24 @@ public &Char
         i++;
       while i < .sff.NumCharPalletes:}
     }
+    .cgi[`playerno].palSelectable.new(.sff.NumCharPalletes);
+    .s.each!bool?([void(bool ps=){ps=false;}], .cgi[`playerno].palSelectable);
+    loop{int i = 0; while; do:
+      loop{
+        int startj =
+          .cgi[`playerno].palExist[.cgi[`playerno].palkeymap[i]]
+          ? .cgi[`playerno].palkeymap[i] : .cgi[`playerno].palkeymap[i] % 6;
+        int j = startj;
+      do:
+        if(.cgi[`playerno].palExist[j]){
+          .cgi[`playerno].palSelectable[j] = true;
+          break, break;
+        }
+        j++;
+        if(j >= .sff.NumCharPalletes) j = 0;
+      while j != startj:}
+      i++;
+    while i < .sff.NumCharPalletes:}
     .cgi[`playerno].palno = .cgi[`playerno].palkeymap[no-1]+1;
     .cgi[`playerno].drawpalno = `palno();
     loop{
@@ -2664,7 +2681,7 @@ public &Char
         i++;
       while i < .sff.NumCharPalletes:
         .cgi[`playerno].palno = 1;
-        .cgi[`playerno].palExist[0] = true;
+        .cgi[`playerno].palExist[0] = .cgi[`playerno].palSelectable[0] = true;
       }
    }
     ret true;

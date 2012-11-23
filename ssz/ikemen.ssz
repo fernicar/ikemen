@@ -80,7 +80,7 @@ int game()
     .ld.runTread();
     loop{do:
       if(.ld.state == .ld.State::Complete) break;
-    while .ld.state != .ld.State::Error && .se.event():
+    while .ld.state != .ld.State::Error && .se.event(60):
       if(#.ld.errorMes > 0) .error!.self?(.ld.errorMes);
       ret false;
     }

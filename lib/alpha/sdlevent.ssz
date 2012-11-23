@@ -1,7 +1,8 @@
 ﻿
 lib sdl = <alpha/sdlplugin.ssz>;
 
-uint nexttime = 0x0, timerIndex = 0x0, lastdraw = 0x0;
+uint nexttime = 0x0, lastdraw = 0x0;
+float nexttimeFractionalPart = 0.0;
 public &sdl.Event sdle;
 public bool end = false, fskip = false, full = false, esc = false;
 
@@ -81,20 +82,29 @@ public bool eventUpdate()
   ret !.end;
 }
 
-public bool event()
+public bool event(int fps)
 {
+  void nexttimeNext()
+  {
+    .nexttime += (uint)(1000 / `fps);
+    .nexttimeFractionalPart += (float)((1000 % `fps) / `fps);
+    if(.nexttimeFractionalPart >= 1.0){
+      .nexttime++;
+      .nexttimeFractionalPart -= 1.0;
+    }
+  }
   branch{
     uint now = .sdl.GetTicks(::);
     uint dif = .nexttime - now;
-    if(++.timerIndex > 0d2) .timerIndex = 0d0;
-    .nexttime += (.timerIndex == 0d0 ? 0d16 : 0d17);
+    nexttimeNext();
   cond dif < 0d18:
     .sdl.Delay(:dif:);
-  cond now - .lastdraw > 0d1000:
+  cond now - .lastdraw > 0d250:
   cond dif+0d17 < 0d17:
   else:
-    if(-dif > 0d600){
-      .nexttime = now + (.timerIndex == 0d0 ? 0d16 : 0d17);
+    if(-dif > 0d150){
+      .nexttime = now;
+      nexttimeNext();
     }
     .fskip = true;
     break;

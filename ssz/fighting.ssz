@@ -102,7 +102,7 @@ const double lvmul = 2.0**(1.0/12.0);
       int palcnt = 0;
       while;
     do:
-      if(.chr.cgi[pn].palExist[i]){
+      if(.chr.cgi[pn].palSelectable[i]){
         ave += item[i];
         palcnt++;
       }
@@ -111,7 +111,7 @@ const double lvmul = 2.0**(1.0/12.0);
       ave /= palcnt;
     }
     loop{index i = 0; while; do:
-      if(!.chr.cgi[pn].palExist[i]) item[i] = ave;
+      if(!.chr.cgi[pn].palSelectable[i]) item[i] = ave;
       i++;
     while i < #item:}
     `winct.set(.chr.cgi[pn].def, item);
