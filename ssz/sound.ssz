@@ -129,8 +129,8 @@ public &Snd
       if(!f.read!int?(soundList[i].num.number=)) ret .com.FileReadError;
       if(soundList[i].num.group >= 0 && soundList[i].num.number >= 0){
         `soundTable.operate(
-          (ulong)soundList[i].num.group
-          | (ulong)soundList[i].num.number<<0d32,
+          (ulong)soundList[i].num.group<<0d32
+          | (uint)soundList[i].num.number,
           [void(^&.Wave w=){
             if(#w > 0) ret;
             error = wav(soundList[i]=);
@@ -146,7 +146,7 @@ public &Snd
   }
   public ^&.Wave getSound(int group, int number)
   {
-    ret `soundTable.get((ulong)group | (ulong)number<<0d32);
+    ret `soundTable.get((ulong)group<<0d32 | (uint)number);
   }
 }
 
