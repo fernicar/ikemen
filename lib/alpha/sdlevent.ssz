@@ -84,10 +84,11 @@ public bool eventUpdate()
 
 public bool event(int fps)
 {
+  uint uWait = (uint)1000 / (uint)fps;
   void nexttimeNext()
   {
-    .nexttime += (uint)(1000 / `fps);
-    .nexttimeFractionalPart += (float)((1000 % `fps) / `fps);
+    .nexttime += `uWait;
+    .nexttimeFractionalPart += (float)(1000 % `fps) / (float)`fps;
     if(.nexttimeFractionalPart >= 1.0){
       .nexttime++;
       .nexttimeFractionalPart -= 1.0;
@@ -97,7 +98,7 @@ public bool event(int fps)
     uint now = .sdl.GetTicks(::);
     uint dif = .nexttime - now;
     nexttimeNext();
-  cond dif < 0d18:
+  cond dif < uWait + 0x2:
     .sdl.Delay(:dif:);
   cond now - .lastdraw > 0d250:
   cond dif+0d17 < 0d17:
