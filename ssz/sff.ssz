@@ -688,8 +688,8 @@ public &Sff
         spriteList[i].link = (index)indexOfPrevious;
       }
       `spriteTable.operate(
-        (uint)spriteList[i].imageGroup
-        | (uint)spriteList[i].imageNumber<<0d16,
+        (uint)spriteList[i].imageGroup<<0d16
+        | (ushort)spriteList[i].imageNumber,
         [void(^&.Sprite s=){if(#s == 0) s = spriteList[i..i+1];}]);
       shofs = `head.ver0 == 0d1 ? misc : shofs + 0d28;
       i++;
@@ -699,12 +699,12 @@ public &Sff
   }
   public ^&.Sprite getSprite(short group, short number)
   {
-    if(group < 0 || number < 0) ret .consts.null!&.Sprite?();
-    ret `spriteTable.get((uint)group | (uint)number<<0d16);
+    if(group == -1) ret .consts.null!&.Sprite?();
+    ret `spriteTable.get((uint)group<<0d16 | (ushort)number);
   }
   public ^&.Sprite getOwnPalSprite(short group, short number)
   {
-    ^&.Sprite sp = `spriteTable.get((uint)group | (uint)number<<0d16);
+    ^&.Sprite sp = `spriteTable.get((uint)group<<0d16 | (ushort)number);
     if(#sp == 0) ret sp;
     ^&.Sprite ops.new(1);
     ops~copy(sp<>=);
