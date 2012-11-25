@@ -7190,7 +7190,7 @@ public bool roundOver()
     .com.intro < -(
       .fight~ro.over_hittime
       + .fight~ro.over_waittime + .fight~ro.over_wintime)
-    && .cmd.anybutton())
+    && .com.tickFrame() && .cmd.anybutton())
   {
     .com.intro =
       .m.min!int?(

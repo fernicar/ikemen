@@ -32,7 +32,6 @@ public %&Key eventKeys;
 
 public bool eventUpdate()
 {
-  .esc = false;
   loop{index i = 0; while; do:
     .eventKeys[i].reset();
     i++;
@@ -113,6 +112,7 @@ public bool event(int fps)
     .lastdraw = now;
     .fskip = false;
   }
+  .esc = false;
   ret .eventUpdate();
 }
 

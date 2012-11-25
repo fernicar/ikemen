@@ -67,6 +67,7 @@ const int IERR = consts.int_t::MIN;
 int oldTickCount = tickCount-1;
 float tickCountF = 0.0, lastTick = 0.0;
 float nextAddTime = Speed;
+/float oldNextAddTime = Speed;
 
 public bool tickFrame()
 {
@@ -94,6 +95,7 @@ public bool addFrameTime(float t)
     .tickCount++;
     .lastTick = .tickCountF;
   }
+  .oldNextAddTime = .nextAddTime;
   .nextAddTime = t;
   ret true;
 }
