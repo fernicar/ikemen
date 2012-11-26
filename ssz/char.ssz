@@ -3248,7 +3248,6 @@ public &Char
         && (!`isAlive() || `sysivar[.iPAUSEMOVETIME] == 0);
     }
     if(`minus != 2) ret;
-    if(#`palfx > 0 && !`isPaused()) `palfx~step();
     bool p = isSuperPaused() || isNormalPaused();
     if(#`cmd == 0){
       `changeState2();
@@ -3256,6 +3255,7 @@ public &Char
     }
     `acttmp = -(int)p * 2;
     if(!p){
+      if(#`palfx > 0) `palfx~step();
       if(!`isHitPaused()){
         `setFacing(`p1facing);
         `p1facing = 0;

@@ -3246,11 +3246,8 @@ public &StateBuilder
         case 'u':
           `state.typ = .chr.StTy::U;
         default:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }])) ret false;
@@ -3269,11 +3266,8 @@ public &StateBuilder
         case 'u':
           `state.mov = .chr.MovTy::U;
         default:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }])) ret false;
@@ -3294,11 +3288,8 @@ public &StateBuilder
         case 'u':
           `state.phy = .chr.StTy::U;
         default:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }])) ret false;
@@ -3392,12 +3383,18 @@ public &StateBuilder
   {
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .= "int v=.com.IERR,a=-1,c=-1;";
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "v=", ";", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       if(!`stateParam(param=, "ctrl", [`paraF_t(data=){
         if(
           !`fullExpression(
@@ -3431,7 +3428,9 @@ public &StateBuilder
         elem = "if(#`ani>0)`ani~ani.setAnimElem(e);";
         ret true;
       }])) ret false;
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         `state.ctrlList[-1].task .=
           `state.ctrlList[-1].typ == .CtrlTy::ChangeAnim2
           ? "`trChangeAnim2" : "`trChangeAnim";
@@ -3441,6 +3440,10 @@ public &StateBuilder
             "(.m.max!int?(0,", "));", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       `state.ctrlList[-1].task .= elem;
       ret true;
     }]);
@@ -3594,6 +3597,10 @@ public &StateBuilder
         sys = true;
         ret set(:data=:);
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
@@ -3625,13 +3632,15 @@ public &StateBuilder
         fval = buf;
         ret true;
       }])) ret false;
-      if(#val > 0 || #fval > 0){
-        `state.ctrlList[-1].task .=
-          (#val > 0 ? "`rangeSetIVar(" : "`rangeSetFVar(")
-          .= (#fir > 0 ? fir : "0,")
-          .= (#las > 0 ? las : (#val > 0 ? "59," : "39,"))
-          .= (#val > 0 ? val : fval);
+      if(#val == 0 && #fval == 0){
+        `lasterror = "valueが指定されていません";
+        ret false;
       }
+      `state.ctrlList[-1].task .=
+        (#val > 0 ? "`rangeSetIVar(" : "`rangeSetFVar(")
+        .= (#fir > 0 ? fir : "0,")
+        .= (#las > 0 ? las : (#val > 0 ? "59," : "39,"))
+        .= (#val > 0 ? val : fval);
       ret true;
     }]);
   }
@@ -3647,7 +3656,11 @@ public &StateBuilder
         idx = buf;
         ret true;
       }])) ret false;
-      if(v && !`stateParam(param=, "range", [`paraF_t(data=){
+      if(!v){
+        `lasterror = "vが指定されていません";
+        ret false;
+      }
+      if(!`stateParam(param=, "range", [`paraF_t(data=){
         %char buf;
         if(!`fullExpression(buf=, data=, "", "", 2)) ret false;
         start = buf;
@@ -3685,12 +3698,18 @@ public &StateBuilder
   bool ctrlSet(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "`setCtrl(", ");", 3)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
@@ -3712,11 +3731,8 @@ public &StateBuilder
         case 'l':
           `state.ctrlList[-1].task .= "`stVal.typ=.StTy::L;";
         default:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }];
@@ -3744,11 +3760,8 @@ public &StateBuilder
         case 'n':
           `state.ctrlList[-1].task .= "`stVal.phy=.StTy::N;";
         default:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }])) ret false;
@@ -3765,11 +3778,8 @@ public &StateBuilder
         case 'h':
           `state.ctrlList[-1].task .= "`stVal.mov=.MovTy::H;";
         default:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }])) ret false;
@@ -3860,11 +3870,8 @@ public &StateBuilder
         case 'N', 'n':
           `state.ctrlList[-1].task .= obj .= tmp .= "=.ReactTy::Non;";
         default:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }];
@@ -3896,11 +3903,8 @@ public &StateBuilder
         case 'D', 'd':
           `state.ctrlList[-1].task .= obj .= tmp .= "=.AnimTy::Diagup;";
         default:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }];
@@ -3926,23 +3930,28 @@ public &StateBuilder
         case 'F', 'f':
           `state.ctrlList[-1].task .= obj .= ".affectteam=-1;";
         default:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }])) ret false;
       switch(`state.ctrlList[-1].typ){
       case .CtrlTy::ReversalDef:
-        if(!`stateParam(param=, "reversal.attr", [`paraF_t(data=){
-          int flg;
-          if(!`attr(flg=, data, false)) ret false;
-          `state.ctrlList[-1].task .=
-            obj .= ".reversal_attr=" .= .s.iToS(flg) .= ';';
-          ret true;
-        }])) ret false;
+        {
+          bool reversal_attr = false;
+          if(!`stateParam(param=, "reversal.attr", [`paraF_t(data=){
+            reversal_attr = true;
+            int flg;
+            if(!`attr(flg=, data, false)) ret false;
+            `state.ctrlList[-1].task .=
+              obj .= ".reversal_attr=" .= .s.iToS(flg) .= ';';
+            ret true;
+          }])) ret false;
+          if(!reversal_attr){
+            `lasterror = "reversal.attrが指定されていません";
+            ret false;
+          }
+        }
       case .CtrlTy::Projectile:
         if(!`stateParam(param=, "postype", [`paraF_t(data=){
           ^/char text = .s.toLower(data);
@@ -3961,11 +3970,8 @@ public &StateBuilder
           cond text[0] == 'r':
             `state.ctrlList[-1].task .= "pt=5;";
           else:
-            if(!.cfg.IgnoreMostErrors){
-              %char buf;
-              `lasterror = (buf .= data .= "が無効な値です");
-              ret false;
-            }
+            `lasterror = data + "が無効な値です";
+            ret false;
           }
           ret true;
         }])) ret false;
@@ -4290,11 +4296,8 @@ public &StateBuilder
           case 'D', 'd':
             `state.ctrlList[-1].task .= obj .= ".bothhittype=.PriTy::Dodge;";
           default:
-            if(!.cfg.IgnoreMostErrors){
-              %char buf;
-              `lasterror = (buf .= data .= "が無効な値です");
-              ret false;
-            }
+            `lasterror = data + "が無効な値です";
+            ret false;
           }
         }
         ret true;
@@ -4793,20 +4796,24 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             ".palfx_addr=", ";", 2)) ret false;
-        if(.s.equ(",")<, `tokenizer(data=)){
-          `state.ctrlList[-1].task .= obj;
-          if(
-            !`fullExpression(
-              `state.ctrlList[-1].task=, data=,
-              ".palfx_addg=", ";", 2)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            `state.ctrlList[-1].task .= obj;
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=,
-                ".palfx_addb=", ";", 2)) ret false;
-          }
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = data + "palfx.addの要素が足りません";
+          ret false;
         }
+        `state.ctrlList[-1].task .= obj;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".palfx_addg=", ";", 2)) ret false;
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = data + "palfx.addの要素が足りません";
+          ret false;
+        }
+        `state.ctrlList[-1].task .= obj;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".palfx_addb=", ";", 2)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palfx.mul", [`paraF_t(data=){
@@ -4815,20 +4822,24 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             ".palfx_mulr=", ";", 2)) ret false;
-        if(.s.equ(",")<, `tokenizer(data=)){
-          `state.ctrlList[-1].task .= obj;
-          if(
-            !`fullExpression(
-              `state.ctrlList[-1].task=, data=,
-              ".palfx_mulg=", ";", 2)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            `state.ctrlList[-1].task .= obj;
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=,
-                ".palfx_mulb=", ";", 2)) ret false;
-          }
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = data + "palfx.mulの要素が足りません";
+          ret false;
         }
+        `state.ctrlList[-1].task .= obj;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".palfx_mulg=", ";", 2)) ret false;
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = data + "palfx.mulの要素が足りません";
+          ret false;
+        }
+        `state.ctrlList[-1].task .= obj;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".palfx_mulb=", ";", 2)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "palfx.sinadd", [`paraF_t(data=){
@@ -4837,26 +4848,30 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             ".palfx_amplr=", ";", 2)) ret false;
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = data + "palfx.sinaddの要素が足りません";
+          ret false;
+        }
+        `state.ctrlList[-1].task .= obj;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".palfx_amplg=", ";", 2)) ret false;
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = data + "palfx.sinaddの要素が足りません";
+          ret false;
+        }
+        `state.ctrlList[-1].task .= obj;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".palfx_amplb=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".palfx_amplg=", ";", 2)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            `state.ctrlList[-1].task .= obj;
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=,
-                ".palfx_amplb=", ";", 2)) ret false;
-            if(.s.equ(",")<, `tokenizer(data=)){
-              `state.ctrlList[-1].task .= obj;
-              if(
-                !`fullExpression(
-                  `state.ctrlList[-1].task=, data=,
-                  ".palfx_cycletime=", ";", 2)) ret false;
-            }
-          }
+              ".palfx_cycletime=", ";", 2)) ret false;
         }
         ret true;
       }])) ret false;
@@ -5016,13 +5031,19 @@ public &StateBuilder
   bool attackDist(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "`attackdist=", ";", 1)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
@@ -5235,12 +5256,18 @@ public &StateBuilder
             `state.ctrlList[-1].task=, data=, "k=", ";", 2)) ret false;
         ret true;
       }])) ret false;
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "va=", ";", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       `state.ctrlList[-1].task .= "`addLife((double)va,k!=0,a!=0);";
       ret true;
     }]);
@@ -5248,39 +5275,57 @@ public &StateBuilder
   bool lifeSet(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "`setLife(", ");", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
   bool powerAdd(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "`addPower(", ");", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
   bool powerSet(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "`addPower(", "-`getSharePower());", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
@@ -5308,12 +5353,18 @@ public &StateBuilder
             `state.ctrlList[-1].task=, data=, "k=", ";", 2)) ret false;
         ret true;
       }])) ret false;
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "va=", ";", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       `state.ctrlList[-1].task .= "`trTargetLifeAdd(tar,va,k!=0,a!=0);";
       ret true;
     }]);
@@ -5389,12 +5440,18 @@ public &StateBuilder
             "tar=`getTarget(", ");if(#tar==0)ret;", 2)) ret false;
         ret true;
       }])) ret false;
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "s=", ";", 2)) ret false;
        ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       `state.ctrlList[-1].task .= "`trTargetState(tar,s);";
       ret true;
     }]);
@@ -5463,13 +5520,19 @@ public &StateBuilder
             "tar=`getTarget(", ");if(#tar==0)ret;", 2)) ret false;
         ret true;
       }])) ret false;
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "`trTargetPowerAdd(tar,", ");", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
@@ -5512,11 +5575,15 @@ public &StateBuilder
         ret valset(:data:);
       }])) ret false;
       if(!val && !`stateParam(param=, "value2", [`paraF_t(data=){
-        val = ni =true;
+        val = ni = true;
         ret valset(:data:);
       }])) ret false;
+      if(!val){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       bool time = false;
-      if(val && !`stateParam(param=, "time", [`paraF_t(data=){
+      if(!`stateParam(param=, "time", [`paraF_t(data=){
         time = true;
         if(
           !`fullExpression(
@@ -5535,7 +5602,9 @@ public &StateBuilder
   bool attackMulSet(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
@@ -5543,13 +5612,19 @@ public &StateBuilder
             ";", 1)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
   bool defenceMulSet(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
@@ -5557,6 +5632,10 @@ public &StateBuilder
             "*100.0);", 1)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
@@ -5570,7 +5649,9 @@ public &StateBuilder
   bool assertSpecial(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool flag = false;
       ~`paraF_t flset = [`paraF_t(data=){
+        flag = true;
         ^/char text = .s.toLower(data);
         branch{
         cond .s.equ(text, "noautoturn"):
@@ -5623,15 +5704,16 @@ public &StateBuilder
         cond .s.equ(text, "noko"):
           `state.ctrlList[-1].task .= ".specialFlag|=.gsNOKO;";
         else:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }];
       if(!`stateParam(param=, "flag", flset)) ret false;
+      if(!flag){
+        `lasterror = "flagが指定されていません";
+        ret false;
+      }
       if(!`stateParam(param=, "flag2", flset)) ret false;
       if(!`stateParam(param=, "flag3", flset)) ret false;
       ret true;
@@ -5752,11 +5834,8 @@ public &StateBuilder
         case 'p':
           `state.ctrlList[-1].task .= "h~player=true;";
         default:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }])) ret false;
@@ -5790,11 +5869,8 @@ public &StateBuilder
         cond text[0] == 'r':
           `state.ctrlList[-1].task .= "pt=5;";
         else:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= data .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = data + "が無効な値です";
+          ret false;
         }
         ret true;
       }])) ret false;
@@ -5999,11 +6075,8 @@ public &StateBuilder
           cond text[0] == 'r':
             `state.ctrlList[-1].task .= exp .= ".postype=5;";
           else:
-            if(!.cfg.IgnoreMostErrors){
-              %char buf;
-              `lasterror = (buf .= data .= "が無効な値です");
-              ret false;
-            }
+            `lasterror = data + "が無効な値です";
+            ret false;
           }
           ret true;
         }])) ret false;
@@ -6024,8 +6097,7 @@ public &StateBuilder
             `state.ctrlList[-1].task .= "t=5;";
           else:
             if(!.cfg.IgnoreMostErrors){
-              %char buf;
-              `lasterror = (buf .= data .= "が無効な値です");
+              `lasterror = data + "が無効な値です";
               ret false;
             }
           }
@@ -6370,8 +6442,7 @@ public &StateBuilder
           `state.ctrlList[-1].task .= "`aimg.alphas=1;`aimg.alphad=255;";
         else:
           if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= text .= "が無効な値です");
+            `lasterror = text + "が無効な値です";
             ret false;
           }
         }
@@ -6673,18 +6744,22 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "addr=", ";", 2)) ret false;
-        if(.s.equ(",")<, `tokenizer(data=)){
-          `state.ctrlList[-1].task .= pf;
-          if(
-            !`fullExpression(
-              `state.ctrlList[-1].task=, data=, "addg=", ";", 2)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            `state.ctrlList[-1].task .= pf;
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=, "addb=", ";", 2)) ret false;
-          }
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = "addの要素が足りません";
+          ret false;
         }
+        `state.ctrlList[-1].task .= pf;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "addg=", ";", 2)) ret false;
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = "addの要素が足りません";
+          ret false;
+        }
+        `state.ctrlList[-1].task .= pf;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "addb=", ";", 2)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "mul", [`paraF_t(data=){
@@ -6692,18 +6767,22 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "mulr=", ";", 2)) ret false;
-        if(.s.equ(",")<, `tokenizer(data=)){
-          `state.ctrlList[-1].task .= pf;
-          if(
-            !`fullExpression(
-              `state.ctrlList[-1].task=, data=, "mulg=", ";", 2)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            `state.ctrlList[-1].task .= pf;
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=, "mulb=", ";", 2)) ret false;
-          }
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = "mulの要素が足りません";
+          ret false;
         }
+        `state.ctrlList[-1].task .= pf;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "mulg=", ";", 2)) ret false;
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = "mulの要素が足りません";
+          ret false;
+        }
+        `state.ctrlList[-1].task .= pf;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "mulb=", ";", 2)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "sinadd", [`paraF_t(data=){
@@ -6711,24 +6790,28 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "amplr=", ";", 2)) ret false;
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = "sinaddの要素が足りません";
+          ret false;
+        }
+        `state.ctrlList[-1].task .= pf;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "amplg=", ";", 2)) ret false;
+        if(!.s.equ(",")<, `tokenizer(data=)){
+          `lasterror = "sinaddの要素が足りません";
+          ret false;
+        }
+        `state.ctrlList[-1].task .= pf;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "amplb=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= pf;
           if(
             !`fullExpression(
-              `state.ctrlList[-1].task=, data=, "amplg=", ";", 2)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            `state.ctrlList[-1].task .= pf;
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=, "amplb=", ";", 2)) ret false;
-            if(.s.equ(",")<, `tokenizer(data=)){
-              `state.ctrlList[-1].task .= pf;
-              if(
-                !`fullExpression(
-                  `state.ctrlList[-1].task=, data=,
-                  "cycletime=", ";", 2)) ret false;
-            }
-          }
+              `state.ctrlList[-1].task=, data=,
+              "cycletime=", ";", 2)) ret false;
         }
         ret true;
       }])) ret false;
@@ -6747,6 +6830,7 @@ public &StateBuilder
   {
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .= "int t=0;";
+      bool addalphaNone = false;
       if(!`stateParam(param=, "trans", [`paraF_t(data=){
         ^/char text = .s.toLower(data);
         branch{
@@ -6765,19 +6849,18 @@ public &StateBuilder
         cond .s.equ(text, "add1"):
           `state.ctrlList[-1].task .=
             "t=4;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
+            addalphaNone = true;
         cond .s.equ(text, "sub"):
           `state.ctrlList[-1].task .=
             "t=5;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
         else:
-          if(!.cfg.IgnoreMostErrors){
-            %char buf;
-            `lasterror = (buf .= text .= "が無効な値です");
-            ret false;
-          }
+          `lasterror = text + "が無効な値です";
+          ret false;
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "alpha", [`paraF_t(data=){
+        addalphaNone = false;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
@@ -6794,6 +6877,7 @@ public &StateBuilder
         `state.ctrlList[-1].task .= "if(t==4)t=3;}";
         ret true;
       }])) ret false;
+      if(addalphaNone) `state.ctrlList[-1].task .= "t=0;";
       `state.ctrlList[-1].task .=
         "`setAlpha(t,`sysivar[.iALPHAS]=,`sysivar[.iALPHAD]=);";
       ret true;
@@ -7012,6 +7096,10 @@ public &StateBuilder
         }
         ret true;
       }])) ret false;
+      if(!val){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
@@ -7059,13 +7147,19 @@ public &StateBuilder
   bool hitAdd(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             "`trHitAdd(", ");", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
@@ -7073,7 +7167,9 @@ public &StateBuilder
   {
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .= .sndstart;
+      bool value = false;
       if(!`stateParam(param=, "value", [`paraF_t(data=){
+        value = true;
         branch{
           if(#data == 0) else;
         cond data[0] == 'F' || data[0] == 'f':
@@ -7097,6 +7193,10 @@ public &StateBuilder
         }
         ret true;
       }])) ret false;
+      if(!value){
+        `lasterror = "valueが指定されていません";
+        ret false;
+      }
       if(!`stateParam(param=, "channel", [`paraF_t(data=){
         if(
           !`fullExpression(
@@ -7150,7 +7250,9 @@ public &StateBuilder
   bool stopSnd(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
+      bool channel = false;
       if(!`stateParam(param=, "channel", [`paraF_t(data=){
+        channel = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
@@ -7159,6 +7261,10 @@ public &StateBuilder
             "else:`sounds.new[i].sound.new(0);}", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!channel){
+        `lasterror = "channelが指定されていません";
+        ret false;
+      }
       ret true;
     }]);
   }
@@ -7167,12 +7273,18 @@ public &StateBuilder
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .=
         "int ch=-1;float p=0.0;^float x=`sysfvar[.fX...fX+1];";
+      bool channel = false;
       if(!`stateParam(param=, "channel", [`paraF_t(data=){
+        channel = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "ch=", ";", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!channel){
+        `lasterror = "channelが指定されていません";
+        ret false;
+      }
       if(!`stateParam(param=, "pan", [`paraF_t(data=){
         if(
           !`fullExpression(
@@ -7199,7 +7311,9 @@ public &StateBuilder
       if(`state.ctrlList[-1].typ == .CtrlTy::DisplayToClipboard){
         `state.ctrlList[-1].task .= ".com.clipboardText[`playerno].new(0);";
       }
+      bool text = false;
       if(!`stateParam(param=, "text", [`paraF_t(data=){
+        text = true;
         branch{
         cond #data > 0 && data[0] == '"':
           data = data[1...s.find(\", data[1..-1])+1];
@@ -7212,6 +7326,10 @@ public &StateBuilder
         `state.ctrlList[-1].task .= "text="\" .= data .= \"";";
         ret true;
       }])) ret false;
+      if(!text){
+        `lasterror = "textが指定されていません";
+        ret false;
+      }
       if(!`stateParam(param=, "params", [`paraF_t(data=){
         loop{do:
           if(
@@ -7237,12 +7355,18 @@ public &StateBuilder
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .=
         "^`self p=`trPartner(0)$.c;if(#p==0)ret false;int sn=-1,psn=-1;";
+      bool stateno = false;
       if(!`stateParam(param=, "stateno", [`paraF_t(data=){
+        stateno = true;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "sn=", ";", 2)) ret false;
         ret true;
       }])) ret false;
+      if(!stateno){
+        `lasterror = "statenoが指定されていません";
+        ret false;
+      }
       if(!`stateParam(param=, "partnerstateno", [`paraF_t(data=){
         if(
           !`fullExpression(
@@ -7277,8 +7401,10 @@ public &StateBuilder
         }
         ret true;
       }])) ret false;
+      bool dest = false;
       if(!`stateParam(param=, "dest", [`paraF_t(data=){
-       if(
+        dest = true;
+        if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "dg=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -7288,6 +7414,10 @@ public &StateBuilder
         }
         ret true;
       }])) ret false;
+      if(!dest){
+        `lasterror = "destが指定されていません";
+        ret false;
+      }
       `state.ctrlList[-1].task .= "`trRemapPal(sg,sn,dg,dn);";
       ret true;
     }]);
@@ -7538,7 +7668,6 @@ public &StateBuilder
         if(`state.ignorehitpause < 0) `state.ignorehitpause = 1;
       else:
         if(`state.ctrlList[-1].typ == .CtrlTy::Unknown){
-          if(.cfg.IgnoreMostErrors) break, break;
           `lasterror = "typeが指定されていません";
           ret false;
         }
@@ -7555,7 +7684,6 @@ public &StateBuilder
         case .CtrlTy::ForceFeedback:
         case .CtrlTy::Null:
         default:
-          if(.cfg.IgnoreMostErrors) break;
           `lasterror = "無効なキー名です";
           ret false;
         }
