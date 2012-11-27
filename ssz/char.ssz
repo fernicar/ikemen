@@ -1412,6 +1412,7 @@ const int lsBACKWCHANGE   = 0b00000000000010000000000000000000;
 const int lsFEDGECHANGE   = 0b00000000000100000000000000000000;
 const int lsBEDGECHANGE   = 0b00000000001000000000000000000000;
 const int lsGUARD         = 0b00000000010000000000000000000000;
+const int lsDESTROY       = 0b00000000100000000000000000000000;
 
 const int lasMask =
   lsNOAUTOTURN | lsNOWALK | lsNOSTANDGUARD | lsNOCROUCHGUARD | lsNOAIRGUARD
@@ -2021,11 +2022,12 @@ public &Char
   public bool player;
   public bool inguarddist;
   public byte p1facing, animpno;
-  public bool destmp, cs1tmp, angleset;
+  public bool cs1tmp, angleset;
   public bool ctrl, standby;
   public byte hittmp, acttmp;
   public byte atktmp;
   public byte minus;
+  public bool pushed;
   public int ho;
   public int sprpriority;
   public int animno;
@@ -2128,8 +2130,8 @@ public &Char
     `atktmp = 0;
     `hittmp = 0;
     `acttmp = 0;
-    `destmp = false;
     `minus = 2;
+    `pushed = false;
     `ho = -1;
     `cs1tmp = false;
     `angleset = false;
@@ -3452,7 +3454,7 @@ public &Char
     branch{
     cond #c > 0:
       if(c~isTarget(`id)){
-        if(c~destmp){
+        if(c~ls(.lsDESTROY)){
           `trSelfState(5050, -1, -1);
           break, break, else;
         }
@@ -3506,7 +3508,7 @@ public &Char
     float highest=, float lowest=, float leftest=, float rightest=)
   {
     if(.com.tickFrame()){
-      if(`destmp){
+      if(`ls(.lsDESTROY)){
         `destroySelf();
         ret;
       }
@@ -3581,7 +3583,9 @@ public &Char
       }
     }
     if(`acttmp > 0){
-      float sp = .com.tickInterpola();
+      float sp =
+        `pushed ? (.com.tickNextFrame() ? 1.0 : 0.0)
+        : .com.tickInterpola();
       if(!`ls(.lsPOSFREEZEX)){
         `drawX = `sysfvar[.fX] - (`sysfvar[.fX] - `ticOldX) * (1.0 - sp);
       }
@@ -4076,7 +4080,8 @@ public &Char
   {
     loop{index i = 1; while; do:
       if(
-        .chars[`playerno][i]~helperindex > 0 && !.chars[`playerno][i]~destmp
+        .chars[`playerno][i]~helperindex > 0
+        && !.chars[`playerno][i]~ls(.lsDESTROY)
         && (id <= 0 || id == .chars[`playerno][i]~helperid))
       {
         .c = .chars[`playerno][i];
@@ -4810,7 +4815,7 @@ public &Char
   public void trDestroySelf()
   {
     if(`helperindex <= 0) ret;
-    `destmp = true;
+    `sysivar[.iSPECIALFLAG] |= .lsDESTROY;
   }
   public %int getTarget(int id)
   {
@@ -5100,7 +5105,8 @@ public &Char
     .v.i = 0;
     loop{index i = 1; while; do:
       if(
-        .chars[`playerno][i]~helperindex > 0 && !.chars[`playerno][i]~destmp
+        .chars[`playerno][i]~helperindex > 0
+        && !.chars[`playerno][i]~ls(.lsDESTROY)
         && (id <= 0 || id == .chars[`playerno][i]~helperid)) .v.i++;
       i++;
     while i < #.chars[`playerno]:
@@ -5978,6 +5984,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       pxma = .com.xmax - pyr.getEdge(pyr.bedge);
     }
     pyr.inguarddist = false;
+    pyr.pushed = false;
     pyr.sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     float pl, pr;
     int contact = 0;
@@ -6091,6 +6098,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         pl < er && el < pr
         && (contact > 0 || pyr.clsnCheck(p~c<>=, false, false)))
       {
+        pyr.pushed = p~c~pushed = true;
         const float foo = 0.5;
         branch{
           float tmp = pyr.sysfvar[.fX] - p~c~sysfvar[.fX];
