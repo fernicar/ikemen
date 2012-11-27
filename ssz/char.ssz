@@ -3474,6 +3474,7 @@ public &Char
       `setX(c~sysfvar[.fX] + f*`sysfvar[.fBINDPOSX]);
       `drawX += c~drawX - c~sysfvar[.fX];
       `ticOldX += c~ticOldX - c~sysfvar[.fX];
+      `pushed |= c~pushed;
     }
     if(!.m.isnan(`sysfvar[.fBINDPOSY])){
       `setY(c~sysfvar[.fY] + `sysfvar[.fBINDPOSY]);
