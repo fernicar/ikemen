@@ -36,6 +36,15 @@ void setPower(&.lua.State L=, int re=)
   }
 }
 
+void selfState(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  int stateno = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  if(#.cmd.net == 0 && #.cmd.replay == 0 && #.tscri.cwc > 0){
+    .tscri.cwc~trSelfState(stateno, -1, 1);
+  }
+}
+
 void addHotkey(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
@@ -128,6 +137,7 @@ public ^/char loadFile(^/char file)
   .L.register("puts", .puts);
   .L.register("setLife", .setLife);
   .L.register("setPower", .setPower);
+  .L.register("selfState", .selfState);
   .L.register("addHotkey", .addHotkey);
   .L.register("toggleClsnDraw", .toggleClsnDraw);
   .L.register("toggleDebugDraw", .toggleDebugDraw);

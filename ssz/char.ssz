@@ -3583,10 +3583,9 @@ public &Char
         }
       }
     }
+    if(.com.tickNextFrame()) `pushed = false;
     if(`acttmp > 0){
-      float sp =
-        `pushed ? (.com.tickNextFrame() ? 1.0 : 0.0)
-        : .com.tickInterpola();
+      float sp = `pushed ? 0.0 : .com.tickInterpola();
       if(!`ls(.lsPOSFREEZEX)){
         `drawX = `sysfvar[.fX] - (`sysfvar[.fX] - `ticOldX) * (1.0 - sp);
       }
@@ -5985,7 +5984,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       pxma = .com.xmax - pyr.getEdge(pyr.bedge);
     }
     pyr.inguarddist = false;
-    pyr.pushed = false;
     pyr.sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
     float pl, pr;
     int contact = 0;

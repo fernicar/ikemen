@@ -19,6 +19,7 @@ addHotkey('F5', false, false, false, 'setTime(0)')
 addHotkey('SPACE', false, false, false, 'full(1);full(2);full(3);full(4)')
 addHotkey('PAUSE', false, false, false, 'togglePause()')
 addHotkey('SCROLLOCK', false, false, false, 'step()')
+addHotkey('i', true, false, false, 'stand(1);stand(2);stand(3);stand(4)')
 
 
 speed = 1.0
@@ -67,6 +68,14 @@ function full(p)
   if player(p) then
     setLife(lifemax())
     setPower(powermax())
+    playerid(oldid)
+  end
+end
+
+function stand(p)
+  local oldid = id()
+  if player(p) then
+    selfState(0)
     playerid(oldid)
   end
 end
