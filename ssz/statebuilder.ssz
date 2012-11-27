@@ -6057,6 +6057,7 @@ public &StateBuilder
       }
       ^/char exp =
         `state.ctrlList[-1].typ == .CtrlTy::ModifyExplod ? "m" : "e<>";
+      bool addalphaNone = false;
       if(`state.ctrlList[-1].typ != .CtrlTy::GameMakeAnim){
         if(!`stateParam(param=, "postype", [`paraF_t(data=){
           ^/char text = .s.toLower(data);
@@ -6091,6 +6092,7 @@ public &StateBuilder
             `state.ctrlList[-1].task .= "t=2;";
           cond .s.equ(text, "addalpha") || .s.equ(text, "alpha"):
             `state.ctrlList[-1].task .= "t=3;";
+            addalphaNone = true;
           cond .s.equ(text, "add1"):
             `state.ctrlList[-1].task .= "t=4;";
           cond .s.equ(text, "sub"):
@@ -6295,6 +6297,7 @@ public &StateBuilder
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "alpha", [`paraF_t(data=){
+          addalphaNone = false;
           `state.ctrlList[-1].task .= "if(t==3||t==4){" .= exp;
           if(
             !`fullExpression(
@@ -6312,6 +6315,7 @@ public &StateBuilder
           `state.ctrlList[-1].task .= "if(t==4)t=3;}";
           ret true;
         }])) ret false;
+        if(addalphaNone) `state.ctrlList[-1].task .= "t=0;";
       }
       if(`state.ctrlList[-1].typ == .CtrlTy::GameMakeAnim){
         if(!`stateParam(param=, "under", [`paraF_t(data=){

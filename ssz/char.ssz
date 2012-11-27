@@ -3984,7 +3984,7 @@ public &Char
   {
     switch(trans){
     case 0://default
-      salpha = .com.IERR;
+      salpha = -1;
       dalpha = .com.IERR;
     case 1://none
       salpha = 255;
