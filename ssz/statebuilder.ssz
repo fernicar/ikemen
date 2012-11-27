@@ -6846,10 +6846,10 @@ public &StateBuilder
         cond .s.equ(text, "addalpha") || .s.equ(text, "alpha"):
           `state.ctrlList[-1].task .=
             "t=3;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
+            addalphaNone = true;
         cond .s.equ(text, "add1"):
           `state.ctrlList[-1].task .=
             "t=4;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
-            addalphaNone = true;
         cond .s.equ(text, "sub"):
           `state.ctrlList[-1].task .=
             "t=5;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
