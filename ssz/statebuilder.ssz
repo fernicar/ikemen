@@ -376,7 +376,7 @@ public &StateBuilder
   public short mver0 = 0, mver1 = 0;
   ^&.cmd.CommandList cmdl;
   int kakko = 0, valCnt = 0;
-  ^/char maeOp, this;
+  ^/char maeOp, this = "`";
   type paraF_t = $bool(^/char=);
   bool existState(int no, bool iflag)
   {
@@ -783,6 +783,11 @@ public &StateBuilder
     if(`expBoolOr(out=, in=)=>typ < 0) ret -1;
     if(!`kakkotojiru(in=)) ret -1;
     ret typ;
+  }
+  ^/char rdObjName(^/char obj)
+  {
+    if(.s.equ(obj, "`")) ret "_";
+    ret "_" + obj[0 .. #obj-1];
   }
   int expRedirectable(^/char obj, ^/char name, %char out=, ^/char in=)
   {:<-
@@ -2217,15 +2222,20 @@ public &StateBuilder
       if(`oneArg(token, temp=, in=)=>typ < 0) ret -1;
       out .= obj .= "trPlayerID(";
       `expCast(out=, 2, typ, temp);
-      out .= ")$.rd([._t(_=){";
       if(!.s.equ(",")<, `tokenizer(in=)){
         `lasterror = ",がありません";
         ret -1;
       }
       temp.new(0);
-      if(`expRedirectable("_.", `tokenizer(in=), temp=, in=)=>typ < 0) ret -1;
-      `expCast(out=, 0, typ, temp);
-      out .= ";}])";
+      {
+        ^/char rdObj = `rdObjName(obj);
+        out .= ")$.rd([._t(" .= rdObj .= "=){";
+        if(
+          `expRedirectable(
+            rdObj+".", `tokenizer(in=), temp=, in=)=>typ < 0) ret -1;
+        `expCast(out=, 0, typ, temp);
+        out .= ";}])";
+      }
       typ = 0;
     cond
       .s.equ("enemy", token) || .s.equ("enemynear", token)
@@ -2273,10 +2283,15 @@ public &StateBuilder
         `lasterror = ",がありません";
         ret -1;
       }
-      out .= "$.rd([._t(_=){";
-      if(`expRedirectable("_.", `tokenizer(in=), temp=, in=)=>typ < 0) ret -1;
-      `expCast(out=, 0, typ, temp);
-      out .= ";}])";
+      {
+        ^/char rdObj = `rdObjName(obj);
+        out .= "$.rd([._t(" .= rdObj .= "=){";
+        if(
+          `expRedirectable(
+            rdObj+".", `tokenizer(in=), temp=, in=)=>typ < 0) ret -1;
+        `expCast(out=, 0, typ, temp);
+        out .= ";}])";
+      }
       typ = 0;
     cond .s.equ("root", token) || .s.equ("parent", token):
       out .= obj .= token[0] == 'r' ? "trRoot()" : "trParent()";
@@ -2284,10 +2299,15 @@ public &StateBuilder
         `lasterror = ",がありません";
         ret -1;
       }
-      out .= "$.rd([._t(_=){";
-      if(`expRedirectable("_.", `tokenizer(in=), temp=, in=)=>typ < 0) ret -1;
-      `expCast(out=, 0, typ, temp);
-      out .= ";}])";
+      {
+        ^/char rdObj = `rdObjName(obj);
+        out .= "$.rd([._t(" .= rdObj .= "=){";
+        if(
+          `expRedirectable(
+            rdObj+".", `tokenizer(in=), temp=, in=)=>typ < 0) ret -1;
+        `expCast(out=, 0, typ, temp);
+        out .= ";}])";
+      }
       typ = 0;
     cond .s.equ("standby", token):
       out .= obj .= "standby";
