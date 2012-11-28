@@ -376,7 +376,7 @@ public &StateBuilder
   public short mver0 = 0, mver1 = 0;
   ^&.cmd.CommandList cmdl;
   int kakko = 0, valCnt = 0;
-  ^/char maeOp;
+  ^/char maeOp, this;
   type paraF_t = $bool(^/char=);
   bool existState(int no, bool iflag)
   {
@@ -2155,21 +2155,27 @@ public &StateBuilder
         ret -1;
       }
       `kakko++;
-     if(!`typeExp!`expBoolOr?(out=, in=, 3)) ret -1;
-      out .= '?';
-      if(!.s.equ(",", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "は引数が3個必要です");
-        ret -1;
+      {
+        ^/char oldthis = `this;
+        `this = obj;
+        if(!`typeExp!`expBoolOr?(out=, in=, 3)) ret -1;
+        out .= '?';
+        if(!.s.equ(",", `tokenizer(in=))){
+          %char buf;
+          `lasterror = (buf .= token .= "は引数が3個必要です");
+          ret -1;
+        }
+        if(!`typeExp!`expBoolOr?(out=, in=, 0)) ret -1;
+        out .= ':';
+        if(!.s.equ(",", `tokenizer(in=))){
+          %char buf;
+          `lasterror = (buf .= token .= "は引数が3個必要です");
+          ret -1;
+        }
+        if(!`typeExp!`expBoolOr?(out=, in=, 0)) ret -1;
+      break:
+        `this = oldthis;
       }
-     if(!`typeExp!`expBoolOr?(out=, in=, 0)) ret -1;
-       out .= ':';
-      if(!.s.equ(",", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "は引数が3個必要です");
-        ret -1;
-      }
-      if(!`typeExp!`expBoolOr?(out=, in=, 0)) ret -1;
       out .= ')';
       if(!`kakkotojiru(in=)) ret -1;
       typ = 0;
@@ -2338,7 +2344,7 @@ public &StateBuilder
   }
   int expValue(%char out=, ^/char in=)
   {
-    ret `expRedirectable("`", `tokenizer(in=), out=, in=);
+    ret `expRedirectable(`this, `tokenizer(in=), out=, in=);
   }
   int expPostNot(%char out=, ^/char in=)
   {
@@ -2961,6 +2967,7 @@ public &StateBuilder
   bool fullExpression(%char out=, ^/char in=, ^/char bef, ^/char aft, int typ)
   {
     out .= bef;
+    `this = "`";
     if(!`typeExp!`expression?(out=, in=, typ)) ret false;
     out .= aft;
     ret true;
