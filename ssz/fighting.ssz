@@ -534,7 +534,7 @@ void game()
           (float).com.GameHeight/scl, tmp + (float).chr.stg~zoffset/scl),
         newy + 240.0*(1.0 - .m.min!float?(1.0, scl)));
     if(
-      .com.tickNextFrame() && (.chr.super <= 0 || .chr.superpausebg == 0)
+      .com.tickFrame() && (.chr.super <= 0 || .chr.superpausebg == 0)
       && (.chr.pause <= 0 || .chr.pausebg == 0)) 
     {
       .chr.stg~action();

@@ -1856,12 +1856,14 @@ public &Projectile
         if(#`ani > 0 && `ani~ani.animTime() == 0) `ani.new(0);
         if(#`ani == 0 && `id >= 0) `id = !`id;
       }
+    }
+    if(`paused() || `hitpause != 0) ret;
+    if(.com.tickFrame()){
       `ticOldX = `x;
       `ticNewX = `x + `velocityx*(float)`facing;
       `ticOldY = `y;
       `ticNewY = `y + `velocityy;
     }
-    if(`paused() || `hitpause != 0) ret;
     float sp = .com.tickInterpola();
     `x = `ticNewX - (`ticNewX - `ticOldX) * (1.0 - sp);
     `y = `ticNewY - (`ticNewY - `ticOldY) * (1.0 - sp);
@@ -3122,6 +3124,8 @@ public &Char
         }
       }
       `minus = 2;
+      `ticOldX = `sysfvar[.fX];
+      `ticOldY = `sysfvar[.fY];
     }
   }
   public int roundState()
@@ -5364,16 +5368,14 @@ public void Explod::update(bool oVer, int playerNo)
       if(!.m.isnan(`offsety)) `setY(bc~drawY+bc~offsetY() + `offsety);
     }
   }
-  if(.com.tickFrame()){
-    if(act) `ani~ani.updateSprite();
-    if(act && `bindtime == 0){
+  if(.com.tickFrame() && act) `ani~ani.updateSprite();
+  if(act && `bindtime == 0){
+    if(.com.tickFrame()){
       `ticOldX = `x;
       `ticNewX = `x + `velocityx*(float)(`facing*`relativef);
       `ticOldY = `y;
       `ticNewY = `y + `velocityy;
     }
-  }
-  if(act && `bindtime == 0){
     float sp = .com.tickInterpola();
     `x = `ticNewX - (`ticNewX - `ticOldX) * (1.0 - sp);
     `y = `ticNewY - (`ticNewY - `ticOldY) * (1.0 - sp);
