@@ -4748,17 +4748,41 @@ public &StateBuilder
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ground.velocity", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= obj;
-        if(
-          !`argExpression(
-            `state.ctrlList[-1].task=, data=,
-            ".ground_velocityx=", ";", 1)) ret false;
-        if(.s.equ(",")<, `tokenizer(data=)){
+        ^/char oldin = data, tmp;
+        branch{
+        cond .s.equ(.s.toLower(`tokenizer(data=)), "n"):
+          oldin = data;
+          tmp = `tokenizer(data=);
+          if(#tmp > 0 && !.s.equ(tmp, ",")){
+            `lasterror = "nがエラーです";
+            ret false;
+          }
+          data = oldin;
+        else:
+          data = oldin;
           `state.ctrlList[-1].task .= obj;
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
-              ".ground_velocityy=", ";", 1)) ret false;
+              ".ground_velocityx=", ";", 1)) ret false;
+        }
+        if(.s.equ(",")<, `tokenizer(data=)){
+          ^/char oldin = data, tmp;
+          branch{
+          cond .s.equ(.s.toLower(`tokenizer(data=)), "n"):
+            tmp = `tokenizer(data=);
+            if(#tmp > 0){
+              `lasterror = "nがエラーです";
+              ret false;
+            }
+          else:
+            data = oldin;
+            `state.ctrlList[-1].task .= obj;
+            if(
+              !`fullExpression(
+                `state.ctrlList[-1].task=, data=,
+                ".ground_velocityy=", ";", 1)) ret false;
+          }
         }
         ret true;
       }])) ret false;
