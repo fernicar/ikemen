@@ -702,11 +702,6 @@ public &StateBuilder
       ^/char token;
       continue;
     do:
-      if(.cfg.IgnoreMostErrors){
-        %char o;
-        if(`expBoolOr(o=, in=) < 0) ret false;
-        break, continue;
-      }
       `lasterror = "括弧が閉じていません";
       ret false;
     continue:
@@ -846,9 +841,9 @@ public &StateBuilder
     out .= num;
     if(#num == 0) branch{
       ^/char token = name;
-    cond .s.equ("(", token) || .s.equ("[", token):
+    cond .s.equ("(", token):
       `kakko++;
-      if(`expBoolOr(out=, in=)=>typ < 0 || !`tojikakko(in=)) ret -1;
+      if(`expBoolOr(out=, in=)=>typ < 0 || !`kakkotojiru(in=)) ret -1;
     cond .s.equ("-", token):
       branch{
       cond #in > 0 && .m.inRange!char?('0', '9', in[0]) || in[0] == '.':
@@ -2350,14 +2345,8 @@ public &StateBuilder
         }
       }
     else:
-      branch{
-      cond .cfg.IgnoreMostErrors && .s.equ("", token):
-        out .= "0";
-        typ = 2;
-      else:
-        `lasterror = token + "が不正です";
-        ret -1;
-      }
+      `lasterror = token + "が不正です";
+      ret -1;
     }
     `valCnt++;
     ret typ;
@@ -2895,40 +2884,9 @@ public &StateBuilder
   }
   int expression(%char out=, ^/char in=)
   {
-    if(.cfg.IgnoreMostErrors){
-      ^/char oldin = in, oldin2;
-      ^/char token = `tokenizer(in=);
-      if(
-        !.s.equ(token, "n") || (
-          (oldin2 = in)$#(token = `tokenizer(in=)) > 0
-          && !.s.equ(token, ",")))
-      {
-        in = oldin;
-        break, break;
-      }
-      in = oldin2;
-      out .= ".v.setSF()";
-      ret -1;
-    }
     `kakko = 0;
     int typ;
     if(`expBoolOr(out=, in=)=>typ < 0) ret -1;
-    ^/char oldin = in;
-    ^/char token = `tokenizer(in=);
-    if(#token > 0) branch{
-    cond .s.equ(token, ","):
-      in = oldin;
-    cond .cfg.IgnoreMostErrors:
-      out .= "$.v.setSF()";
-      typ = 0;
-      in = in[.s.find(",", in)..-1];
-    else:
-      {
-        %char buf;
-        `lasterror = (buf .= token .= "が不正です");
-        ret -1;
-      }
-    }
     ret typ;
   }
   void expCast(%char out=, int typ, int expType, ^/char exp)
@@ -2984,11 +2942,33 @@ public &StateBuilder
     `expCast(out=, typ, et, temp);
     ret true;
   }
+  bool argExpression(%char out=, ^/char in=, ^/char bef, ^/char aft, int typ)
+  {
+    out .= bef;
+    `this = "`";
+    if(!`typeExp!`expression?(out=, in=, typ)) ret false;
+    ^/char oldin = in;
+    ^/char token = `tokenizer(in=);
+    if(#token > 0) branch{
+    cond .s.equ(token, ","):
+      if(#`tokenizer(in=) > 0) in = oldin;
+    else:
+      `lasterror = token + "が不正です";
+      ret false;
+    }
+    out .= aft;
+    ret true;
+  }
   bool fullExpression(%char out=, ^/char in=, ^/char bef, ^/char aft, int typ)
   {
     out .= bef;
     `this = "`";
     if(!`typeExp!`expression?(out=, in=, typ)) ret false;
+    ^/char token = `tokenizer(in=);
+    if(#token > 0){
+      `lasterror = token + "が不正です";
+      ret false;
+    }
     out .= aft;
     ret true;
   }
@@ -3160,57 +3140,64 @@ public &StateBuilder
         break, break;
       }
       line = .s.trim(lines[i][0 .. .s.find(";", lines[i])]);
-      f = .s.cFind("= ("\t, line);
-      if(f > 0){
-        ^/char name = .s.toLower(line[0..f]);
-        ^/char data = .s.trim(line[f..-1]);
-        branch{
-        cond #data > 0 && data[0] == '(':
-          if(
-            !.s.equ(name, "var") && !.s.equ(name, "fvar")
-            && !.s.equ(name, "sysvar") && !.s.equ(name, "sysfvar"))
-          {
-            if(line[f] == '(') break, break, break;
-            break, else;
+      branch{
+        ^/char name, data;
+      cond .s.equ(line[0..3], "var"):
+        name = line[0..3];
+        data = line[3..-1];
+      cond .s.equ(line[0..4], "fvar"):
+        name = line[0..4];
+        data = line[4..-1];
+      cond .s.equ(line[0..6], "sysvar"):
+        name = line[0..6];
+        data = line[6..-1];
+      cond .s.equ(line[0..7], "sysfvar"):
+        name = line[0..7];
+        data = line[7..-1];
+      else:
+        f = .s.cFind("= "\t, line);
+        name = .s.toLower(line[0..f]);
+        data = .s.trim(line[f..-1]);
+        f = .s.find("=", line);
+        if(f < 0) break;
+        data = .s.trim(line[f+1..-1]);
+      comm:
+        {
+          bool foo = true;
+          if(!.s.equ(name[0..7], "trigger")){
+            tbl.operate(name)<, [void(^int d=){
+              if(#d > 0){
+                foo = false;
+                ret;
+              }
+              d.new(1);
+            }];
           }
-        else:
-          f = .s.find("=", line);
-          data = f >= 0 ? .s.trim(line[f+1..-1]) : "";
-        }
-        bool foo = true;
-        if(!.s.equ(name[0..7], "trigger")){
-          tbl.operate(name)<, [void(^int d=){
-            if(#d > 0){
-              foo = false;
-              ret;
+          if(!foo){
+            if(.cfg.IgnoreMostErrors) break, break;
+            `lasterror = name + "が重複しています";
+            ret false;
+          }
+          switch(typeid(func_t)){
+          case typeid(`stateBulid:<-state):
+            branch{
+            cond .s.equ(name, "type"):
+              typedeta = true;
+            cond
+              .s.equ(name[0..7], "trigger")
+              || .s.equ(name, "persistent") || .s.equ(name, "ignorehitpause")
+              :
+            else:
+              atomawasi.set(name, ?data);
+              break;
+            comm:
+              if(!func_t(sec, name, data)) ret false;
             }
-            d.new(1);
-          }];
-        }
-        if(!foo){
-          if(.cfg.IgnoreMostErrors) break, break;
-          `lasterror = name + "が重複しています";
-          ret false;
-        }
-        switch(typeid(func_t)){
-        case typeid(`stateBulid:<-state):
-          branch{
-          cond .s.equ(name, "type"):
-            typedeta = true;
-          cond
-            .s.equ(name[0..7], "trigger")
-            || .s.equ(name, "persistent") || .s.equ(name, "ignorehitpause")
-            :
-          else:
+          case typeid(`stateBulid:<-statedef):
             atomawasi.set(name, ?data);
-            break;
-          comm:
+          default:
             if(!func_t(sec, name, data)) ret false;
           }
-        case typeid(`stateBulid:<-statedef):
-          atomawasi.set(name, ?data);
-        default:
-          if(!func_t(sec, name, data)) ret false;
         }
       }
     continue:
@@ -3230,7 +3217,10 @@ public &StateBuilder
     ^^/char data;
     if(#(data = param.get(name)) > 0){
       `errorexp = data<>;
-      if(!f(:data<>=:)) ret false;
+      if(!f(:data<>=:)){
+        `lasterror = name + ": " + `lasterror;
+        ret false;
+      }
       `errorexp = "";
       data.new(0);
       param.set(name, data);
@@ -3371,17 +3361,17 @@ public &StateBuilder
       if(`state.juggle == 0) `state.deftask .= "`stVal.juggle=0;";
       if(!`stateParam(param=, "velset", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.deftask=, data=, "`setXV(", ");", 1)) ret false;
-        branch{
-          ^/char tmp = `tokenizer(data=);
-        cond .s.equ(",", tmp):
+        if(.s.equ(",", `tokenizer(data=))){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.deftask=, data=, "`setYV(", ");", 1)) ret false;
-        cond #tmp != 0:
-          `lasterror = tmp + "が不正です";
-          ret false;
+          if(.s.equ(",", `tokenizer(data=))){
+            if(
+              !`fullExpression(
+                `state.deftask=, data=, "", ";", 1)) ret false;
+          }
         }
         ret true;
       }])) ret false;
@@ -3550,11 +3540,11 @@ public &StateBuilder
       }]))ret false;
       if(value && !`stateParam(param=, "v", [`paraF_t(data=){
         v = true;
-        ret `typeExp!`expression?(varexp=, data=, 2);
+        ret `fullExpression(varexp=, data=, "", "", 2);
       }])) ret false;
       if(value && !v && !`stateParam(param=, "fv", [`paraF_t(data=){
         fv = true;
-        ret `typeExp!`expression?(varexp=, data=, 2);
+        ret `fullExpression(varexp=, data=, "", "", 2);
       }])) ret false;
       if((v || fv) && value){
         `state.ctrlList[-1].task .=
@@ -3564,8 +3554,8 @@ public &StateBuilder
           .= varexp .= ',';
         `errorexp = valexp;
         if(
-          !`typeExp!`expression?(
-            `state.ctrlList[-1].task=, valexp=, v ? 2 : 1)) ret false;
+          !`fullExpression(
+            `state.ctrlList[-1].task=, valexp=, "", "", v ? 2 : 1)) ret false;
         `errorexp = "";
         `state.ctrlList[-1].task.= ");";
         ret true;
@@ -3597,32 +3587,36 @@ public &StateBuilder
         }
         data = data[f+1..-1];
         if(
-          !`typeExp!`expression?(
-            `state.ctrlList[-1].task=, data=, v ? 2 : 1)) ret false;
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "", "", v ? 2 : 1)) ret false;
         `state.ctrlList[-1].task.= ");";
         ret true;
       }];
       if(!value && !`stateParam(param=, "var", [`paraF_t(data=){
-        value = true;
         v = true;
-        ret set(:data=:);
+        bool retVal = set(:data=:);
+        if(retVal) value = true;
+        ret retVal || .cfg.IgnoreMostErrors;
       }])) ret false;
       if(!value && !`stateParam(param=, "fvar", [`paraF_t(data=){
-        value = true;
         fv = true;
-        ret set(:data=:);
+        bool retVal = set(:data=:);
+        if(retVal) value = true;
+        ret retVal || .cfg.IgnoreMostErrors;
       }])) ret false;
       if(!value && !`stateParam(param=, "sysvar", [`paraF_t(data=){
-        value = true;
         v = true;
         sys = true;
-        ret set(:data=:);
+        bool retVal = set(:data=:);
+        if(retVal) value = true;
+        ret retVal || .cfg.IgnoreMostErrors;
       }])) ret false;
       if(!value && !`stateParam(param=, "sysfvar", [`paraF_t(data=){
-        value = true;
         fv = true;
         sys = true;
-        ret set(:data=:);
+        bool retVal = set(:data=:);
+        if(retVal) value = true;
+        ret retVal || .cfg.IgnoreMostErrors;
       }])) ret false;
       if(!value){
         `lasterror = "valueが指定されていません";
@@ -3689,7 +3683,7 @@ public &StateBuilder
       }
       if(!`stateParam(param=, "range", [`paraF_t(data=){
         %char buf;
-        if(!`fullExpression(buf=, data=, "", "", 2)) ret false;
+        if(!`argExpression(buf=, data=, "", "", 2)) ret false;
         start = buf;
         branch{
           ^/char tmp = `tokenizer(data=);
@@ -4025,12 +4019,12 @@ public &StateBuilder
         }])) ret false;
         if(!`stateParam(param=, "projshadow", [`paraF_t(data=){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "pr~shadowr=", ";", 2)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
-              !`fullExpression(
+              !`argExpression(
                 `state.ctrlList[-1].task=, data=,
                 "pr~shadowg=", ";", 2)) ret false;
             if(.s.equ(",")<, `tokenizer(data=)){
@@ -4086,7 +4080,7 @@ public &StateBuilder
         }])) ret false;
         if(!`stateParam(param=, "velocity", [`paraF_t(data=){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "pr~velocityx=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -4099,7 +4093,7 @@ public &StateBuilder
         }])) ret false;
         if(!`stateParam(param=, "velmul", [`paraF_t(data=){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "pr~velmulx=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -4112,7 +4106,7 @@ public &StateBuilder
         }])) ret false;
         if(!`stateParam(param=, "remvelocity", [`paraF_t(data=){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "pr~remvelocityx=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -4125,7 +4119,7 @@ public &StateBuilder
         }])) ret false;
         if(!`stateParam(param=, "accel", [`paraF_t(data=){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "pr~accelx=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -4138,7 +4132,7 @@ public &StateBuilder
         }])) ret false;
         if(!`stateParam(param=, "projscale", [`paraF_t(data=){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "pr~scalex=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -4167,7 +4161,7 @@ public &StateBuilder
       if(!`stateParam(param=, "nochainid", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".nochainid1=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4222,7 +4216,7 @@ public &StateBuilder
       if(!`stateParam(param=, "getpower", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".hitgetpower=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4237,7 +4231,7 @@ public &StateBuilder
       if(!`stateParam(param=, "damage", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".hitdamage=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4252,7 +4246,7 @@ public &StateBuilder
       if(!`stateParam(param=, "givepower", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".hitgivepower=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4284,7 +4278,7 @@ public &StateBuilder
           data = data[1..-1];
         }
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "{int hsg=", ";", 2)) ret false;
         `state.ctrlList[-1].task .=
           obj .= (
@@ -4310,7 +4304,7 @@ public &StateBuilder
       if(!`stateParam(param=, "priority", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, ".priority=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           data = .s.trim(data);
@@ -4467,7 +4461,7 @@ public &StateBuilder
       if(!`stateParam(param=, "sparkxy", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, ".sparkx=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
@@ -4512,36 +4506,46 @@ public &StateBuilder
       if(!`stateParam(param=, "mindist", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, ".mindistx=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               ".mindisty=", ";", 1)) ret false;
+          if(.s.equ(",")<, `tokenizer(data=)){
+            if(
+              !`fullExpression(
+                `state.ctrlList[-1].task=, data=, "", ";", 1)) ret false;
+          }
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "maxdist", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".maxdistx=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               ".maxdisty=", ";", 1)) ret false;
+          if(.s.equ(",")<, `tokenizer(data=)){
+            if(
+              !`fullExpression(
+                `state.ctrlList[-1].task=, data=, "", ";", 1)) ret false;
+          }
         }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "snap", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, ".snapx=", ";", 1)) ret false;
         `state.ctrlList[-1].task .=
           "if(" .= obj .= ".p2facing==.com.IERR)"
@@ -4549,12 +4553,12 @@ public &StateBuilder
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=, ".snapy=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= obj;
             if(
-              !`fullExpression(
+              !`argExpression(
                 `state.ctrlList[-1].task=, data=,
                 ".snapz=", ";", 1)) ret false;
             if(.s.equ(",")<, `tokenizer(data=)){
@@ -4619,7 +4623,7 @@ public &StateBuilder
       if(!`stateParam(param=, "down.velocity", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".down_velocityx=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4666,7 +4670,7 @@ public &StateBuilder
       if(!`stateParam(param=, "pausetime", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".pausetime=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4681,7 +4685,7 @@ public &StateBuilder
       if(!`stateParam(param=, "guard.pausetime", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".guard_pausetime=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4696,7 +4700,7 @@ public &StateBuilder
       if(!`stateParam(param=, "air.velocity", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".air_velocityx=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4711,7 +4715,7 @@ public &StateBuilder
       if(!`stateParam(param=, "airguard.velocity", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".airguard_velocityx=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4750,7 +4754,7 @@ public &StateBuilder
       if(!`stateParam(param=, "ground.velocity", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".ground_velocityx=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4820,7 +4824,7 @@ public &StateBuilder
       if(!`stateParam(param=, "palfx.add", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".palfx_addr=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
@@ -4829,7 +4833,7 @@ public &StateBuilder
         }
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".palfx_addg=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
@@ -4846,7 +4850,7 @@ public &StateBuilder
       if(!`stateParam(param=, "palfx.mul", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".palfx_mulr=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
@@ -4855,7 +4859,7 @@ public &StateBuilder
         }
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".palfx_mulg=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
@@ -4872,7 +4876,7 @@ public &StateBuilder
       if(!`stateParam(param=, "palfx.sinadd", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".palfx_amplr=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
@@ -4881,7 +4885,7 @@ public &StateBuilder
         }
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".palfx_amplg=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
@@ -4890,7 +4894,7 @@ public &StateBuilder
         }
         `state.ctrlList[-1].task .= obj;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".palfx_amplb=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -4977,7 +4981,7 @@ public &StateBuilder
       if(`state.ctrlList[-1].typ == .CtrlTy::Projectile){
         if(!`stateParam(param=, "offset", [`paraF_t(data=){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=, "x=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
             if(
@@ -5009,7 +5013,7 @@ public &StateBuilder
         }])) ret false;
         if(!`stateParam(param=, "projheightbound", [`paraF_t(data=){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "pr~heightboundt=", ";", 2)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -5206,7 +5210,7 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".superposx=`sysfvar[.fX]+(float)`facing*",
             ";", 1)) ret false;
@@ -5254,7 +5258,7 @@ public &StateBuilder
           data = data[1..-1];
         }
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "g=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
@@ -5422,11 +5426,11 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "x=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=, "y=", ";", 1)) ret false;
           if(
             .s.equ(",")<, `tokenizer(data=)
@@ -5828,7 +5832,7 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "`sysfvar[.fBINDPOSX]=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -5965,7 +5969,7 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "size.head.pos", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "h~sysivar[.iHEAD_POSX]=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -5978,7 +5982,7 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "size.mid.pos", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "h~sysivar[.iMID_POSX]=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -6018,7 +6022,7 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "x=", ";", 1)) ret false;
          if(.s.equ(",")<, `tokenizer(data=)){
           if(
@@ -6166,7 +6170,7 @@ public &StateBuilder
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
         `state.ctrlList[-1].task .= exp;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".offsetx=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -6180,7 +6184,7 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "random", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "rx=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
@@ -6195,7 +6199,7 @@ public &StateBuilder
           vel = true;
           `state.ctrlList[-1].task .= exp;
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               ".velocityx=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -6212,7 +6216,7 @@ public &StateBuilder
         if(!`stateParam(param=, "accel", [`paraF_t(data=){
           `state.ctrlList[-1].task .= exp;
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=, ".accelx=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= exp;
@@ -6226,7 +6230,7 @@ public &StateBuilder
         if(!`stateParam(param=, "scale", [`paraF_t(data=){
           `state.ctrlList[-1].task .= exp;
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=, ".scalex=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= exp;
@@ -6296,13 +6300,13 @@ public &StateBuilder
         if(!`stateParam(param=, "shadow", [`paraF_t(data=){
           `state.ctrlList[-1].task .= exp;
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               ".shadowr=", ";", 2)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
             `state.ctrlList[-1].task .= exp;
             if(
-              !`fullExpression(
+              !`argExpression(
                 `state.ctrlList[-1].task=, data=,
                 ".shadowg=", ";", 2)) ret false;
             if(.s.equ(",")<, `tokenizer(data=)){
@@ -6327,7 +6331,7 @@ public &StateBuilder
           addalphaNone = false;
           `state.ctrlList[-1].task .= "if(t==3||t==4){" .= exp;
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=, ".alphas=", ";", 2)) ret false;
           `state.ctrlList[-1].task .= exp;
           branch{
@@ -6523,12 +6527,12 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "palbright", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "`aimg.setPalbrightR(", ");", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "`aimg.setPalbrightG(", ");", 2)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -6542,12 +6546,12 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "palcontrast", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "`aimg.setPalcontrastR(", ");", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "`aimg.setPalcontrastG(", ");", 2)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -6561,12 +6565,12 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "palpostbright", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "`aimg.postbrightr=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "`aimg.postbrightg=", ";", 2)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -6580,12 +6584,12 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "paladd", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "`aimg.addr=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "`aimg.addg=", ";", 2)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -6599,12 +6603,12 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "palmul", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "`aimg.mulr=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "`aimg.mulg=", ";", 1)) ret false;
           if(.s.equ(",")<, `tokenizer(data=)){
@@ -6654,7 +6658,7 @@ public &StateBuilder
         "if(`stVal.time%s!=s-1)ret;float x=0.0,y=0.0,x2=0.0/0.0,y2=0.0;";
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "x=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
@@ -6665,7 +6669,7 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "pos2", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "x2=", ";", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
@@ -6698,7 +6702,7 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "scale", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "`sysfvar[.fANGLESCALEX]*=", ";", 1)) ret false;
         branch{
@@ -6773,7 +6777,7 @@ public &StateBuilder
       if(!`stateParam(param=, "add", [`paraF_t(data=){
         `state.ctrlList[-1].task .= pf;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "addr=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
           `lasterror = "addの要素が足りません";
@@ -6781,7 +6785,7 @@ public &StateBuilder
         }
         `state.ctrlList[-1].task .= pf;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "addg=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
           `lasterror = "addの要素が足りません";
@@ -6796,7 +6800,7 @@ public &StateBuilder
       if(!`stateParam(param=, "mul", [`paraF_t(data=){
         `state.ctrlList[-1].task .= pf;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "mulr=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
           `lasterror = "mulの要素が足りません";
@@ -6804,7 +6808,7 @@ public &StateBuilder
         }
         `state.ctrlList[-1].task .= pf;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "mulg=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
           `lasterror = "mulの要素が足りません";
@@ -6819,7 +6823,7 @@ public &StateBuilder
       if(!`stateParam(param=, "sinadd", [`paraF_t(data=){
         `state.ctrlList[-1].task .= pf;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "amplr=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
           `lasterror = "sinaddの要素が足りません";
@@ -6827,7 +6831,7 @@ public &StateBuilder
         }
         `state.ctrlList[-1].task .= pf;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "amplg=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
           `lasterror = "sinaddの要素が足りません";
@@ -6835,7 +6839,7 @@ public &StateBuilder
         }
         `state.ctrlList[-1].task .= pf;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "amplb=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= pf;
@@ -6893,7 +6897,7 @@ public &StateBuilder
       if(!`stateParam(param=, "alpha", [`paraF_t(data=){
         addalphaNone = false;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "if(t==3||t==4){`sysivar[.iALPHAS]=", ";", 2)) ret false;
         branch{
@@ -7013,14 +7017,14 @@ public &StateBuilder
         ".envcol_r=255;.envcol_g=255;.envcol_b=255;.envcol_under=0;";
       if(!`stateParam(param=, "value", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, ".envcol_r=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
           `lasterror = ",がありません";
           ret false;
         }
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, ".envcol_g=", ";", 2)) ret false;
         if(!.s.equ(",")<, `tokenizer(data=)){
           `lasterror = ",がありません";
@@ -7092,7 +7096,7 @@ public &StateBuilder
       if(!`stateParam(param=, "edge", [`paraF_t(data=){
         val = true;
         if(
-          !`fullExpression(`state.ctrlList[-1].task=, data=,
+          !`argExpression(`state.ctrlList[-1].task=, data=,
             "`setFEdge(", ");", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
@@ -7104,7 +7108,7 @@ public &StateBuilder
       if(!`stateParam(param=, "player", [`paraF_t(data=){
         val = true;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=,
             "`setFWidth(", ");", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
@@ -7118,7 +7122,7 @@ public &StateBuilder
       if(!val && !`stateParam(param=, "value", [`paraF_t(data=){
         val = true;
         if(
-          !`fullExpression(`state.ctrlList[-1].task=, data=,
+          !`argExpression(`state.ctrlList[-1].task=, data=,
             "float f=", ";`setFEdge(f);`setFWidth(f);", 1)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
@@ -7151,7 +7155,7 @@ public &StateBuilder
       if(!`stateParam(param=, "movecamera", [`paraF_t(data=){
         mc = true;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "branch{cond ",
             ":`sysivar[.iSPECIALFLAG]|=.lsMOVECAMERAX;"
             "else:`sysivar[.iSPECIALFLAG]&=!.lsMOVECAMERAX;}", 3)) ret false;
@@ -7212,7 +7216,7 @@ public &StateBuilder
           data = data[1..-1];
         }
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "g=", ";", 2)) ret false;
         branch{
         cond .s.equ(",")<, `tokenizer(data=):
@@ -7364,7 +7368,7 @@ public &StateBuilder
       if(!`stateParam(param=, "params", [`paraF_t(data=){
         loop{do:
           if(
-            !`fullExpression(
+            !`argExpression(
               `state.ctrlList[-1].task=, data=,
               "vars.new[-1]=", "$.v;", 0)) ret false;
         while .s.equ(",")<, `tokenizer(data=):}
@@ -7423,7 +7427,7 @@ public &StateBuilder
       `state.ctrlList[-1].task .= "int sg=-1,sn=-1,dg=-1,dn=-1;";
       if(!`stateParam(param=, "source", [`paraF_t(data=){
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "sg=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
@@ -7436,7 +7440,7 @@ public &StateBuilder
       if(!`stateParam(param=, "dest", [`paraF_t(data=){
         dest = true;
         if(
-          !`fullExpression(
+          !`argExpression(
             `state.ctrlList[-1].task=, data=, "dg=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           if(
