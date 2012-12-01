@@ -3593,30 +3593,26 @@ public &StateBuilder
         ret true;
       }];
       if(!value && !`stateParam(param=, "var", [`paraF_t(data=){
+        value = true;
         v = true;
-        bool retVal = set(:data=:);
-        if(retVal) value = true;
-        ret retVal || .cfg.IgnoreMostErrors;
+        ret set(:data=:);
       }])) ret false;
       if(!value && !`stateParam(param=, "fvar", [`paraF_t(data=){
+        value = true;
         fv = true;
-        bool retVal = set(:data=:);
-        if(retVal) value = true;
-        ret retVal || .cfg.IgnoreMostErrors;
+        ret set(:data=:);
       }])) ret false;
       if(!value && !`stateParam(param=, "sysvar", [`paraF_t(data=){
+        value = true;
         v = true;
         sys = true;
-        bool retVal = set(:data=:);
-        if(retVal) value = true;
-        ret retVal || .cfg.IgnoreMostErrors;
+        ret set(:data=:);
       }])) ret false;
       if(!value && !`stateParam(param=, "sysfvar", [`paraF_t(data=){
+        value = true;
         fv = true;
         sys = true;
-        bool retVal = set(:data=:);
-        if(retVal) value = true;
-        ret retVal || .cfg.IgnoreMostErrors;
+        ret set(:data=:);
       }])) ret false;
       if(!value){
         `lasterror = "valueが指定されていません";
