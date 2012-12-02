@@ -3142,18 +3142,18 @@ public &StateBuilder
       line = .s.trim(lines[i][0 .. .s.find(";", lines[i])]);
       branch{
         ^/char name, data;
-      cond .s.equ(line[0..3], "var"):
-        name = line[0..3];
-        data = line[3..-1];
-      cond .s.equ(line[0..4], "fvar"):
-        name = line[0..4];
-        data = line[4..-1];
-      cond .s.equ(line[0..6], "sysvar"):
-        name = line[0..6];
-        data = line[6..-1];
-      cond .s.equ(line[0..7], "sysfvar"):
-        name = line[0..7];
-        data = line[7..-1];
+      cond #line >= 3 && .s.equ(.s.toLower(line[0..3]), "var"):
+        name = .s.toLower(line[0..3]);
+        data = line;
+      cond #line >= 4 && .s.equ(.s.toLower(line[0..4]), "fvar"):
+        name = .s.toLower(line[0..4]);
+        data = line;
+      cond #line >= 6 && .s.equ(.s.toLower(line[0..6]), "sysvar"):
+        name = .s.toLower(line[0..6]);
+        data = line;
+      cond #line >= 7 && .s.equ(.s.toLower(line[0..7]), "sysfvar"):
+        name = .s.toLower(line[0..7]);
+        data = line;
       else:
         f = .s.cFind("= "\t, line);
         name = .s.toLower(line[0..f]);
@@ -3593,22 +3593,38 @@ public &StateBuilder
         ret true;
       }];
       if(!value && !`stateParam(param=, "var", [`paraF_t(data=){
+        if(data[0] != 'v'){
+          `lasterror = data[0..3] + "の'v'が小文字でありません";
+          ret false;
+        }
+        data = data[3..-1];
         value = true;
         v = true;
         ret set(:data=:);
       }])) ret false;
       if(!value && !`stateParam(param=, "fvar", [`paraF_t(data=){
+        if(data[0] != 'f'){
+          `lasterror = data[0..4] + "の'f'が小文字でありません";
+          ret false;
+        }
+        data = data[4..-1];
         value = true;
         fv = true;
         ret set(:data=:);
       }])) ret false;
       if(!value && !`stateParam(param=, "sysvar", [`paraF_t(data=){
+        if(data[3] != 'v'){
+          `lasterror = data[0..6] + "の'v'が小文字でありません";
+          ret false;
+        }
+        data = data[6..-1];
         value = true;
         v = true;
         sys = true;
         ret set(:data=:);
       }])) ret false;
       if(!value && !`stateParam(param=, "sysfvar", [`paraF_t(data=){
+        data = data[7..-1];
         value = true;
         fv = true;
         sys = true;
