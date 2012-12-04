@@ -2097,8 +2097,13 @@ public &Char
     `ticOldX = `drawX = `sysfvar[.fX];
     `ticOldY = `drawY = `sysfvar[.fY];
     branch{
-    cond `helperindex == 0 && .com.rexisted[`playerno&1] > 0:
-      if(#`palfx > 0) `palfx~clear();
+    cond `helperindex == 0:
+      branch{
+      cond .com.rexisted[`playerno&1] > 0:
+        `palfx~clear();
+      else:
+        `palfx.new(1);
+      }
     else:
       `palfx.new(0);
     }
@@ -3902,8 +3907,6 @@ public &Char
       i++;
     while i < #`children:
     }
-    ^&.com.PalFX fx = `getPalfx();
-    if(fx~player == `id) fx~time = 0;
     .players.destroy(`id);
     `helperindex = -1;
   }
@@ -5919,25 +5922,23 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         `pyr.stVal.hb.by[-1].juggle -=
           pro != 0 ? hit.air_juggle : by.stVal.juggle;
       }
-      if(hit.palfx_time > 0){
-        ^&.com.PalFX fx = `pyr.getPalfx();
-        fx~clear2(1);
-        fx~player = `pyr.id;
-        fx~time = hit.palfx_time;
-        fx~mulr = hit.palfx_mulr;
-        fx~mulg = hit.palfx_mulg;
-        fx~mulb = hit.palfx_mulb;
-        fx~addr = hit.palfx_addr;
-        fx~addg = hit.palfx_addg;
-        fx~addb = hit.palfx_addb;
-        fx~amplr = hit.palfx_amplr;
-        fx~amplg = hit.palfx_amplg;
-        fx~amplb = hit.palfx_amplb;
-        if(hit.palfx_cycletime > 0) fx~cycletime = hit.palfx_cycletime;
-        fx~color =
+      if(hit.palfx_time > 0 && #`pyr.palfx > 0){
+        `pyr.palfx~clear2(1);
+        `pyr.palfx~time = hit.palfx_time;
+        `pyr.palfx~mulr = hit.palfx_mulr;
+        `pyr.palfx~mulg = hit.palfx_mulg;
+        `pyr.palfx~mulb = hit.palfx_mulb;
+        `pyr.palfx~addr = hit.palfx_addr;
+        `pyr.palfx~addg = hit.palfx_addg;
+        `pyr.palfx~addb = hit.palfx_addb;
+        `pyr.palfx~amplr = hit.palfx_amplr;
+        `pyr.palfx~amplg = hit.palfx_amplg;
+        `pyr.palfx~amplb = hit.palfx_amplb;
+        if(hit.palfx_cycletime > 0) `pyr.palfx~cycletime = hit.palfx_cycletime;
+        `pyr.palfx~color =
           .m.max!float?(0.0)<, .m.min!float?(1.0)<,
           ((float)hit.palfx_color / 256.0);
-        fx~invertall = hit.palfx_invertall;
+        `pyr.palfx~invertall = hit.palfx_invertall;
       }
       if(hit.envshake_time > 0){
         .stage.envShake.time = hit.envshake_time;

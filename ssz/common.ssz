@@ -469,7 +469,6 @@ public void screenFill(uint color)
 workpal.new(256);
 public &PalFX
 {
-  public int player;
   public int time;
   public int mulr;
   public int mulg;
@@ -492,7 +491,6 @@ public &PalFX
   }
   public void copy(`self x)
   {
-    `player = x.player;
     `time = x.time;
     `mulr = x.mulr;
     `mulg = x.mulg;
@@ -512,7 +510,6 @@ public &PalFX
   }
   public void clear2(int negType)
   {
-    `player = -1;
     `time = 0;
     `mulr = 256;
     `mulg = 256;

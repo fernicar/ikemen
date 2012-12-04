@@ -3155,9 +3155,7 @@ public &StateBuilder
         name = .s.toLower(line[0..7]);
         data = line;
       else:
-        f = .s.cFind("= "\t, line);
-        name = .s.toLower(line[0..f]);
-        data = .s.trim(line[f..-1]);
+        name = .s.toLower(line[0 .. .s.cFind("= "\t, line)]);
         f = .s.find("=", line);
         if(f < 0) break;
         data = .s.trim(line[f+1..-1]);
@@ -6783,7 +6781,7 @@ public &StateBuilder
       switch(`state.ctrlList[-1].typ){
       case .CtrlTy::PalFX:
         `state.ctrlList[-1].task .=
-          "^&.com.PalFX fx=`getPalfx();fx~clear2(1);fx~player=`id;";
+          "^&.com.PalFX fx=`palfx;if(#fx==0)fx.new(1);fx~clear2(1);";
       case .CtrlTy::AllPalFX:
         `state.ctrlList[-1].task .= ".sff.allPalFX~clear();";
       case .CtrlTy::BGPalFX:
