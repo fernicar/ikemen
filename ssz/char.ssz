@@ -4592,12 +4592,8 @@ public &Char
   public void trP2DistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0){
+    if(#e == 0 || !e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
       .v.setSF();
-      ret;
-    }
-    if(!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
-      .v.setF(0.0);
       ret;
     }
     .v.setF((float)((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX])));
@@ -4605,7 +4601,7 @@ public &Char
   public void trP2DistY()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0){
+    if(#e == 0 || !e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
       .v.setSF();
       ret;
     }
@@ -4614,12 +4610,8 @@ public &Char
   public void trP2BodyDistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0){
+    if(#e == 0 || !e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
       .v.setSF();
-      ret;
-    }
-    if(!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
-      .v.setF(0.0);
       ret;
     }
     float dist = e~sysfvar[.fX] - `sysfvar[.fX];
@@ -4706,7 +4698,15 @@ public &Char
     else:
       foo = (no - 1) ^ (`playerno & 1);
     }
-    ret #.chars[foo] > 0 && .s.equ(name, .s.toLower(.chars[foo][0]~name));
+    if(
+      #.chars[foo] == 0 || (
+        no == 2 && (
+          !.chars[foo]<>~isAlive()
+          && (.chars[foo]<>~sysivar[.iSYSFLAG] & .sfOVER) != 0)))
+    {
+      ret false;
+    }
+    ret .s.equ(name, .s.toLower(.chars[foo]<>~name));
   }
   public bool trAuthor(^/char name)
   {
@@ -6768,7 +6768,7 @@ public float action(
       .com.intro--;
       if(.com.intro == 0) loop{index i = 0; while; do:
         if(#.chars[i] > 0) branch{
-          .chars[i][0]~sysivar[.iSYSFLAG] &= !.sfKO;
+          .chars[i][0]~sysivar[.iSYSFLAG] &= !(.sfKO | .sfOVER);
         cond .chars[i][0]~stVal.no == 0:
           .chars[i][0]~setCtrl(true);
         else:

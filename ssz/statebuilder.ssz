@@ -3561,6 +3561,7 @@ public &StateBuilder
       v = fv = false;
       bool sys = false;
       ~$bool(^/char=) set = [bool(^/char data=){
+        data = .s.trim(data);
         if(data[0] != '('){
           `lasterror = "'('がありません";
           ret false;
