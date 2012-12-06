@@ -835,6 +835,23 @@ public &StateBuilder
       typ = 3;
       ret true;
     }
+    bool eqneq2(%char out=, ^/char in=, int typ=, ~$bool(%char=) proc)
+    {
+      bool not;
+      if(!`kyuushiki(not=, in=)) ret false;
+      typ = 3;
+      %char buf;
+      if(!proc(:buf=:)) ret false;
+      branch{
+      cond !not:
+        out .= buf;
+      cond typ == 0:
+        out .= '(' .= buf .= "$.v.isSF()?.none:.v.setB(!.v.isT()))";
+      else:
+        out .= " !(" .= buf .= ')';
+      }
+      ret true;
+    }
     int typ = 0;
     %char temp;
     ^/char num = `number(name, typ=);
@@ -1686,7 +1703,7 @@ public &StateBuilder
       out .= obj .= "stVal.prevno";
       typ = 2;
     cond .s.equ("statetype", token) || .s.equ("p2statetype", token):
-      if(!eqneq(out=, in=, typ=)<, [bool(){
+      if(!eqneq2(out=, in=, typ=)<, [bool(%char out=){
         bool p2 = token[0] == 'p';
         ^/char sty;
         token = `tokenizer(in=);
@@ -1709,10 +1726,11 @@ public &StateBuilder
           ret false;
         }
         out .= obj .= (p2 ? "trP2StateType(" : "trStateType(") .= sty .= ")";
+        if(p2) typ = 0;
         ret true;
       }]) ret -1;
     cond .s.equ("movetype", token) || .s.equ("p2movetype", token):
-      if(!eqneq(out=, in=, typ=)<, [bool(){
+      if(!eqneq2(out=, in=, typ=)<, [bool(%char out=){
         bool p2 = token[0] == 'p';
         ^/char tmp;
         token = `tokenizer(in=);
@@ -1733,6 +1751,7 @@ public &StateBuilder
           ret false;
         }
         out .= obj .= (p2 ? "trP2MoveType(" : "trMoveType(") .= tmp .= ")";
+        if(p2) typ = 0;
         ret true;
       }]) ret -1;
     cond .s.equ("teammode", token):

@@ -4579,7 +4579,7 @@ public &Char
   public void trP2Life()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0){
+    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
       .v.setSF();
       ret;
     }
@@ -4592,7 +4592,7 @@ public &Char
   public void trP2DistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0 || !e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
+    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
       .v.setSF();
       ret;
     }
@@ -4601,7 +4601,7 @@ public &Char
   public void trP2DistY()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0 || !e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
+    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
       .v.setSF();
       ret;
     }
@@ -4610,7 +4610,7 @@ public &Char
   public void trP2BodyDistX()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0 || !e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
+    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
       .v.setSF();
       ret;
     }
@@ -4660,15 +4660,19 @@ public &Char
   {
     ret st == `stVal.typ;
   }
-  public bool trP2StateType(|.StTy st)
+  public void trP2StateType(|.StTy st)
   {
     ^`self e = .players.enemyNear(`=, 0);
-    ret #e > 0 && st == e~stVal.typ;
+    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
+      .v.setSF();
+      ret;
+    }
+    .v.setB(st == e~stVal.typ);
   }
   public void trP2StateNo()
   {
     ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0){
+    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
       .v.setSF();
       ret;
     }
@@ -4678,10 +4682,14 @@ public &Char
   {
     ret mt == `stVal.mov;
   }
-  public bool trP2MoveType(|.MovTy mt)
+  public void trP2MoveType(|.MovTy mt)
   {
     ^`self e = .players.enemyNear(`=, 0);
-    ret #e > 0 && mt == e~stVal.mov;
+    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
+      .v.setSF();
+      ret;
+    }
+    .v.setB(mt == e~stVal.mov);
   }
   public bool trPName(int no, ^/char name)
   {
@@ -4700,9 +4708,8 @@ public &Char
     }
     if(
       #.chars[foo] == 0 || (
-        no == 2 && (
-          !.chars[foo]<>~isAlive()
-          && (.chars[foo]<>~sysivar[.iSYSFLAG] & .sfOVER) != 0)))
+        no == 2 && !.chars[foo]<>~isAlive()
+        && (.chars[foo]<>~sysivar[.iSYSFLAG] & .sfOVER) != 0))
     {
       ret false;
     }
@@ -6412,7 +6419,9 @@ void commandUpdate()
     if(#.chars[i] == 0) continue;
     .chars[i].[void(p){
       if(p<>~cmd~input(p<>~key, p<>~facing)) loop{index i = 0; while; do:
-        p<>~cmd[i].step(p<>~key, p<>~facing, p<>~key < 0, p<>~acttmp%2 == -1);
+        p<>~cmd[i].step(
+          p<>~key, p<>~facing, p<>~key < 0,
+          p<>~acttmp%2 == -1, p<>~mver0() != 1);
         i++;
       while i < #p<>~cmd:}
       if(p<>~key < 0) loop{

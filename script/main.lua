@@ -13,6 +13,9 @@ loadLifebar('data/gms_lifebar/fight.def')
 loadDebugFont('data/gms_lifebar/font2.fnt')
 setDebugScript('script/debug.lua')
 
+selectColumns = 5
+
+
 assert(loadfile('script/select.lua'))()
 
 math.randomseed(os.time())
@@ -50,10 +53,12 @@ p2Cmd = commandNew()
 setCommand(p2Cmd)
 
 ------------------------------------------------------------
-setRandomSpr(sysSff, 151, 0, 1, 1)
-setSelColRow(5, 2)
-setSelCellSize(29, 29)
-setSelCellScale(1, 1)
+selectRows = math.floor(selectColumns * 2 / 5.0)
+
+setRandomSpr(sysSff, 151, 0, 5.0/selectColumns, 5.0/selectColumns)
+setSelColRow(selectColumns, selectRows)
+setSelCellSize(29*5.0/selectColumns, 29*5.0/selectColumns)
+setSelCellScale(5.0/selectColumns, 5.0/selectColumns)
 
 function init()
   p1TeamMode = 0
@@ -228,6 +233,7 @@ end
 p1Cursor = animNew(sysSff, [[
 160,0, 0,0, -1
 ]])
+animSetScale(p1Cursor, 5.0/selectColumns, 5.0/selectColumns)
 
 p1NameTxt = createTextImg(jgFnt, 0, 1, '', 0, 0)
 textImgSetScale(p1NameTxt, 0.5, 0.5)
@@ -243,16 +249,16 @@ function p1DrawSelectName()
 end
 
 function p1SelSub()
-  local n = p1SelOffset + p1SelX + 5*p1SelY
+  local n = p1SelOffset + p1SelX + selectColumns*p1SelY
   p1Portrait = n
   local y = p1DrawSelectName()
   if not p1SelEnd then
     if commandGetState(p1Cmd, 'su') then
       sndPlay(sysSnd, 100, 0)
-      p1SelY = p1SelY - 20;
+      p1SelY = p1SelY - 10*selectRows;
     elseif commandGetState(p1Cmd, 'sd') then
       sndPlay(sysSnd, 100, 0)
-      p1SelY = p1SelY + 20;
+      p1SelY = p1SelY + 10*selectRows;
     elseif commandGetState(p1Cmd, 'u') then
       sndPlay(sysSnd, 100, 0)
       p1SelY = p1SelY - 1;
@@ -267,19 +273,21 @@ function p1SelSub()
       p1SelX = p1SelX + 1
     end
     if p1SelY < 0 then
-      p1SelOffset = p1SelOffset + 5*p1SelY
+      p1SelOffset = p1SelOffset + selectColumns*p1SelY
       p1SelY = 0
-    elseif p1SelY > 1 then
-      p1SelOffset = p1SelOffset + 5*(p1SelY - 1)
-      p1SelY = 1
+    elseif p1SelY >= selectRows then
+      p1SelOffset = p1SelOffset + selectColumns*(p1SelY - (selectRows - 1))
+      p1SelY = selectRows - 1
     end
     if p1SelX < 0 then
-      p1SelX = 4
-    elseif p1SelX > 4 then
+      p1SelX = selectColumns - 1
+    elseif p1SelX >= selectColumns then
       p1SelX = 0
     end
     animUpdate(p1Cursor)
-    animPosDraw(p1Cursor, 10 + 29*p1SelX, 170 + 29*p1SelY)
+    animPosDraw(
+      p1Cursor, 10 + 29*p1SelX*5.0/selectColumns,
+      170 + 29*p1SelY*5.0/selectColumns)
     textImgSetText(p1NameTxt, getCharName(n))
     textImgPosDraw(p1NameTxt, 10, y)
     local selval = selectChar(1, n, btnPalNo(p1Cmd))
@@ -301,6 +309,7 @@ end
 p2Cursor = animNew(sysSff, [[
 170,0, 0,0, -1
 ]])
+animSetScale(p2Cursor, 5.0/selectColumns, 5.0/selectColumns)
 
 p2NameTxt = createTextImg(jgFnt, 0, -1, '', 0, 0)
 textImgSetScale(p2NameTxt, 0.5, 0.5)
@@ -316,16 +325,16 @@ function p2DrawSelectName()
 end
 
 function p2SelSub()
-  local n = p2SelOffset + p2SelX + 5*p2SelY
+  local n = p2SelOffset + p2SelX + selectColumns*p2SelY
   p2Portrait = n
   local y = p2DrawSelectName()
   if not p2SelEnd then
     if commandGetState(p2Cmd, 'su') then
       sndPlay(sysSnd, 100, 0)
-      p2SelY = p2SelY - 20;
+      p2SelY = p2SelY - 10*selectRows;
     elseif commandGetState(p2Cmd, 'sd') then
       sndPlay(sysSnd, 100, 0)
-      p2SelY = p2SelY + 20;
+      p2SelY = p2SelY + 10*selectRows;
     elseif commandGetState(p2Cmd, 'u') then
       sndPlay(sysSnd, 100, 0)
       p2SelY = p2SelY - 1;
@@ -340,19 +349,21 @@ function p2SelSub()
       p2SelX = p2SelX + 1
     end
     if p2SelY < 0 then
-      p2SelOffset = p2SelOffset + 5*p2SelY
+      p2SelOffset = p2SelOffset + selectColumns*p2SelY
       p2SelY = 0
-    elseif p2SelY > 1 then
-      p2SelOffset = p2SelOffset + 5*(p2SelY - 1)
-      p2SelY = 1
+    elseif p2SelY >= selectRows then
+      p2SelOffset = p2SelOffset + selectColumns*(p2SelY - (selectRows - 1))
+      p2SelY = selectRows - 1
     end
     if p2SelX < 0 then
-      p2SelX = 4
-    elseif p2SelX > 4 then
+      p2SelX = selectColumns - 1
+    elseif p2SelX >= selectColumns then
       p2SelX = 0
     end
     animUpdate(p2Cursor)
-    animPosDraw(p2Cursor, 169 + 29*p2SelX, 170 + 29*p2SelY)
+    animPosDraw(
+      p2Cursor, 169 + 29*p2SelX*5.0/selectColumns,
+      170 + 29*p2SelY*5.0/selectColumns)
     textImgSetText(p2NameTxt, getCharName(n))
     textImgPosDraw(p2NameTxt, 310, y)
     local selval = selectChar(2, n, btnPalNo(p2Cmd))
