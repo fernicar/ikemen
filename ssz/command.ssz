@@ -1095,21 +1095,22 @@ public &CommandList
           y = .aiil[!input].y();
           z = .aiil[!input].z();
           s = .aiil[!input].s();
-        cond input < #.cfg.in:
+        cond input < #.com.inputRemap && .com.inputRemap[input] < #.cfg.in:
           {
-            int jn = .cfg.in[input].jn;
+            int in = .com.inputRemap[input];
+            int jn = .cfg.in[in].jn;
             if(jn < -1) break, else;
-            l = .sdl.JoystickButtonState(:jn, .cfg.in[input].l:);
-            r = .sdl.JoystickButtonState(:jn, .cfg.in[input].r:);
-            u = .sdl.JoystickButtonState(:jn, .cfg.in[input].u:);
-            d = .sdl.JoystickButtonState(:jn, .cfg.in[input].d:);
-            a = .sdl.JoystickButtonState(:jn, .cfg.in[input].a:);
-            b = .sdl.JoystickButtonState(:jn, .cfg.in[input].b:);
-            c = .sdl.JoystickButtonState(:jn, .cfg.in[input].c:);
-            x = .sdl.JoystickButtonState(:jn, .cfg.in[input].x:);
-            y = .sdl.JoystickButtonState(:jn, .cfg.in[input].y:);
-            z = .sdl.JoystickButtonState(:jn, .cfg.in[input].z:);
-            s = .sdl.JoystickButtonState(:jn, .cfg.in[input].s:);
+            l = .sdl.JoystickButtonState(:jn, .cfg.in[in].l:);
+            r = .sdl.JoystickButtonState(:jn, .cfg.in[in].r:);
+            u = .sdl.JoystickButtonState(:jn, .cfg.in[in].u:);
+            d = .sdl.JoystickButtonState(:jn, .cfg.in[in].d:);
+            a = .sdl.JoystickButtonState(:jn, .cfg.in[in].a:);
+            b = .sdl.JoystickButtonState(:jn, .cfg.in[in].b:);
+            c = .sdl.JoystickButtonState(:jn, .cfg.in[in].c:);
+            x = .sdl.JoystickButtonState(:jn, .cfg.in[in].x:);
+            y = .sdl.JoystickButtonState(:jn, .cfg.in[in].y:);
+            z = .sdl.JoystickButtonState(:jn, .cfg.in[in].z:);
+            s = .sdl.JoystickButtonState(:jn, .cfg.in[in].s:);
           }
         else:
           break;
@@ -1121,7 +1122,7 @@ public &CommandList
     }
     ret step;
   }
-  public void step(int input, int facing, bool ai, bool hitpause, bool old)
+  public void step(int facing, bool ai, bool hitpause, bool old)
   {
     loop{index ii = 0; while; do:
       loop{index i = 0; while; do:

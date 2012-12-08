@@ -1183,19 +1183,11 @@ public &Anim<frame_t>
     int h = `frames[`drawidx].h;
     int v = `frames[`drawidx].v;
     float xs = xscale * axscl, ys = yscale * ayscl;
-    float agl =
-      angle*(float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
-    uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
-    if(uagl == 0x0) branch{
-    cond angleset:
-      `draw(
-        .com.scrrect=, x - xs*(float)(h*`frames[`drawidx].x), y,
-        1.0, 1.0, xs, xs, ys, 0.0, (float).com.GameWidth/2.0, fx, false);
-    else:
+    float agl = angle*(float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
+    if(!angleset){
       `draw(
         .com.scrrect=,
         x, y, 1.0, 1.0, xs, xs, ys, 0.0, (float).com.GameWidth/2.0, fx, oVer);
-    comm:
       ret;
     }
   /?/*.cfg.OpenGL:
@@ -1205,10 +1197,17 @@ public &Anim<frame_t>
       #xs*(float)`spr~rct.x*.com.WidthScale,
       #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
       xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
-      ys*(float)v*.com.HeightScale, 1.0, 0.0, (double)uagl*.m.PI/512.0,
+      ys*(float)v*.com.HeightScale, 1.0, 0.0, agl,
       `alphaFoo(), .com.scrrect=, rx*.com.WidthScale,
       (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
   /*true:
+    uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
+    if(uagl == 0x0){
+      `draw(
+        .com.scrrect=, x - xs*(float)(h*`frames[`drawidx].x), y,
+        1.0, 1.0, xs, xs, ys, 0.0, (float).com.GameWidth/2.0, fx, false);
+        ret;
+    }
     .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
     .m.limRange!float?(
       ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
@@ -1233,10 +1232,8 @@ public &Anim<frame_t>
     int h = `frames[`drawidx].h;
     int v = `frames[`drawidx].v;
     float xs = xscale * axscl, ys = yscale * ayscl;
-    float agl =
-      angle*(float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
-    uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
-    if(uagl == 0x0 && !angleset){
+    float agl = angle*(float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
+    if(!angleset){
       x2 += xs*(float)(h*`frames[`drawidx].x);
       if(xs < 0.0 && oVer) x2 -= xs;
       if(ys*vscale < 0.0 && oVer) y2 -= ys*vscale;
@@ -1251,13 +1248,14 @@ public &Anim<frame_t>
         #xs*(float)`spr~rct.x*.com.WidthScale,
         #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
         xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
-        ys*(float)v*.com.HeightScale, vscale, 0.0, (double)uagl*.m.PI/512.0,
+        ys*(float)v*.com.HeightScale, vscale, 0.0, agl,
         alp, .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
         (y2+ys*vscale*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
     }];
     if((int)color > 0) draw(:-2:);
     if(alpha > 0) draw(:(256-alpha) << 10 | 1 << 9:);
   /*true:
+    uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
     .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
     .m.limRange!float?(
       ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);

@@ -696,6 +696,29 @@ void setZoomSpeed(&.lua.State L=, int re=)
   float zs = .sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   .com.zoomSpeed = 12.0 - zs;
 }
+
+void resetRemapInput(&.lua.State L=, int re=)
+{
+  re = 0;
+  .com.resetRemapInput();
+}
+
+void remapInput(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  int src = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  int dest = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  if(
+    !.m.inRange!int?(1, #.com.inputRemap, src)
+    || !.m.inRange!int?(1, #.com.inputRemap, dest))
+  {
+    L.pushString("プレイヤー番号が不正です。");
+    re = -1;
+    ret;
+  }
+  .com.inputRemap[src-1] = dest-1;
+}
+
 public void init(&.lua.State L=)
 {
   .sc.init(L=);
@@ -753,6 +776,8 @@ public void init(&.lua.State L=)
   L.register("setZoomMin", .setZoomMin);
   L.register("setZoomMax", .setZoomMax);
   L.register("setZoomSpeed", .setZoomSpeed);
+  L.register("resetRemapInput", .resetRemapInput);
+  L.register("remapInput", .remapInput);
 }
 
 

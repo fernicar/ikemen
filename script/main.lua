@@ -299,6 +299,7 @@ function p1SelSub()
       p1SelEnd = true
       if p2In == 1 then
         p2Task = p2TmSub
+        commandBufReset(p2Cmd, p2In)
       end
     end
   end
@@ -373,6 +374,10 @@ function p2SelSub()
     end
     if selval == 2 then
       p2SelEnd = true
+      if p1In == 2 then
+        p1Task = p1TmSub
+        commandBufReset(p1Cmd, p1In)
+      end
     end
   end
 end
@@ -456,11 +461,12 @@ end
 
 ------------------------------------------------------------
 watchMode = createTextImg(jgFnt, 0, 1, 'Watch Mode', 100, 80)
-p1VsComTxt = createTextImg(jgFnt, 0, 1, '1P V.S. Com', 100, 100)
-p1VsP2 = createTextImg(jgFnt, 0, 1, '1P V.S. 2P', 100, 120)
+p1VsComTxt = createTextImg(jgFnt, 0, 1, '1P vs. Com', 100, 100)
+p1VsP2 = createTextImg(jgFnt, 0, 1, '1P vs. 2P', 100, 120)
 netplay = createTextImg(jgFnt, 0, 1, 'Netplay', 100, 140)
 portChange = createTextImg(jgFnt, 0, 1, '', 100, 160)
 replay = createTextImg(jgFnt, 0, 1, 'Replay', 100, 180)
+comVsP1 = createTextImg(jgFnt, 0, 1, 'Com vs. 1P', 100, 200)
 
 connecting = createTextImg(jgFnt, 0, 1, '', 10, 140)
 loading = createTextImg(jgFnt, 0, 1, 'Loading...', 100, 210)
@@ -468,7 +474,7 @@ loading = createTextImg(jgFnt, 0, 1, 'Loading...', 100, 210)
 inputdia = inputDialogNew()
 
 function cmdInput()
-  commandInput(p1Cmd, 1)
+  commandInput(p1Cmd, p1In)
   commandInput(p2Cmd, p2In)
 end
 
@@ -482,13 +488,18 @@ function main()
     p2SelEnd = false
     p2Portrait = nil
 
-    p1Task = p1TmSub
-    p2Task = noTask
-    if gameMode > 1 then p2Task = p2TmSub end
+    if gameMode == 6 then
+      p1Task = noTask
+      p2Task = p2TmSub
+    else
+      p1Task = p1TmSub
+      p2Task = noTask
+      if gameMode > 1 then p2Task = p2TmSub end
+    end
 
     refresh()
 
-    commandBufReset(p1Cmd, 1)
+    commandBufReset(p1Cmd, p1In)
     commandBufReset(p2Cmd, p2In)
 
     selMode = true
@@ -548,6 +559,7 @@ function modeSel()
     exitReplay()
 
     gameMode = 0
+    p1In = 1
     p2In = 1
 
     setCom(1, 8)
@@ -555,6 +567,7 @@ function modeSel()
     setCom(3, 8)
     setCom(4, 8)
     setAutoLevel(false)
+    resetRemapInput()
 
     textImgSetText(portChange, 'Port Change(' .. getListenPort() .. ')')
 
@@ -570,8 +583,8 @@ function modeSel()
         gameMode = gameMode + 1;
       end
       if gameMode < 0 then
-        gameMode = 5
-      elseif gameMode > 5 then
+        gameMode = 6
+      elseif gameMode > 6 then
         gameMode = 0
       end
       textImgDraw(watchMode)
@@ -580,6 +593,7 @@ function modeSel()
       textImgDraw(netplay)
       textImgDraw(portChange)
       textImgDraw(replay)
+      textImgDraw(comVsP1)
       animUpdate(p1TmCursor)
       animPosDraw(p1TmCursor, 95, 77 + 20*gameMode)
       cmdInput()
@@ -638,6 +652,12 @@ function modeSel()
       init()
       synchronize()
       math.randomseed(sszRandom())
+    elseif gameMode == 6 then
+      remapInput(1, 2)
+      remapInput(2, 1)
+      p1In = 2
+      p2In = 2
+      setCom(2, 0)
     end
     if not cancel then
       main()

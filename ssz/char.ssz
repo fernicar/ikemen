@@ -3602,6 +3602,18 @@ public &Char
         `drawY = `sysfvar[.fY] - (`sysfvar[.fY] - `ticOldY) * (1.0 - sp);
       }
     }
+    if(`ls(.lsSCREENBOUND)){
+      float min, max;
+      branch{
+      cond `facing > 0:
+        min = .com.xmin + `getEdge(`bedge);
+        max = .com.xmax - `getEdge(`fedge);
+      else:
+        min = .com.xmin + `getEdge(`fedge);
+        max = .com.xmax - `getEdge(`bedge);
+      }
+      .m.limRange!float?(`drawX=, min, max);
+    }
     if(`ls(.lsMOVECAMERAX)){
       leftest = .m.max!float?(.com.xmin)<, .m.min!float?(
         `drawX-`getEdge(`facing > 0 ? `bedge : `fedge), leftest);
@@ -6420,8 +6432,7 @@ void commandUpdate()
     .chars[i].[void(p){
       if(p<>~cmd~input(p<>~key, p<>~facing)) loop{index i = 0; while; do:
         p<>~cmd[i].step(
-          p<>~key, p<>~facing, p<>~key < 0,
-          p<>~acttmp%2 == -1, p<>~mver0() != 1);
+          p<>~facing, p<>~key < 0, p<>~acttmp%2 == -1, p<>~mver0() != 1);
         i++;
       while i < #p<>~cmd:}
       if(p<>~key < 0) loop{

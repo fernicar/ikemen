@@ -38,6 +38,13 @@ public bool debugdraw = false;
 public ^%%char clipboardText.new(4);
 
 public ^int com = com + (int)[4, 4, 4, 4];
+public ^int inputRemap;
+public void resetRemapInput()
+{
+  .inputRemap.new(4);
+  loop{int i = 0; do: .inputRemap[i] = i; i++; while i < #.inputRemap:}
+}
+resetRemapInput();
 
 public bool pause = false, step = false;
 public bool statusDraw = true;
