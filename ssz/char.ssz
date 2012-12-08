@@ -3437,7 +3437,7 @@ public &Char
     if(nobindy) `ticOldY = `drawY = `sysfvar[.fY];
     if(!`ls(.lsPOSFREEZEX)){
       if(nobindx) `setPosX(`ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff);
-      `veloff *= `sysfvar[.fSTAND_FRICTION]**2.0;
+      `veloff *= 0.7;
       if(#`veloff < 1.0) `veloff = 0.0;
       switch(`stVal.phy){
       case .StTy::S:
