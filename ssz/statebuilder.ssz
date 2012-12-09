@@ -383,8 +383,7 @@ public &StateBuilder
     loop{index i = 0; while; do:
       if(`stnoList[i].no == no && `stnoList[i].i == iflag) ret true;
       i++;
-    while i< #`stnoList:
-    }
+    while i < #`stnoList:}
     ret false;
   }
   void skipBlank(^/char text=)
@@ -7795,8 +7794,18 @@ public &StateBuilder
     ^/char fn = st;
     %^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
+    %&`StateNo stnoList;
+    bool existInThisFile(int no, bool iflag, %&`StateNo stnoList=)
+    {
+      loop{index i = 0; while; do:
+        if(stnoList[i].no == no && stnoList[i].i == iflag) ret true;
+        i++;
+      while i < #stnoList:}
+      ret false;
+    }
     loop{
       index i = 0;
+      bool stateExist = false;
       ^/char line;
       %char fname;
       while;
@@ -7813,7 +7822,8 @@ public &StateBuilder
         line = tmp;
       }
       `state.no = .com.aton!`state.no.self?(line);
-      if(`existState(`state.no, `state.i)) continue;
+      if(existInThisFile(`state.no, `state.i, stnoList=)) continue;
+      stateExist = `existState(`state.no, `state.i);
       fname.new(0);
       branch{
       cond `state.i:
@@ -7827,7 +7837,8 @@ public &StateBuilder
         fname .= 's' .= .s.iToS(`state.no);
       }
       fname .= '_' .= .s.iToS(`playerno) .= 'P';
-      `stnoList.new[-1].set(`state.no, `state.i, fname);
+      stnoList.new[-1].set(`state.no, `state.i, fname);
+      if(!stateExist) `stnoList.new[-1].set(`state.no, `state.i, fname);
       `state.clear();
       i++;
       if(
@@ -7839,8 +7850,10 @@ public &StateBuilder
           ^/char tmp;
           while;
         do:
-          tmp = .s.join(.s.iToS(`state.no))<, .s.split("##", lines[i]);
-          buf .= .s.join(.s.iToS(`playerno))<, .s.split("@@", tmp) .= \r\n;
+          if(!stateExist){
+            tmp = .s.join(.s.iToS(`state.no))<, .s.split("##", lines[i]);
+            buf .= .s.join(.s.iToS(`playerno))<, .s.split("@@", tmp) .= \r\n;
+          }
           i++;
         while #lines[i] <= 0 || lines[i][0] != '[' && i < #lines:
         }
@@ -7854,10 +7867,12 @@ public &StateBuilder
         %char cbuf, dbuf;
         &.tbl.NameTable!^/char? tbl;
         ^^/char item;
-        buf .=
-          "void c.Char::" .= fname .= "()"\r\n
-          "{"\r\n
-          \t"bool nh = !`isHitPaused();"\r\n;
+        if(!stateExist){
+          buf .=
+            "void c.Char::" .= fname .= "()"\r\n
+            "{"\r\n
+            \t"bool nh = !`isHitPaused();"\r\n;
+        }
         continue;
       do:
         line = .s.trim(lines[i][0.. .s.find(";", lines[i])]);
@@ -7873,16 +7888,17 @@ public &StateBuilder
         if(!`parse!`stateBulid:<-state?(lines, i=, "")){
           ret .errmes(fn, lines[i], i, `errorexp+\r\n+`lasterror);
         }
-        buf .= \t"if(";
-        if(`state.ignorehitpause <= 0) buf .= "nh&&";
-        if(`state.persistent != 1){
-          buf .= "--`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p<=0&&";
-        }
         if(
           #`state.ctrlList[-1].trigger == 0
           || #`state.ctrlList[-1].trigger[0] == 0)
         {
           ret .errmes(fn, lines[i], i, "trigger1がありません");
+        }
+        if(stateExist) continue;
+        buf .= \t"if(";
+        if(`state.ignorehitpause <= 0) buf .= "nh&&";
+        if(`state.persistent != 1){
+          buf .= "--`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p<=0&&";
         }
         branch{
         cond #`state.ctrlList[-1].triggerall > 0:
@@ -7985,53 +8001,55 @@ public &StateBuilder
         i++;
       while i < #lines:
       break:
-        buf .= "}"\r\n .= cbuf;
-        if(`state.no >= 0 && !`state.i){
-          buf .=
-            "void c.Char::" .= fname .= "Init()"\r\n
-            "{"\r\n
-            \t"`state = `" .= fname .= ";"\r\n;
-          switch(`state.typ){
-          case .chr.StTy::S:
-            buf .= \t"`stVal.typ = .StTy::S;"\r\n;
-          case .chr.StTy::C:
-            buf .= \t"`stVal.typ = .StTy::C;"\r\n;
-          case .chr.StTy::A:
-            buf .= \t"`stVal.typ = .StTy::A;"\r\n;
-          case .chr.StTy::L:
-            buf .= \t"`stVal.typ = .StTy::L;"\r\n;
-          }
-          switch(`state.mov){
-          case .chr.MovTy::I:
-            buf .= \t"`stVal.mov = .MovTy::I;"\r\n;
-          case .chr.MovTy::A:
-            buf .= \t"`stVal.mov = .MovTy::A;"\r\n;
-          case .chr.MovTy::H:
-            buf .= \t"`stVal.mov = .MovTy::H;"\r\n;
-          }
-          switch(`state.phy){
-          case .chr.StTy::S:
-            buf .= \t"`stVal.phy = .StTy::S;"\r\n;
-          case .chr.StTy::C:
-            buf .= \t"`stVal.phy = .StTy::C;"\r\n;
-          case .chr.StTy::A:
-            buf .= \t"`stVal.phy = .StTy::A;"\r\n;
-          case .chr.StTy::N:
-            buf .= \t"`stVal.phy = .StTy::N;"\r\n;
-          }
-          if(#`state.ctrlList > 0){
+        if(!stateExist){
+          buf .= "}"\r\n .= cbuf;
+          if(`state.no >= 0 && !`state.i){
             buf .=
-              \t"`stVal.ps.new("
-              .= .s.iToS(#`state.ctrlList) .= ");"\r\n
-              \t"loop{index i = 0; do:"\r\n
-              \t\t"`stVal.ps[i].p = 0;"\r\n
-              \t"while ++i < " .= .s.iToS(#`state.ctrlList) .= ":"\r\n
-              \t"}"\r\n;
+              "void c.Char::" .= fname .= "Init()"\r\n
+              "{"\r\n
+              \t"`state = `" .= fname .= ";"\r\n;
+            switch(`state.typ){
+            case .chr.StTy::S:
+              buf .= \t"`stVal.typ = .StTy::S;"\r\n;
+            case .chr.StTy::C:
+              buf .= \t"`stVal.typ = .StTy::C;"\r\n;
+            case .chr.StTy::A:
+              buf .= \t"`stVal.typ = .StTy::A;"\r\n;
+            case .chr.StTy::L:
+              buf .= \t"`stVal.typ = .StTy::L;"\r\n;
+            }
+            switch(`state.mov){
+            case .chr.MovTy::I:
+              buf .= \t"`stVal.mov = .MovTy::I;"\r\n;
+            case .chr.MovTy::A:
+              buf .= \t"`stVal.mov = .MovTy::A;"\r\n;
+            case .chr.MovTy::H:
+              buf .= \t"`stVal.mov = .MovTy::H;"\r\n;
+            }
+            switch(`state.phy){
+            case .chr.StTy::S:
+              buf .= \t"`stVal.phy = .StTy::S;"\r\n;
+            case .chr.StTy::C:
+              buf .= \t"`stVal.phy = .StTy::C;"\r\n;
+            case .chr.StTy::A:
+              buf .= \t"`stVal.phy = .StTy::A;"\r\n;
+            case .chr.StTy::N:
+              buf .= \t"`stVal.phy = .StTy::N;"\r\n;
+            }
+            if(#`state.ctrlList > 0){
+              buf .=
+                \t"`stVal.ps.new("
+                .= .s.iToS(#`state.ctrlList) .= ");"\r\n
+                \t"loop{index i = 0; do:"\r\n
+                \t\t"`stVal.ps[i].p = 0;"\r\n
+                \t"while ++i < " .= .s.iToS(#`state.ctrlList) .= ":"\r\n
+                \t"}"\r\n;
+            }
+            if(#`state.deftask > 0){
+              buf .= '\t' .= `state.deftask .= \r\n;
+            }
+            buf .= "}"\r\n;
           }
-          if(#`state.deftask > 0){
-             buf .= '\t' .= `state.deftask .= \r\n;
-          }
-          buf .= "}"\r\n;
         }
       }
     continue:
