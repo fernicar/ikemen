@@ -7,7 +7,7 @@ lib cfg = "config.ssz";
 
 public &Rect
 {
-  public short l = 0, t = 0, r = -1, b = -1;
+  public int l = 0, t = 0, r = -1, b = -1;
 }
 public &Frame
 {
@@ -92,7 +92,7 @@ public &Action
           i++;
           loop{
             index fnd, n = 0;
-            ^short ary;
+            ^int ary;
             while;
           do:
             line =
@@ -101,7 +101,7 @@ public &Action
             if(!.s.equ("clsn", line[0..4])) break;
             fnd = .s.find("=", line);
             if(fnd < 0) break;
-            ary = .com.csvToAryOF!short?(line[fnd+1..-1]);
+            ary = .com.csvToAryOF!int?(line[fnd+1..-1]);
             if(#ary < 4) break;
             branch{
             cond ary[0] <= ary[2]:

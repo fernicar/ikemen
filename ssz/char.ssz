@@ -1494,6 +1494,7 @@ public &CharGlobalInfo
   public ^&.sff.Sff sf;
   public ^&.snd.Snd sn;
   public %&.act.Action actionList;
+  public &.tbl.IntTable!int, &.act.Action? actionTable;
   public int palno, drawpalno;
   public ^bool palExist, palSelectable;
   public int numenemy;
@@ -2200,22 +2201,20 @@ public &Char
   }
   public ^&.act.Action getAction(int no)
   {
-    *`ani.self a;
-    loop{index i = 0; while; do:
-      if(.cgi[`playerno].actionList[i].no == no){
-        a.new(1);
-        a~copy(.cgi[`playerno].actionList[i]=);
-        break, break;
-      }
-      i++;
-    while i< #.cgi[`playerno].actionList:
+    *`ani.self a, act = .cgi[`playerno].actionTable.get(no);
+    if(#act > 0){
+      a.new(1);
+      a~copy(act<>=);
     }
     ret a;
   }
   public ^action_t newAction(int no)
   {
     .cgi[`playerno].actionList.new[-1].no = no;
-    ret .cgi[`playerno].actionList[#.cgi[`playerno].actionList-1..-1];
+    *`ani.self act =
+      .cgi[`playerno].actionList[#.cgi[`playerno].actionList-1..-1];
+    .cgi[`playerno].actionTable.set(no, act);
+    ret act;
   }
   public ^&.snd.Sound newChannel(int ch, bool lowpriority)
   {
@@ -2556,6 +2555,7 @@ public &Char
     lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     .cgi[`playerno].actionList.new(0);
+    .cgi[`playerno].actionTable.clear();
     loop{index i = 0; while; do:
       `readAction(lines, i=);
       i++;

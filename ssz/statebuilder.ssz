@@ -369,6 +369,7 @@ public &StateBuilder
   public %^/char st;
   public ^/char stcommon;
   public %&StateNo stnoList;
+  public &.tbl.IntTable!long, bool? stnoTable;
   public &.State state;
   public ^/char lasterror, errorexp;
   public &.Const c;
@@ -378,13 +379,15 @@ public &StateBuilder
   int kakko = 0, valCnt = 0;
   ^/char maeOp, this = "`";
   type paraF_t = $bool(^/char=);
+  ^bool t;
+  new()
+  {
+    `t.new(1);
+    `t<> = true;
+  }
   bool existState(int no, bool iflag)
   {
-    loop{index i = 0; while; do:
-      if(`stnoList[i].no == no && `stnoList[i].i == iflag) ret true;
-      i++;
-    while i < #`stnoList:}
-    ret false;
+    ret #`stnoTable.get((long)iflag << 32 | no) > 0;
   }
   void skipBlank(^/char text=)
   {
@@ -7794,14 +7797,11 @@ public &StateBuilder
     ^/char fn = st;
     %^/char lines = .com.splitLines(mainbuf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
-    %&`StateNo stnoList;
-    bool existInThisFile(int no, bool iflag, %&`StateNo stnoList=)
+    &.tbl.IntTable!long, bool? stnoTable;
+    bool existInThisFile(
+      int no, bool iflag, &.tbl.IntTable!long, bool? stnoTable=)
     {
-      loop{index i = 0; while; do:
-        if(stnoList[i].no == no && stnoList[i].i == iflag) ret true;
-        i++;
-      while i < #stnoList:}
-      ret false;
+      ret #stnoTable.get((long)iflag << 32 | no) > 0;
     }
     loop{
       index i = 0;
@@ -7822,7 +7822,7 @@ public &StateBuilder
         line = tmp;
       }
       `state.no = .com.aton!`state.no.self?(line);
-      if(existInThisFile(`state.no, `state.i, stnoList=)) continue;
+      if(existInThisFile(`state.no, `state.i, stnoTable=)) continue;
       stateExist = `existState(`state.no, `state.i);
       fname.new(0);
       branch{
@@ -7837,8 +7837,11 @@ public &StateBuilder
         fname .= 's' .= .s.iToS(`state.no);
       }
       fname .= '_' .= .s.iToS(`playerno) .= 'P';
-      stnoList.new[-1].set(`state.no, `state.i, fname);
-      if(!stateExist) `stnoList.new[-1].set(`state.no, `state.i, fname);
+      stnoTable.set((long)`state.i << 32 | `state.no, `t);
+      if(!stateExist){
+        `stnoList.new[-1].set(`state.no, `state.i, fname);
+        `stnoTable.set((long)`state.i << 32 | `state.no, `t);
+      }
       `state.clear();
       i++;
       if(
@@ -8489,6 +8492,7 @@ public &StateBuilder
     while i < #lines:
     }
     `stnoList.new(0);
+    `stnoTable.clear();
     %char buf;
     loop{index i = 0; while; do:
       if(#`st[i] > 0 && #`stateBulid(buf=, def, `st[i]=)=>error > 0) ret error;
