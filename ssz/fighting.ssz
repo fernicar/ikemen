@@ -121,7 +121,7 @@ const double lvmul = 2.0**(1.0/12.0);
     ^int item = `getItem(.chr.cgi[i].def);
     item[.chr.chars[i][0]~palno()-1] +=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
-      && .com.tmode[i&1] != (int).com.TeamMode::Simul ? .com.maxSimul : 1;
+      && .com.tmode[i&1] != (int).com.TeamMode::Simul ? .com.numSimul[i&1] : 1;
     `setItem(i, item);
   }
   void lose(index i)
@@ -129,7 +129,7 @@ const double lvmul = 2.0**(1.0/12.0);
     ^int item = `getItem(.chr.cgi[i].def);
     item[.chr.chars[i][0]~palno()-1] -=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
-      && .com.tmode[i&1] != (int).com.TeamMode::Simul ? .com.maxSimul : 1;
+      && .com.tmode[i&1] != (int).com.TeamMode::Simul ? .com.numSimul[i&1] : 1;
     `setItem(i, item);
   }
   public int getLevel(index i)
@@ -437,7 +437,7 @@ void game()
               lm *= .com.team1VS2Life;
             }
           else:
-            lm /= (float).com.maxSimul;
+            lm /= (float).com.numSimul[i&1];
           }
           if(.com.tmode[i+1 & 1] == (int).com.TeamMode::Turns){
             lm *= 2.0 / (float).chr.fight~ro.match_wins;
