@@ -5053,7 +5053,8 @@ public &Char
   }
   public int trNumPartner()
   {
-    ret #.chars[`playerno+2 & 3];
+    if(.com.tmode[`playerno&1] != (int).com.TeamMode::Simul) ret 0;
+    ret .com.numSimul[`playerno&1] - 1;
   }
   public float trHitXvel()
   {
