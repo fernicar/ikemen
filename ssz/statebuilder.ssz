@@ -1338,6 +1338,8 @@ public &StateBuilder
         out .= obj .= "trHitVelX()";
       cond .s.equ("y", token):
         out .= obj .= "trHitVelY()";
+      cond .s.equ("z", token):
+        out .= "0.0";
       else:
         break, else;
       }

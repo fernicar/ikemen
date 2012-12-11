@@ -301,108 +301,24 @@ void game()
     stagetime = share~stt;
     .cmd.synchronize();
     .wm.init();
-    ^int level;
-    level.new(#.chr.chars);
-    if(#.chr.chars[0] > 0){
-      .chr.chars[0][0]~stateInit0P();
-      level[0] = .wm.getLevel(0);
-      loop{index i = 2; while; do:
-        level[i] = level[0];
-        i += 2;
-      while i < #.chr.chars:}
-    }
-    if(#.chr.chars[1] > 0){
-      .chr.chars[1][0]~stateInit1P();
-      level[1] = .wm.getLevel(1);
-      loop{index i = 3; while; do:
-        level[i] = level[1];
-        i += 2;
-      while i < #.chr.chars:}
-    }
-    if(#.chr.chars[2] > 0){
-      .chr.chars[2][0]~stateInit2P();
-      level[2] = .wm.getLevel(2);
-      if(.com.powershare){
-        int pmax =
-          .m.max!int?(
-            .chr.chars[0][0]~sysivar[.chr.iPOWERMAX],
-            .chr.chars[2][0]~sysivar[.chr.iPOWERMAX]);
-        .chr.chars[0][0]~sysivar[.chr.iPOWERMAX] = pmax;
-        .chr.chars[2][0]~sysivar[.chr.iPOWERMAX] = pmax;
+    ^int level.new(#.chr.chars);
+    loop{index i = 0; while; do:
+      if(#.chr.chars[i] > 0){
+        .chr.chars[i]<>~rootInit();
+        level[i] = .wm.getLevel(i);
+        if(.com.powershare){
+          int pmax =
+            .m.max!int?(
+              .chr.chars[0]<>~sysivar[.chr.iPOWERMAX],
+              .chr.chars[i]<>~sysivar[.chr.iPOWERMAX]);
+          loop{index j = i&1; while; do:
+            .chr.chars[j]<>~sysivar[.chr.iPOWERMAX] = pmax;
+            j += 2;
+          while j <= i:}
+        }
       }
-    }
-    if(#.chr.chars[3] > 0){
-      .chr.chars[3][0]~stateInit3P();
-      level[3] = .wm.getLevel(3);
-      if(.com.powershare){
-        int pmax =
-          .m.max!int?(
-            .chr.chars[1][0]~sysivar[.chr.iPOWERMAX],
-            .chr.chars[3][0]~sysivar[.chr.iPOWERMAX]);
-        .chr.chars[1][0]~sysivar[.chr.iPOWERMAX] = pmax;
-        .chr.chars[3][0]~sysivar[.chr.iPOWERMAX] = pmax;
-      }
-    }
-  /?/* .com.maxSimul >= 3:
-    if(#.chr.chars[4] > 0){
-      .chr.chars[4][0]~stateInit4P();
-      level[4] = .wm.getLevel(4);
-      if(.com.powershare){
-        int pmax =
-          .m.max!int?(
-            .chr.chars[0][0]~sysivar[.chr.iPOWERMAX],
-            .chr.chars[4][0]~sysivar[.chr.iPOWERMAX]);
-        loop{index i = 0; do:
-          .chr.chars[i][0]~sysivar[.chr.iPOWERMAX] = pmax;
-          i += 2;
-        while i <= 4:}
-      }
-    }
-    if(#.chr.chars[5] > 0){
-      .chr.chars[5][0]~stateInit5P();
-      level[5] = .wm.getLevel(5);
-      if(.com.powershare){
-        int pmax =
-          .m.max!int?(
-            .chr.chars[1][0]~sysivar[.chr.iPOWERMAX],
-            .chr.chars[5][0]~sysivar[.chr.iPOWERMAX]);
-        loop{index i = 1; do:
-          .chr.chars[i][0]~sysivar[.chr.iPOWERMAX] = pmax;
-          i += 2;
-        while i <= 5:}
-      }
-    }
-  /*?*/
-  /?/*  .com.maxSimul >= 4:
-    if(#.chr.chars[6] > 0){
-      .chr.chars[6][0]~stateInit6P();
-      level[6] = .wm.getLevel(6);
-      if(.com.powershare){
-        int pmax =
-          .m.max!int?(
-            .chr.chars[0][0]~sysivar[.chr.iPOWERMAX],
-            .chr.chars[6][0]~sysivar[.chr.iPOWERMAX]);
-        loop{index i = 0; do:
-          .chr.chars[i][0]~sysivar[.chr.iPOWERMAX] = pmax;
-          i += 2;
-        while i <= 6:}
-      }
-    }
-    if(#.chr.chars[7] > 0){
-      .chr.chars[7][0]~stateInit7P();
-      level[7] = .wm.getLevel(7);
-      if(.com.powershare){
-        int pmax =
-          .m.max!int?(
-            .chr.chars[1][0]~sysivar[.chr.iPOWERMAX],
-            .chr.chars[7][0]~sysivar[.chr.iPOWERMAX]);
-        loop{index i = 1; do:
-          .chr.chars[i][0]~sysivar[.chr.iPOWERMAX] = pmax;
-          i += 2;
-        while i <= 7:}
-      }
-    }
-  /*?*/
+      i++;
+    while i < #.chr.chars:}
     int minlv = level[0];
     loop{index i = 1; while; do:
       minlv = .m.min!int?(minlv, level[i]);
@@ -559,9 +475,9 @@ void game()
             !.chr.chars[i][0]~isLose()
             && .com.tmode[i] != (int).com.TeamMode::Turns)
           :
-          hoge = .lvmul**(double)level[i];
           loop{index j = i; while; do:
             if(#.chr.chars[j] > 0){
+              hoge = .lvmul**(double)level[j];
               .chr.chars[j][0]~sysivar[.chr.iLIFE] =
                 .m.max!int?(1)<, (int).m.ceil(
                   hoge * (float)(

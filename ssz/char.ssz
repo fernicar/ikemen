@@ -2056,6 +2056,12 @@ public &Char
     `sysfvar.new(80);
     `clearVal();
   }
+  public void rootInit()
+  {:<-
+    method$void() init = `dummy;
+    <consteval>(init=, "`stateInit" + .s.iToS(`playerno) + "P");
+    init(::);
+  }
   void copyParent(`self c=)
   {
     %char buf;

@@ -8,6 +8,7 @@ lib sff = "sff.ssz";
 lib com = "common.ssz";
 lib bg = "bg.ssz";
 lib cfg = "config.ssz";
+lib tbl = <table.ssz>;
 
 public ^&com.PalFX bgPalFX;
 bgPalFX.new(1);
@@ -79,6 +80,7 @@ public &Stage
   public ^&.sff.Sff sf;
   public %&.bg.BackGround bg;
   public %&.bg.Action actionList;
+  public &.tbl.IntTable!int, &.bg.Action? actionTable;
   public %&.bg.BGCtrl bgctrlList;
   public &.bg.BGCTimeLine bgctl;
   public &.bg.BGCtrl bgcdef;
@@ -101,17 +103,14 @@ public &Stage
   }
   ^&.bg.Action getAction(int no)
   {
-    loop{index i = 0; while; do:
-      if(`actionList[i].no == no) ret `actionList[i..i+1];
-      i++;
-    while i< #`actionList:
-    }
-    ret .consts.null!&.bg.Action?();
+    ret `actionTable.get(no);
   }
   public ^action_t newAction(int no)
   {
     `actionList.new[-1].no = no;
-    ret `actionList[#`actionList-1..-1];
+    ^`action_t act = `actionList[#`actionList-1..-1];
+    `actionTable.set(no, act);
+    ret act;
   }
   void getBG(%^&.bg.BackGround bgl=, int id)
   {
@@ -606,6 +605,7 @@ public &Stage
     `name = "";
     `bg.new(0);
     `actionList.new(0);
+    `actionTable.clear();
     `bgctrlList.new(0);
   }
   public void reset()
