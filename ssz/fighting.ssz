@@ -121,7 +121,7 @@ const double lvmul = 2.0**(1.0/12.0);
     ^int item = `getItem(.chr.cgi[i].def);
     item[.chr.chars[i][0]~palno()-1] +=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
-      && .com.tmode[i&1] != (int).com.TeamMode::Simul ? 2 : 1;
+      && .com.tmode[i&1] != (int).com.TeamMode::Simul ? .com.maxSimul : 1;
     `setItem(i, item);
   }
   void lose(index i)
@@ -129,7 +129,7 @@ const double lvmul = 2.0**(1.0/12.0);
     ^int item = `getItem(.chr.cgi[i].def);
     item[.chr.chars[i][0]~palno()-1] -=
       .com.tmode[i+1&1] == (int).com.TeamMode::Simul
-      && .com.tmode[i&1] != (int).com.TeamMode::Simul ? 2 : 1;
+      && .com.tmode[i&1] != (int).com.TeamMode::Simul ? .com.maxSimul : 1;
     `setItem(i, item);
   }
   public int getLevel(index i)
@@ -186,7 +186,8 @@ void game()
         y =
           .m.max!float?(
             y, pdraw(
-              .chr.chars[i][0]<>=, ((float).com.GameWidth/4.0)*(float)i));
+              .chr.chars[i][0]<>=,
+              ((float).com.GameWidth/(float)#.chr.chars)*(float)i));
       }
       i++;
     while i < #.chr.chars:
@@ -302,11 +303,19 @@ void game()
     level.new(#.chr.chars);
     if(#.chr.chars[0] > 0){
       .chr.chars[0][0]~stateInit0P();
-      level[0] = level[2] = .wm.getLevel(0);
+      level[0] = .wm.getLevel(0);
+      loop{index i = 2; while; do:
+        level[i] = level[0];
+        i += 2;
+      while i < #.chr.chars:}
     }
     if(#.chr.chars[1] > 0){
       .chr.chars[1][0]~stateInit1P();
-      level[1] = level[3] = .wm.getLevel(1);
+      level[1] = .wm.getLevel(1);
+      loop{index i = 3; while; do:
+        level[i] = level[1];
+        i += 2;
+      while i < #.chr.chars:}
     }
     if(#.chr.chars[2] > 0){
       .chr.chars[2][0]~stateInit2P();
@@ -332,23 +341,87 @@ void game()
         .chr.chars[3][0]~sysivar[.chr.iPOWERMAX] = pmax;
       }
     }
-    int minlv =
-      .m.min!int?(level[0])<, .m.min!int?(level[1])<,
-      .m.min!int?(level[2])<, level[3];
-    int maxlv =
-      .m.max!int?(level[0])<, .m.max!int?(level[1])<,
-      .m.max!int?(level[2])<, level[3];
+  /?/* .com.maxSimul >= 3:
+    if(#.chr.chars[4] > 0){
+      .chr.chars[4][0]~stateInit4P();
+      level[4] = .wm.getLevel(4);
+      if(.com.powershare){
+        int pmax =
+          .m.max!int?(
+            .chr.chars[0][0]~sysivar[.chr.iPOWERMAX],
+            .chr.chars[4][0]~sysivar[.chr.iPOWERMAX]);
+        loop{index i = 0; do:
+          .chr.chars[i][0]~sysivar[.chr.iPOWERMAX] = pmax;
+          i += 2;
+        while i <= 4:}
+      }
+    }
+    if(#.chr.chars[5] > 0){
+      .chr.chars[5][0]~stateInit5P();
+      level[5] = .wm.getLevel(5);
+      if(.com.powershare){
+        int pmax =
+          .m.max!int?(
+            .chr.chars[1][0]~sysivar[.chr.iPOWERMAX],
+            .chr.chars[5][0]~sysivar[.chr.iPOWERMAX]);
+        loop{index i = 1; do:
+          .chr.chars[i][0]~sysivar[.chr.iPOWERMAX] = pmax;
+          i += 2;
+        while i <= 5:}
+      }
+    }
+  /*?*/
+  /?/*  .com.maxSimul >= 4:
+    if(#.chr.chars[6] > 0){
+      .chr.chars[6][0]~stateInit6P();
+      level[6] = .wm.getLevel(6);
+      if(.com.powershare){
+        int pmax =
+          .m.max!int?(
+            .chr.chars[0][0]~sysivar[.chr.iPOWERMAX],
+            .chr.chars[6][0]~sysivar[.chr.iPOWERMAX]);
+        loop{index i = 0; do:
+          .chr.chars[i][0]~sysivar[.chr.iPOWERMAX] = pmax;
+          i += 2;
+        while i <= 6:}
+      }
+    }
+    if(#.chr.chars[7] > 0){
+      .chr.chars[7][0]~stateInit7P();
+      level[7] = .wm.getLevel(7);
+      if(.com.powershare){
+        int pmax =
+          .m.max!int?(
+            .chr.chars[1][0]~sysivar[.chr.iPOWERMAX],
+            .chr.chars[7][0]~sysivar[.chr.iPOWERMAX]);
+        loop{index i = 1; do:
+          .chr.chars[i][0]~sysivar[.chr.iPOWERMAX] = pmax;
+          i += 2;
+        while i <= 7:}
+      }
+    }
+  /*?*/
+    int minlv = level[0];
+    loop{index i = 1; while; do:
+      minlv = .m.min!int?(minlv, level[i]);
+      i++;
+    while i < #.chr.chars:}
+    int maxlv = level[0];
+    loop{index i = 1; while; do:
+      maxlv = .m.max!int?(minlv, level[i]);
+      i++;
+    while i < #.chr.chars:}
     branch{
     cond minlv > 0 && maxlv > 0:
-      level[0] -= minlv;
-      level[1] -= minlv;
-      level[2] -= minlv;
-      level[3] -= minlv;
-    cond minlv < 0 && maxlv < 0:
-      level[0] -= maxlv;
-      level[1] -= maxlv;
-      level[2] -= maxlv;
-      level[3] -= maxlv;
+      loop{index i = 0; while; do:
+        level[i] -= minlv;
+        i++;
+      while i < #.chr.chars:}
+    cond minlv > 0 && maxlv > 0:
+      loop{index i = 0; while; do:
+        level[i] -= maxlv;
+        i++;
+      while i < #.chr.chars:}
     }
     loop{index i = 0; do:
       if(#.chr.chars[i] == 0) continue;
@@ -364,7 +437,7 @@ void game()
               lm *= .com.team1VS2Life;
             }
           else:
-            lm *= 0.5;
+            lm /= (float).com.maxSimul;
           }
           if(.com.tmode[i+1 & 1] == (int).com.TeamMode::Turns){
             lm *= 2.0 / (float).chr.fight~ro.match_wins;
@@ -454,15 +527,18 @@ void game()
       loop{index i = 0; while; do:
         if(
           .com.tmode[i] != (int).com.TeamMode::Turns
-          || !.chr.chars[i][0]~isWin())
+          || !.chr.chars[i][0]~isWin()) loop
         {
-          .chr.chars[i][0]~sysivar[.chr.iLIFE] =
-            .chr.chars[i][0]~sysivar[.chr.iLIFEMAX];
-          if(#.chr.chars[i+2] > 0){
-            .chr.chars[i+2][0]~sysivar[.chr.iLIFE] =
-              .chr.chars[i+2][0]~sysivar[.chr.iLIFEMAX];
-            copyVar(i+2);
+          index j = i;
+          while;
+        do:
+          if(#.chr.chars[j] > 0){
+            .chr.chars[j][0]~sysivar[.chr.iLIFE] =
+              .chr.chars[j][0]~sysivar[.chr.iLIFEMAX];
+            if(j > i) copyVar(j);
           }
+          j += 2;
+        while j < #.chr.chars:
         }
         copyVar(i);
         i++;
@@ -482,21 +558,17 @@ void game()
             && .com.tmode[i] != (int).com.TeamMode::Turns)
           :
           hoge = .lvmul**(double)level[i];
-          .chr.chars[i][0]~sysivar[.chr.iLIFE] =
-            .m.max!int?(1)<, (int).m.ceil(
-              hoge * (float)(
-                .chr.chars[i][0]~isWin()
-                ? .chr.chars[i][0]~sysivar[.chr.iLIFE]
-                : .chr.chars[i][0]~sysivar[.chr.iLIFEMAX]));
-          if(#.chr.chars[i+2] > 0){
-            hoge = .lvmul**(double)level[i+2];
-            .chr.chars[i+2][0]~sysivar[.chr.iLIFE] =
-              .m.max!int?(1)<, (int).m.ceil(
-                hoge * (float)(
-                  .chr.chars[i+2][0]~isWin()
-                  ? .chr.chars[i+2][0]~sysivar[.chr.iLIFE]
-                  : .chr.chars[i+2][0]~sysivar[.chr.iLIFEMAX]));
-          }
+          loop{index j = i; while; do:
+            if(#.chr.chars[j] > 0){
+              .chr.chars[j][0]~sysivar[.chr.iLIFE] =
+                .m.max!int?(1)<, (int).m.ceil(
+                  hoge * (float)(
+                    .chr.chars[j][0]~isWin()
+                    ? .chr.chars[j][0]~sysivar[.chr.iLIFE]
+                    : .chr.chars[j][0]~sysivar[.chr.iLIFEMAX]));
+            }
+            j += 2;
+          while j < #.chr.chars:}
         else:
           .chr.chars[i][0]~sysivar[.chr.iLIFE] = 0;
         }

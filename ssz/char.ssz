@@ -1455,7 +1455,7 @@ const int sfKO_ROUND_MIDDLE = 0b00000000000000000000000000001000;
   }
 }
 
-public ^%^&Char chars.new(4);
+public ^%^&Char chars.new(.com.maxSimul*2);
 /^%&Projectile projs.new(#chars);
 /^%&Explod explods.new(#chars);
 ^&.tbl.IntTable!int, &Char::State? states.new(#chars);
@@ -4085,15 +4085,16 @@ public &Char
       .c = .chars[`playerno][#`parentindex];
     }
   }
-  public void trPartner(int id)
+  public void trPartner(int n)
   {
-    if(id > 0){
+    int no = .m.max!int?(0, n);
+    if(no > #.chars / 2 - 2){
       .c.new(0);
       ret;
     }
     .c =
-      #.chars[`playerno+2 & 3] > 0
-      ? .chars[`playerno+2 & 3][0] : .consts.null!`self?();
+      #.chars[(`playerno+2 & 3) + (no << 1)] > 0
+      ? .chars[(`playerno+2 & 3) + (no << 1)][0] : .consts.null!`self?();
   }
   public void trHelper(int id)
   {
@@ -6991,7 +6992,7 @@ public void draw(float x, float y, float scl)
   ^^/char names.new(#.chars);
   ^^&.com.PalFX facefx.new(#.chars);
   loop{index i = 0; while; do:
-    if(#.chars[i] > 0){
+    if(#.chars[i] > 0 && i < #.fight~fa[.com.tmode[i&1]]){
       names[i] = .cgi[i].displayname;
       facefx[i] = .chars[i][0]~getPalfx();
       .fight~fa[.com.tmode[i&1]][i].face_spr.[void(fs){

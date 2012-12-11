@@ -520,7 +520,7 @@ void selectChar(&.lua.State L=, int re=)
     case (int).com.TeamMode::Single:
       retval = 2;
     case (int).com.TeamMode::Simul:
-      retval = #.syst.selinf.p[pn-1].selchr >= 2 ? 2 : 1;
+      retval = #.syst.selinf.p[pn-1].selchr >= .com.numSimul[pn-1] ? 2 : 1;
     case (int).com.TeamMode::Turns:
       retval = #.syst.selinf.p[pn-1].selchr >= .com.numturns[pn-1] ? 2 : 1;
     }

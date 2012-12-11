@@ -33,7 +33,7 @@ void player(&.lua.State L=, int re=)
   int argc = 0, nret = 1;
   int pn = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   bool retVal = false;
-  if(.m.inRange!int?(1, 4, pn) && #.chr.chars[pn-1] > 0){
+  if(.m.inRange!int?(1, #.chr.chars, pn) && #.chr.chars[pn-1] > 0){
     .cwc = .chr.chars[pn-1]<>;
     retVal = true;
   }

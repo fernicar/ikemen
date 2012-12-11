@@ -13,7 +13,7 @@ lib th = <thread.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
 lib cfg = "config.ssz";
 
-/^^/char code.new(4);
+/^^/char code.new(#.chr.chars);
 /^/char errorMes;
 public ^&.lua.SszCompiler sszc;
 
@@ -97,10 +97,12 @@ int chara(int pn)
       ret -1;
     }
   }
-  .chr.fight~fa[.com.tmode[pn&1]][pn].face_spr =
-    .chr.cgi[pn].sf~getOwnPalSprite(
-      .chr.fight~fa[.com.tmode[pn&1]][pn].face_sprg,
-      .chr.fight~fa[.com.tmode[pn&1]][pn].face_spri);
+  if(pn < #.chr.fight~fa[.com.tmode[pn&1]]){
+    .chr.fight~fa[.com.tmode[pn&1]][pn].face_spr =
+      .chr.cgi[pn].sf~getOwnPalSprite(
+        .chr.fight~fa[.com.tmode[pn&1]][pn].face_sprg,
+        .chr.fight~fa[.com.tmode[pn&1]][pn].face_spri);
+  }
   if(.com.tmode[pn&1] == (int).com.TeamMode::Turns && .com.round == 1){
     const int turns = (int).com.TeamMode::Turns;
     .chr.fight~fa[turns][pn].numko = 0;
@@ -139,7 +141,11 @@ bool stateCompile()
   if(#.sszc > 0) ret true;
   %char codeBuf .=
     "lib c = "\""char.ssz"\"", f = "\""fighting.ssz"\"";"\r\n
-    "f.main();"\r\n .= .code[0] .= .code[1] .= .code[2] .= .code[3];
+    "f.main();"\r\n;
+  loop{index i = 0; while; do:
+    codeBuf.= .code[i];
+    i++;
+  while i < #.code:}
   //lib file = <file.ssz>;
   //&file.File f.open("state.ssz", "wb");
   //f.writeAry!ubyte?(.s.sToU8(codeBuf));
@@ -158,7 +164,7 @@ void load()
 /?/*.cfg.OpenGL:
   &.sdl.UseGlContext ugc;
 /*?*/
-  ^bool charDone.new(4);
+  ^bool charDone.new(#.chr.chars);
   loop{index i = 0; while; do:
     charDone[i] = false;
     i++;
@@ -193,19 +199,29 @@ void load()
     while i < #charDone:}
     if(
       !charDone[2] && #.sc.syst.selinf.p[0].selchr > 0
-      && .com.tmode[0] != (int).com.TeamMode::Simul)
+      && .com.tmode[0] != (int).com.TeamMode::Simul) loop
     {
-      .chr.chars[2].new(0);
-      .code[2] = "public void c.Char::stateInit2P(){}"\r\n;
-      charDone[2] = true;
+      index i = 2;
+      while;
+    do:
+      .chr.chars[i].new(0);
+      .code[i] = "public void c.Char::stateInit" + .s.iToS(i) + "P(){}"\r\n;
+      charDone[i] = true;
+      i += 2;
+    while i < #.chr.chars:
     }
     if(
       !charDone[3] && #.sc.syst.selinf.p[1].selchr > 0
-      && .com.tmode[1] != (int).com.TeamMode::Simul)
+      && .com.tmode[1] != (int).com.TeamMode::Simul) loop
     {
-      .chr.chars[3].new(0);
-      .code[3] = "public void c.Char::stateInit3P(){}"\r\n;
-      charDone[3] = true;
+      index i = 3;
+      while;
+    do:
+      .chr.chars[i].new(0);
+      .code[i] = "public void c.Char::stateInit" + .s.iToS(i) + "P(){}"\r\n;
+      charDone[i] = true;
+      i += 2;
+    while i < #.chr.chars:
     }
     if(!codeDone && allCharDone()){
       if(!.stateCompile()){

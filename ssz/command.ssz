@@ -1069,7 +1069,7 @@ public &CommandList
   public bool input(int input, int facing)
   {
     bool step = `buffer~Bb != 0;
-    if(input < 0 && input >= -4){
+    if(input < 0 && input >= -.com.maxSimul*2){
       .aiil.new[!input].update();//同期がずれないようここで
     }
     branch{
@@ -1083,7 +1083,7 @@ public &CommandList
         bool l, r, u, d, a, b, c, x, y, z, s;
         branch{
         cond input < 0:
-          if(input < -4) else;
+          if(input < -.com.maxSimul*2) else;
           l = .aiil[!input].l();
           r = .aiil[!input].r();
           u = .aiil[!input].u();

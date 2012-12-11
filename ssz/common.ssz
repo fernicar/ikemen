@@ -35,13 +35,24 @@ public bool clsndraw = false;
 //デバッグ表示フラグ
 public bool debugdraw = false;
 
-public ^%%char clipboardText.new(4);
+const int maxSimul = 2;
+public ^int numSimul.new(2);
+numSimul[0] = numSimul[1] = maxSimul;
 
-public ^int com = com + (int)[4, 4, 4, 4];
+public ^%%char clipboardText.new(maxSimul*2);
+
+public ^int com;
+void comInit()
+{
+  .com.new(.maxSimul*2);
+  .s.each!int?([void(int c=){c = 4;}], .com);
+}
+comInit();
+
 public ^int inputRemap;
 public void resetRemapInput()
 {
-  .inputRemap.new(4);
+  .inputRemap.new(.maxSimul*2);
   loop{int i = 0; do: .inputRemap[i] = i; i++; while i < #.inputRemap:}
 }
 resetRemapInput();
