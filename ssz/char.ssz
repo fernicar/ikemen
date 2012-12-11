@@ -4092,9 +4092,14 @@ public &Char
       .c.new(0);
       ret;
     }
-    .c =
-      #.chars[(`playerno+2 & 3) + (no << 1)] > 0
-      ? .chars[(`playerno+2 & 3) + (no << 1)][0] : .consts.null!`self?();
+    int par;
+    branch{
+    cond no == `playerno >> 1:
+      par = `playerno + 2;
+    else:
+      par = (`playerno & 1) + (no << 1) + (int)(no > `playerno >> 1)*2;
+    }
+    .c = #.chars[par] > 0 ? .chars[par][0] : .consts.null!`self?();
   }
   public void trHelper(int id)
   {
