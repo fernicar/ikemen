@@ -53,7 +53,16 @@ bool stage()
 int chara(int pn)
 {
   int nsel = #.sc.syst.selinf.p[pn&1].selchr;
-  if(.com.tmode[pn&1] != (int).com.TeamMode::Simul && pn >= 2) ret 0;
+  branch{
+  cond .com.tmode[pn&1] == (int).com.TeamMode::Simul:
+    if(pn >> 1 >= .com.numSimul[pn&1]){
+      .code[pn] = "public void c.Char::stateInit" + .s.iToS(pn) + "P(){}"\r\n;
+      .chr.chars[pn].new(0);
+      ret 1;
+    }
+  cond pn >= 2:
+    ret 0;
+  }
   if(
     .com.tmode[pn&1] == (int).com.TeamMode::Turns
     && nsel < .com.numturns[pn&1]) ret 0;
