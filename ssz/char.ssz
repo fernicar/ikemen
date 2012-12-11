@@ -6837,7 +6837,9 @@ public float action(
               loop{index i = 0; while; do:
                 if(#.chars[i] > 0){
                   l1 +=
-                    (.com.tmode[0] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
+                    (
+                      .com.tmode[0] == (int).com.TeamMode::Simul
+                      ? 1.0 / (float).com.numSimul[0] : 1.0)
                     * (float).chars[i][0]~sysivar[.iLIFE]
                     / (float).chars[i][0]~sysivar[.iLIFEMAX];
                 }
@@ -6846,7 +6848,9 @@ public float action(
               loop{index i = 1; while; do:
                 if(#.chars[i] > 0){
                   l2 +=
-                    (.com.tmode[1] == (int).com.TeamMode::Simul ? 0.5 : 1.0)
+                    (
+                      .com.tmode[1] == (int).com.TeamMode::Simul
+                      ? 1.0 / (float).com.numSimul[1] : 1.0)
                     * (float).chars[i][0]~sysivar[.iLIFE]
                     / (float).chars[i][0]~sysivar[.iLIFEMAX];
                 }
