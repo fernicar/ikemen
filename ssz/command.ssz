@@ -467,7 +467,7 @@ public &NetInput
   public bool input(&.Buffer b=, int in, int f)
   {
     if(!.m.inRange!int?(0, #`kb-1, in)) ret false;
-    ret `kb[in].input(b=, f);
+    ret `kb[.com.inputRemap[in]].input(b=, f);
   }
   public bool anybutton()
   {
@@ -547,7 +547,7 @@ public &FileInput
   public bool input(&.Buffer b=, int in, int f)
   {
     if(!.m.inRange!int?(0, #`ki-1, in)) ret false;
-    `ki[in].input(b=, f);
+    `ki[.com.inputRemap[in]].input(b=, f);
     ret true;
   }
   public bool anybutton()
