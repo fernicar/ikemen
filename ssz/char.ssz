@@ -167,13 +167,15 @@ public void drawAnimList(^&.AnimList al=, float x, float y)
         float cs = al~cscl;
       cond al~angle != 0.0:
         al~anim~ani.angleDraw(
-          .com.xoffset-(x-al~x)*cs, .com.zoffset+.com.yoffset-(y-al~y)*cs,
+          .com.xoffset-(x-al~x)*cs,
+          .com.zoffset+.com.yoffset-.stage.envShake.getOffset()-(y-al~y)*cs,
           cs*al~xscl, cs*al~yscl, al~angle*(.m.PI/180.0),
           al~aset, al~axscl, al~ayscl, al~fx, al~oVer);
       else:
         al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-al~x),
-          (.com.zoffset+.com.yoffset)/cs - (y-al~y), cs, cs, al~xscl, al~xscl,
+          (.com.zoffset+.com.yoffset-.stage.envShake.getOffset())/cs
+          - (y-al~y), cs, cs, al~xscl, al~xscl,
           al~yscl, 0.0, (float).com.GameWidth/2.0, al~fx, al~oVer);
       break:
         .com.brightness = ob;
@@ -260,7 +262,8 @@ public void drawShadowList(float x, float y)
       float cs = sl~al~cscl;
       sl~al~anim~ani.shadowDraw(
         .com.xoffset-(x-sl~al~x)*cs,
-        .com.zoffset + .com.yoffset - (y+sl~al~y*syscl-sl~offsety)*cs,
+        .com.zoffset + .com.yoffset - .stage.envShake.getOffset()
+        - (y+sl~al~y*syscl-sl~offsety)*cs,
         cs*sl~al~xscl, cs*-sl~al~yscl, syscl, sl~al~angle*(.m.PI/180.0),
         sl~al~aset, sl~al~axscl, sl~al~ayscl, .stage.bgPalFX, sl~al~oVer,
         (uint)color, intensity);
@@ -295,13 +298,15 @@ public void drawReflection(float x, float y)
       cond sl~al~angle != 0.0:
         sl~al~anim~ani.angleDraw(
           .com.xoffset-(x-sl~al~x)*cs,
-          .com.zoffset+.com.yoffset-(y+sl~al~y-sl~offsety)*cs,
+          .com.zoffset + .com.yoffset - .stage.envShake.getOffset()
+          - (y+sl~al~y-sl~offsety)*cs,
           cs*sl~al~xscl, cs*-sl~al~yscl, sl~al~angle*(.m.PI/180.0),
           sl~al~aset, sl~al~axscl, sl~al~ayscl, sl~al~fx, sl~al~oVer);
       else:
         sl~al~anim~ani.draw(
           .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
-          (.com.zoffset+.com.yoffset)/cs - (y+sl~al~y-sl~offsety),
+          (.com.zoffset+.com.yoffset-.stage.envShake.getOffset())/cs
+          - (y+sl~al~y-sl~offsety),
           cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl, 0.0,
           (float).com.GameWidth/2.0, sl~al~fx, sl~al~oVer);
       }
@@ -5391,7 +5396,7 @@ public void Explod::update(bool oVer, int playerNo)
         ? -(float).com.GameWidth/2.0 : (float).com.GameWidth/2.0);
     xofs = -.com.xoffset;
     `y = .com.cameray + `offsety - .com.zoffset;
-    yofs = -.com.yoffset;
+    yofs = -.com.yoffset + .stage.envShake.getOffset();
   else:
     {
       ^&.Char bc = .players.get(`bindid);
@@ -6386,7 +6391,7 @@ void gSetNormal(float scl, float x, float y)
   .com.zoffset =
     (float)(.stg~zoffset + (.com.GameHeight - 240))*scl
     + (1.0 - scl)*(float).com.GameHeight;
-  .com.yoffset = (.stg~bga.yoffset-.stage.envShake.getOffset())*scl;
+  .com.yoffset = .stg~bga.yoffset*scl;
   .com.xoffset = .stg~bga.xoffset*scl;
   .com.scrxmin =
     (float)(.stg~cam.boundleft - .stg~cam.startx)

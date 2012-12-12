@@ -57,21 +57,17 @@ const double lvmul = 2.0**(1.0/12.0);
     }
   }
   delete()
-  {:<-
+  {
     if(!.com.autolevel || !.com.matchOver()) ret;
-    void foo(index i)
-    {
+    loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0) branch{
       cond .chr.chars[i][0]~isWin():
         `win(i);
       cond .chr.chars[i][0]~isLose():
         `lose(i);
       }
-    }
-    foo(0);
-    foo(1);
-    foo(2);
-    foo(3);
+      i++;
+    while i < #.chr.chars:}
     %char buf;
     buf .= '\xfeff';
     `winct.forEach()<, [void(^/char name, ^int cnt){
@@ -192,8 +188,7 @@ void game()
               ((float).com.GameWidth/(float)#.chr.chars)*(float)i));
       }
       i++;
-    while i < #.chr.chars:
-    }
+    while i < #.chr.chars:}
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0) `put(0.0, y=, .chr.cgi[i].def + \n);
       i++;
@@ -213,10 +208,9 @@ void game()
         while j < #.com.clipboardText[i]:
         }
       }
-      y+=(float).fnt.debugFont~sizey/.com.HeightScale;
+      y += (float).fnt.debugFont~sizey/.com.HeightScale;
       i++;
-    while i < #.chr.chars:
-    }
+    while i < #.chr.chars:}
   }
   void debugInput()
   {
@@ -267,8 +261,7 @@ void game()
       }
     continue:
       i++;
-    while i < #.chr.chars:
-    }
+    while i < #.chr.chars:}
     .chr.nextRound();
     `x = `newx = 0.0;
     `y = `newy = 0.0;
@@ -302,8 +295,8 @@ void game()
     .cmd.synchronize();
     .wm.init();
     ^int level.new(#.chr.chars);
-    loop{index i = 0; while; do: level[i] = 0; i++; while i < #.chr.chars:}
     loop{index i = 0; while; do:
+      level[i] = 0;
       if(#.chr.chars[i] > 0){
         .chr.chars[i]<>~rootInit();
         level[i] = .wm.getLevel(i);

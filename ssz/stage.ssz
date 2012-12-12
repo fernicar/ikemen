@@ -44,7 +44,7 @@ bgPalFX.new(1);
   public float getOffset()
   {
     if(`time <= 0) ret 0.0;
-    ret (float)`ampl * .m.sin(`phase);
+    ret (float)`ampl * 0.5 * .m.sin(`phase);
   }
 }
 public &EnvShake envShake;
@@ -592,7 +592,7 @@ public &Stage
     float bgscl = `hires ? 0.5 : 1.0;
     loop{index i = 0; while; do:
       if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){
-        `bg[i].draw(x, y + .envShake.getOffset(), scl, .bgPalFX, bgscl);
+        `bg[i].draw(x, y, scl, .bgPalFX, bgscl, .envShake.getOffset());
       }
       i++;
     while i < #`bg:

@@ -398,7 +398,8 @@ public &BackGround
     `anim.setup(sf);
   }
   public void draw(
-    float posx, float posy, float scl, ^&.com.PalFX fx, float bgscl)
+    float posx, float posy, float scl, ^&.com.PalFX fx, float bgscl,
+    float shakeY)
   {
     float x = .com.zoom ? posx : .m.ceil(posx-0.5);
     float y = .com.zoom ? posy : .m.ceil(posy-0.5);
@@ -431,7 +432,7 @@ public &BackGround
     x2 *= bgscl;
     y2 *= bgscl;
     ys *= bgscl;
-    y2 += (float).com.GameHeight / scly - 240.0;
+    y2 += (float).com.GameHeight / scly - shakeY - 240.0;
     `anim.draw(
       rect=, x2, y2, sclx, scly, `xtscale*bgscl, xbs*bgscl, ys, xras * x2
       / (#ys*(float)`anim.spr~rct.h), (float).com.GameWidth/2.0, fx, true);

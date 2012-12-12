@@ -590,7 +590,6 @@ public &PalFX
   }
   public void step()
   {
-    if(`enable && `cycletime > 0) `sintime = (`sintime+1) % `cycletime;
     if(`enable = `time != 0){
       `emulr = `mulr;
       `emulg = `mulg;
@@ -602,6 +601,7 @@ public &PalFX
       `einvertall = `invertall;
       `enegType = `negType;
       `sinAdd(`eaddr=, `eaddg=, `eaddb=);
+      if(`cycletime > 0) `sintime = (`sintime+1) % `cycletime;
     }
     if(`time > 0) `time--;
   }
