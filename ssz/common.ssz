@@ -512,6 +512,7 @@ public &PalFX
   new()
   {
     `clear();
+    `enable = false;
   }
   public void copy(`self x)
   {
@@ -559,7 +560,6 @@ public &PalFX
     `color = 1.0;
     `invertall = 0;
     `negType = negType;
-    `enable = false;
   }
   public void clear()
   {
