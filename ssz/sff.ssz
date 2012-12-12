@@ -1106,15 +1106,15 @@ public &Anim<frame_t>
       `sff~palList.swapPalMap(fx~remap=);
     }
     branch{
-    cond #fx > 0 && fx~time != 0 && .allPalFX~time != 0:
+    cond #fx > 0 && fx~enable && .allPalFX~enable:
       {
         &.com.PalFX synth.copy(fx<>);
-        synth.synthesize(.allPalFX<>, `alphaFoo() == -2);
+        synth.synthesize(.allPalFX<>);
         pal = synth.getFxPal(pal, `alphaFoo() == -2);
       }
-    cond #fx > 0 && fx~time != 0:
+    cond #fx > 0 && fx~enable:
       pal = fx~getFxPal(pal, `alphaFoo() == -2);
-    cond .allPalFX~time != 0:
+    cond .allPalFX~enable:
       pal = .allPalFX~getFxPal(pal, `alphaFoo() == -2);
     }
     ret pal;

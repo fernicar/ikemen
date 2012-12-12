@@ -349,7 +349,7 @@ public void drawReflection(float x, float y)
   {
     `palfx.new(.cfg.AfterImageMax);
     loop{index i = 0; while; do:
-      `palfx[i].time = -1;
+      `palfx[i].enable = true;
       `palfx[i].negType = 1;
       i++;
     while i < #`palfx:}
@@ -362,14 +362,14 @@ public void drawReflection(float x, float y)
     `time = 0;
     `length = 20;
     if(#`palfx > 0){
-      `palfx~color = 1.0;
-      `palfx~invertall = 0;
-      `palfx~addr = 30;
-      `palfx~addg = 30;
-      `palfx~addb = 30;
-      `palfx~mulr = 120;
-      `palfx~mulg = 120;
-      `palfx~mulb = 220;
+      `palfx~ecolor = 1.0;
+      `palfx~einvertall = 0;
+      `palfx~eaddr = 30;
+      `palfx~eaddg = 30;
+      `palfx~eaddb = 30;
+      `palfx~emulr = 120;
+      `palfx~emulg = 120;
+      `palfx~emulb = 220;
     }
     `postbrightr = 0;
     `postbrightg = 0;
@@ -391,37 +391,37 @@ public void drawReflection(float x, float y)
   public void setPalcolor(int palcol)
   {
     if(#`palfx > 0){
-      `palfx~color = (float)palcol / 256.0;
-      .m.limRange!float?(`palfx~color=, 0.0, 1.0);
+      `palfx~ecolor = (float)palcol / 256.0;
+      .m.limRange!float?(`palfx~ecolor=, 0.0, 1.0);
     }
   }
   public void setPalinvertall(bool palinv)
   {
-    if(#`palfx > 0) `palfx~invertall = (int)palinv;
+    if(#`palfx > 0) `palfx~einvertall = (int)palinv;
   }
   public void setPalbrightR(int palbrr)
   {
-    if(#`palfx > 0) `palfx~addr = palbrr;
+    if(#`palfx > 0) `palfx~eaddr = palbrr;
   }
   public void setPalbrightG(int palbrg)
   {
-    if(#`palfx > 0) `palfx~addg = palbrg;
+    if(#`palfx > 0) `palfx~eaddg = palbrg;
   }
   public void setPalbrightB(int palbrb)
   {
-    if(#`palfx > 0) `palfx~addb = palbrb;
+    if(#`palfx > 0) `palfx~eaddb = palbrb;
   }
   public void setPalcontrastR(int palcor)
   {
-    if(#`palfx > 0) `palfx~mulr = palcor;
+    if(#`palfx > 0) `palfx~emulr = palcor;
   }
   public void setPalcontrastG(int palcog)
   {
-    if(#`palfx > 0) `palfx~mulg = palcog;
+    if(#`palfx > 0) `palfx~emulg = palcog;
   }
   public void setPalcontrastB(int palcob)
   {
-    if(#`palfx > 0) `palfx~mulb = palcob;
+    if(#`palfx > 0) `palfx~emulb = palcob;
   }
   public void setupPalfx()
   {
@@ -430,15 +430,15 @@ public void drawReflection(float x, float y)
       int pbr = `postbrightr, pbg = `postbrightg, pbb = `postbrightb;
       while;
     do:
-      `palfx[i].color = `palfx[i-1].color;
-      `palfx[i].invertall = `palfx[i-1].invertall;
-      `palfx[i].addr = `palfx[i-1].addr + `addr + pbr;
-      `palfx[i].addg = `palfx[i-1].addg + `addg + pbg;
-      `palfx[i].addb = `palfx[i-1].addb + `addb + pbb;
+      `palfx[i].ecolor = `palfx[i-1].ecolor;
+      `palfx[i].einvertall = `palfx[i-1].einvertall;
+      `palfx[i].eaddr = `palfx[i-1].eaddr + `addr + pbr;
+      `palfx[i].eaddg = `palfx[i-1].eaddg + `addg + pbg;
+      `palfx[i].eaddb = `palfx[i-1].eaddb + `addb + pbb;
       pbr = pbg = pbb = 0;
-      `palfx[i].mulr = (int)((float)`palfx[i-1].mulr * `mulr);
-      `palfx[i].mulg = (int)((float)`palfx[i-1].mulg * `mulg);
-      `palfx[i].mulb = (int)((float)`palfx[i-1].mulb * `mulb);
+      `palfx[i].emulr = (int)((float)`palfx[i-1].emulr * `mulr);
+      `palfx[i].emulg = (int)((float)`palfx[i-1].emulg * `mulg);
+      `palfx[i].emulb = (int)((float)`palfx[i-1].emulb * `mulb);
       i++;
     while i < #`palfx:
     }

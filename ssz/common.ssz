@@ -503,6 +503,12 @@ public &PalFX
   public int invertall;
   public int negType;
   public %index remap;
+  public int emulr, emulg, emulb;
+  public int eaddr, eaddg, eaddb;
+  public float ecolor;
+  public int einvertall;
+  public int enegType;
+  public bool enable;
   new()
   {
     `clear();
@@ -525,6 +531,16 @@ public &PalFX
     `invertall = x.invertall;
     `negType = x.negType;
     `remap = x.remap;
+    `emulr = x.emulr;
+    `emulg = x.emulg;
+    `emulb = x.emulb;
+    `eaddr = x.eaddr;
+    `eaddg = x.eaddg;
+    `eaddb = x.eaddb;
+    `ecolor = x.ecolor;
+    `einvertall = x.einvertall;
+    `enegType = x.enegType;
+    `enable = x.enable;
   }
   public void clear2(int negType)
   {
@@ -543,46 +559,55 @@ public &PalFX
     `color = 1.0;
     `invertall = 0;
     `negType = negType;
+    `enable = false;
   }
   public void clear()
   {
     `clear2(0);
   }
-  /void sinAdd(int r=, int g=, int b=, bool neg)
+  /void sinAdd(int r=, int g=, int b=)
   {
     if(`cycletime < 2) ret;
     float sin =
       .m.sin(
         (
-          .m.PI*2.0*(double)`sintime + (neg ? .m.PI : 0.0)
+          .m.PI*2.0*(double)`sintime
           + (`cycletime == 2 ? .m.PI/2.0 : 0.0)) / (double)`cycletime);
     r += (int)(sin*(float)`amplr);
     g += (int)(sin*(float)`amplg);
     b += (int)(sin*(float)`amplb);
   }
-  public void synthesize(`self pfx, bool nega)
+  public void synthesize(`self pfx)
   {
-    `mulr = `mulr * pfx.mulr / 256;
-    `mulg = `mulg * pfx.mulg / 256;
-    `mulb = `mulb * pfx.mulb / 256;
-    `addr += pfx.addr;
-    `addg += pfx.addg;
-    `addb += pfx.addb;
-    bool neg = `negType == 0 ? nega : false;
-    `sinAdd(`addr=, `addg=, `addb=, neg);
-    `cycletime = 0;
-    pfx.sinAdd(`addr=, `addg=, `addb=, neg);
-    `color *= pfx.color;
-    `invertall = (int)(`invertall != 0 ^ pfx.invertall != 0);
+    `emulr = `emulr * pfx.emulr / 256;
+    `emulg = `emulg * pfx.emulg / 256;
+    `emulb = `emulb * pfx.emulb / 256;
+    `eaddr += pfx.eaddr;
+    `eaddg += pfx.eaddg;
+    `eaddb += pfx.eaddb;
+    `ecolor *= pfx.ecolor;
+    `einvertall = (int)(`einvertall != 0 ^ pfx.einvertall != 0);
   }
   public void step()
   {
+    if(`enable && `cycletime > 0) `sintime = (`sintime+1) % `cycletime;
+    if(`enable = `time != 0){
+      `emulr = `mulr;
+      `emulg = `mulg;
+      `emulb = `mulb;
+      `eaddr = `addr;
+      `eaddg = `addg;
+      `eaddb = `addb;
+      `ecolor = `color;
+      `einvertall = `invertall;
+      `enegType = `negType;
+      `sinAdd(`eaddr=, `eaddg=, `eaddb=);
+    }
     if(`time > 0) `time--;
-    if(`time != 0 && `cycletime > 0) `sintime = (`sintime+1) % `cycletime;
   }
   public ^uint getFxPal(^uint pal, bool nega)
   {
-    bool neg = `negType == 0 ? nega : false;
+    bool neg = `enegType == 0 ? nega : false;
     int mr, mg, mb;
     void addsubset(uint addc=, uint subc=, int r=, int g=, int b=)
     {
@@ -620,32 +645,32 @@ public &PalFX
       float ac;
       branch{
       cond neg:
-        mr = (`mulg + `mulb) >> 1;
-        mg = (`mulr + `mulb) >> 1;
-        mb = (`mulr + `mulg) >> 1;
+        mr = (`emulg + `emulb) >> 1;
+        mg = (`emulr + `emulb) >> 1;
+        mb = (`emulr + `emulg) >> 1;
       else:
-        mr = `mulr;
-        mg = `mulg;
-        mb = `mulb;
+        mr = `emulr;
+        mg = `emulg;
+        mb = `emulb;
       }
       .m.limRange!int?(mr=, 0, 255*256);
       .m.limRange!int?(mg=, 0, 255*256);
       .m.limRange!int?(mb=, 0, 255*256);
-      int adr = `addr, adg = `addg, adb = `addb;
-      `sinAdd(adr=, adg=, adb=, neg);
+      int adr = `eaddr, adg = `eaddg, adb = `eaddb;
       uint addc, subc;
       addsubset(addc=, subc=, adr=, adg=, adb=);
       uint tmp, msk;
     do:
       c = pal[i];
-      if(`invertall != 0) c = !c;
+      if(`einvertall != 0) c = !c;
       ac = (float)((c&0xff)+(c>>0d8&0xff)+(c>>0d16&0xff)) * (1.0/3.0);
       c =
-        (uint)((float)(c&0xff) + (ac-(float)(c&0xff))*(1.0-`color))
-        | (uint)((float)(c>>0d8&0xff) + (ac-(float)(c>>0d8&0xff))*(1.0-`color))
+        (uint)((float)(c&0xff) + (ac-(float)(c&0xff))*(1.0-`ecolor))
+        | (uint)(
+          (float)(c>>0d8&0xff) + (ac-(float)(c>>0d8&0xff))*(1.0-`ecolor))
         << 0d8
         | (uint)(
-          (float)(c>>0d16&0xff) + (ac-(float)(c>>0d16&0xff))*(1.0-`color))
+          (float)(c>>0d16&0xff) + (ac-(float)(c>>0d16&0xff))*(1.0-`ecolor))
         << 0d16;
       tmp = (((!c & subc) << 0d1) + ((!c ^ subc) & 0xfefefefe)) & 0x01010100;
       msk = tmp - (tmp >> 0d8);

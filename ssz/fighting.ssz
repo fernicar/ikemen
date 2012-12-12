@@ -302,6 +302,7 @@ void game()
     .cmd.synchronize();
     .wm.init();
     ^int level.new(#.chr.chars);
+    loop{index i = 0; while; do: level[i] = 0; i++; while i < #.chr.chars:}
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0){
         .chr.chars[i]<>~rootInit();
@@ -326,7 +327,7 @@ void game()
     while i < #.chr.chars:}
     int maxlv = level[0];
     loop{index i = 1; while; do:
-      maxlv = .m.max!int?(minlv, level[i]);
+      maxlv = .m.max!int?(maxlv, level[i]);
       i++;
     while i < #.chr.chars:}
     branch{
@@ -371,6 +372,7 @@ void game()
         .chr.chars[i][0]~sysivar[.chr.iLIFEMAX] = (int).m.ceil(hoge * lm);
         if(.com.rexisted[i&1] > 0){
           .chr.chars[i][0]~sysivar[.chr.iLIFE] =
+            .m.min!int?(.chr.chars[i][0]~sysivar[.chr.iLIFEMAX])<, 
             (int).m.ceil(hoge * (float).chr.chars[i][0]~sysivar[.chr.iLIFE]);
         }
       }
@@ -469,7 +471,6 @@ void game()
     else:
       loop{index i = 0; while; do:
         branch{
-          double hoge;
         cond
           .chr.chars[i][0]~isWin() || (
             !.chr.chars[i][0]~isLose()
@@ -477,10 +478,9 @@ void game()
           :
           loop{index j = i; while; do:
             if(#.chr.chars[j] > 0){
-              hoge = .lvmul**(double)level[j];
               .chr.chars[j][0]~sysivar[.chr.iLIFE] =
                 .m.max!int?(1)<, (int).m.ceil(
-                  hoge * (float)(
+                  .lvmul**(double)level[j] * (float)(
                     .chr.chars[j][0]~isWin()
                     ? .chr.chars[j][0]~sysivar[.chr.iLIFE]
                     : .chr.chars[j][0]~sysivar[.chr.iLIFEMAX]));
