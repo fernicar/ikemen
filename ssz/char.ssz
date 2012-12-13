@@ -4399,16 +4399,28 @@ public &Char
     }
     .v.setI(`ani~ani.animElemNo(tim));
   }
-  public void trChangeAnim(int no)
+  bool changeAnimCommon(int no)
   {
     *`ani.self tmp = `getAction(no);
-    if(#tmp == 0) ret;
+    if(#tmp == 0) ret false;
     `ani = tmp;
     `animno = no;
     `animpno = `playerno;
     `sysfvar[.fCLSNXSCALE] = `sysfvar[.fXSCALE];
     `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
-    `ani~ani.updateSprite();
+    ret true;
+  }
+  public void defChangeAnim(int no)
+  {
+    ^&.sff.Sprite spr;
+    if(#`ani > 0 && `isHitPaused()) spr = `ani~ani.spr;
+    if(`changeAnimCommon(no) && `isHitPaused())`ani~ani.spr = spr;
+  }
+  public void trChangeAnim(int no)
+  {
+    if(`changeAnimCommon(no) && `isHitPaused()){
+      `curFrame = `ani~ani.currentFrame();
+    }
   }
   public void trChangeAnim2(int no)
   {
@@ -4420,7 +4432,14 @@ public &Char
     `sysfvar[.fCLSNXSCALE] = .chars[`stVal.playerno][0]~sysfvar[.fXSCALE];
     `sysfvar[.fCLSNYSCALE] = .chars[`stVal.playerno][0]~sysfvar[.fYSCALE];
     `ani~ani.sff = .cgi[`playerno].sf;
-    `ani~ani.updateSprite();
+    if(`isHitPaused()) `curFrame = `ani~ani.currentFrame();
+  }
+  public void setAnimElem(int e)
+  {
+    if(#`ani > 0){
+      `ani~ani.setAnimElem(e);
+      `curFrame = `ani~ani.currentFrame();
+    }
   }
   public void trAnimExist(int pid)
   {
@@ -4540,7 +4559,7 @@ public &Char
   }
   public void changeState2()
   {
-    if(`cs1tmp && (!`isHitPaused() || `helperindex > 0)){
+    if(`cs1tmp){
       ^&`State st = .states[`stVal.playerno].get(`stVal.no);
       branch{
       cond #st > 0:

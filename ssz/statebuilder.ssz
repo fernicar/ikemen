@@ -3452,7 +3452,7 @@ public &StateBuilder
       if(!`stateParam(param=, "anim", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.deftask=, data=, "`trChangeAnim(", ");", 2)) ret false;
+            `state.deftask=, data=, "`defChangeAnim(", ");", 2)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ctrl", [`paraF_t(data=){
@@ -3516,7 +3516,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=, "int e=", ";", 2)) ret false;
-        elem = "if(#`ani>0)`ani~ani.setAnimElem(e);";
+        elem = "`setAnimElem(e);";
         ret true;
       }])) ret false;
       bool value = false;
