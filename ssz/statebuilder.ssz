@@ -633,7 +633,7 @@ public &StateBuilder
         flg |= (int).chr.StTy::A;
       default:
         if(
-          !.cfg.IgnoreMostErrors && foo[i] < '\x80'
+          .cfg.IgnoreMostErrors && foo[i] < '\x80'
           && (foo[i] < 'A' || 'Z' < foo[i]) && (foo[i] < 'a' || 'z' < foo[i]))
         {
           ret true;
@@ -651,9 +651,11 @@ public &StateBuilder
       ^/char tmp;
       while;
     do:
-      foo = .s.toLower()<, .s.trim(hit[i]);
+      foo = .s.trim(hit[i]);
       branch{
-        tmp = .s.trim(foo[0..2]);
+        tmp = .s.toLower(.s.trim(foo[0..2]));
+      cond !.cfg.IgnoreMostErrors && #foo > 2:
+        else;
       cond .s.equ(tmp, "na"): flg |= (int).chr.AtTy::NA;
       cond .s.equ(tmp, "nt"): flg |= (int).chr.AtTy::NT;
       cond .s.equ(tmp, "np"): flg |= (int).chr.AtTy::NP;
@@ -680,7 +682,7 @@ public &StateBuilder
         ret false;
       }
       if(hitdef && i == 1) hitdefflg = flg;
-      if(#tmp > 2) break;
+      if(#foo > 2) break;
       i++;
     while i < #hit:
     break:
