@@ -3162,7 +3162,7 @@ public &Char
   }
   public bool isAlive()
   {
-    ret !`isKO() && !.chars[`playerno][0]~isKO();
+    ret !`isKO();
   }
   public bool isPaused()
   {
@@ -3548,7 +3548,9 @@ public &Char
         }
         if(`stVal.hb.damage != 0){
           if(`stVal.hb.guarded) `getcombo = 0;
+          bool dead = `stVal.hb.damage >= `sysivar[.iLIFE];
           `addLife(-(double)`stVal.hb.damage, true, true);
+          if(dead) `sysivar[.iLIFE] = 0;
         }
         `stVal.hb.damage = 0;
       }
@@ -3674,7 +3676,12 @@ public &Char
   public void setLife(int l)
   {
     `sysivar[.iLIFE] = .m.max!int?(0)<, .m.min!int?(`sysivar[.iLIFEMAX])<, l;
-    if(!`isKO() && `sysivar[.iLIFE] == 0) `setEnemyWinty();
+    if(`sysivar[.iLIFE] == 0) branch{
+    cond `player:
+      if(!`isKO()) `setEnemyWinty();
+    else:
+      `sysivar[.iLIFE] = 1;
+    }
   }
   public int getDamage(double damage, bool kill, bool absolute, float atkmul)
   {
