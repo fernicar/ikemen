@@ -3271,10 +3271,7 @@ public &Char
     }
     if(`minus != 2) ret;
     bool p = isSuperPaused() || isNormalPaused();
-    if(#`cmd == 0){
-      `changeState2();
-      p = false;
-    }
+    if(#`cmd == 0) p = false;
     `acttmp = -(int)p * 2;
     if(!p){
       if(#`palfx > 0) `palfx~step();
@@ -3282,7 +3279,6 @@ public &Char
         `setFacing(`p1facing);
         `p1facing = 0;
       }
-      `changeState2();
       if((`stVal.no == 0 || `stVal.no == 11 || `stVal.no == 20)) `furimuki();
       if(`keyctrl && #`cmd > 0) branch{
         branch{
@@ -4562,13 +4558,11 @@ public &Char
   {
     if(anim >= 0) `trChangeAnim(anim);
     if(ctrl >= 0) `setCtrl(ctrl != 0);
-    if(`changeState1kai(p, n)){
-      if(`minus <= 0) `changeState2();
-      if(`minus == 0 && `id >= 0 && !`cs1tmp){
-        .changeStateNest++;
-        `state(::);
-        .changeStateNest--;
-      }
+    if(`changeState1kai(p, n) && `minus == 0 && `id >= 0){
+      `changeState2();
+      .changeStateNest++;
+      `state(::);
+      .changeStateNest--;
     }
   }
   public void trChangeState(int no, int anim, int ctrl)

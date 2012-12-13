@@ -631,15 +631,15 @@ public &StateBuilder
       case 'A', 'a':
         if(hitdef) flg = 0;
         flg |= (int).chr.StTy::A;
-      case ' ', '\t':
-        if(!.cfg.IgnoreMostErrors) default;
-        ret true;
       default:
-        if(!.cfg.IgnoreMostErrors){
-          `lasterror = hit[0] + "が無効な値です";
-          ret false;
+        if(
+          !.cfg.IgnoreMostErrors && foo[i] < '\x80'
+          && (foo[i] < 'A' || 'Z' < foo[i]) && (foo[i] < 'a' || 'z' < foo[i]))
+        {
+          ret true;
         }
-        break, continue;
+        `lasterror = hit[0] + "が無効な値です";
+        ret false;
       }
     continue:
       i++;
@@ -647,12 +647,13 @@ public &StateBuilder
     }
     loop{
       index i = 1;
+      int hitdefflg = flg;
+      ^/char tmp;
       while;
     do:
       foo = .s.toLower()<, .s.trim(hit[i]);
       branch{
-        ^/char tmp = .s.trim(foo[0..2]);
-        if(hitdef && i > 1) else;
+        tmp = .s.trim(foo[0..2]);
       cond .s.equ(tmp, "na"): flg |= (int).chr.AtTy::NA;
       cond .s.equ(tmp, "nt"): flg |= (int).chr.AtTy::NT;
       cond .s.equ(tmp, "np"): flg |= (int).chr.AtTy::NP;
@@ -662,39 +663,91 @@ public &StateBuilder
       cond .s.equ(tmp, "ha"): flg |= (int).chr.AtTy::HA;
       cond .s.equ(tmp, "ht"): flg |= (int).chr.AtTy::HT;
       cond .s.equ(tmp, "hp"): flg |= (int).chr.AtTy::HP;
-      cond .s.equ(tmp, "n"):
-        flg |= (int).chr.AtTy::NA;
-        flg |= (int).chr.AtTy::NT;
-        flg |= (int).chr.AtTy::NP;
-      cond .s.equ(tmp, "s"):
-        flg |= (int).chr.AtTy::SA;
-        flg |= (int).chr.AtTy::ST;
-        flg |= (int).chr.AtTy::SP;
-      cond .s.equ(tmp, "h") || .s.equ(tmp, "a"):
-        flg |= (int).chr.AtTy::HA;
-        flg |= (int).chr.AtTy::HT;
-        flg |= (int).chr.AtTy::HP;
       cond .s.equ(tmp, "aa"):
-        flg |= (int).chr.AtTy::NA;
-        flg |= (int).chr.AtTy::SA;
-        flg |= (int).chr.AtTy::HA;
+        flg |= (int).chr.AtTy::NA|(int).chr.AtTy::SA|(int).chr.AtTy::HA;
       cond .s.equ(tmp, "at"):
-        flg |= (int).chr.AtTy::NT;
-        flg |= (int).chr.AtTy::ST;
-        flg |= (int).chr.AtTy::HT;
+        flg |= (int).chr.AtTy::NT|(int).chr.AtTy::ST|(int).chr.AtTy::HT;
       cond .s.equ(tmp, "ap"):
-        flg |= (int).chr.AtTy::NP;
-        flg |= (int).chr.AtTy::SP;
-        flg |= (int).chr.AtTy::HP;
+        flg |= (int).chr.AtTy::NP|(int).chr.AtTy::SP|(int).chr.AtTy::HP;
+      cond .s.equ(tmp, "n"):
+        flg |= (int).chr.AtTy::NA|(int).chr.AtTy::NT|(int).chr.AtTy::NP;
+      cond .s.equ(tmp, "s"):
+        flg |= (int).chr.AtTy::SA|(int).chr.AtTy::ST|(int).chr.AtTy::SP;
+      cond .s.equ(tmp, "h") || .s.equ(tmp, "a"):
+        flg |= (int).chr.AtTy::HA|(int).chr.AtTy::HT|(int).chr.AtTy::HP;
       else:
-        if(!.cfg.IgnoreMostErrors){
-          `lasterror = hit[i] + "が無効な値です";
-          ret false;
-        }
+        `lasterror = hit[i] + "が無効な値です";
+        ret false;
       }
-      if(.s.cFind(" "\t, foo) >= 0) break;
+      if(hitdef && i == 1) hitdefflg = flg;
+      if(#tmp > 2) break;
       i++;
     while i < #hit:
+    break:
+      if(hitdef) flg = hitdefflg;
+    }
+    ret true;
+  }
+  bool trgAttr(int flg=, ^/char in=)
+  {
+    flg = 0;
+    `skipBlank(in=);
+    loop{index i = 0; while; do:
+      switch(in[i]){
+      case 'S', 's':
+        flg |= (int).chr.StTy::S;
+      case 'C', 'c':
+        flg |= (int).chr.StTy::C;
+      case 'A', 'a':
+        flg |= (int).chr.StTy::A;
+      default:
+        `lasterror =
+          in[0 .. .s.cFind(.kuuhaktokigou, in)] + "が不正な属性値です";
+        ret false;
+      }
+    continue:
+      i++;
+    while i < #in && !.s.cMatch!char?(.kuuhaktokigou, in[i]):
+      in = in[i .. -1];
+    }
+    loop{
+      ^/char oldin, tmp;
+      continue;
+    do:
+      oldin = in;
+      in = in[1..-1];
+      `skipBlank(in=);
+      tmp = .s.toLower(in[0 .. .s.cFind(.kuuhaktokigou, in)]);
+      branch{
+      cond .s.equ(tmp, "na"): flg |= (int).chr.AtTy::NA;
+      cond .s.equ(tmp, "nt"): flg |= (int).chr.AtTy::NT;
+      cond .s.equ(tmp, "np"): flg |= (int).chr.AtTy::NP;
+      cond .s.equ(tmp, "sa"): flg |= (int).chr.AtTy::SA;
+      cond .s.equ(tmp, "st"): flg |= (int).chr.AtTy::ST;
+      cond .s.equ(tmp, "sp"): flg |= (int).chr.AtTy::SP;
+      cond .s.equ(tmp, "ha"): flg |= (int).chr.AtTy::HA;
+      cond .s.equ(tmp, "ht"): flg |= (int).chr.AtTy::HT;
+      cond .s.equ(tmp, "hp"): flg |= (int).chr.AtTy::HP;
+      cond .s.equ(tmp, "aa"):
+        flg |= (int).chr.AtTy::NA|(int).chr.AtTy::SA|(int).chr.AtTy::HA;
+      cond .s.equ(tmp, "at"):
+        flg |= (int).chr.AtTy::NT|(int).chr.AtTy::ST|(int).chr.AtTy::HT;
+      cond .s.equ(tmp, "ap"):
+        flg |= (int).chr.AtTy::NP|(int).chr.AtTy::SP|(int).chr.AtTy::HP;
+      cond .s.equ(tmp, "n"):
+        flg |= (int).chr.AtTy::NA|(int).chr.AtTy::NT|(int).chr.AtTy::NP;
+      cond .s.equ(tmp, "s"):
+        flg |= (int).chr.AtTy::SA|(int).chr.AtTy::ST|(int).chr.AtTy::SP;
+      cond .s.equ(tmp, "h") || .s.equ(tmp, "a"):
+        flg |= (int).chr.AtTy::HA|(int).chr.AtTy::HT|(int).chr.AtTy::HP;
+      else:
+        in = oldin;
+        break, break;
+      }
+      in = in[#tmp .. -1];
+    continue:
+      `skipBlank(in=);
+    while #in > 0 && in<> == ',':
     }
     ret true;
   }
@@ -721,7 +774,7 @@ public &StateBuilder
       `kakko--;
       ret true;
     }
-    `lasterror = ")がありません";
+    `lasterror = token + "の前に')'がありません";
     ret false;
   }
   bool kyuushiki(bool not=, ^/char in=)
@@ -740,7 +793,7 @@ public &StateBuilder
         break, break;
       }
     while #token > 0:
-      `lasterror = "=か!=がありません";
+      `lasterror = "'='か'!='がありません";
       ret false;
     }
     ret true;
@@ -772,7 +825,7 @@ public &StateBuilder
   int oneArg(^/char fun, %char out=, ^/char in=)
   {
     if(!.s.equ("(", `tokenizer(in=))){
-      `lasterror = fun + "の次に(がありません";
+      `lasterror = fun + "の次に'('がありません";
       ret -1;
     }
     `kakko++;
@@ -1902,9 +1955,7 @@ public &StateBuilder
       branch{
         ~$bool() f = [bool(){
           int flg;
-          index fi = .s.cFind(")]&|^", in);
-          if(!`attr(flg=, in[0..fi], false)) ret false;
-          in = in[fi..-1];
+          if(!`trgAttr(flg=, in=)) ret false;
           out .= obj .= "trHitDefAttr(" .= .s.iToS(flg) .= ")";
           ret true;
         }];
