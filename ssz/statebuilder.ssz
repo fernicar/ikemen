@@ -920,6 +920,10 @@ public &StateBuilder
         not = false;
         in = oldin;
         if(!`kyuushiki2(true, in=)){
+          if(hissu){
+            `lasterror = "比較を省略できません";
+            ret false;
+          }
           out .= ".v.toI()==0";
           break, break;
         }
