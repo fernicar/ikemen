@@ -571,6 +571,66 @@ public &StateBuilder
     %char buf;
     ret buf .= tmp .= ".0";
   }
+  bool integer(int val=, ^/char token, ^/char in=)
+  {
+    ^/char istr = token;
+    bool minus = false;
+    loop{while; do:
+      minus = minus || .s.equ("-", istr);
+      istr = `tokenizer(in=);
+    while .s.equ("-", istr) || .s.equ("+", istr):}
+    if(#istr == 0 || istr<> < '0' || '9' < istr<>){
+      `lasterror = "数字の読み込みエラーです";
+      ret false;
+    }
+    val = .com.atoi(istr) * (minus ? -1 : 1);
+    ret true;
+  }
+  bool intRange(
+    int min=, bool minequ=, int max=, bool maxequ=, ^/char token, ^/char in=)
+  {
+    minequ = .s.equ("[", token);
+    if(!minequ && !.s.equ("(", token)){
+      `lasterror = "エラーです";
+      ret false;
+    }
+    if(!`integer(min=, `tokenizer(in=), in=)) ret false;
+    index findi = .s.find(",", in);
+    if(findi < 0){
+      `lasterror = "','がありません";
+      ret false;
+    }
+    in = in[findi+1 .. -1];
+    if(!`integer(max=, `tokenizer(in=), in=)) ret false;
+    findi = .s.cFind("])", in);
+    if(findi < 0){
+      `lasterror = "']'か')'がありません";
+      ret false;
+    }
+    maxequ = in[findi] == '[';
+    in = in[findi+1 .. -1];
+    ret true;
+  }
+  bool integer2(int val=, ^/char token, ^/char in=)
+  {
+    ^/char istr = token;
+    bool minus = .s.equ("-", istr);
+    if(minus) istr = in;
+    if(#istr == 0 || istr<> < '0' || '9' < istr<>){
+      `lasterror = "数字の読み込みエラーです";
+      ret false;
+    }
+    if(minus) istr = `tokenizer(in=);
+    loop{index i = 0; while; do:
+      if(istr[i] < '0' || '9' < istr[i]){
+        `lasterror = istr + "が整数でありません";
+        ret false;
+      }
+      i++;
+    while i < #istr:}
+    val = .com.atoi(istr) * (minus ? -1 : 1);
+    ret true;
+  }
   ^/char number(^/char token, int typ=)
   {
     if(
@@ -823,6 +883,92 @@ public &StateBuilder
     while i < #in:}
     in = in[i..-1];
     ret re;
+  }
+  bool kyuushikiSuperDX(%char out=, ^/char in=, int typ=, bool hissu)
+  {
+    ^/char oldin = in, token = `tokenizer(in=);
+    bool comma = false;
+    if(.s.equ(",", token)){
+      comma = true;
+      oldin = in;
+      token = `tokenizer(in=);
+    }
+    branch{
+      int val;
+    cond .s.equ("<", token):
+      out .= ".v.toI()<";
+    cond .s.equ(">", token):
+      out .= ".v.toI()>";
+    cond .s.equ("<=", token):
+      out .= ".v.toI()<=";
+    cond .s.equ(">=", token):
+      out .= ".v.toI()>=";
+    else:
+      branch{
+        bool not;
+      cond .s.equ("!=", token):
+        `kyuushiki2(true, in=);
+        not = true;
+      cond .s.equ("=", token):
+        `kyuushiki2(true, in=);
+        not = false;
+      else:
+        if(hissu && !comma){
+          `lasterror = "比較演算子がありません";
+          ret false;
+        }
+        not = false;
+        in = oldin;
+        if(!`kyuushiki2(true, in=)){
+          out .= ".v.toI()==0";
+          break, break;
+        }
+      comm:
+        branch{
+          token = `tokenizer(in=);
+        cond .s.equ("[", token) || .s.equ("(", token):
+          {
+            int min, max;
+            bool minequ, maxequ;
+            if(!`intRange(min=, minequ=, max=, maxequ=, token, in=)){
+              ret false;
+            }
+            out .=
+              (not ? "!" : "") .= "(.v.toI()"
+              .= (minequ ? "<=" : "<") .= .s.iToS(min)
+              .= "&&" .= ".v.toI()"
+              .= (maxequ ? ">=" : ">") .= .s.iToS(max) .= ')';
+          }
+        else:
+          out .= ".v.toI()" .= (not ? "!=" : "==");
+          if(!`integer2(val=, token, in=)){
+            if(.s.equ("-", token)){
+              in = oldin;
+              out .= "0";
+              break, break, break;
+            }
+            ret false;
+          }
+          out .= .s.iToS(val);
+        }
+      }
+      break;
+    comm:
+      `kyuushiki2(false, in=);
+      oldin = in;
+      token = `tokenizer(in=);
+      if(!`integer2(val=, token, in=)){
+        if(.s.equ("-", token)){
+          in = oldin;
+          out .= "0";
+          break, break, break;
+        }
+        ret false;
+      }
+      out .= .s.iToS(val);
+    }
+    typ = 3;
+    ret true;
   }
   int oneArg(^/char fun, %char out=, ^/char in=)
   {
@@ -1137,67 +1283,22 @@ public &StateBuilder
       {
         bool not;
         if(!`kyuushiki(not=, in=)) ret -1;
-        out .= obj .= "trAnimElemTime(";
-        if(!`typeExp!`expAdsb?(out=, in=, 2)) ret -1;
-        out .= ")$(.v.isSF()?.none:.v.setB(";
-        branch{
-          ^/char oldin = in;
-          token = `tokenizer(in=);
-        cond
-          .s.equ(",", token) || .s.equ("=", token) || .s.equ("!=", token)
-          || .s.equ("<", token) || .s.equ(">", token)
-          || .s.equ("<=", token) || .s.equ(">=", token)
-          :
-          if(.s.equ(",", token)){
-            oldin = in;
-            token = `tokenizer(in=);
-          }
-          branch{
-          cond .s.equ("<", token):
-            out .= ".v.toI()<";
-          cond .s.equ(">", token):
-            out .= ".v.toI()>";
-          cond .s.equ("<=", token):
-            out .= ".v.toI()<=";
-          cond .s.equ(">=", token):
-            out .= ".v.toI()>=";
-          else:
-            branch{
-              %char tmp;
-            cond .s.equ("!=", token):
-              not = true;
-            cond .s.equ("=", token):
-              not = false;
-            else:
-              not = false;
-              in = oldin;
-              branch{
-              cond `kyuushiki2(true, in=):
-                tmp .= ".none";
-                typ = 0;
-                if(!`expEquSub(tmp=, in=, not, typ=)) ret -1;
-                out .= tmp;
-              else:
-                out .= ".v.toI()==0";
-              }
-              break;
-            comm:
-              `kyuushiki2(true, in=);
-              tmp .= ".none";
-              typ = 0;
-              if(!`expEquSub(tmp=, in=, not, typ=)) ret -1;
-              out .= tmp;
-            }
-            break;
-          comm:
-            `kyuushiki2(false, in=);
-            if(!`typeExp!`expAdsb?(out=, in=, 2)) ret -1;
-          }
-          out .= "))";
-        else:
-          in = oldin;
-          out .= ".v.toI()==0))";
+        token = `tokenizer(in=);
+        if(.s.equ("-", token)){
+          `lasterror = "マイナスが付くとエラーです";
+          ret -1;
         }
+        int val;
+        if(!`integer2(val=, token, in=)) ret -1;
+        if(val <= 0){
+          `lasterror = "animelemのは0より大きくなければいけません";
+          ret -1;
+        }
+        out .=
+          obj .= "trAnimElemTime("
+          .= .s.iToS(val) .= ")$(.v.isSF()?.none:.v.setB(";
+        if(!`kyuushikiSuperDX(out=, in=, typ=, false)) ret -1;
+        out .= "))";
         typ = 0;
       }
     cond .s.equ("animelemtime", token):
@@ -1216,48 +1317,21 @@ public &StateBuilder
       {
         bool not;
         if(!`kyuushiki(not=, in=)) ret -1;
-        out .= "`trMod(.v.setI(" .= obj .= "stVal.time)$.v,";
-        if(!`typeExp!`expAdsb?(out=, in=, 0)) ret -1;
-        out .= "$.v)$";
-        ^/char oldin;
-        if(!.s.equ(",", `tokenizer(in=))){
-          oldin = in;
-          in = oldin;
+        token = `tokenizer(in=);
+        if(.s.equ("-", token)){
+          `lasterror = "マイナスが付くとエラーです";
+          ret -1;
         }
-        branch{
-          oldin = in;
-          token = `tokenizer(in=);
-          bool not;
-        cond .s.equ("<", token):
-          out .= "(.v.toI()<";
-        cond .s.equ(">", token):
-          out .= "(.v.toI()>";
-        cond .s.equ("<=", token):
-          out .= "(.v.toI()<=";
-        cond .s.equ(">=", token):
-          out .= "(.v.toI()>=";
-        else:
-          branch{
-          cond .s.equ("!=", token):
-            not = true;
-          else:
-            if(!.s.equ("=", token)) in = oldin;
-            not = false;
-          }
-          `kyuushiki2(true, in=);
-          {
-            %char tmp .= ".none";
-            typ = 0;
-            if(!`expEquSub(tmp=, in=, not, typ=)) ret -1;
-            out .= tmp;
-          }
-          break;
-        comm:
-          `kyuushiki2(false, in=);
-          if(!`typeExp!`expAdsb?(out=, in=, 2)) ret -1;
-          out .= ')';
+        int val;
+        if(!`integer2(val=, token, in=)) ret -1;
+        if(val <= 0){
+          `lasterror = "timemodのは0より大きくなければいけません";
+          ret -1;
         }
-        typ = 3;
+        out .= ".v.setI(" .= obj .= "stVal.time%" .= .s.iToS(val) .= ")$";
+        out .= '(';
+        if(!`kyuushikiSuperDX(out=, in=, typ=, true)) ret -1;
+        out .= ')';
       }
     cond .s.equ("alive", token):
       out .= obj .= "isAlive()";
@@ -2064,73 +2138,21 @@ public &StateBuilder
           h ? "trProjTime(.ProjContact::Hit)"
           : (g ? "trProjTime(.ProjContact::Guarded)" : "trProjContactTime()");
         ^/char oldin;
-        int id = .com.aton!int?(token[(h?7:11)..-1]);
+        int id = .com.atonOF!int?(token[(h?7:11)..-1]);
         bool not;
         if(!`kyuushiki(not=, in=)) ret -1;
-        out .= "(!(";
-        if(!`typeExp!`expAdsb?(out=, in=, 3)) ret -1;
-        out .=
-           ")^(.v.setI(" .= .s.iToS(id) .= ")$"
-           .= obj .= ptime .= "$.v.toI()>0&&";
-        branch{
-          oldin = in;
-          token = `tokenizer(in=);
-        cond
-          .s.equ(",", token) ||.s.equ("=", token) || .s.equ("!=", token)
-          || .s.equ("<", token) || .s.equ(">", token)
-          || .s.equ("<=", token) || .s.equ(">=", token)
-          :
-          if(.s.equ(",", token)){
-            oldin = in;
-            token = `tokenizer(in=);
-          }
-          branch{
-          cond .s.equ("<", token):
-            out .= ".v.toI()<";
-          cond .s.equ(">", token):
-            out .= ".v.toI()>";
-          cond .s.equ("<=", token):
-            out .= ".v.toI()<=";
-          cond .s.equ(">=", token):
-            out .= ".v.toI()>=";
-          else:
-            branch{
-              %char tmp;
-            cond .s.equ("!=", token):
-              not = true;
-            cond .s.equ("=", token):
-              not = false;
-            else:
-              not = false;
-              in = oldin;
-              branch{
-              cond `kyuushiki2(true, in=):
-                tmp .= ".none";
-                typ = 0;
-                if(!`expEquSub(tmp=, in=, not, typ=)) ret -1;
-                out .= tmp;
-              else:
-                out .= ".v.toI()==1";
-              }
-              break;
-            comm:
-              `kyuushiki2(true, in=);
-              tmp .= ".none";
-              typ = 0;
-              if(!`expEquSub(tmp=, in=, not, typ=)) ret -1;
-              out .= tmp;
-            }
-            break;
-          comm:
-            `kyuushiki2(false, in=);
-            if(!`typeExp!`expAdsb?(out=, in=, 2)) ret -1;
-          }
-        else:
-          in = oldin;
-          out .= ".v.toI()==1";
+        token = `tokenizer(in=);
+        if(.s.equ("-", token)){
+          `lasterror = "マイナスが付くとエラーです";
+          ret -1;
         }
+        int val;
+        if(!`integer2(val=, token, in=)) ret -1;
+        out .=
+          "((" .= .s.iToS(val) .= "==0)^(.v.setI(" .= .s.iToS(id) .= ")$"
+           .= obj .= ptime .= "$.v.toI()>0&&";
+        if(!`kyuushikiSuperDX(out=, in=, typ=, false)) ret -1;
         out .= "))";
-        typ = 3;
       }
     cond .s.equ("numproj", token):
       out .= obj .= "trNumProj()";
@@ -7806,11 +7828,11 @@ public &StateBuilder
         }
       cond .s.equ(name, "persistent"):
         if(`state.no >= 0 && !`state.i){
-          `state.persistent = .com.aton!`state.persistent.self?(text);
+          `state.persistent = .com.atonOF!`state.persistent.self?(text);
           if(`state.persistent > 128) `state.persistent = 1;
         }
       cond .s.equ(name, "ignorehitpause"):
-        `state.ignorehitpause = .com.aton!`state.ignorehitpause.self?(text);
+        `state.ignorehitpause = .com.atonOF!`state.ignorehitpause.self?(text);
         if(`state.ignorehitpause < 0) `state.ignorehitpause = 1;
       else:
         if(`state.ctrlList[-1].typ == .CtrlTy::Unknown){
@@ -7876,7 +7898,7 @@ public &StateBuilder
         tmp[0] = '0';
         line = tmp;
       }
-      `state.no = .com.aton!`state.no.self?(line);
+      `state.no = .com.atonOF!`state.no.self?(line);
       if(existInThisFile(`state.no, `state.i, stnoTable=)) continue;
       stateExist = `existState(`state.no, `state.i);
       fname.new(0);
@@ -8158,24 +8180,30 @@ public &StateBuilder
     void data(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("life")) > 0) `c.d.life = .com.aton!int?(data);
-      if(#(data = sc.get("power")) > 0) `c.d.power = .com.aton!int?(data);
-      if(#(data = sc.get("attack")) > 0) `c.d.attack = .com.aton!int?(data);
-      if(#(data = sc.get("defence")) > 0) `c.d.defence = .com.aton!int?(data);
+      if(#(data = sc.get("life")) > 0) `c.d.life = .com.atonOF!int?(data);
+      if(#(data = sc.get("power")) > 0) `c.d.power = .com.atonOF!int?(data);
+      if(#(data = sc.get("attack")) > 0) `c.d.attack = .com.atonOF!int?(data);
+      if(#(data = sc.get("defence")) > 0){
+        `c.d.defence = .com.atonOF!int?(data);
+      }
       if(#(data = sc.get("fall.defence_up")) > 0){
         `c.d.fall_defence_mul = (.com.atof(data)+100.0) / 100.0;
       }
       if(#(data = sc.get("liedown.time")) > 0){
-        `c.d.liedown_time = .m.max!int?(1)<, .com.aton!int?(data);
+        `c.d.liedown_time = .m.max!int?(1)<, .com.atonOF!int?(data);
       }
       if(#(data = sc.get("airjuggle")) > 0){
-        `c.d.airjuggle = .com.aton!int?(data);
+        `c.d.airjuggle = .com.atonOF!int?(data);
       }
-      if(#(data = sc.get("sparkno")) > 0) `c.d.sparkno = .com.aton!int?(data);
+      if(#(data = sc.get("sparkno")) > 0){
+        `c.d.sparkno = .com.atonOF!int?(data);
+      }
       if(#(data = sc.get("guard.sparkno")) > 0){
-        `c.d.guard_sparkno = .com.aton!int?(data);
+        `c.d.guard_sparkno = .com.atonOF!int?(data);
       }
-      if(#(data = sc.get("ko.echo")) > 0) `c.d.ko_echo = .com.aton!int?(data);
+      if(#(data = sc.get("ko.echo")) > 0){
+        `c.d.ko_echo = .com.atonOF!int?(data);
+      }
       branch{
       cond `mver0 == 1:
         if(#(data = sc.get("volumescale")) > 0){
@@ -8187,10 +8215,10 @@ public &StateBuilder
         }
       }
       if(#(data = sc.get("intpersistindex")) > 0){
-        `c.d.intpersistindex = .com.aton!int?(data);
+        `c.d.intpersistindex = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("floatpersistindex")) > 0){
-        `c.d.floatpersistindex = .com.aton!int?(data);
+        `c.d.floatpersistindex = .com.atonOF!int?(data);
       }
     }
     void size(&.com.Section sc=)
@@ -8199,26 +8227,26 @@ public &StateBuilder
       if(#(data = sc.get("xscale")) > 0) `c.s.xscale = .com.atof(data);
       if(#(data = sc.get("yscale")) > 0) `c.s.yscale = .com.atof(data);
       if(#(data = sc.get("ground.back")) > 0){
-        `c.s.ground_back = .com.aton!int?(data);
+        `c.s.ground_back = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("ground.front")) > 0){
-        `c.s.ground_front = .com.aton!int?(data);
+        `c.s.ground_front = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("air.back")) > 0){
-        `c.s.air_back = .com.aton!int?(data);
+        `c.s.air_back = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("air.front")) > 0){
-        `c.s.air_front = .com.aton!int?(data);
+        `c.s.air_front = .com.atonOF!int?(data);
       }
-      if(#(data = sc.get("height")) > 0) `c.s.height = .com.aton!int?(data);
+      if(#(data = sc.get("height")) > 0) `c.s.height = .com.atonOF!int?(data);
       if(#(data = sc.get("attack.dist")) > 0){
-        `c.s.attack_dist = .com.aton!int?(data);
+        `c.s.attack_dist = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("proj.attack.dist")) > 0){
-        `c.s.proj_attack_dist = .com.aton!int?(data);
+        `c.s.proj_attack_dist = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("proj.doscale")) > 0){
-        `c.s.proj_doscale = .com.aton!int?(data);
+        `c.s.proj_doscale = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("head.pos")) > 0){
         .com.readPair!int?(`c.s.head_posx=, `c.s.head_posy=, data);
@@ -8227,12 +8255,14 @@ public &StateBuilder
         .com.readPair!int?(`c.s.mid_posx=, `c.s.mid_posy=, data);
       }
       if(#(data = sc.get("shadowoffset")) > 0){
-        `c.s.shadowoffset = .com.aton!int?(data);
+        `c.s.shadowoffset = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("draw.offset")) > 0){
         .com.readPair!int?(`c.s.draw_offsetx=, `c.s.draw_offsety=, data);
       }
-      if(#(data = sc.get("z.width")) > 0) `c.s.z_width = .com.aton!int?(data);
+      if(#(data = sc.get("z.width")) > 0){
+        `c.s.z_width = .com.atonOF!int?(data);
+      }
       if(#(data = sc.get("attack.z.width")) > 0){
         .com.readPair!int?(
           `c.s.attack_z_width_front=, `c.s.attack_z_width_back=, data);
@@ -8325,10 +8355,10 @@ public &StateBuilder
     {
       ^/char data;
       if(#(data = sc.get("airjump.num")) > 0){
-        `c.m.airjump_num = .com.aton!int?(data);
+        `c.m.airjump_num = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("airjump.height")) > 0){
-        `c.m.airjump_height = .com.aton!int?(data);
+        `c.m.airjump_height = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("yaccel")) > 0) `c.m.yaccel = .com.atof(data);
       if(#(data = sc.get("stand.friction")) > 0){
@@ -8416,10 +8446,10 @@ public &StateBuilder
     ~$void(&.com.Section=) defaults = [void(&.com.Section sc=){
       ^/char data;
       if(#(data = sc.get("command.time")) > 0){
-        `cmdl~defaultTime = .com.aton!int?(data);
+        `cmdl~defaultTime = .com.atonOF!int?(data);
       }
       if(#(data = sc.get("command.buffer.time")) > 0){
-        `cmdl~defaultBufferTime = .m.max!int?(1)<, .com.aton!int?(data);
+        `cmdl~defaultBufferTime = .m.max!int?(1)<, .com.atonOF!int?(data);
       }
     }];
     ~$void(^^/char, index=) command = [void(^^/char lines, index i=){
@@ -8434,9 +8464,11 @@ public &StateBuilder
       `cmdl~ctmp~buffertime = `cmdl~defaultBufferTime;
       ^/char data;
       if(#(data = sc.getText("name")) > 0) `cmdl~ctmp~name = data;
-      if(#(data = sc.get("time")) > 0) `cmdl~ctmp~time = .com.aton!int?(data);
+      if(#(data = sc.get("time")) > 0){
+        `cmdl~ctmp~time = .com.atonOF!int?(data);
+      }
       if(#(data = sc.get("buffer.time")) > 0){
-        `cmdl~ctmp~buffertime = .m.max!int?(1)<, .com.aton!int?(data);
+        `cmdl~ctmp~buffertime = .m.max!int?(1)<, .com.atonOF!int?(data);
       }
       if(#(data = sc.get("command")) > 0) `cmdl~ctmp~readCmd(data);
       if(#`cmdl~ctmp~cmd == 1 && `cmdl~ctmp~cmd~slash){

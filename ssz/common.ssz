@@ -231,7 +231,7 @@ public double atof(^/char str)
   ^/char s = .s.trim(str);
   if(#s == 0) ret 0.0;
   bool mi = s[0] == '-';
-  index i = (int)mi, p = 0;
+  index i = (int)(mi || s[0] == '+'), p = 0;
   double f = 0.0;
   loop{
     while;
@@ -326,6 +326,8 @@ public int atoi(^/char str)
   branch{
     ^/char a = .s.trim(str);
   cond<minus> #a > 0 && a<> == '-':
+    a = a[1 .. -1];
+  cond<plus> #a > 0 && a<> == '+':
     a = a[1 .. -1];
   comm:
     loop{int i = 0; while; do:

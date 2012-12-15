@@ -3694,7 +3694,7 @@ public &Char
   }
   public void addLife(double l, bool kill, bool absolute)
   {
-    if(l == 0.0 || `roundState() == 3) ret;
+    if(`roundState() == 3) ret;
     `setLife(
       `sysivar[.iLIFE]
       + (int).m.max!double?(
