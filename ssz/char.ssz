@@ -5920,7 +5920,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       }
       if(hitting > 0){
         by.addPower(hit.hitgetpower);
-        `pyr.setPower(`pyr.sysivar[.iPOWER] + hit.hitgivepower);
+        if(`pyr.player) `pyr.addPower(hit.hitgivepower);
       }
     else:
       if(hit.guard_sparkno != .com.IERR) branch{
@@ -5949,7 +5949,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       }
       if(hitting > 0){
         by.addPower(hit.guardgetpower);
-        `pyr.setPower(`pyr.sysivar[.iPOWER] + hit.guardgivepower);
+        if(`pyr.player) `pyr.addPower(hit.guardgivepower);
       }
     comm:
       if(!hbset || `pyr.ho >= 0) break;
