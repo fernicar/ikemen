@@ -3704,7 +3704,7 @@ public &StateBuilder
         ret set(:data=:);
       }])) ret false;
       if(!value && !`stateParam(param=, "fvar", [`paraF_t(data=){
-        if(data[0] != 'f'){
+        if(!par && data[0] != 'f'){
           `lasterror = data[0..4] + "の'f'が小文字でありません";
           ret false;
         }
