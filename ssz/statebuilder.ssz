@@ -631,6 +631,19 @@ public &StateBuilder
     val = .com.atoi(istr) * (minus ? -1 : 1);
     ret true;
   }
+  bool integer2Neo(int val=, bool range, ^/char in=)
+  {
+    loop{index i = 0; while; do:
+      if(
+        ('0' <= in[i] && in[i] <= '9') || in[i] == '-'
+        || (range && (in[i] == '[' || in[i] == '('))) break;
+      i++;
+    while i < #in:
+    break:
+      in = in[i .. -1];
+    }
+    ret `integer2(val=, `tokenizer(in=), in=);
+  }
   ^/char number(^/char token, int typ=)
   {
     if(
@@ -915,16 +928,17 @@ public &StateBuilder
               `lasterror = "比較演算子がありません";
               ret false;
             }
-            if(
-              hikaku
-              && (#token == 0 || .s.equ(")", token) || .s.equ("]", token)))
-            {
-              `lasterror = "数字がありません";
-              ret false;
-            }
             in = oldin;
-            out .= "0";
-            break, break;
+            branch{
+            cond hikaku:
+              if(!`integer2Neo(val=, true, in=)){
+                `lasterror = "数字がありません";
+                ret false;
+              }
+            else:
+              out .= "0";
+              break, break, break;
+            }
           }
           out .= .s.iToS(val);
         }
@@ -934,14 +948,12 @@ public &StateBuilder
       oldin = in;
       token = `tokenizer(in=);
       if(!`integer2(val=, token, in=)){
-        if(#token == 0 || .s.equ(")", token) || .s.equ("]", token)){
+        in = oldin;
+        if(!`integer2Neo(val=, false, in=)){
           `lasterror = "数字がありません";
           ret false;
         }
-        in = oldin;
-        out .= "0";
-        break, break;
-      }
+     }
       out .= .s.iToS(val);
     }
     typ = 3;
