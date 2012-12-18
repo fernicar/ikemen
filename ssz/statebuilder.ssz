@@ -631,7 +631,7 @@ public &StateBuilder
     val = .com.atoi(istr) * (minus ? -1 : 1);
     ret true;
   }
-  bool integer2Neo(int val=, bool range, ^/char in=)
+  void kyuushikiThroughNeo(bool range, ^/char in=)
   {
     loop{index i = 0; while; do:
       if(
@@ -642,7 +642,6 @@ public &StateBuilder
     break:
       in = in[i .. -1];
     }
-    ret `integer2(val=, `tokenizer(in=), in=);
   }
   ^/char number(^/char token, int typ=)
   {
@@ -905,6 +904,7 @@ public &StateBuilder
         not = false;
         in = oldin;
       comm:
+        if(hikaku) `kyuushikiThroughNeo(true, in=);
         oldin = in;
         token = `tokenizer(in=);
         branch{
@@ -928,31 +928,24 @@ public &StateBuilder
               `lasterror = "比較演算子がありません";
               ret false;
             }
-            in = oldin;
-            branch{
-            cond hikaku:
-              if(!`integer2Neo(val=, true, in=)){
-                `lasterror = "数字がありません";
-                ret false;
-              }
-            else:
-              out .= "0";
-              break, break, break;
+            if(hikaku){
+              `lasterror = "数字がありません";
+              ret false;
             }
+            in = oldin;
+            out .= "0";
+            break, break;
           }
           out .= .s.iToS(val);
         }
       }
       break;
     comm:
-      oldin = in;
+      `kyuushikiThroughNeo(false, in=);
       token = `tokenizer(in=);
       if(!`integer2(val=, token, in=)){
-        in = oldin;
-        if(!`integer2Neo(val=, false, in=)){
-          `lasterror = "数字がありません";
-          ret false;
-        }
+        `lasterror = "数字がありません";
+        ret false;
      }
       out .= .s.iToS(val);
     }
