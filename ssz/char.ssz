@@ -6490,7 +6490,7 @@ void commandUpdate()
       if(p<>~cmd~input(p<>~key, p<>~facing)) loop{
         index i = 0;
         bool hp = p<>~isHitPaused();
-        int buftime = (int)(hp && p<>~acttmp%2 == -1);
+        int buftime = (int)(hp && p<>~mver0() != 1);
         branch{
         cond .super > 0:
           if(
