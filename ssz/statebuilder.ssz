@@ -5276,7 +5276,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".superendcmdbuftime=", ";", 2)) ret false;
+            ".pauseendcmdbuftime=", ";", 2)) ret false;
         ret true;
       }])) ret false;
       `state.ctrlList[-1].task .= "`setPauseTime(t,mt);";
