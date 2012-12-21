@@ -2455,7 +2455,7 @@ public &StateBuilder
       in = oldin;
       out .= ')';
     }
-    if(`usiroOp) branch{
+    if(#`maeOp == 0 && `usiroOp) branch{
       ^/char oldin = in;
     cond .s.equ(`tokenizer(in=), "("):
       {
