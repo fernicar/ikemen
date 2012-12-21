@@ -5171,6 +5171,7 @@ public &StateBuilder
               "pr~pausemovetime=", ";", 2)) ret false;
           ret true;
         }])) ret false;
+        if(!`afterImageSub(param=, "afterimage.", "pr~")) ret false;
       }
       `state.ctrlList[-1].task .= "`setHitdefDefault";
       branch{
@@ -5251,7 +5252,7 @@ public &StateBuilder
   {
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .=
-        "int t=0,mt=0;.pausebg=1;";
+        "int t=0,mt=0;.pausebg=1;.pauseendcmdbuftime=0;";
       if(!`stateParam(param=, "time", [`paraF_t(data=){
         if(
           !`fullExpression(
@@ -5271,6 +5272,13 @@ public &StateBuilder
             ".pausebg=(int)(", ");", 3)) ret false;
         ret true;
       }])) ret false;
+      if(!`stateParam(param=, "endcmdbuftime", [`paraF_t(data=){
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".superendcmdbuftime=", ";", 2)) ret false;
+        ret true;
+      }])) ret false;
       `state.ctrlList[-1].task .= "`setPauseTime(t,mt);";
       ret true;
     }]);
@@ -5286,7 +5294,7 @@ public &StateBuilder
         ".superdarken=1;"
         ".superp2defmul=.cfg.Super_TargetDefenceMul;"
         ".superunhittable=1;"
-        ".superpausebg=1;";
+        ".superpausebg=1;.superendcmdbuftime=0;";
       if(!`stateParam(param=, "time", [`paraF_t(data=){
         if(
           !`fullExpression(
@@ -5304,6 +5312,13 @@ public &StateBuilder
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             ".superpausebg=(int)(", ");", 3)) ret false;
+        ret true;
+      }])) ret false;
+      if(!`stateParam(param=, "endcmdbuftime", [`paraF_t(data=){
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".superendcmdbuftime=", ";", 2)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "darken", [`paraF_t(data=){
@@ -6587,168 +6602,176 @@ public &StateBuilder
       ret true;
     }]);
   }
+  bool afterImageSub(&.tbl.NameTable!^/char? param=, ^/char prefix, ^/char obj)
+  {
+    `state.ctrlList[-1].task .=
+      obj .= "aimg.clear();" .= obj .= "aimg.time=1;";
+    if(!`stateParam(param=, prefix+"trans", [`paraF_t(data=){
+      ^/char text = .s.toLower(data);
+      branch{
+      cond .s.equ(text, "none"):
+        `state.ctrlList[-1].task .= obj .= "aimg.alphas=-1;";
+      cond .s.equ(text, "add1"):
+        `state.ctrlList[-1].task .=
+          obj .= "aimg.alphas=255;" .= obj .= "aimg.alphad=128;";
+      cond .s.equ(text[0..3], "add"):
+        `state.ctrlList[-1].task .=
+          obj .= "aimg.alphas=255;" .= obj .= "aimg.alphad=255;";
+      cond .s.equ(text, "sub"):
+        `state.ctrlList[-1].task .=
+          obj .= "aimg.alphas=1;" .= obj .= "aimg.alphad=255;";
+      else:
+        if(!.cfg.IgnoreMostErrors){
+          `lasterror = text + "が無効な値です";
+          ret false;
+        }
+      }
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"time", [`paraF_t(data=){
+      if(
+        !`fullExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.time=", ";", 2)) ret false;
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"length", [`paraF_t(data=){
+      if(
+        !`fullExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.length=", ";", 2)) ret false;
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"timegap", [`paraF_t(data=){
+      if(
+        !`fullExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.timegap=.m.max!int?(1,", ");", 2)) ret false;
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"framegap", [`paraF_t(data=){
+      if(
+        !`fullExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.framegap=", ";", 2)) ret false;
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"palcolor", [`paraF_t(data=){
+      if(
+        !`fullExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.setPalcolor(", ");", 2)) ret false;
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"palinvertall", [`paraF_t(data=){
+      if(
+        !`fullExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.setPalinvertall(", ");", 3)) ret false;
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"palbright", [`paraF_t(data=){
+      if(
+        !`argExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.setPalbrightR(", ");", 2)) ret false;
+      if(.s.equ(",")<, `tokenizer(data=)){
+        if(
+          !`argExpression(
+            `state.ctrlList[-1].task=, data=,
+            obj+"aimg.setPalbrightG(", ");", 2)) ret false;
+        if(.s.equ(",")<, `tokenizer(data=)){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=,
+              obj+"aimg.setPalbrightB(", ");", 2)) ret false;
+        }
+      }
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"palcontrast", [`paraF_t(data=){
+      if(
+        !`argExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.setPalcontrastR(", ");", 2)) ret false;
+      if(.s.equ(",")<, `tokenizer(data=)){
+        if(
+          !`argExpression(
+            `state.ctrlList[-1].task=, data=,
+            obj+"aimg.setPalcontrastG(", ");", 2)) ret false;
+        if(.s.equ(",")<, `tokenizer(data=)){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=,
+              obj+"aimg.setPalcontrastB(", ");", 2)) ret false;
+        }
+      }
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"palpostbright", [`paraF_t(data=){
+      if(
+        !`argExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.postbrightr=", ";", 2)) ret false;
+      if(.s.equ(",")<, `tokenizer(data=)){
+        if(
+          !`argExpression(
+            `state.ctrlList[-1].task=, data=,
+            obj+"aimg.postbrightg=", ";", 2)) ret false;
+        if(.s.equ(",")<, `tokenizer(data=)){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=,
+              obj+"aimg.postbrightb=", ";", 2)) ret false;
+        }
+      }
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"paladd", [`paraF_t(data=){
+      if(
+        !`argExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.addr=", ";", 2)) ret false;
+      if(.s.equ(",")<, `tokenizer(data=)){
+        if(
+          !`argExpression(
+            `state.ctrlList[-1].task=, data=,
+            obj+"aimg.addg=", ";", 2)) ret false;
+        if(.s.equ(",")<, `tokenizer(data=)){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=,
+              obj+"aimg.addb=", ";", 2)) ret false;
+        }
+      }
+      ret true;
+    }])) ret false;
+    if(!`stateParam(param=, prefix+"palmul", [`paraF_t(data=){
+      if(
+        !`argExpression(
+          `state.ctrlList[-1].task=, data=,
+          obj+"aimg.mulr=", ";", 1)) ret false;
+      if(.s.equ(",")<, `tokenizer(data=)){
+        if(
+          !`argExpression(
+            `state.ctrlList[-1].task=, data=,
+            obj+"aimg.mulg=", ";", 1)) ret false;
+        if(.s.equ(",")<, `tokenizer(data=)){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=,
+              obj+"aimg.mulb=", ";", 1)) ret false;
+        }
+      }
+      ret true;
+    }])) ret false;
+    `state.ctrlList[-1].task .= obj .= "aimg.setupPalfx();";
+    ret true;
+  }
   bool afterImage(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
-      `state.ctrlList[-1].task .= "`aimg.clear();`aimg.time=1;";
-      if(!`stateParam(param=, "trans", [`paraF_t(data=){
-        ^/char text = .s.toLower(data);
-        branch{
-        cond .s.equ(text, "none"):
-          `state.ctrlList[-1].task .= "`aimg.alphas=-1;";
-        cond .s.equ(text, "add1"):
-          `state.ctrlList[-1].task .= "`aimg.alphas=255;`aimg.alphad=128;";
-        cond .s.equ(text[0..3], "add"):
-          `state.ctrlList[-1].task .= "`aimg.alphas=255;`aimg.alphad=255;";
-        cond .s.equ(text, "sub"):
-          `state.ctrlList[-1].task .= "`aimg.alphas=1;`aimg.alphad=255;";
-        else:
-          if(!.cfg.IgnoreMostErrors){
-            `lasterror = text + "が無効な値です";
-            ret false;
-          }
-        }
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "time", [`paraF_t(data=){
-        if(
-          !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.time=", ";", 2)) ret false;
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "length", [`paraF_t(data=){
-        if(
-          !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.length=", ";", 2)) ret false;
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "timegap", [`paraF_t(data=){
-        if(
-          !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.timegap=.m.max!int?(1,", ");", 2)) ret false;
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "framegap", [`paraF_t(data=){
-        if(
-          !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.framegap=", ";", 2)) ret false;
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "palcolor", [`paraF_t(data=){
-        if(
-          !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.setPalcolor(", ");", 2)) ret false;
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "palinvertall", [`paraF_t(data=){
-        if(
-          !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.setPalinvertall(", ");", 3)) ret false;
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "palbright", [`paraF_t(data=){
-        if(
-          !`argExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.setPalbrightR(", ");", 2)) ret false;
-        if(.s.equ(",")<, `tokenizer(data=)){
-          if(
-            !`argExpression(
-              `state.ctrlList[-1].task=, data=,
-              "`aimg.setPalbrightG(", ");", 2)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=,
-                "`aimg.setPalbrightB(", ");", 2)) ret false;
-          }
-        }
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "palcontrast", [`paraF_t(data=){
-        if(
-          !`argExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.setPalcontrastR(", ");", 2)) ret false;
-        if(.s.equ(",")<, `tokenizer(data=)){
-          if(
-            !`argExpression(
-              `state.ctrlList[-1].task=, data=,
-              "`aimg.setPalcontrastG(", ");", 2)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=,
-                "`aimg.setPalcontrastB(", ");", 2)) ret false;
-          }
-        }
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "palpostbright", [`paraF_t(data=){
-        if(
-          !`argExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.postbrightr=", ";", 2)) ret false;
-        if(.s.equ(",")<, `tokenizer(data=)){
-          if(
-            !`argExpression(
-              `state.ctrlList[-1].task=, data=,
-              "`aimg.postbrightg=", ";", 2)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=,
-                "`aimg.postbrightb=", ";", 2)) ret false;
-          }
-        }
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "paladd", [`paraF_t(data=){
-        if(
-          !`argExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.addr=", ";", 2)) ret false;
-        if(.s.equ(",")<, `tokenizer(data=)){
-          if(
-            !`argExpression(
-              `state.ctrlList[-1].task=, data=,
-              "`aimg.addg=", ";", 2)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=,
-                "`aimg.addb=", ";", 2)) ret false;
-          }
-        }
-        ret true;
-      }])) ret false;
-      if(!`stateParam(param=, "palmul", [`paraF_t(data=){
-        if(
-          !`argExpression(
-            `state.ctrlList[-1].task=, data=,
-            "`aimg.mulr=", ";", 1)) ret false;
-        if(.s.equ(",")<, `tokenizer(data=)){
-          if(
-            !`argExpression(
-              `state.ctrlList[-1].task=, data=,
-              "`aimg.mulg=", ";", 1)) ret false;
-          if(.s.equ(",")<, `tokenizer(data=)){
-            if(
-              !`fullExpression(
-                `state.ctrlList[-1].task=, data=,
-                "`aimg.mulb=", ";", 1)) ret false;
-          }
-        }
-        ret true;
-      }])) ret false;
-      `state.ctrlList[-1].task .= "`aimg.setupPalfx();";
-      ret true;
+      ret `afterImageSub(param=, "", "`");
     }]);
   }
   bool afterImageTime(&.tbl.NameTable!^/char? param=)

@@ -984,7 +984,7 @@ public &Command
     }
     ret true;
   }
-  public void step(^&.Buffer kbuf, bool ai, bool hitpause, bool old)
+  public void step(^&.Buffer kbuf, bool ai, bool hitpause, int buftime)
   {
     if(!hitpause && `curbuftime > 0) `curbuftime--;
     if(#`cmd == 0) ret;
@@ -1006,7 +1006,7 @@ public &Command
       comm:
         `clear();
       diff<a>:
-        `curbuftime = `buffertime + (int)(hitpause && old);
+        `curbuftime = `buffertime + buftime;
       }
     break:
       if(`curbuftime < ocbt) `curbuftime = ocbt;
@@ -1122,11 +1122,11 @@ public &CommandList
     }
     ret step;
   }
-  public void step(int facing, bool ai, bool hitpause, bool old)
+  public void step(int facing, bool ai, bool hitpause, int buftime)
   {
     loop{index ii = 0; while; do:
       loop{index i = 0; while; do:
-        `commands[ii][i].step(`buffer, ai, hitpause, old);
+        `commands[ii][i].step(`buffer, ai, hitpause, buftime);
         i++;
       while i < #`commands[ii]:}
       ii++;

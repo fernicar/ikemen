@@ -1534,8 +1534,8 @@ public bool roundEnd()
 
 public &PlayerList!&Char? players;
 public int id = cfg.HelperMax;
-/int pause = 0, pausetime = 0, pausebg = 0;
-/int super = 0, supertime = 0, superpausebg = 0;
+/int pause = 0, pausetime = 0, pausebg = 0, pauseendcmdbuftime = 0;
+/int super = 0, supertime = 0, superpausebg = 0, superendcmdbuftime = 0;
 int pauseplayer = -1, superplayer = -1;
 ^&.act.Action superanim;
 ^&.com.PalFX superpmap.new(1);
@@ -1761,6 +1761,7 @@ public &Projectile
   public int timemiss, hitpause;
   public float ticOldX, ticNewX;
   public float ticOldY, ticNewY;
+  public &.AfterImage aimg;
   new()
   {
     `clear();
@@ -1807,6 +1808,7 @@ public &Projectile
     `hitpause = 0;
     `ticOldX = `ticNewX = `x;
     `ticOldY = `ticNewY = `y;
+    `aimg.clear();
   }
   public void setX(float x)
   {
@@ -1983,6 +1985,7 @@ public &Projectile
         .drawc2.new[-1].set(clsn, `x, `y, (float)`facing*`scalex, `scaley);
       }
     }
+    bool notpause = `hitpause <= 0 && !`paused();
     if(.com.tickNextFrame() && !`paused()){
       if(#`ani > 0 && `hitpause == 0) `ani~ani.action();
       branch{
@@ -1994,14 +1997,19 @@ public &Projectile
       }
     }
     if(#`ani > 0 && #`ani~ani.spr > 0){
+      int br =
+        256 >> (int)(
+          .super > 0 && .superdarken != 0 && playerNo != .superplayer);
       ^&.com.PalFX pfx.new(1);
       pfx~remap = .chars[playerNo]<>~getPalMap();
       .addAnimList(
         .anims=, `ani, `sprpriority, `x, `y, .com.scale,
         (float)`facing*`scalex, `scaley, 0.0, false, oVer, 1.0, 1.0, -1, 0,
-        256 >> (int)(
-          .super > 0 && .superdarken != 0 && playerNo != .superplayer),
-        pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
+        br, pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
+      `aimg.recAndAddAL(
+        `ani<>=, `sprpriority, `x, `y, (float)`facing*`scalex, `scaley,
+        0.0, false, .cgi[playerNo].mver0 != 1, 1.0, 1.0,
+        .com.tickNextFrame() && notpause, br, pfx);
     }
   }
 }
@@ -3752,6 +3760,8 @@ public &Char
     {
       .pausetime = !pausetime;
       .pauseplayer = `playerno;
+      .m.limMin!int?(.pauseendcmdbuftime=, 0);
+      if(.pauseendcmdbuftime > pausetime) .pauseendcmdbuftime = 0;
     }
     `sysivar[.iPAUSEMOVETIME] = .m.max!int?(0, movetime);
     branch{
@@ -3769,6 +3779,8 @@ public &Char
     {
       .supertime = !pausetime;
       .superplayer = `playerno;
+      .m.limMin!int?(.superendcmdbuftime=, 0);
+      if(.superendcmdbuftime > pausetime) .superendcmdbuftime = 0;
     }
     `sysivar[.iSUPERMOVETIME] = .m.max!int?(0, movetime);
     branch{
@@ -5890,6 +5902,12 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           : by.facing*(hit.p1facing < 0 && hitting == 1 ? -1 : 1)) < 0))
       {
         `pyr.stVal.hb.xvel *= -1.0;
+        if(.m.inRange!int?(1, 2, `pyr.stVal.hb.groundtype)){
+          `pyr.stVal.hb.groundtype -= `pyr.stVal.hb.groundtype*2 - 3;
+        }
+        if(.m.inRange!int?(1, 2, `pyr.stVal.hb.airtype)){
+          `pyr.stVal.hb.airtype -= `pyr.stVal.hb.airtype*2 - 3;
+        }
       }
     }
     branch{
@@ -6469,9 +6487,23 @@ void commandUpdate()
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
     .chars[i].[void(p){
-      if(p<>~cmd~input(p<>~key, p<>~facing)) loop{index i = 0; while; do:
+      if(p<>~cmd~input(p<>~key, p<>~facing)) loop{
+        index i = 0;
+        int buftime = (int)(p<>~mver0() != 1 && p<>~acttmp%2 == -1);
+        branch{
+        cond .super > 0:
+          if(p<>~sysivar[.iSUPERMOVETIME] == 0){
+            buftime += .m.min!int?(.super, .superendcmdbuftime);
+          }
+        cond .pause > 0:
+          if(p<>~sysivar[.iPAUSEMOVETIME] == 0){
+            buftime += .m.min!int?(.pause, .pauseendcmdbuftime);
+          }
+        }
+        while;
+      do:
         p<>~cmd[i].step(
-          p<>~facing, p<>~key < 0, p<>~acttmp%2 == -1, p<>~mver0() != 1);
+          p<>~facing, p<>~key < 0, p<>~acttmp%2 == -1, buftime);
         i++;
       while i < #p<>~cmd:}
       if(p<>~key < 0) loop{

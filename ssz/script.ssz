@@ -177,7 +177,7 @@ public &Command
   }
   public void input(int pn)
   {
-    if(`cmd~input(pn-1, 1)) `cmd~step(1, false, false, false);
+    if(`cmd~input(pn-1, 1)) `cmd~step(1, false, false, 0);
   }
   public bool getState(^/char name)
   {
