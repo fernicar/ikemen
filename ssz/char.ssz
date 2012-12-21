@@ -6509,7 +6509,7 @@ void commandUpdate()
         }
         while;
       do:
-        p<>~cmd[i].step(p<>~facing, p<>~key < 0, hp, buftime);
+        p<>~cmd[i].step(p<>~facing, p<>~key < 0, hp, buftime + (int)hp);
         i++;
       while i < #p<>~cmd:}
       if(p<>~key < 0) loop{
