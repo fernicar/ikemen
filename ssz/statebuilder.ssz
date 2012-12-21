@@ -569,8 +569,7 @@ public &StateBuilder
     ^char tmp;
     .mes.DoubleToStr(:tmp=, f:);
     if(.s.find(".", tmp) >= 0) ret tmp;
-    %char buf;
-    ret buf .= tmp .= ".0";
+    ret tmp + ".0";
   }
   bool integer(int val=, ^/char token, ^/char in=)
   {
@@ -1178,16 +1177,14 @@ public &StateBuilder
       typ = 0;
     cond .s.equ("log", token):
       if(!.s.equ("(", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "の次に(がありません");
+        `lasterror = token + "の次に(がありません";
         ret -1;
       }
       out .= "`trLog(";
       if(!`typeExp!`expBoolOr?(out=, in=, 0)) ret -1;
       out .= "$.v,";
       if(!.s.equ(",", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "は引数が2個必要です");
+        `lasterror = token + "は引数が2個必要です";
         ret -1;
       }
       if(!`typeExp!`expBoolOr?(out=, in=, 0)) ret -1;
@@ -1208,22 +1205,19 @@ public &StateBuilder
     cond .s.equ("ifelse", token):
       out .= "`trIfelse(";
       if(!.s.equ("(", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "の次に'('がありません");
+        `lasterror = token + "の次に'('がありません";
         ret -1;
       }
       if(!`typeExp!`expBoolOr?(out=, in=, 3)) ret -1;
       out .= ',';
       if(!.s.equ(",", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "は引数が3個必要です");
+        `lasterror = token + "は引数が3個必要です";
         ret -1;
       }
       if(!`typeExp!`expBoolOr?(out=, in=, 0)) ret -1;
       out .= "$.v,";
       if(!.s.equ(",", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "は引数が3個必要です");
+        `lasterror = token + "は引数が3個必要です";
         ret -1;
       }
       if(!`typeExp!`expBoolOr?(out=, in=, 0)) ret -1;
@@ -1504,8 +1498,7 @@ public &StateBuilder
       }]) ret -1;
     cond .s.equ("const", token):
       if(!.s.equ("(", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "の次に(がありません");
+        `lasterror = token + "の次に'('がありません";
         ret -1;
       }
       token = `tokenizer(in=);
@@ -1890,8 +1883,7 @@ public &StateBuilder
       }]) ret -1;
     cond .s.equ("gethitvar", token):
       if(!.s.equ("(", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "の次に'('がありません");
+        `lasterror = token + "の次に'('がありません";
         ret -1;
       }
       token = `tokenizer(in=);
@@ -2230,8 +2222,7 @@ public &StateBuilder
     cond .s.equ("cond", token):
       out .= '(';
       if(!.s.equ("(", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "の次に'('がありません");
+        `lasterror = token + "の次に'('がありません";
         ret -1;
       }
       {
@@ -2240,15 +2231,13 @@ public &StateBuilder
         if(!`typeExp!`expBoolOr?(out=, in=, 3)) ret -1;
         out .= '?';
         if(!.s.equ(",", `tokenizer(in=))){
-          %char buf;
-          `lasterror = (buf .= token .= "は引数が3個必要です");
+          `lasterror = token + "は引数が3個必要です";
           ret -1;
         }
         if(!`typeExp!`expBoolOr?(out=, in=, 0)) ret -1;
         out .= ':';
         if(!.s.equ(",", `tokenizer(in=))){
-          %char buf;
-          `lasterror = (buf .= token .= "は引数が3個必要です");
+          `lasterror = token + "は引数が3個必要です";
           ret -1;
         }
         if(!`typeExp!`expBoolOr?(out=, in=, 0)) ret -1;
@@ -2260,8 +2249,7 @@ public &StateBuilder
       typ = 0;
     cond .s.equ("stagevar", token):
       if(!.s.equ("(", `tokenizer(in=))){
-        %char buf;
-        `lasterror = (buf .= token .= "の次に'('がありません");
+        `lasterror = token + "の次に'('がありません";
         ret -1;
       }
       token = `tokenizer(in=);

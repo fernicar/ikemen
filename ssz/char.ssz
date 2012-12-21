@@ -6494,17 +6494,17 @@ void commandUpdate()
         branch{
         cond .super > 0:
           if(
-            !hp && p<>~sysivar[.iSUPERMOVETIME] == 0
+            p<>~sysivar[.iSUPERMOVETIME] == 0
             && .super <= .superendcmdbuftime)
           {
-            buftime += .super;
+            hp = true;
           }
         cond .pause > 0:
           if(
-            !hp && p<>~sysivar[.iPAUSEMOVETIME] == 0
+            p<>~sysivar[.iPAUSEMOVETIME] == 0
             && .pause <= .pauseendcmdbuftime)
           {
-            buftime += .pause;
+            hp = true;
           }
         }
         while;
