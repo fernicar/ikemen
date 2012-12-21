@@ -4446,6 +4446,7 @@ public &Char
     if(#`ani > 0){
       `ani~ani.setAnimElem(e);
       `curFrame = `ani~ani.currentFrame();
+      if(e > 1) `ani~ani.updateSprite();
     }
   }
   public void trAnimExist(int pid)

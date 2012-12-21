@@ -380,6 +380,7 @@ public &StateBuilder
   ^/char maeOp, this = "`";
   type paraF_t = $bool(^/char=);
   ^bool t;
+  bool usiroOp = true;
   new()
   {
     `t.new(1);
@@ -685,6 +686,7 @@ public &StateBuilder
         typ = 2;
       }
     }
+    `usiroOp = false;
     ret rtn;
   }
   bool attr(int flg=, ^/char text, bool hitdef)
@@ -837,10 +839,12 @@ public &StateBuilder
       token = `tokenizer(in=);
     while #token > 0 && !.s.equ(")", token) && !.s.equ("]", token):
     }
+    `usiroOp = false;
     ret true;
   }
   bool kakkotojiru(^/char in=)
   {
+    `usiroOp = true;
     ^/char oldin = in;
     ^/char token = `tokenizer(in=);
     if(.s.equ(")", token)) ret true;
@@ -871,14 +875,13 @@ public &StateBuilder
   bool kyuushikiSuperDX(%char out=, ^/char in=, int typ=, bool hissu)
   {
     ^/char oldin = in, token = `tokenizer(in=);
-    bool comma = false;
+    bool comma = false, hikaku = true;
     if(.s.equ(",", token)){
       comma = true;
       oldin = in;
       token = `tokenizer(in=);
     }
     branch{
-      bool hikaku = true;
       int val;
     cond .s.equ("<", token):
       out .= ".v.toI()<";
@@ -950,6 +953,7 @@ public &StateBuilder
       out .= .s.iToS(val);
     }
     typ = 3;
+    `usiroOp = comma || hikaku;
     ret true;
   }
   int oneArg(^/char fun, %char out=, ^/char in=)
@@ -1036,6 +1040,7 @@ public &StateBuilder
       }
       ret true;
     }
+    `usiroOp = true;
     int typ = 0;
     %char temp;
     ^/char num = `number(name, typ=);
@@ -1052,7 +1057,7 @@ public &StateBuilder
         if(#num == 0) break, else;
         out .= ' ' .= num;
       else:
-        if(`expPostNot(temp=, in=)=>typ < 0) ret -1;
+        if(`expValue(temp=, in=)=>typ < 0) ret -1;
         branch{
         cond typ == 0:
           out .= temp .= "$`trMinus()";
@@ -1065,12 +1070,12 @@ public &StateBuilder
       }
     cond .s.equ("~", token):
       out .= " !(";
-      if(!`typeExp!`expPostNot?(out=, in=, 2)) ret -1;
+      if(!`typeExp!`expValue?(out=, in=, 2)) ret -1;
       out .= ')';
       typ = 2;
     cond .s.equ("!", token):
       out .= " !(";
-      if(!`typeExp!`expPostNot?(out=, in=, 3)) ret -1;
+      if(!`typeExp!`expValue?(out=, in=, 3)) ret -1;
       out .= ')';
       typ = 3;
     cond .s.equ("abs", token):
@@ -1204,7 +1209,7 @@ public &StateBuilder
       out .= "`trIfelse(";
       if(!.s.equ("(", `tokenizer(in=))){
         %char buf;
-        `lasterror = (buf .= token .= "の次に(がありません");
+        `lasterror = (buf .= token .= "の次に'('がありません");
         ret -1;
       }
       if(!`typeExp!`expBoolOr?(out=, in=, 3)) ret -1;
@@ -1781,7 +1786,7 @@ public &StateBuilder
         ret -1;
       }
       `skipBlank(in=);
-      if(!.cfg.IgnoreMostErrors && (#in == 0 || in[0] != '(')){
+      if(#in == 0 || (!.cfg.IgnoreMostErrors && in[0] != ')')){
         `lasterror = ")がありません";
         ret -1;
       }
@@ -1886,7 +1891,7 @@ public &StateBuilder
     cond .s.equ("gethitvar", token):
       if(!.s.equ("(", `tokenizer(in=))){
         %char buf;
-        `lasterror = (buf .= token .= "の次に(がありません");
+        `lasterror = (buf .= token .= "の次に'('がありません");
         ret -1;
       }
       token = `tokenizer(in=);
@@ -2226,7 +2231,7 @@ public &StateBuilder
       out .= '(';
       if(!.s.equ("(", `tokenizer(in=))){
         %char buf;
-        `lasterror = (buf .= token .= "の次に(がありません");
+        `lasterror = (buf .= token .= "の次に'('がありません");
         ret -1;
       }
       {
@@ -2256,7 +2261,7 @@ public &StateBuilder
     cond .s.equ("stagevar", token):
       if(!.s.equ("(", `tokenizer(in=))){
         %char buf;
-        `lasterror = (buf .= token .= "の次に(がありません");
+        `lasterror = (buf .= token .= "の次に'('がありません");
         ret -1;
       }
       token = `tokenizer(in=);
@@ -2291,7 +2296,7 @@ public &StateBuilder
       out .= obj .= "trPlayerID(";
       `expCast(out=, 2, typ, temp);
       if(!.s.equ(",")<, `tokenizer(in=)){
-        `lasterror = ",がありません";
+        `lasterror = "','がありません";
         ret -1;
       }
       temp.new(0);
@@ -2347,7 +2352,7 @@ public &StateBuilder
           out .= obj .= "trEnemy(0)";
         }
       else:
-        `lasterror = ",がありません";
+        `lasterror = "','がありません";
         ret -1;
       }
       {
@@ -2439,6 +2444,7 @@ public &StateBuilder
         out .= temp;
         break, break;
       }
+      `usiroOp = true;
       out .= '(';
       `expCast(out=, 3, typ, temp);
       typ = 3;
@@ -2448,6 +2454,24 @@ public &StateBuilder
     while .s.equ(`tokenizer(in=), "!"):
       in = oldin;
       out .= ')';
+    }
+    if(`usiroOp) branch{
+      ^/char oldin = in;
+    cond .s.equ(`tokenizer(in=), "("):
+      {
+        ^/char tmp = in = oldin;
+        %char dummy;
+        if(!`typeExp!`expValue?(dummy=, in=, typ)) ret -1;
+        oldin = in;
+        ^/char token = `tokenizer(in=);
+        if(`isOperator(token) <= 0){
+          "演算子がありません";
+          ret -1;
+        }
+        in = token + tmp[0 .. #tmp - #oldin] + in;
+      }
+    else:
+      in = oldin;
     }
     ret typ;
   }
