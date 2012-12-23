@@ -3327,7 +3327,8 @@ public &Char
             `trChangeState(0, -1, -1);
           }
           if(
-            `inguarddist && (`stVal.no < 120 || `stVal.no >= 160) && (
+            `inguarddist && (`stVal.typ == .StTy::S || `stVal.mov == .MovTy::I)
+            && (`stVal.no < 120 || `stVal.no >= 160) && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
               || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
               || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
@@ -3578,7 +3579,9 @@ public &Char
       if(
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
-            `acttmp > 0 && `canCtrl() && #`cmd > 0 && `cmd~buffer~B > 0 && (
+            `acttmp > 0 && (`canCtrl() || `stVal.no == 52)
+            && (`stVal.typ == .StTy::S || `stVal.mov == .MovTy::I)
+            && #`cmd > 0 && `cmd~buffer~B > 0 && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
               || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
               || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
@@ -5588,7 +5591,7 @@ public ^&Char PlayerList!&Char?::get(int id)
     *`top.self p = `top;
     while;
   do:
-    if(p~c~id == id || !p~c~id == id){
+    if((p~c~id == id || !p~c~id == id) && !p~c~ls(.lsDESTROY)){
       .playerid.new[-1].n = id;
       .playerid[-1].pn = p~c~playerno;
       .playerid[-1].hi = p~c~helperindex;
