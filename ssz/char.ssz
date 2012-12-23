@@ -3327,7 +3327,7 @@ public &Char
             `trChangeState(0, -1, -1);
           }
           if(
-            `inguarddist && (`stVal.typ == .StTy::S || `stVal.mov == .MovTy::I)
+            `inguarddist && `stVal.mov == .MovTy::I
             && (`stVal.no < 120 || `stVal.no >= 160) && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
               || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
@@ -3580,8 +3580,7 @@ public &Char
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
             `acttmp > 0 && (`canCtrl() || `stVal.no == 52)
-            && (`stVal.typ == .StTy::S || `stVal.mov == .MovTy::I)
-            && #`cmd > 0 && `cmd~buffer~B > 0 && (
+            && `stVal.mov == .MovTy::I && #`cmd > 0 && `cmd~buffer~B > 0 && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
               || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
               || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
