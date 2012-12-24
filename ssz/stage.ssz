@@ -73,33 +73,36 @@ public &EnvShake envShake;
 
 public &Stage
 {
-  public ^/char def;
-  public ^/char spr;
-  public ^/char bgmusic;
-  public ^/char name, displayname, author;
-  public ^&.sff.Sff sf;
-  public %&.bg.BackGround bg;
-  public %&.bg.Action actionList;
-  public &.tbl.IntTable!int, &.bg.Action? actionTable;
-  public %&.bg.BGCtrl bgctrlList;
+  /^/char def;
+  /^/char spr;
+  /^/char bgmusic;
+  /^/char name, displayname, author;
+  /^&.sff.Sff sf;
+  /%&.bg.BackGround bg;
+  /%&.bg.Action actionList;
+  /&.tbl.IntTable!int, &.bg.Action? actionTable;
+  /%&.bg.BGCtrl bgctrlList;
   public &.bg.BGCTimeLine bgctl;
-  public &.bg.BGCtrl bgcdef;
-  public &.bg.BGAction bga;
-  public &.Camera cam;
-  public &.Shadow sdw;
-  public &.Player p1, p2;
-  public int leftbound = -1160, rightbound = 840;
-  public int screenleft = 15, screenright = 15;
-  public int zoffset = 0;
-  public int zoffsetlink = 0;
-  public float ztopscale = 1.0;
-  public int reflection = 0;
-  public bool hires = false, resetbg = true, debugbg = false, reflect = true;
+  /&.bg.BGCtrl bgcdef;
+  /&.bg.BGAction bga;
+  /&.Camera cam;
+  /&.Shadow sdw;
+  /&.Player p1, p2;
+  /float leftbound = 0.0/0.0, rightbound = 0.0/0.0;
+  /int screenleft = 15, screenright = 15;
+  /int zoffset = 0;
+  /int zoffsetlink = 0;
+  /float ztopscale = 1.0;
+  /int reflection = 0;
+  /bool hires = false, resetbg = true, debugbg = false, reflect = true;
+  /int localw = 320, localh = 240;
+  /float localscl;
   type action_t = &.bg.Action;
   &.sff.AirFileMethods!self? airFileMethods;
   new()
   {
     `p2.startx *= -1;
+    `localscl = (float).com.GameWidth / (float)`localw;
   }
   ^&.bg.Action getAction(int no)
   {
@@ -181,21 +184,9 @@ public &Stage
       }
       if(#(data = sc.get("leftbound")) > 0){
         `leftbound = .com.atonOF!`leftbound.self?(data);
-        branch{
-        cond `leftbound < .consts.Signed!`leftbound.self?::MIN + 160:
-          `leftbound = .consts.Signed!`leftbound.self?::MIN;
-        else:
-          `leftbound -= 160;
-        }
       }
       if(#(data = sc.get("rightbound")) > 0){
         `rightbound = .com.atonOF!`rightbound.self?(data);
-        branch{
-        cond `rightbound < .consts.Signed!`rightbound.self?::MIN + 160:
-          `rightbound = .consts.Signed!`rightbound.self?::MIN;
-        else:
-          `rightbound -= 160;
-        }
       }
     }
     public void scaling(&.com.Section sc=)
@@ -228,6 +219,10 @@ public &Stage
       if(#(data = sc.get("resetbg")) > 0){
         `resetbg = .com.atonOF!int?(data) != 0;
       }
+      if(#(data = sc.get("localcoord")) > 0){
+        .bg.readPair!int?(`localw=, `localw=, data);
+        `localscl = (float).com.GameWidth / (float)`localw;
+      }
     }
     public void shadow(&.com.Section sc=)
     {
@@ -238,7 +233,7 @@ public &Stage
           .m.max!int?(0)<, .m.min!int?(255, .com.atonOF!int?(data));
       }
       if(#(data = sc.get("color")) > 0){
-        ^int c = .bg.csvToAry!c<>.self?(data);
+        ^int c = .bg.cta!c<>.self?(data);
         r = .m.max!int?(0, .m.min!int?(255, c[0]));
         if(#c < 2) break;
         g = .m.max!int?(0, .m.min!int?(255, c[1]));
@@ -292,7 +287,7 @@ public &Stage
       branch{
       cond #(data = sc.get("ctrlid")) > 0:
         {
-          ^int ids = .bg.csvToAry!ids<>.self?(data);
+          ^int ids = .bg.cta!ids<>.self?(data);
           if(#ids == 1 && ids[0] == -1) break, else;
           loop{index i = 0; while; do:
             loop{index j = 0; while; do:
@@ -320,7 +315,7 @@ public &Stage
       `bgctrlList[-1].looptime = `bgcdef.looptime;
       ^/char data;
       if(#(data = sc.get("ctrlid")) > 0){
-        ^int ids = .bg.csvToAry!ids<>.self?(data);
+        ^int ids = .bg.cta!ids<>.self?(data);
         `bgctrlList[-1].ctrlbg.new(0);
         branch{
         cond #ids == 1 && ids[0] == -1:
@@ -433,13 +428,18 @@ public &Stage
     {
       ret def + ":"\r\n + error;
     }
+    if(!.m.isfinite(`leftbound)) `leftbound = 1000.0*(float)`localw / 320.0;
+    `leftbound -= (float)`localw / 2.0;
+    `leftbound *= 320.0 / (float)`localw;
+    if(!.m.isfinite(`rightbound)) `rightbound = 1000.0*(float)`localw / 320.0;
+    `rightbound -= (float)`localw / 2.0;
+    `rightbound *= 320.0 / (float)`localw;
     loop{
       index i = 0, link = 0;
       int zofs = 0;
     while; do:
       `bg[i].setup(
-        `sf, `hires, (float)`cam.startx,
-        `cam.verticalfollow != 0.0 && `cam.boundhigh < 0,
+        `sf, (float)`cam.startx,
         [void(^&.bg.Action act=, int n){act = `getAction(n);}]);
       branch{
       cond `bg[i].positionlink && i > 0:
@@ -590,9 +590,16 @@ public &Stage
   public void bgDraw(bool t, float x, float y, float scl)
   {
     float bgscl = `hires ? 0.5 : 1.0;
+    float posx =
+      .com.zoom ? x : .m.ceil(x*(float)`localw/320.0-0.5)*320.0/(float)`localw;
+    float posy =
+      .com.zoom ? y : .m.ceil(y*(float)`localw/320.0-0.5)*320.0/(float)`localw;
+    float yofs =
+      .envShake.getOffset()
+      - (240.0*`localscl - (float)(.com.GameWidth*`localh) / (float)`localw);
     loop{index i = 0; while; do:
       if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){
-        `bg[i].draw(x, y, scl, .bgPalFX, bgscl, .envShake.getOffset());
+        `bg[i].draw(posx, posy, scl, .bgPalFX, bgscl, `localscl, yofs);
       }
       i++;
     while i < #`bg:

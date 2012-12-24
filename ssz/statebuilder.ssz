@@ -4269,7 +4269,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".kill=(int)(", ");", 3)) ret false;
+            ".kill=", ";", 3)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "guard.kill", [`paraF_t(data=){
@@ -4277,7 +4277,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".guard_kill=(int)(", ");", 3)) ret false;
+            ".guard_kill=", ";", 3)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.kill", [`paraF_t(data=){
@@ -4479,7 +4479,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            ".forcenofall=(int)(", ");", 3)) ret false;
+            ".forcenofall=", ";", 3)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "fall.damage", [`paraF_t(data=){

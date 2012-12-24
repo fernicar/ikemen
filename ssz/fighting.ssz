@@ -268,8 +268,8 @@ void game()
     `l = `r = 0.0;
     `scl = `sclmul = 1.0;
     .com.scale = .chr.stg~ztopscale;
-    .com.screenleft = (float).chr.stg~screenleft;
-    .com.screenright = (float).chr.stg~screenright;
+    .com.screenleft = (float).chr.stg~screenleft * .chr.stg~localscl;
+    .com.screenright = (float).chr.stg~screenright * .chr.stg~localscl;
     .com.xmin = -((float).com.GameWidth/2.0)/.com.scale + .com.screenleft;
     .com.xmax = ((float).com.GameWidth/2.0)/.com.scale - .com.screenright;
   }
@@ -394,14 +394,26 @@ void game()
     }
     if(.com.round == 1) .snd.bgm~play(.chr.stg~bgmusic);
     reset();
-    float bl = (float)(.chr.stg~cam.boundleft - .chr.stg~cam.startx);
-    float br = (float)(.chr.stg~cam.boundright - .chr.stg~cam.startx);
-    float bt = (float).chr.stg~cam.boundhigh;
-    float xminscl = (float).com.GameWidth / (320.0+(float)(-bl + br));
+    float bl =
+      (float)(.chr.stg~cam.boundleft - .chr.stg~cam.startx)
+      * .chr.stg~localscl;
+    float br =
+      (float)(.chr.stg~cam.boundright - .chr.stg~cam.startx)
+      * .chr.stg~localscl;
+    float bt =
+      .chr.stg~cam.verticalfollow > 0.0
+      ? (float).chr.stg~cam.boundhigh * .chr.stg~localscl
+      + (240.0 - (float).com.GameWidth*240.0 / 320.0)
+      : 0.0;
+    float xminscl =
+      (float).com.GameWidth / ((float).com.GameWidth+(float)(-bl + br));
     float yminscl = (float).com.GameHeight / (240.0-bt);
     float minscl =
       .m.max!float?(.com.zoomMin)<, .m.min!float?(.com.zoomMax)<,
       .m.max!float?(xminscl, yminscl);
+    float zofs =
+      (float).chr.stg~zoffset * .chr.stg~localscl
+      + (240.0 - (float).com.GameWidth*240.0 / (float).chr.stg~localw);
     float tmp;
   do:
     .com.step = false;
@@ -502,19 +514,19 @@ void game()
       : .m.max!float?(0.0)<, .m.min!float?(((float).com.GameWidth/2.0)/scl)<,
       .m.max!float?(-(l-(newx-x)), r-(newx-x));
     x =
-      (float).com.GameWidth > br - bl + 320.0
-      ? 0.0
-      : .m.max!float?(bl-160.0 + ((float).com.GameWidth/2.0)/scl)<,
-      .m.min!float?(br+160.0 - ((float).com.GameWidth/2.0)/scl)<,
+      .m.max!float?(
+        bl-(float).com.GameWidth/2.0 + ((float).com.GameWidth/2.0)/scl)<,
+      .m.min!float?(
+        br+(float).com.GameWidth/2.0 - ((float).com.GameWidth/2.0)/scl)<,
       .m.min!float?(x + l + tmp)<, .m.max!float?(x + r - tmp)<, newx;
     if(!.com.zoom) x = .m.ceil(x*4.0 - 0.5)/4.0;
-    tmp = .m.max!float?(0.0, 240.0 - (float).chr.stg~zoffset);
+    tmp = .m.max!float?(0.0, 240.0 - zofs);
     y =
       .m.min!float?(0.0)<, 
       .m.min!float?(tmp*(1.0/scl - 1.0))<,
       .m.max!float?(
         bt-240.0 + .m.max!float?(
-          (float).com.GameHeight/scl, tmp + (float).chr.stg~zoffset/scl),
+          (float).com.GameHeight/scl, tmp + zofs/scl),
         newy + 240.0*(1.0 - .m.min!float?(1.0, scl)));
     if(
       .com.tickFrame() && (.chr.super <= 0 || .chr.superpausebg == 0)

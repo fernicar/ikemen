@@ -349,11 +349,15 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       `front_lay.read(buf, sc=);
     }
     if(#(data = sc.benri(p, "counter.font")) > 0){
-      ^int nba = .com.csvToAryOF!int?(data);
-      if(#nba < 2) break;
-      `counter_fontn = nba[0];
-      `counter_fontb = nba[1];
-      if(#nba >= 3) `counter_fonta = nba[2];
+      ^^/char spl = .s.split(",", data);
+      spl[0] = .s.trim(spl[0]);
+      if(#spl[0] > 0) `counter_fontn = .com.atonOF!int?(spl[0]);
+      if(#spl < 2) break;
+      spl[1] = .s.trim(spl[1]);
+      if(#spl[1] > 0) `counter_fontb = .com.atonOF!int?(spl[1]);
+      if(#spl < 3) break;
+      spl[2] = .s.trim(spl[2]);
+      if(#spl[2] > 0) `counter_fonta = .com.atonOF!int?(spl[2]);
     }
     {
       %char buf .= p .= "counter.";
@@ -627,11 +631,15 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       .com.readPairOF!int?(`posx=, `posy=, data);
     }
     if(#(data = sc.benri(p, "name.font")) > 0){
-      ^int nba = .com.csvToAryOF!int?(data);
-      if(#nba < 2) break;
-      `name_fontn = nba[0];
-      `name_fontb = nba[1];
-      if(#nba >= 3) `name_fonta = nba[2];
+      ^^/char spl = .s.split(",", data);
+      spl[0] = .s.trim(spl[0]);
+      if(#spl[0] > 0) `name_fontn = .com.atonOF!int?(spl[0]);
+      if(#spl < 2) break;
+      spl[1] = .s.trim(spl[1]);
+      if(#spl[1] > 0) `name_fontb = .com.atonOF!int?(spl[1]);
+      if(#spl < 3) break;
+      spl[2] = .s.trim(spl[2]);
+      if(#spl[2] > 0) `name_fonta = .com.atonOF!int?(spl[2]);
     }
     {
       %char buf .= p .= "name.";
@@ -842,11 +850,15 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       .com.readPairOF!int?(`sndg=, `sndi=, data);
     }
     if(#(data = sc.benri(h, "font")) > 0){
-      ^int nba = .com.csvToAryOF!int?(data);
-      if(#nba < 2) break;
-      `fontn = nba[0];
-      `fontb = nba[1];
-      if(#nba >= 3) `fonta = nba[2];
+      ^^/char spl = .s.split(",", data);
+      spl[0] = .s.trim(spl[0]);
+      if(#spl[0] > 0) `fontn = .com.atonOF!int?(spl[0]);
+      if(#spl < 2) break;
+      spl[1] = .s.trim(spl[1]);
+      if(#spl[1] > 0) `fontb = .com.atonOF!int?(spl[1]);
+      if(#spl < 3) break;
+      spl[2] = .s.trim(spl[2]);
+      if(#spl[2] > 0) `fonta = .com.atonOF!int?(spl[2]);
     }
     if(#(data = sc.benri(h, "text")) > 0) `text = data;
     if(#(data = sc.benri(h, "spr")) > 0) .readSpr(`anim=, data);
@@ -1301,11 +1313,15 @@ public void setPerfect(|.WinTy wt=)
       .com.readPairOF!int?(`iconoffsetx=, `iconoffsety=, data);
     }
     if(#(data = sc.benri(p, "counter.font")) > 0){
-      ^int nba = .com.csvToAryOF!int?(data);
-      if(#nba < 2) break;
-      `counter_fontn = nba[0];
-      `counter_fontb = nba[1];
-      if(#nba >= 3) `counter_fonta = nba[2];
+      ^^/char spl = .s.split(",", data);
+      spl[0] = .s.trim(spl[0]);
+      if(#spl[0] > 0) `counter_fontn = .com.atonOF!int?(spl[0]);
+      if(#spl < 2) break;
+      spl[1] = .s.trim(spl[1]);
+      if(#spl[1] > 0) `counter_fontb = .com.atonOF!int?(spl[1]);
+      if(#spl < 3) break;
+      spl[2] = .s.trim(spl[2]);
+      if(#spl[2] > 0) `counter_fonta = .com.atonOF!int?(spl[2]);
     }
     {
       %char buf .= p .= "counter.";
@@ -1518,11 +1534,15 @@ public void setPerfect(|.WinTy wt=)
     ^/char data;
     if(#(data = sc.get("pos")) > 0) .com.readPairOF!int?(`posx=, `posy=, data);
     if(#(data = sc.get("counter.font")) > 0){
-      ^int nba = .com.csvToAryOF!int?(data);
-      if(#nba < 2) break;
-      `counter_fontn = nba[0];
-      `counter_fontb = nba[1];
-      if(#nba >= 3) `counter_fonta = nba[2];
+      ^^/char spl = .s.split(",", data);
+      spl[0] = .s.trim(spl[0]);
+      if(#spl[0] > 0) `counter_fontn = .com.atonOF!int?(spl[0]);
+      if(#spl < 2) break;
+      spl[1] = .s.trim(spl[1]);
+      if(#spl[1] > 0) `counter_fontb = .com.atonOF!int?(spl[1]);
+      if(#spl < 3) break;
+      spl[2] = .s.trim(spl[2]);
+      if(#spl[2] > 0) `counter_fonta = .com.atonOF!int?(spl[2]);
     }
     `counter_lay.read("counter.", sc=);
     if(#(data = sc.get("bg.spr")) > 0) .readSpr(`bg=, data);

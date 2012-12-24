@@ -28,7 +28,7 @@ public ^^/char splitParams(^/char paramStr)
   ret params;
 }
 
-public ..csvToAry<_t>(^/char csv) ^_t
+public ..cta<_t>(^/char csv) ^_t
 {
   ^^/char spl = .splitParams(csv);
   ^_t ary.new(#spl);
@@ -41,9 +41,13 @@ public ..csvToAry<_t>(^/char csv) ^_t
 
 public void readPair<_t>(_t x=, _t y=, ^/char data)
 {
-  ^_t xy = .csvToAry!_t?(data);
-  x = xy[0];
-  if(#xy >= 2) y = xy[1];
+  ^^/char spl = .splitParams(data);
+  spl[0] = .s.trim(spl[0]);
+  if(#spl[0] > 0) x = .com.atonOF!_t?(spl[0]);
+  if(#spl >= 2){
+    spl[1] = .s.trim(spl[1]);
+    if(#spl[1] > 0) y = .com.atonOF!_t?(spl[1]);
+  }
 }
 
 
@@ -84,7 +88,7 @@ public &BGAction
     `x += `vx;
     if(`sinxlooptime > 0){
       `sinxoffset =
-        `xradius*.m.sin(.m.PI*(double)`sinxtime / (double)`sinxlooptime);
+        `xradius*.m.sin(2.0*.m.PI*(double)`sinxtime / (double)`sinxlooptime);
       `sinxtime++;
       if(`sinxtime >= `sinxlooptime) `sinxtime = 0;
     }
@@ -93,7 +97,7 @@ public &BGAction
     `y += `vy;
     if(`sinylooptime > 0){
       `sinyoffset =
-        `yradius*.m.sin(.m.PI*(double)`sinytime / (double)`sinylooptime);
+        `yradius*.m.sin(2.0*.m.PI*(double)`sinytime / (double)`sinylooptime);
       `sinytime++;
       if(`sinytime >= `sinylooptime) `sinytime = 0;
     }
@@ -132,7 +136,7 @@ public &Action
       line = .s.trim(lines[i][0...s.find(";", lines[i])]);
       branch{
       cond #line > 0 && ((line[0] >= '0' && line[0] <= '9') || line[0] == '-'):
-        ary = .com.csvToAry!int?(line);
+        ary = .cta!int?(line);
         if(#ary < 5) break;
         ols = `loopstart;
         `frames.new[-1].readData(ary, line);
@@ -247,25 +251,23 @@ public &BackGround
         `anim.salpha = 255;
         `anim.dalpha = 128;
         if(#(data = sc.get("alpha")) > 0){
-          ^int sd = .csvToAry!int?(data);
-          if(#sd < 1) break;
-          `anim.salpha = sd[0];
-          if(`anim.salpha > 255) `anim.salpha = 255;
-          if(#sd < 2) break;
-          `anim.dalpha = sd[1];
-          if(`anim.dalpha > 255) `anim.dalpha = 255;
+          int src = `anim.salpha, dst = `anim.dalpha;
+          .readPair!int?(src=, dst=, data);
+          if(src > 255) src = 255;
+          `anim.salpha = src;
+          if(dst > 255) dst = 255;
+          `anim.dalpha = dst;
           if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
         }
       cond .s.equ(d, "addalpha"):
         `anim.mask = 0;
         if(#(data = sc.get("alpha")) > 0){
-          ^int sd = .csvToAry!int?(data);
-          if(#sd < 1) break;
-          `anim.salpha = sd[0];
-          if(`anim.salpha > 255) `anim.salpha = 255;
-          if(#sd < 2) break;
-          `anim.dalpha = sd[1];
-          if(`anim.dalpha > 255) `anim.dalpha = 255;
+          int src = `anim.salpha, dst = `anim.dalpha;
+          .readPair!int?(src=, dst=, data);
+          if(src > 255) src = 255;
+          `anim.salpha = src;
+          if(dst > 255) dst = 255;
+          `anim.dalpha = dst;
           if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
         }
       cond .s.equ(d, "sub"):
@@ -297,16 +299,34 @@ public &BackGround
       `yscaledelta = .com.atof(data);
     }
     if(#(data = sc.get("window")) > 0){
-      ^int ltrb = .csvToAry!int?(data);
-      `startrect.x = .m.max!int?(-32768, .m.min!int?(32767, ltrb[0]));
-      if(#ltrb < 2) break;
-      `startrect.y = .m.max!int?(-32768, .m.min!int?(32767, ltrb[1]));
-      if(#ltrb < 3) break;
-      `startrect.w =
-        .m.min!uint?(0d65535, (uint).m.max!int?(0, ltrb[2]+1 - `startrect.x));
-      if(#ltrb < 4) break;
-      `startrect.h =
-        .m.min!uint?(0d65535, (uint).m.max!int?(0, ltrb[3]+1 - `startrect.y));
+      ^^/char spl = .splitParams(data);
+      spl[0] = .s.trim(spl[0]);
+      if(#spl[0] > 0){
+        `startrect.x =
+          .m.max!int?(-32768, .m.min!int?(32767, .com.atonOF!int?(spl[0])));
+      }
+      if(#spl < 2) break;
+      spl[1] = .s.trim(spl[1]);
+      if(#spl[1] > 0){
+        `startrect.y =
+          .m.max!int?(-32768, .m.min!int?(32767, .com.atonOF!int?(spl[1])));
+      }
+      if(#spl < 3) break;
+      spl[2] = .s.trim(spl[2]);
+      if(#spl[2] > 0){
+        `startrect.w =
+          .m.min!uint?(
+            0d65535,
+            (uint).m.max!int?(0, .com.atonOF!int?(spl[2])+1 - `startrect.x));
+      }
+      if(#spl < 4) break;
+      spl[3] = .s.trim(spl[3]);
+      if(#spl[3] > 0){
+        `startrect.h =
+          .m.min!uint?(
+            0d65535,
+            (uint).m.max!int?(0, .com.atonOF!int?(spl[3])+1 - `startrect.y));
+      }
     }
     if(#(data = sc.get("windowdelta")) > 0){
       .readPair!float?(`windowdeltax=, `windowdeltay=, data);
@@ -316,33 +336,48 @@ public &BackGround
       .readPair!float?(`startvx=, `startvy=, data);
     }
     if(#(data = sc.get("sin.x")) > 0){
-      ^float rp = .csvToAry!float?(data);
-      if(#rp < 2) break;
-      `startxrad = `bga.xradius = rp[0];
-      `startsinxlt = `bga.sinxlooptime = (int)rp[1];
-      if(#rp < 3) break;
-      if(`bga.sinxlooptime > 0){
-        `bga.sinxtime = (int)((float)rp[2]*rp[1]/360.0) % `bga.sinxlooptime;
+      ^^/char spl = .splitParams(data);
+      spl[0] = .s.trim(spl[0]);
+      if(#spl[0] > 0) `startxrad = `bga.xradius = .com.atonOF!float?(spl[0]);
+      if(#spl < 2) break;
+      spl[1] = .s.trim(spl[1]);
+      if(#spl[1] > 0){
+        `startsinxlt = `bga.sinxlooptime = .com.atonOF!int?(spl[1]);
+      }
+      if(#spl < 3 || `bga.sinxlooptime <= 0) break;
+      spl[2] = .s.trim(spl[2]);
+      if(#spl[2] > 0){
+        `bga.sinxtime =
+          (int)(
+            .com.atonOF!float?(spl[2])*(float)`bga.sinxlooptime/360.0)
+          % `bga.sinxlooptime;
         if(`bga.sinxtime < 0) `bga.sinxtime += `bga.sinxlooptime;
         `startsinxt = `bga.sinxtime;
       }
     }
     if(#(data = sc.get("sin.y")) > 0){
-      ^float rp = .csvToAry!float?(data);
-      if(#rp < 2) break;
-      `startyrad = `bga.yradius = rp[0];
-      `startsinylt = `bga.sinylooptime = (int)rp[1];
-      if(#rp < 3) break;
-      if(`bga.sinylooptime > 0){
-        `bga.sinytime = (int)((float)rp[2]*rp[1]/360.0) % `bga.sinylooptime;
+      ^^/char spl = .splitParams(data);
+      spl[0] = .s.trim(spl[0]);
+      if(#spl[0] > 0) `startyrad = `bga.yradius = .com.atonOF!float?(spl[0]);
+      if(#spl < 2) break;
+      spl[1] = .s.trim(spl[1]);
+      if(#spl[1] > 0){
+        `startsinylt = `bga.sinylooptime = .com.atonOF!int?(spl[1]);
+      }
+      if(#spl < 3 || `bga.sinylooptime <= 0) break;
+      spl[2] = .s.trim(spl[2]);
+      if(#spl[2] > 0){
+        `bga.sinytime =
+          (int)(
+            .com.atonOF!float?(spl[2])*(float)`bga.sinylooptime/360.0)
+          % `bga.sinylooptime;
         if(`bga.sinytime < 0) `bga.sinytime += `bga.sinylooptime;
         `startsinyt = `bga.sinytime;
       }
     }
   }
   public void setup(
-    ^&.sff.Sff sf, bool hires, float camstartx, bool verticalfollow,
-    ~$void(^&.Action=, int) getact)
+    ^&.sff.Sff sf, float camstartx, ~$void(^&.Action=, int) getact)
   {
     `camstartx = camstartx;
     ^&.sff.Sprite spr;
@@ -371,46 +406,16 @@ public &BackGround
         `anim.tile.y += (int)spr~rct.h;
       }
     }
-    if(!verticalfollow){
-      `deltay = hires ? 2.0 : 1.0;
-      `windowdeltay = `yscaledelta = 0.0;
-    }
-    if(hires){
-      `windowdeltax *= 0.5;
-      `windowdeltay *= 0.5;
-    }
-    float mulx = .com.WidthScale * (hires ? 0.5 : 1.0);
-    float muly = .com.HeightScale * (hires ? 0.5 : 1.0);
-    `startrect.x =
-      .m.max!int?(-32768)<, .m.min!int?(32767)<, (int)(
-        (float)`startrect.x*mulx
-        + .com.WidthScale*(float)(.com.GameWidth-320)/2.0);
-    `startrect.y =
-      .m.max!int?(-32768)<, .m.min!int?(32767)<, (int)(
-        (float)`startrect.y*muly
-        + .com.HeightScale*(float)(.com.GameHeight-240));
-    `startrect.w =
-      .m.min!uint?(0d65535)<, (uint)((float)`startrect.w*mulx + 0.5);
-    `startrect.h =
-      .m.min!uint?(0d65535)<, (uint)((float)`startrect.h*muly + 0.5);
-    `windowdeltax *= mulx;
-    `windowdeltay *= muly;
     `anim.setup(sf);
   }
   public void draw(
-    float posx, float posy, float scl, ^&.com.PalFX fx, float bgscl,
-    float shakeY)
+    float x, float y, float scl, ^&.com.PalFX fx,
+    float bgscl, float localscl, float shakeY)
   {
-    float x = .com.zoom ? posx : .m.ceil(posx-0.5);
-    float y = .com.zoom ? posy : .m.ceil(posy-0.5);
-    &.sdl.Rect rect;
-    rect = `startrect;
-    rect.x += -(short).m.floor((x+`camstartx) * `windowdeltax + 0.5);
-    rect.y += -(short).m.floor(y * `windowdeltay + 0.5);
     float xras = ((`rasterxbspeed-`rasterxtspeed) / `rasterxtspeed);
     float xbs = `xbscale;
-    float sclx = scl, scly = scl, dx = .m.max!float?(0.0, `deltax*bgscl);
-    sclx = .m.max!float?(0.0, scl + (1.0 - scl)*(1.0 - dx));
+    float dx = .m.max!float?(0.0, `deltax*bgscl);
+    float sclx = .m.max!float?(0.0, scl + (1.0 - scl)*(1.0 - dx));
     if(sclx != 0.0){
       float tmp = 1.0 / sclx;
       xbs *= 
@@ -419,23 +424,51 @@ public &BackGround
       xras -= tmp - 1.0;
       xbs *= tmp;
     }
-    scly =
+    sclx *= localscl;
+    float scly =
       .m.max!float?(
-        0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `deltay*bgscl)));
-    float x2 = `startx - ((x+`camstartx) * `deltax - `bga.xoffset);
-    float y2 = `starty - (y * `deltay - `bga.yoffset);
+        0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `deltay*bgscl)))
+      * localscl;
+    float x2 = `startx - (x+`camstartx)*`deltax + `bga.xoffset;
+    float y2 = `starty - y*`deltay + `bga.yoffset;
+    float scl2 = bgscl*localscl;
     if(!.com.zoom){
-      if(`rasterxbspeed == `rasterxtspeed) x2 = .m.floor(x2);
-      y2 = .m.floor(y2);
+      if(`rasterxbspeed == `rasterxtspeed) x2 = .m.floor(x2/scl2)*scl2;
+      y2 = .m.floor(y2/scl2)*scl2;
     }
-    float ys = (100.0 - y * `yscaledelta)/`yscalestart;
+    float ys = (100.0 - y * `yscaledelta) * bgscl /`yscalestart;
     x2 *= bgscl;
     y2 *= bgscl;
-    ys *= bgscl;
-    y2 += (float).com.GameHeight / scly - shakeY - 240.0;
+    y2 += ((float).com.GameHeight - shakeY) / scly - 240.0;
+     &.sdl.Rect rect;
+    rect = `startrect;
+    float wsclx =
+      .m.max!float?(
+        0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `windowdeltax*bgscl)))
+      * scl2;
+    float wscly =
+      .m.max!float?(
+        0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `windowdeltay*bgscl)))
+      * scl2;
+    rect.x =
+      (short).m.max!float?(-32768.0)<, .m.min!float?(32767.0)<,
+      .m.floor(
+        ((float)rect.x + (x+`camstartx) * `windowdeltax)
+        * .com.WidthScale * wsclx);
+    rect.y =
+      (short).m.max!float?(-32768.0)<, .m.min!float?(32767.0)<,
+      .m.floor(
+        ((float)rect.y + y * `windowdeltay) * .com.HeightScale * wscly);
+    rect.w =
+      (ushort).m.min!float?(65535.0)<,
+      .m.ceil((float)rect.w * .com.WidthScale * wsclx);
+    rect.h =
+      (ushort).m.min!float?(65535.0)<,
+      .m.ceil((float)rect.h * .com.HeightScale * wscly);
     `anim.draw(
-      rect=, x2, y2, sclx, scly, `xtscale*bgscl, xbs*bgscl, ys, xras * x2
-      / (#ys*(float)`anim.spr~rct.h), (float).com.GameWidth/2.0, fx, true);
+      rect=, x2, y2, sclx, scly, `xtscale*bgscl, xbs*bgscl, ys,
+      xras * x2 / (#ys*(float)`anim.spr~rct.h),
+      (float).com.GameWidth/2.0, fx, true);
   }
 }
 
@@ -484,19 +517,21 @@ public &BGCtrl
       }
     }
     if(#(data = sc.get("time")) > 0){
-      ^int times = .csvToAry!int?(data);
-      if(#times < 1) break;
-      `starttime = `endtime = times[0];
-      if(#times < 2) break;
-      `endtime = times[1];
-      if(#times < 3) break;
-      `looptime = times[2];
+      ^^/char spl = .splitParams(data);
+      spl[0] = .s.trim(spl[0]);
+      if(#spl[0] > 0) `starttime = `endtime = .com.atonOF!int?(spl[0]);
+      if(#spl < 2) break;
+      spl[1] = .s.trim(spl[1]);
+      if(#spl[1] > 0) `endtime = .com.atonOF!int?(spl[1]);
+      if(#spl < 3) break;
+      spl[2] = .s.trim(spl[2]);
+      if(#spl[2] > 0) `looptime = .com.atonOF!int?(spl[2]);
     }
     if(#(data = sc.get("positionlink")) > 0){
       `positionlink = .com.atonOF!int?(data) != 0;
     }
     if(#(data = sc.get("value")) > 0){
-      ^float val = .csvToAry!float?(data);
+      ^float val = .cta!float?(data);
       if(#val < 1) break;
       `x = val[0];
       if(#val < 2) break;

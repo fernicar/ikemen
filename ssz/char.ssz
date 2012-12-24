@@ -830,8 +830,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public int nochainid1;
   public int nochainid2;
   public int hitonce;
-  public int kill;
-  public int guard_kill;
   public int numhits;
   public int hitgetpower;
   public int guardgetpower;
@@ -862,8 +860,11 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public float snapy;
   public float snapz;
   public int snapt;
-  public int forcenofall;
   public &.Fall fall;
+  public bool kill;
+  public bool guard_kill;
+  public bool forcenofall;
+  public bool lhit;
   public int player;
   public void clear()
   {
@@ -934,8 +935,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `nochainid1 = -1;
     `nochainid2 = -1;
     `hitonce = 0;
-    `kill = 1;
-    `guard_kill = 1;
     `numhits = 1;
     `hitgetpower = .com.IERR;
     `guardgetpower = .com.IERR;
@@ -966,14 +965,19 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `snapy = 0.0/0.0;
     `snapz = 0.0;
     `snapt = 0;
-    `forcenofall = 0;
     `fall.setDefault();
+    `kill = true;
+    `guard_kill = true;
+    `forcenofall = false;
+    `lhit = false;
     `player = -1;
   }
-  public void invalidate()
+  public void invalidate(|.StTy stateType)
   {
-    `attr |= (int)0x80000000;
+    `attr &= !63;
+    `attr |= (int)stateType | (int)0x80000000;
     `reversal_attr |= (int)0x80000000;
+    `lhit = false;
   }
 }
 &HitBy
@@ -1210,7 +1214,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `hb.snapy = hit.snapy;
     `hb.snapz = hit.snapz;
     `hb.snapt = hit.snapt;
-    if(hit.forcenofall != 0) fall = false;
+    if(hit.forcenofall) fall = false;
     branch{
     cond `typ == .StTy::A:
       `hb.airtype = `hb.typ = (int)hit.air_type;
@@ -2816,7 +2820,7 @@ public &Char
     if(!`attrCheck(hit=, c.id, styp)) ret false;
     if(
       `atktmp != 0 && (`stVal.hit.attr != 0 || `stVal.hit.reversal_attr > 0)
-      && hit.reversal_attr <= 0)
+      && hit.reversal_attr <= 0 && `stVal.typ != .StTy::L)
     {
       branch{
       cond `stVal.hit.reversal_attr > 0:
@@ -2937,7 +2941,7 @@ public &Char
     `tickBind();
     if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
     if(`stVal.hitdefContact != 0){
-      `stVal.hit.invalidate();
+      `stVal.hit.invalidate(`stVal.typ);
       `stVal.hitdefContact = 0;
     }
     if(`stVal.mctime < 0){
@@ -3571,9 +3575,7 @@ public &Char
         `outTarget();
       }
       `atktmp =
-        (
-          (`stVal.typ != .StTy::L && `stVal.mov != .MovTy::I)
-          || `stVal.hit.reversal_attr > 0)
+        (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
         && `acttmp > 0 ? 1 : 0;
       `ho = -1;
       if(
@@ -5173,7 +5175,7 @@ public &Char
     const int mask = (int).AtTy::NA - 1;
     int attr = `stVal.hit.attr & (int)0x7fffffff;
     ret 
-      `stVal.mov == .MovTy::A
+      `stVal.mov == .MovTy::A && !`stVal.hit.lhit
       && (mask & attr & flg) != 0  && (!mask & attr & flg) != 0;
   }
   public void trNumHelper()
@@ -5786,6 +5788,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       p1.setPos!e<>.self?(e<>=, e~postype, e~offsetx, e~offsety, e~relativef);
       `by.insertExplod(tmp);
     }
+    if(pro == 0 && by.stVal.typ == .StTy::L){
+      by.stVal.hit.lhit = true;
+      ret false;
+    }
     if(
       (
         `pyr.cs1tmp && `pyr.stVal.playerno != hit.player
@@ -5866,7 +5872,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       `pyr.sysivar[.iSPECIALFLAG] |= .lsGETHIT;
       if(`pyr.sysivar[.iBINDTOID] == by.id) `pyr.setBindTime(0);
       bool live = `pyr.sysivar[.iLIFE] > 0;
-      bool kill = hitting == 1 ? hit.kill != 0 : hit.guard_kill != 0;
+      bool kill = hitting == 1 ? hit.kill : hit.guard_kill;
       `pyr.stVal.hb.damage +=
         `pyr.getDamage(
           (double)absdamage*(double)hits,
@@ -6430,23 +6436,26 @@ void gSetNormal(float scl, float x, float y)
 {
   .com.scale = .stg~ztopscale*scl;
   .com.zoffset =
-    (float)(.stg~zoffset + (.com.GameHeight - 240))*scl
+    scl * (
+      (float).stg~zoffset * .stg~localscl
+      + (240.0 - (float).com.GameWidth*240.0 / (float).stg~localw)
+      + (float)(.com.GameHeight - 240))
     + (1.0 - scl)*(float).com.GameHeight;
-  .com.yoffset = .stg~bga.yoffset*scl;
-  .com.xoffset = .stg~bga.xoffset*scl;
+  .com.yoffset = .stg~bga.yoffset*.stg~localscl*scl;
+  .com.xoffset = .stg~bga.xoffset*.stg~localscl*scl;
   .com.scrxmin =
-    (float)(.stg~cam.boundleft - .stg~cam.startx)
+    (float)(.stg~cam.boundleft - .stg~cam.startx)*.stg~localscl
     - ((float).com.GameWidth/2.0)/.stg~ztopscale;
   .com.scrxmax =
-    (float)(.stg~cam.boundright - .stg~cam.startx)
+    (float)(.stg~cam.boundright - .stg~cam.startx)*.stg~localscl
     + ((float).com.GameWidth/2.0)/.stg~ztopscale;
   .com.screenx = x - ((float).com.GameWidth/2.0) / .com.scale;
   .com.screeny =
     y - (.com.zoffset - (float)(.com.GameHeight-240)*scl) / .com.scale;
   .com.camerax = x;
   .com.cameray = y + (float)(.com.GameHeight-240);
-  .com.screenleft = (float).stg~screenleft;
-  .com.screenright = (float).stg~screenright;
+  .com.screenleft = (float).stg~screenleft*.stg~localscl;
+  .com.screenright = (float).stg~screenright*.stg~localscl;
 }
 
 ^&.fgt.LifePower getLifePower()
@@ -6699,7 +6708,8 @@ public float action(
   rightest -= x;
   branch{
     float tension =
-      ((float).com.GameWidth/2.0 - (float).stg~cam.tension)/.com.scale;
+      ((float).com.GameWidth/2.0 - (float).stg~cam.tension*.stg~localscl)
+      / .com.scale;
     float tmp = (leftest + rightest) / 2.0;
     float cvx = cvmin + cvmax;
     if(cvx == 0.0 || (cvx < 0.0) == (tmp < 0.0)){
@@ -6814,8 +6824,8 @@ public float action(
     loop{index i = 0; while; do:
       if(#.chars[i] > 0){
         .chars[i][0]~posReset(
-          (float)(.stg~p1.startx - .stg~cam.startx),
-          (float)(.stg~p2.startx - .stg~cam.startx));
+          (float)(.stg~p1.startx - .stg~cam.startx) * .stg~localscl,
+          (float)(.stg~p2.startx - .stg~cam.startx) * .stg~localscl);
       }
       i++;
     while i < #.chars:}
@@ -6840,12 +6850,12 @@ public float action(
         x = 0.0;
         leftest =
           .m.max!float?(
-            (float).m.min!int?(.stg~p1.startx, .stg~p2.startx),
+            (float).m.min!int?(.stg~p1.startx, .stg~p2.startx) * .stg~localscl,
             -((float).com.GameWidth/2.0)/.stg~ztopscale + .com.screenleft)
           - ox;
         rightest =
           .m.min!float?(
-            (float).m.max!int?(.stg~p1.startx, .stg~p2.startx),
+            (float).m.max!int?(.stg~p1.startx, .stg~p2.startx) * .stg~localscl,
             ((float).com.GameWidth/2.0)/.stg~ztopscale - .com.screenright)
           - ox;
         introSkip = true;
@@ -7089,36 +7099,40 @@ public void draw(float x, float y, float scl)
   while i < #names:}
   int ob = .com.brightness;
   .com.brightness = 256 >> (int)(.super > 0 && .superdarken != 0);
+  float bgx = x / .stg~localscl, bgy = y / .stg~localscl;
   if(.envcol_time == 0) branch{
   cond .gs(.gsNOBG):
     .com.screenFill(0x00000000);
   else:
     if(.stg~debugbg) .com.screenFill(0x00ff00ff);
-    .stg~bgDraw(false, x, y, scl);
+    .stg~bgDraw(false, bgx, bgy, scl);
   comm:
     if(!.gs(.gsGLOBALNOSHADOW)){
       if(.stg~reflection > 0) .drawReflection(x, y);
       .drawShadowList(x, y);
     }
     {
+      float zofs =
+        (float).stg~zoffset * .stg~localscl
+        + (240.0 - (float).com.GameWidth*240.0 / (float).stg~localw);
       float off = .stage.envShake.getOffset();
       float bh = 
         (
           .stg~cam.verticalfollow != 0.0
-          ? (float).m.min!int?(0, .stg~cam.boundhigh) : 0.0)
-        + ((float).com.GameHeight - 240.0);
+          ? (float).m.min!int?(0, .stg~cam.boundhigh) * .stg~localscl : 0.0)
+        + (float).com.GameHeight
+        - (float).com.GameWidth*240.0 / (float).stg~localw;
       float yofs =
         (
-          scl > 1.0 ? (float)(.stg~zoffset + (.com.GameHeight - 240))
+          scl > 1.0 ? (zofs + (float)(.com.GameHeight - 240))
           : (float).com.GameHeight)
         * (1.0/scl - 1.0);
-      float yofs2 =
-        scl > 1.0 ? (240.0 - (float).stg~zoffset)*(1.0 - 1.0/scl) : 0.0;
+      float yofs2 = scl > 1.0 ? (240.0 - zofs)*(1.0 - 1.0/scl) : 0.0;
       *.com.scrrect.self rect = .com.scrrect;
       if(off - bh < yofs - y){
         rect.h =
           (
-            (uint)(((yofs - y) - (off - bh))*scl + 0.5)*.com.scrrect.h
+            (uint)(((yofs - y) - (off - bh)) + 0.5)*.com.scrrect.h
             + (uint)(.com.GameHeight-1))
           / (uint).com.GameHeight;
         fade(rect=, 255);
@@ -7126,19 +7140,19 @@ public void draw(float x, float y, float scl)
       if(off > -y + yofs2){
         rect.h =
           (
-            (uint)(((y - yofs2) + off)*scl + 0.5)*.com.scrrect.h
+            (uint)(((y - yofs2) + off) + 0.5)*.com.scrrect.h
             + (uint)(.com.GameHeight-1))
           / (uint).com.GameHeight;
         rect.y = (int)(.com.scrrect.h - rect.h);
         fade(rect=, 255);
       }
       float bl =
-        .m.min!float?(x, (float)(.stg~cam.boundleft - .stg~cam.startx));
+        .m.min!float?(
+          x, (float)(.stg~cam.boundleft - .stg~cam.startx) * .stg~localscl);
       float br =
-        .m.max!float?(x, (float)(.stg~cam.boundright - .stg~cam.startx));
-      float xofs =
-        ((float).com.GameWidth*(1.0/scl - 1.0) + (float)(.com.GameWidth-320))
-        / 2.0;
+        .m.max!float?(
+          x, (float)(.stg~cam.boundright - .stg~cam.startx) * .stg~localscl);
+      float xofs = (float).com.GameWidth*(1.0/scl - 1.0) / 2.0;
       rect = .com.scrrect;
       if(x - xofs < bl){
         rect.w =
@@ -7169,7 +7183,7 @@ public void draw(float x, float y, float scl)
   if(.envcol_time == 0 || .envcol_under != 0){
     .drawAnimList(.anims=, x, y);
   }
-  if(.envcol_time == 0 && !.gs(.gsNOFG)) .stg~bgDraw(true, x, y, scl);
+  if(.envcol_time == 0 && !.gs(.gsNOFG)) .stg~bgDraw(true, bgx, bgy, scl);
   if(.envcol_time != 0 && .envcol_under == 0){
     .com.screenFill(ecol);
   }
@@ -7268,8 +7282,8 @@ public void nextRound()
       .id = c.id + 1;
       .charClear(i);
       c.posReset(
-        (float)(.stg~p1.startx - .stg~cam.startx),
-        (float)(.stg~p2.startx - .stg~cam.startx));
+        (float)(.stg~p1.startx - .stg~cam.startx) * .stg~localscl,
+        (float)(.stg~p2.startx - .stg~cam.startx) * .stg~localscl);
       c.setCtrl(false);
       c.stVal.clear();
       c.clearSpSysVar();

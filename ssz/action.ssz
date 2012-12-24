@@ -56,7 +56,7 @@ public &Action
       line = .s.toLower()<, .s.trim()<, lines[i][0...s.find(";", lines[i])];
       branch{
       cond #line > 0 && ((line[0] >= '0' && line[0] <= '9') || line[0] == '-'):
-        ary = .com.csvToAryOF!int?(line);
+        ary = .com.ctaOF!int?(line);
         if(#ary < 5) break;
         ols = `ani.loopstart;
         `ani.frames.new[-1].readData(ary, line);
@@ -101,7 +101,7 @@ public &Action
             if(!.s.equ("clsn", line[0..4])) break;
             fnd = .s.find("=", line);
             if(fnd < 0) break;
-            ary = .com.csvToAryOF!int?(line[fnd+1..-1]);
+            ary = .com.ctaOF!int?(line[fnd+1..-1]);
             if(#ary < 4) break;
             branch{
             cond ary[0] <= ary[2]:

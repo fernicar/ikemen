@@ -282,17 +282,6 @@ public bool readDigit(int i=, ^/char digit)
   ret true;
 }
 
-public ..csvToAry<_t>(^/char csv) ^_t
-{
-  ^^/char spl = .s.split(",", csv);
-  ^_t ary.new(#spl);
-  loop{index i = 0; while; do:
-    ary[i] = .aton!_t?(spl[i]);
-    i++;
-  while i < #ary:}
-  ret ary;
-}
-
 public &IXY
 {
   public int x = .IERR, y = .IERR;
@@ -315,9 +304,13 @@ public &FXY
 
 public void readPair<_t>(_t x=, _t y=, ^/char data)
 {
-  ^_t xy = .csvToAry!_t?(data);
-  x = xy[0];
-  if(#xy >= 2) y = xy[1];
+  ^^/char spl = .s.split(",", data);
+  spl[0] = .s.trim(spl[0]);
+  if(#spl[0] > 0) x = .aton!_t?(spl[0]);
+  if(#spl >= 2){
+    spl[1] = .s.trim(spl[1]);
+    if(#spl[1] > 0) y = .aton!_t?(spl[1]);
+  }
 }
 
 public int atoi(^/char str)
@@ -358,7 +351,7 @@ public ..atonOF<_t>(^/char str) _t
   /*?*/
 }
 
-public ..csvToAryOF<_t>(^/char csv) ^_t
+public ..ctaOF<_t>(^/char csv) ^_t
 {
   ^^/char spl = .s.split(",", csv);
   ^_t ary.new(#spl);
@@ -371,9 +364,13 @@ public ..csvToAryOF<_t>(^/char csv) ^_t
 
 public void readPairOF<_t>(_t x=, _t y=, ^/char data)
 {
-  ^_t xy = .csvToAryOF!_t?(data);
-  x = xy[0];
-  if(#xy >= 2) y = xy[1];
+  ^^/char spl = .s.split(",", data);
+  spl[0] = .s.trim(spl[0]);
+  if(#spl[0] > 0) x = .atonOF!_t?(spl[0]);
+  if(#spl >= 2){
+    spl[1] = .s.trim(spl[1]);
+    if(#spl[1] > 0) y = .atonOF!_t?(spl[1]);
+  }
 }
 
 
@@ -409,9 +406,7 @@ public &Layout
       `layerno = .m.min!int?(2)<, .aton!`layerno.self?(data);
     }
     if(#(data = sc.benri(img, "scale")) > 0){
-      ^float xy = .csvToAry!float?(data);
-      `scale.x = xy[0];
-      `scale.y = #xy >= 2 ? xy[1] : 1.0;
+      .readPair!float?(`scale.x=, `scale.y=, data);
     }
   }
   public void setup()
