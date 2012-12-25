@@ -1913,7 +1913,7 @@ public &Projectile
   }
   public void projClsn(int playerNo)
   {
-    if(`hit.attr < 0) ret;
+    if(`hit.attr <= 0) ret;
     loop{index i = 0; while; do:
       if(i != playerNo) loop{
         index j = 0;
@@ -1924,7 +1924,7 @@ public &Projectile
             .projs[i][j].hit.affectteam != 0 && (
               (playerNo&1) != (i&1)) != (.projs[i][j].hit.affectteam > 0))
           ) continue;
-        if(.projs[i][j].hit.attr >= 0 && `hitCheck(.projs[i][j]=)){
+        if(.projs[i][j].hit.attr > 0 && `hitCheck(.projs[i][j]=)){
           `prioritypoint -= .projs[i][j].priority;
         }
       continue:
@@ -2820,8 +2820,10 @@ public &Char
   {
     if(!`attrCheck(hit=, c.id, styp)) ret false;
     if(
-      `atktmp != 0 && (`stVal.hit.attr != 0 || `stVal.hit.reversal_attr > 0)
-      && hit.reversal_attr <= 0 && `stVal.typ != .StTy::L)
+      `atktmp != 0 && (
+        (`stVal.hit.attr > 0 && `stVal.typ != .StTy::L)
+        || `stVal.hit.reversal_attr > 0)
+      && hit.reversal_attr <= 0)
     {
       branch{
       cond `stVal.hit.reversal_attr > 0:
@@ -5794,7 +5796,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       p1.setPos!e<>.self?(e<>=, e~postype, e~offsetx, e~offsety, e~relativef);
       `by.insertExplod(tmp);
     }
-    if(pro == 0 && by.stVal.typ == .StTy::L){
+    if(pro == 0 && by.stVal.typ == .StTy::L && hit.reversal_attr <= 0){
       by.stVal.hit.lhit = true;
       ret false;
     }
