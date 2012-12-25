@@ -1913,7 +1913,7 @@ public &Projectile
   }
   public void projClsn(int playerNo)
   {
-    if(`hit.attr <= 0) ret;
+    if(`hit.attr < 0) ret;
     loop{index i = 0; while; do:
       if(i != playerNo) loop{
         index j = 0;
@@ -1924,7 +1924,7 @@ public &Projectile
             .projs[i][j].hit.affectteam != 0 && (
               (playerNo&1) != (i&1)) != (.projs[i][j].hit.affectteam > 0))
           ) continue;
-        if(.projs[i][j].hit.attr > 0 && `hitCheck(.projs[i][j]=)){
+        if(.projs[i][j].hit.attr >= 0 && `hitCheck(.projs[i][j]=)){
           `prioritypoint -= .projs[i][j].priority;
         }
       continue:
