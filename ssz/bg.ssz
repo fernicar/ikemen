@@ -453,12 +453,12 @@ public &BackGround
     rect.x =
       (short).m.max!float?(-32768.0)<, .m.min!float?(32767.0)<,
       .m.floor(
-        ((float)rect.x + (x+`camstartx) * `windowdeltax)
+        ((float)rect.x - (x+`camstartx) * `windowdeltax)
         * .com.WidthScale * wsclx);
     rect.y =
       (short).m.max!float?(-32768.0)<, .m.min!float?(32767.0)<,
       .m.floor(
-        ((float)rect.y + y * `windowdeltay) * .com.HeightScale * wscly);
+        ((float)rect.y - y * `windowdeltay) * .com.HeightScale * wscly);
     rect.w =
       (ushort).m.min!float?(65535.0)<,
       .m.ceil((float)rect.w * .com.WidthScale * wsclx);
