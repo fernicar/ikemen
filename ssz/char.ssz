@@ -236,13 +236,14 @@ public void drawShadowList(float x, float y)
     branch{
       int alpha = sl~alpha;
       branch{
-      cond sl~al~y < (float).stg~sdw.fadeend:
+      cond sl~al~y < (float).stg~sdw.fadeend*.stg~localscl:
         break, break, continue;
-      cond sl~al~y < (float).stg~sdw.fadebgn:
+      cond sl~al~y < (float).stg~sdw.fadebgn*.stg~localscl:
         alpha =
           (int)(
-            (float)alpha * ((float).stg~sdw.fadeend - sl~al~y)
-            / ((float).stg~sdw.fadeend - (float).stg~sdw.fadebgn));
+            (float)alpha * ((float).stg~sdw.fadeend*.stg~localscl-sl~al~y) / (
+              ((float).stg~sdw.fadeend - (float).stg~sdw.fadebgn)
+              * .stg~localscl));
       }
     cond color < 0:
       color = (int).stg~sdw.color;
@@ -2940,9 +2941,14 @@ public &Char
     if(`acttmp > 0 && #`ani > 0) `ani~ani.action();
     `tickBind();
     if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
-    if(`stVal.hitdefContact != 0){
+    branch{
+    cond `stVal.hitdefContact != 0:
       `stVal.hit.invalidate(`stVal.typ);
       `stVal.hitdefContact = 0;
+    cond `stVal.hit.lhit:
+      `stVal.hit.attr &= !63;
+      `stVal.hit.attr |= (int)`stVal.typ;
+      `stVal.hit.lhit = false;
     }
     if(`stVal.mctime < 0){
       `stVal.mctime = 1;
@@ -5175,7 +5181,7 @@ public &Char
     const int mask = (int).AtTy::NA - 1;
     int attr = `stVal.hit.attr & (int)0x7fffffff;
     ret 
-      `stVal.mov == .MovTy::A && !`stVal.hit.lhit
+      `stVal.mov == .MovTy::A
       && (mask & attr & flg) != 0  && (!mask & attr & flg) != 0;
   }
   public void trNumHelper()
@@ -6730,9 +6736,14 @@ public float action(
     x += cvx;
   }
   if(lowest >= highest) branch{
-  cond highest < (float)-.stg~cam.floortension / .com.scale:
+    float ftension =  (float).stg~cam.floortension*.stg~localscl;
+    if(ftension > 0.0){
+      ftension += 240.0 - (float).stg~localh*.stg~localscl;
+      if(ftension < 0.0) ftension = 0.0;
+    }
+  cond highest < -ftension / .com.scale:
     y =
-      (highest + (float).stg~cam.floortension / .com.scale)
+      (highest + ftension / .com.scale)
       * .com.scale * .stg~cam.verticalfollow;
   else:
     y = 0.0;
