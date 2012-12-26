@@ -4597,13 +4597,7 @@ public &Char
   {
     if(`cs1tmp){
       ^&`State st = .states[`stVal.playerno].get(`stVal.no);
-      branch{
-      cond #st > 0:
-        `state = st~state;
-      else:
-        `trDestroySelf();
-        `state = `dummy;
-      }
+      `state = #st > 0 ? st~state : `dummy;
       if(`stVal.typ == .StTy::S || `stVal.typ == .StTy::C) `furimuki();
       `state(::);
       `cs1tmp = false;
