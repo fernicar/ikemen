@@ -7132,7 +7132,7 @@ public void draw(float x, float y, float scl)
           .stg~cam.verticalfollow != 0.0
           ? (float).m.min!int?(0, .stg~cam.boundhigh) * .stg~localscl : 0.0)
         + (float).com.GameHeight
-        - (float).com.GameWidth*240.0 / (float).stg~localw;
+        - (float).com.GameWidth*(float).stg~localh / (float).stg~localw;
       float yofs =
         (
           scl > 1.0 ? (zofs + (float)(.com.GameHeight - 240))

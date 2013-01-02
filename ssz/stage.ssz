@@ -220,7 +220,7 @@ public &Stage
         `resetbg = .com.atonOF!int?(data) != 0;
       }
       if(#(data = sc.get("localcoord")) > 0){
-        .bg.readPair!int?(`localw=, `localw=, data);
+        .bg.readPair!int?(`localw=, `localh=, data);
         `localscl = (float).com.GameWidth / (float)`localw;
       }
     }

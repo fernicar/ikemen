@@ -56,7 +56,7 @@ int chara(int pn)
   branch{
   cond .com.tmode[pn&1] == (int).com.TeamMode::Simul:
     if(pn >> 1 >= .com.numSimul[pn&1]){
-      .code[pn] = "public void c.Char::stateInit" + .s.iToS(pn) + "P(){}"\r\n;
+      .code[pn] = "";
       .chr.chars[pn].new(0);
       ret 1;
     }
@@ -214,7 +214,7 @@ void load()
       while;
     do:
       .chr.chars[i].new(0);
-      .code[i] = "public void c.Char::stateInit" + .s.iToS(i) + "P(){}"\r\n;
+      .code[i] = "";
       charDone[i] = true;
       i += 2;
     while i < #.chr.chars:
@@ -227,7 +227,7 @@ void load()
       while;
     do:
       .chr.chars[i].new(0);
-      .code[i] = "public void c.Char::stateInit" + .s.iToS(i) + "P(){}"\r\n;
+      .code[i] = "";
       charDone[i] = true;
       i += 2;
     while i < #.chr.chars:

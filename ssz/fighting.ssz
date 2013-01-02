@@ -402,8 +402,11 @@ void game()
       * .chr.stg~localscl;
     float bt =
       .chr.stg~cam.verticalfollow > 0.0
-      ? (float).chr.stg~cam.boundhigh * .chr.stg~localscl
-      + (240.0 - (float).com.GameWidth*240.0 / 320.0)
+      ? .m.min!float?(
+        0.0,
+        (float).chr.stg~cam.boundhigh * .chr.stg~localscl + 240.0
+        - (float).com.GameWidth*(float).chr.stg~localh
+        / (float).chr.stg~localw)
       : 0.0;
     float xminscl =
       (float).com.GameWidth / ((float).com.GameWidth+(float)(-bl + br));
