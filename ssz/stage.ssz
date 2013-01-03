@@ -56,6 +56,7 @@ public &EnvShake envShake;
   public int boundhigh = 0;
   public float verticalfollow = 0.2;
   public int tension = 50, floortension = 0;
+  public int overdrawlow = 0;
 }
 
 &Player
@@ -96,7 +97,7 @@ public &Stage
   /int reflection = 0;
   /bool hires = false, resetbg = true, debugbg = false, reflect = true;
   /int localw = 320, localh = 240;
-  /float localscl;
+  /float localscl, drawOffsetY = 0.0;
   type action_t = &.bg.Action;
   &.sff.AirFileMethods!self? airFileMethods;
   new()
@@ -165,6 +166,9 @@ public &Stage
       }
       if(#(data = sc.get("floortension")) > 0){
         `cam.floortension = .com.atonOF!`cam.floortension.self?(data);
+      }
+      if(#(data = sc.get("overdrawlow")) > 0){
+        `cam.overdrawlow = .com.atonOF!`cam.overdrawlow.self?(data);
       }
     }
     public void playerinfo(&.com.Section sc=)
@@ -455,6 +459,13 @@ public &Stage
     while i < #`bg:
       `zoffset += zofs;
     }
+    `drawOffsetY =
+      (float)`localw/(float)`localh > (float).com.GameWidth/240.0
+      ? .m.min!float?(
+        (float)`localh * `localscl * 0.5 * (
+          (float)`localw/(float)`localh - (float).com.GameWidth/240.0),
+        (float).m.max!int?(0, `cam.overdrawlow))
+      : 0.0;
     ret "";
   }
   type bglsig_t = $void(&.bg.BackGround=);
@@ -595,7 +606,7 @@ public &Stage
     float posy =
       .com.zoom ? y : .m.ceil(y*(float)`localw/320.0-0.5)*320.0/(float)`localw;
     float yofs =
-      .envShake.getOffset()
+      .envShake.getOffset() + `drawOffsetY
       - (240.0*`localscl - (float)(.com.GameWidth*`localh) / (float)`localw);
     loop{index i = 0; while; do:
       if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){

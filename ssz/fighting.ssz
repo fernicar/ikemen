@@ -405,6 +405,7 @@ void game()
       ? .m.min!float?(
         0.0,
         (float).chr.stg~cam.boundhigh * .chr.stg~localscl + 240.0
+        - .chr.stg~drawOffsetY
         - (float).com.GameWidth*(float).chr.stg~localh
         / (float).chr.stg~localw)
       : 0.0;
@@ -416,7 +417,8 @@ void game()
       .m.max!float?(xminscl, yminscl);
     float zofs =
       (float).chr.stg~zoffset * .chr.stg~localscl
-      + (240.0 - (float).com.GameWidth*240.0 / (float).chr.stg~localw);
+      - .chr.stg~drawOffsetY + 240.0
+      - (float).com.GameWidth*(float).chr.stg~localh / (float).chr.stg~localw;
     float tmp;
   do:
     .com.step = false;

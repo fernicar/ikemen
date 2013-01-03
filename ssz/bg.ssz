@@ -136,7 +136,7 @@ public &Action
       line = .s.trim(lines[i][0...s.find(";", lines[i])]);
       branch{
       cond #line > 0 && ((line[0] >= '0' && line[0] <= '9') || line[0] == '-'):
-        ary = .cta!int?(line);
+        ary = .com.ctaOF!int?(line);
         if(#ary < 5) break;
         ols = `loopstart;
         `frames.new[-1].readData(ary, line);
