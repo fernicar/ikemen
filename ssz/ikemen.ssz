@@ -89,12 +89,19 @@ int game()
   int fight(^char ss=, ^&.sha.Share share)
   {
     if(!`load()) ret -1;
-    .chr.id = .cfg.HelperMax;
     .chr.players.clear();
+    .chr.id = .cfg.HelperMax;
+    loop{index i = 0; while; do:
+      if(#.chr.chars[i] > 0) .chr.chars[i]<>~id = .chr.id++;
+      i += 2;
+    while i < #.chr.chars:}
+    loop{index i = 1; while; do:
+      if(#.chr.chars[i] > 0) .chr.chars[i]<>~id = .chr.id++;
+      i += 2;
+    while i < #.chr.chars:}
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0){
         `p[i] = .chr.chars[i]<>;
-        `p[i]~id = .chr.id++;
         .chr.players.add(`p[i]);
         if(.com.rexisted[i&1] == 0){
           `p[i]~loadPallet(.chr.cgi[i].def, `p[i]~palno());

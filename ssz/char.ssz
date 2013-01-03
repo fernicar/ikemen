@@ -3259,7 +3259,7 @@ public &Char
   {
     ret
       `stVal.phy == .StTy::A && `isActive() && `sysfvar[.fVY] > 0.0
-      && `sysfvar[.fY] >= 0.0 && `stVal.no != 105 && `stVal.no != 52;
+      && `sysfvar[.fY] >= 0.0 && `stVal.no != 105;
   }
   void furimuki()
   {
@@ -3429,8 +3429,11 @@ public &Char
               + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
           }
         }
-        if(!`isHitPaused()) `posUpdate();
-        if(`landCondition()) `trChangeState(52, -1, -1);
+        loop{continue; do:
+          `trChangeState(52, -1, -1);
+        continue:
+          if(!`isHitPaused()) `posUpdate();
+        while `landCondition():}
         if(!`isHitPaused()){
           `stVal.time++;
           if(`stVal.mctime > 0) `stVal.mctime++;
@@ -7290,7 +7293,7 @@ public void nextRound()
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
     .chars[i][0]~[void(c=){
-      .id = c.id + 1;
+      .id = .m.max!int?(.id, c.id + 1);
       .charClear(i);
       c.posReset(
         (float)(.stg~p1.startx - .stg~cam.startx) * .stg~localscl,

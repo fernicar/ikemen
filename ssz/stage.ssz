@@ -463,7 +463,8 @@ public &Stage
       (float)`localw/(float)`localh > (float).com.GameWidth/240.0
       ? .m.min!float?(
         (float)`localh * `localscl * 0.5 * (
-          (float)`localw/(float)`localh - (float).com.GameWidth/240.0),
+          ((float)`localw/(float)`localh) / ((float).com.GameWidth/240.0)
+          - 1.0),
         (float).m.max!int?(0, `cam.overdrawlow))
       : 0.0;
     ret "";
