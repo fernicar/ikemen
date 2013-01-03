@@ -750,6 +750,8 @@ public &StateBuilder
         flg |= (int).chr.AtTy::SA|(int).chr.AtTy::ST|(int).chr.AtTy::SP;
       cond .s.equ(tmp, "h") || .s.equ(tmp, "a"):
         flg |= (int).chr.AtTy::HA|(int).chr.AtTy::HT|(int).chr.AtTy::HP;
+      cond .cfg.IgnoreMostErrors && `mver0 == 1:
+        ret true;
       else:
         `lasterror = hit[i] + "が無効な値です";
         ret false;
