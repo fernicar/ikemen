@@ -3429,12 +3429,12 @@ public &Char
               + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
           }
         }
-        loop{continue; do:
-          `trChangeState(52, -1, -1);
-        continue:
-          if(!`isHitPaused()) `posUpdate();
-        while `landCondition():}
         if(!`isHitPaused()){
+          loop{continue; do:
+            `trChangeState(52, -1, -1);
+          continue:
+            `posUpdate();
+          while `landCondition():}
           `stVal.time++;
           if(`stVal.mctime > 0) `stVal.mctime++;
         }
