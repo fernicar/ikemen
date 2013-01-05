@@ -458,7 +458,8 @@ public &BackGround
     rect.y =
       (short).m.max!float?(-32768.0)<, .m.min!float?(32767.0)<,
       .m.floor(
-        ((float)rect.y - y * `windowdeltay) * .com.HeightScale * wscly);
+        (((float)rect.y - y * `windowdeltay) * wscly - shakeY)
+        * .com.HeightScale);
     rect.w =
       (ushort).m.min!float?(65535.0)<,
       .m.ceil((float)rect.w * .com.WidthScale * wsclx);
