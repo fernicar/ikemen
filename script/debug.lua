@@ -48,7 +48,7 @@ end
 function kill(p, ...)
   local oldid = id()
   if player(p) then
-    local n = ...;
+    local n = ...
     if not n then n = 0 end
     setLife(n)
     playerid(oldid)

@@ -1918,15 +1918,14 @@ public &Projectile
   public void projClsn(int playerNo)
   {
     void cancel(
-      int prioritypoint=, int priority, int hits=,
-      int oppprioritypoint, int opphits)
+      int prioritypoint=, int priority, int hits=, int oppprioritypoint)
     {
       if(oppprioritypoint > prioritypoint || hits <= 0){
         hits = -2;
         ret;
       }
       branch{
-      cond oppprioritypoint == prioritypoint && opphits > 0:
+      cond oppprioritypoint == prioritypoint:
         branch{
         cond hits <= 1:
           hits = -2;
@@ -1950,13 +1949,12 @@ public &Projectile
               (playerNo&1) != (i&1)) != (.projs[i][j].hit.affectteam > 0))
           ) continue;
         if(.projs[i][j].hits >= 0 && `hitCheck(.projs[i][j]=)){
-          int pp = `prioritypoint, hs = `hits;
+          int pp = `prioritypoint;
           cancel(
-            `prioritypoint=, `priority, `hits=,
-            .projs[i][j].prioritypoint, .projs[i][j].hits);
+            `prioritypoint=, `priority, `hits=, .projs[i][j].prioritypoint);
           cancel(
             .projs[i][j].prioritypoint=, .projs[i][j].priority,
-            .projs[i][j].hits=, pp, hs);
+            .projs[i][j].hits=, pp);
         }
       continue:
         j++;

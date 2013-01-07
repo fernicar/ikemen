@@ -127,6 +127,15 @@ void setTime(&.lua.State L=, int re=)
   if(#.cmd.net == 0 && #.cmd.replay == 0) .com.time = time;
 }
 
+void clear(&.lua.State L=, int re=)
+{
+  re = 0;
+  loop{index i = 0; while; do:
+    .com.clipboardText[i].new(0);
+    i++;
+  while i < #.com.clipboardText:}
+}
+
 
 public &.lua.State L;
 
@@ -149,6 +158,7 @@ public ^/char loadFile(^/char file)
   .L.register("setAccel", .setAccel);
   .L.register("setAILevel", .setAILevel);
   .L.register("setTime", .setTime);
+  .L.register("clear", .clear);
   if(!.L.runFile(file)){
     ^/char err = .L.toString(-1);
     ret err;

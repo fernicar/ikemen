@@ -255,16 +255,16 @@ function p1SelSub()
   if not p1SelEnd then
     if commandGetState(p1Cmd, 'su') then
       sndPlay(sysSnd, 100, 0)
-      p1SelY = p1SelY - 10*selectRows;
+      p1SelY = p1SelY - 20
     elseif commandGetState(p1Cmd, 'sd') then
       sndPlay(sysSnd, 100, 0)
-      p1SelY = p1SelY + 10*selectRows;
+      p1SelY = p1SelY + 20
     elseif commandGetState(p1Cmd, 'u') then
       sndPlay(sysSnd, 100, 0)
-      p1SelY = p1SelY - 1;
+      p1SelY = p1SelY - 1
     elseif commandGetState(p1Cmd, 'd') then
       sndPlay(sysSnd, 100, 0)
-      p1SelY = p1SelY + 1;
+      p1SelY = p1SelY + 1
     elseif commandGetState(p1Cmd, 'l') then
       sndPlay(sysSnd, 100, 0)
       p1SelX = p1SelX - 1
@@ -332,16 +332,16 @@ function p2SelSub()
   if not p2SelEnd then
     if commandGetState(p2Cmd, 'su') then
       sndPlay(sysSnd, 100, 0)
-      p2SelY = p2SelY - 10*selectRows;
+      p2SelY = p2SelY - 20
     elseif commandGetState(p2Cmd, 'sd') then
       sndPlay(sysSnd, 100, 0)
-      p2SelY = p2SelY + 10*selectRows;
+      p2SelY = p2SelY + 20
     elseif commandGetState(p2Cmd, 'u') then
       sndPlay(sysSnd, 100, 0)
-      p2SelY = p2SelY - 1;
+      p2SelY = p2SelY - 1
     elseif commandGetState(p2Cmd, 'd') then
       sndPlay(sysSnd, 100, 0)
-      p2SelY = p2SelY + 1;
+      p2SelY = p2SelY + 1
     elseif commandGetState(p2Cmd, 'l') then
       sndPlay(sysSnd, 100, 0)
       p2SelX = p2SelX - 1
@@ -577,10 +577,10 @@ function modeSel()
     while btnPalNo(p1Cmd) <= 0 do
       if commandGetState(p1Cmd, 'u') then
         sndPlay(sysSnd, 100, 0)
-        gameMode = gameMode - 1;
+        gameMode = gameMode - 1
       elseif commandGetState(p1Cmd, 'd') then
         sndPlay(sysSnd, 100, 0)
-        gameMode = gameMode + 1;
+        gameMode = gameMode + 1
       end
       if gameMode < 0 then
         gameMode = 6
