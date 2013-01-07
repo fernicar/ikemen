@@ -1831,8 +1831,7 @@ public &Projectile
     `accelx = `accely = 0.0;
     `velmulx = `velmuly = 1.0;
     `anim = -1;
-    `hits = 0;
-    `prioritypoint = 0;
+    if(`hits >= 0) `hits = -1;
   }
   public void update(int playerNo)
   {
@@ -1840,12 +1839,17 @@ public &Projectile
       branch{
       cond `anim >= 0:
         branch{
-        cond `prioritypoint <= 0 && `remove != 0:
-          if(`cancelanim != `anim){
-            `ani = .chars[playerNo][0]~getAction(`cancelanim);
+        cond `hits < 0 && `remove != 0:
+          branch{
+          cond `hits == -1:
+            if(`hitanim != `anim){
+              `ani = .chars[playerNo][0]~getAction(`hitanim);
+            }
+          else:
+            if(`cancelanim != `anim){
+              `ani = .chars[playerNo][0]~getAction(`cancelanim);
+            }
           }
-        cond `hits <= 0 && `remove != 0:
-          if(`hitanim != `anim) `ani = .chars[playerNo][0]~getAction(`hitanim);
         cond
           (
             `x < .com.xmin-(float)`edgebound
@@ -1913,7 +1917,27 @@ public &Projectile
   }
   public void projClsn(int playerNo)
   {
-    if(`hit.attr < 0) ret;
+    void cancel(
+      int prioritypoint=, int priority, int hits=,
+      int oppprioritypoint, int opphits)
+    {
+      if(oppprioritypoint > prioritypoint || hits <= 0){
+        hits = -2;
+        ret;
+      }
+      branch{
+      cond oppprioritypoint == prioritypoint && opphits > 0:
+        branch{
+        cond hits <= 1:
+          hits = -2;
+        else;
+          hits = 3*hits / 4 - 1;
+          prioritypoint = priority;
+        }
+      else:
+        prioritypoint--;
+      }
+    }
     loop{index i = 0; while; do:
       if(i != playerNo) loop{
         index j = 0;
@@ -1924,22 +1948,20 @@ public &Projectile
             .projs[i][j].hit.affectteam != 0 && (
               (playerNo&1) != (i&1)) != (.projs[i][j].hit.affectteam > 0))
           ) continue;
-        if(.projs[i][j].hit.attr >= 0 && `hitCheck(.projs[i][j]=)){
-          `prioritypoint -= .projs[i][j].priority;
+        if(.projs[i][j].hits >= 0 && `hitCheck(.projs[i][j]=)){
+          int pp = `prioritypoint, hs = `hits;
+          cancel(
+            `prioritypoint=, `priority, `hits=,
+            .projs[i][j].prioritypoint, .projs[i][j].hits);
+          cancel(
+            .projs[i][j].prioritypoint=, .projs[i][j].priority,
+            .projs[i][j].hits=, pp, hs);
         }
       continue:
         j++;
-      while j < #.projs[i]:
-      }
+      while `hits >= 0 && j < #.projs[i]:}
       i++;
-    while i < #.projs:
-    }
-    if(`prioritypoint <= 0 && `hits > 0 && `priority > 0){
-      `hits -= 1 + -`prioritypoint / `priority;
-      if(`hits > 0){
-        `prioritypoint = `prioritypoint % `priority + `priority;
-      }
-    }
+    while `hits >= 0 && i < playerNo:}
   }
   bool paused()
   {
@@ -1955,18 +1977,18 @@ public &Projectile
   {
     if(`timemiss < 0){
       `timemiss = !`timemiss;
-      branch{
-      cond `misstime <= 0 && `hitpause == 0:
-        `hits = 0;
-      else:
-        `hits--;
+      if(`hits >= 0){
+        branch{
+        cond `misstime <= 0 && `hitpause == 0:
+          `hits = -1;
+        else:
+          `hits--;
+          if(`hits <= 0) `hits = -1;
+        }
       }
       `hit.air_juggle = 0;
     }
-    if(`hits <= 0){
-      `hit.attr = -1;
-      `hitpause = 0;
-    }
+    if(`hits < 0) `hitpause = 0;
     if(`paused()) ret;
     if(`hitpause <= 0){
       if(`removetime > 0) `removetime--;
@@ -6329,7 +6351,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           pyr.hittmp = oldhittmp;
         }
         if(
-          proj.prioritypoint > 0 && pyr.atktmp != 0
+          proj.hits >= 0 && pyr.atktmp != 0
           && (
             pyr.stVal.hit.affectteam == 0 || (
             ((i&1) != (pyr.playerno&1)) == (pyr.stVal.hit.affectteam > 0)))
@@ -6340,8 +6362,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
               && proj.hit.bothhittype != .PriTy::Dodge
               && pyr.stVal.hit.bothhittype == .PriTy::Hit)))
         {
-          proj.hits = 0;
-          proj.prioritypoint = 0;
+          proj.hits = -2;
           .cgi[i].pctyp == .ProjContact::Cancel;
           .cgi[i].pctime = 0;
           .cgi[i].pcid = proj.id;

@@ -4140,7 +4140,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~hits=", ";", 2)) ret false;
+              "pr~hits=", ";if(pr~hits<0)pr~hits=1;", 2)) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "projpriority", [`paraF_t(data=){
@@ -5144,7 +5144,8 @@ public &StateBuilder
         if(!`stateParam(param=, "projanim", [`paraF_t(data=){
           if(
             !`fullExpression(
-              `state.ctrlList[-1].task=, data=, "pr~anim=", ";", 2)) ret false;
+              `state.ctrlList[-1].task=, data=,
+              "pr~anim=.m.max!int?(0,", ");", 2)) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "supermovetime", [`paraF_t(data=){
