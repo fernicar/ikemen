@@ -1932,6 +1932,7 @@ public &Projectile
           hits = -2;
         else;
           hits = 3*hits / 4 - 1;
+          if(hits <= 0) break, else;
           prioritypoint = priority;
         }
       else:
