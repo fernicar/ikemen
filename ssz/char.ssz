@@ -6281,7 +6281,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
     do:
       .projs[i][j].[void(proj=){
         if(
-          proj.id < 0 || proj.hits <= 0 || (
+          proj.id < 0 || proj.hits < 0 || (
             proj.hit.affectteam != 0 && ((pyr.playerno&1) != (i&1))
             != (proj.hit.affectteam > 0))) ret;
         if(
@@ -6291,7 +6291,22 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         {
           pyr.inguarddist = true;
         }
-        bool hoge = true;
+        if(proj.hits == 0) ret;
+        if(
+          pyr.atktmp != 0
+          && (
+            pyr.stVal.hit.affectteam == 0 || (
+            ((i&1) != (pyr.playerno&1)) == (pyr.stVal.hit.affectteam > 0)))
+          && (pyr.stVal.hit.hitflag & (int).StTy::U) != 0
+          && pyr.hitProjCheck(proj=))
+        {
+          proj.hits = -2;
+          .cgi[i].pctyp == .ProjContact::Cancel;
+          .cgi[i].pctime = 0;
+          .cgi[i].pcid = proj.id;
+          pyr.stVal.hitdefContact = 1;
+          ret;
+        }
         if(
           !(pyr.cs1tmp && (pyr.ls(.lsGETHIT) || pyr.acttmp > 0))
           && proj.hit.hitonce >= 0
@@ -6303,13 +6318,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           && proj.timemiss <= 0
           && proj.hitpause <= 0 && pyr.hittable(
             proj.hit=, .chars[i]<><>=, .StTy::N,
-            [bool(&.Hitdef h=){
-              ret (h.hitflag&(int).StTy::U) != 0 && pyr.hitProjCheck(proj=);
-            }]))
+            [bool(&.Hitdef h=){ret false;}]))
         {
           int oldhittmp = pyr.hittmp;
           if(pyr.ls(.lsGETHIT)) pyr.hittmp = (int)pyr.isFall() + 1;
-          hoge = false;
           if(
             .m.inRange!float?(
               0.0, (float)proj.hit.guard_dist,
@@ -6348,23 +6360,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           }
         break:
           pyr.hittmp = oldhittmp;
-        }
-        if(
-          proj.hits >= 0 && pyr.atktmp != 0
-          && (
-            pyr.stVal.hit.affectteam == 0 || (
-            ((i&1) != (pyr.playerno&1)) == (pyr.stVal.hit.affectteam > 0)))
-          && (pyr.stVal.hit.hitflag & (int).StTy::U) != 0
-          && pyr.hitProjCheck(proj=) && (
-            hoge || (
-              pyr.stVal.hit.priority == proj.hit.priority
-              && proj.hit.bothhittype != .PriTy::Dodge
-              && pyr.stVal.hit.bothhittype == .PriTy::Hit)))
-        {
-          proj.hits = -2;
-          .cgi[i].pctyp == .ProjContact::Cancel;
-          .cgi[i].pctime = 0;
-          .cgi[i].pcid = proj.id;
         }
       }];
       j++;
