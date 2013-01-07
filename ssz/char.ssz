@@ -1939,7 +1939,7 @@ public &Projectile
       }
     }
     loop{index i = 0; while; do:
-      if(i != playerNo) loop{
+      loop{
         index j = 0;
         while;
       do:
