@@ -4311,13 +4311,13 @@ public &StateBuilder
         if(
           !`argExpression(
             `state.ctrlList[-1].task=, data=,
-            ".hitgetpower=", ";", 2)) ret false;
+            ".hitgetpower=.m.max!int?(.com.IERR,", ");", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".guardgetpower=", ";", 2)) ret false;
+              ".guardgetpower=.m.max!int?(.com.IERR,", ");", 2)) ret false;
         }
         ret true;
       }])) ret false;
@@ -4341,13 +4341,13 @@ public &StateBuilder
         if(
           !`argExpression(
             `state.ctrlList[-1].task=, data=,
-            ".hitgivepower=", ";", 2)) ret false;
+            ".hitgivepower=.m.max!int?(.com.IERR,", ");", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".guardgivepower=", ";", 2)) ret false;
+              ".guardgivepower=.m.max!int?(.com.IERR,", ");", 2)) ret false;
         }
         ret true;
       }])) ret false;
@@ -4573,14 +4573,6 @@ public &StateBuilder
             ".down_hittime=", ";", 2)) ret false;
         ret true;
       }])) ret false;
-      if(!`stateParam(param=, "guard.ctrltime", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= obj;
-        if(
-          !`fullExpression(
-            `state.ctrlList[-1].task=, data=,
-            ".guard_ctrltime=", ";", 2)) ret false;
-        ret true;
-      }])) ret false;
       if(!`stateParam(param=, "p1facing", [`paraF_t(data=){
         `state.ctrlList[-1].task .= obj;
         if(
@@ -4737,7 +4729,7 @@ public &StateBuilder
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ground.hittime", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= obj;
+        `state.ctrlList[-1].task .= obj .= ".guard_hittime=" .= obj;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
@@ -4761,13 +4753,13 @@ public &StateBuilder
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "pausetime", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= obj;
+        `state.ctrlList[-1].task .= obj .= ".guard_pausetime=" .= obj;
         if(
           !`argExpression(
             `state.ctrlList[-1].task=, data=,
             ".pausetime=", ";", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
-          `state.ctrlList[-1].task .= obj;
+          `state.ctrlList[-1].task .= obj .= ".guard_shaketime=" .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
@@ -4821,7 +4813,9 @@ public &StateBuilder
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ground.slidetime", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= obj;
+        `state.ctrlList[-1].task .=
+          obj .= ".guard_slidetime=" .= obj
+          .= ".guard_ctrltime=" .= obj .= ".airguard_ctrltime=" .= obj;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
@@ -4829,11 +4823,20 @@ public &StateBuilder
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "guard.slidetime", [`paraF_t(data=){
-        `state.ctrlList[-1].task .= obj;
+        `state.ctrlList[-1].task .=
+          obj .= ".guard_ctrltime=" .= obj .= ".airguard_ctrltime=" .= obj;
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
             ".guard_slidetime=", ";", 2)) ret false;
+        ret true;
+      }])) ret false;
+      if(!`stateParam(param=, "guard.ctrltime", [`paraF_t(data=){
+        `state.ctrlList[-1].task .= obj .= ".airguard_ctrltime=" .= obj;
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".guard_ctrltime=", ";", 2)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "airguard.ctrltime", [`paraF_t(data=){

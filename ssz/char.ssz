@@ -882,8 +882,8 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `guarddamage = 0;
     `pausetime = 0;
     `shaketime = 0;
-    `guard_pausetime = -1;
-    `guard_shaketime = -1;
+    `guard_pausetime = 0;
+    `guard_shaketime = 0;
     `sparkno = .com.IERR;
     `guard_sparkno = .com.IERR;
     `sparkx = 0.0;
@@ -895,13 +895,13 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `ground_type = .ReactTy::High;
     `air_type = .ReactTy::Unknown;
     `ground_slidetime = 0;
-    `guard_slidetime = -1;
+    `guard_slidetime = 0;
     `ground_hittime = 0;
-    `guard_hittime = -1;
+    `guard_hittime = 0;
     `air_hittime = 20;
-    `guard_ctrltime = -1;
-    `airguard_ctrltime = -1;
-    `guard_dist = -1;
+    `guard_ctrltime = 0;
+    `airguard_ctrltime = 0;
+    `guard_dist = 0;
     `yaccel = 0.0/0.0;
     `ground_velocityx = 0.0;
     `ground_velocityy = 0.0;
@@ -3833,24 +3833,17 @@ public &Char
   void setHitdefDefault(&.Hitdef h=, bool proj)
   {
     if((h.attr & !63) == 0) h.attr = 0;
-    if(!proj && h.guard_dist < 0) h.guard_dist = `sysivar[.iATTACK_DIST];
-    if(h.guard_pausetime < 0) h.guard_pausetime = h.pausetime;
-    if(h.guard_shaketime < 0) h.guard_shaketime = h.shaketime;
     if(
       h.hitonce < 0
       || (h.attr&((int).AtTy::NT|(int).AtTy::ST|(int).AtTy::HT)) != 0)
     {
       h.hitonce = 1;
     }
-    if(h.guard_hittime < 0) h.guard_hittime = h.ground_hittime;
-    if(h.guard_slidetime < 0) h.guard_slidetime = h.guard_hittime;
-    if(h.guard_ctrltime < 0) h.guard_ctrltime = h.guard_slidetime;
     if(.m.isnan(h.ground_velocityx)) h.ground_velocityx = 0.0;
     if(.m.isnan(h.ground_velocityy)) h.ground_velocityy = 0.0;
     if(.m.isnan(h.air_velocityx)) h.air_velocityx = 0.0;
     if(.m.isnan(h.air_velocityy)) h.air_velocityy = 0.0;
     if(.m.isnan(h.guard_velocity)) h.guard_velocity = h.ground_velocityx;
-    if(h.airguard_ctrltime < 0) h.airguard_ctrltime = h.guard_ctrltime;
     if(.m.isnan(h.airguard_velocityx)){
       h.airguard_velocityx = h.air_velocityx*1.5;
     }
@@ -6144,7 +6137,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         }]))
     {
       if(
-        .m.inRange!float?(
+        p~c~stVal.mov == .MovTy::A && .m.inRange!float?(
           0.0, (float)p~c~stVal.hit.guard_dist,
           (pyr.sysfvar[.fX] - p~c~sysfvar[.fX])*(float)p~c~facing))
       {
