@@ -5300,7 +5300,9 @@ public &Char
     .v.typ = .VarTy::Int;
     .v.i = 0;
     loop{index i = 0; while; do:
-      if(.projs[`playerno][i].id == d && .projs[`playerno][i].hits > 0) .v.i++;
+      if(.projs[`playerno][i].id == d && .projs[`playerno][i].hits >= 0){
+        .v.i++;
+      }
       i++;
     while i < #.projs[`playerno]:
     }
@@ -5309,7 +5311,7 @@ public &Char
   {
     int n = 0;
     loop{index i = 0; while; do:
-      if(.projs[`playerno][i].id >= 0 && .projs[`playerno][i].hits > 0) n++;
+      if(.projs[`playerno][i].id >= 0 && .projs[`playerno][i].hits >= 0) n++;
       i++;
     while i < #.projs[`playerno]:}
     ret n;

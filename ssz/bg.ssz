@@ -410,7 +410,7 @@ public &BackGround
   }
   public void draw(
     float x, float y, float scl, ^&.com.PalFX fx,
-    float bgscl, float localscl, float shakeY)
+    float bgscl, float localscl, float shakeY, int localh)
   {
     float xras = ((`rasterxbspeed-`rasterxtspeed) / `rasterxtspeed);
     float xbs = `xbscale;
@@ -458,7 +458,10 @@ public &BackGround
     rect.y =
       (short).m.max!float?(-32768.0)<, .m.min!float?(32767.0)<,
       .m.floor(
-        (((float)rect.y - y * `windowdeltay) * wscly - shakeY)
+        (
+          ((float)rect.y - y * `windowdeltay) * wscly
+          - shakeY*(float)(
+            `windowdeltay != 0.0 || rect.y > 0 || (int)rect.h+rect.y < localh))
         * .com.HeightScale);
     rect.w =
       (ushort).m.min!float?(65535.0)<,

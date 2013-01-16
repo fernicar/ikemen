@@ -611,7 +611,8 @@ public &Stage
       - (240.0*`localscl - (float)(.com.GameWidth*`localh) / (float)`localw);
     loop{index i = 0; while; do:
       if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){
-        `bg[i].draw(posx, posy, scl, .bgPalFX, bgscl, `localscl, yofs);
+        `bg[i].draw(
+          posx, posy, scl, .bgPalFX, bgscl, `localscl, yofs, `localh);
       }
       i++;
     while i < #`bg:
