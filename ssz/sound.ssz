@@ -16,8 +16,8 @@ public &SndNnm
 
 public &Wave
 {
-  public uint samplesPerSec;
-  public ushort channels, bytesPerSample;
+  public uint samplesPerSec = 11025;
+  public ushort channels = 0x1, bytesPerSample = 0x1;
   public ^ubyte wav;
   public &.SndNnm num;
 }
@@ -53,7 +53,7 @@ public &Snd
         if(!`f.read!ubyte?(ub=)) ret .com.FileReadError;
         s .= (char)ub;
       while ++i < 4:
-        if(!.s.equ(s, "WAVE")) ret "WAVEじゃない";
+        if(!.s.equ(s, "WAVE")) ret "";
       }
       loop{
         ushort fmtID, mushi;
