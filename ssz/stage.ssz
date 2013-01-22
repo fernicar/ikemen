@@ -602,17 +602,30 @@ public &Stage
   public void bgDraw(bool t, float x, float y, float scl)
   {
     float bgscl = `hires ? 0.5 : 1.0;
-    int lh = (int)((float)`localh / bgscl);
+    float yofs = .envShake.getOffset();
+    float posy = y;
+    if(yofs < 0.0 && `cam.verticalfollow > 0.0){
+      float temp = (float).m.min!int?(0, `cam.boundhigh) - posy;
+      if(temp < 0.0) branch{
+      cond yofs < temp * `localscl:
+        posy += temp;
+        yofs -= temp * `localscl;
+      else:
+        posy += yofs / `localscl;
+        yofs = 0.0;
+      }
+    }
     float posx =
       .com.zoom ? x : .m.ceil(x*(float)`localw/320.0-0.5)*320.0/(float)`localw;
-    float posy =
-      .com.zoom ? y : .m.ceil(y*(float)`localw/320.0-0.5)*320.0/(float)`localw;
-    float yofs =
-      .envShake.getOffset() + `drawOffsetY
+    posy =
+      .com.zoom
+      ? posy : .m.ceil(posy*(float)`localw/320.0-0.5)*320.0/(float)`localw;
+    yofs +=
+      `drawOffsetY
       - (240.0*`localscl - (float)(.com.GameWidth*`localh) / (float)`localw);
     loop{index i = 0; while; do:
       if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){
-        `bg[i].draw(posx, posy, scl, .bgPalFX, bgscl, `localscl, yofs, lh);
+        `bg[i].draw(posx, posy, scl, .bgPalFX, bgscl, `localscl, yofs);
       }
       i++;
     while i < #`bg:
