@@ -402,22 +402,22 @@ void game()
     float br =
       (float)(.chr.stg~cam.boundright - .chr.stg~cam.startx)
       * .chr.stg~localscl;
-    float bt =
+    .com.boundhigh =
       .chr.stg~cam.verticalfollow > 0.0
       ? .m.min!float?(
         0.0,
-        (float).chr.stg~cam.boundhigh * .chr.stg~localscl + 240.0
-        - .chr.stg~drawOffsetY
+        (float).chr.stg~cam.boundhigh * .chr.stg~localscl
+        + (float).com.GameHeight - .chr.stg~drawOffsetY
         - (float).com.GameWidth*(float).chr.stg~localh
         / (float).chr.stg~localw)
       : 0.0;
     float xminscl =
       (float).com.GameWidth / ((float).com.GameWidth+(float)(-bl + br));
-    float yminscl = (float).com.GameHeight / (240.0-bt);
+    float yminscl = (float).com.GameHeight / (240.0-.com.boundhigh);
     float minscl =
       .m.max!float?(.com.zoomMin)<, .m.min!float?(.com.zoomMax)<,
       .m.max!float?(xminscl, yminscl);
-    float zofs =
+    .com.screenZoffset =
       (float).chr.stg~zoffset * .chr.stg~localscl
       - .chr.stg~drawOffsetY + 240.0
       - (float).com.GameWidth*(float).chr.stg~localh / (float).chr.stg~localw;
@@ -527,13 +527,13 @@ void game()
         br+(float).com.GameWidth/2.0 - ((float).com.GameWidth/2.0)/scl)<,
       .m.min!float?(x + l + tmp)<, .m.max!float?(x + r - tmp)<, newx;
     if(!.com.zoom) x = .m.ceil(x*4.0 - 0.5)/4.0;
-    tmp = .m.max!float?(0.0, 240.0 - zofs);
+    tmp = .m.max!float?(0.0, 240.0 - .com.screenZoffset);
     y =
       .m.min!float?(0.0)<, 
       .m.min!float?(tmp*(1.0/scl - 1.0))<,
       .m.max!float?(
-        bt-240.0 + .m.max!float?(
-          (float).com.GameHeight/scl, tmp + zofs/scl),
+        .com.boundhigh-240.0 + .m.max!float?(
+          (float).com.GameHeight/scl, tmp + .com.screenZoffset/scl),
         newy + 240.0*(1.0 - .m.min!float?(1.0, scl)));
     if(
       .com.tickFrame() && (.chr.super <= 0 || .chr.superpausebg == 0)

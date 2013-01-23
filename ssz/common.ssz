@@ -122,6 +122,7 @@ public bool addFrameTime(float t)
 public int brightness = 256;
 
 public float screenleft = 0.0, screenright = 0.0;
+public float boundhigh = 0.0, screenZoffset = 0.0;
 public float xmin = 0.0, xmax = 0.0;
 public float camerax = 0.0, cameray = 0.0;
 public float screenx = 0.0, screeny = 0.0;

@@ -7138,27 +7138,19 @@ public void draw(float x, float y, float scl)
       .drawShadowList(x, y);
     }
     {
-      float zofs =
-        (float).stg~zoffset * .stg~localscl - .stg~drawOffsetY + 240.0
-        - (float).com.GameWidth*(float).stg~localh / (float).stg~localw;
       float off = .stage.envShake.getOffset();
-      float bh = 
-        (
-          .stg~cam.verticalfollow != 0.0
-          ? (float).m.min!int?(0, .stg~cam.boundhigh) * .stg~localscl : 0.0)
-        + (float).com.GameHeight - .stg~drawOffsetY
-        - (float).com.GameWidth*(float).stg~localh / (float).stg~localw;
       float yofs =
         (
-          scl > 1.0 ? (zofs + (float)(.com.GameHeight - 240))
+          scl > 1.0 ? (.com.screenZoffset + (float)(.com.GameHeight - 240))
           : (float).com.GameHeight)
         * (1.0/scl - 1.0);
-      float yofs2 = scl > 1.0 ? (240.0 - zofs)*(1.0 - 1.0/scl) : 0.0;
+      float yofs2 =
+        scl > 1.0 ? (240.0 - .com.screenZoffset)*(1.0 - 1.0/scl) : 0.0;
       *.com.scrrect.self rect = .com.scrrect;
-      if(off - bh < yofs - y){
+      if(off - .com.boundhigh < yofs - y){
         rect.h =
           (
-            (uint)(((yofs - y) - (off - bh)) + 0.5)*.com.scrrect.h
+            (uint)(((yofs - y) - (off - .com.boundhigh)) + 0.5)*.com.scrrect.h
             + (uint)(.com.GameHeight-1))
           / (uint).com.GameHeight;
         fade(rect=, 255);

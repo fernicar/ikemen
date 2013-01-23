@@ -605,24 +605,30 @@ public &Stage
     float yofs = .envShake.getOffset();
     float posy = y;
     if(`cam.verticalfollow > 0.0) branch{
+      float scl2 = `localscl * scl;
     cond yofs < 0.0:
       branch{
-        float temp = (float).m.min!int?(0, `cam.boundhigh) - posy;
+        float temp =
+          (.com.boundhigh - posy) * scl2
+          + (
+            scl > 1.0 ? (.com.screenZoffset + (float)(.com.GameHeight - 240))
+            : (float).com.GameHeight)
+          * (1.0/scl - 1.0);
         if(temp >= 0.0) break;
-      cond yofs < temp * `localscl:
-        yofs -= temp * `localscl;
-        posy += temp;
+      cond yofs < temp:
+        yofs -= temp;
+        posy += temp / scl2;
       else:
-        posy += yofs / `localscl;
+        posy += yofs / scl2;
         yofs = 0.0;
       }
     else:
       branch{
-      cond -yofs < posy * `localscl:
-        yofs += posy * `localscl;
+      cond -yofs < posy * scl2:
+        yofs += posy * scl2;
         posy = 0.0;
       else:
-        posy += yofs / `localscl;
+        posy += yofs / scl2;
         yofs = 0.0;
       }
     }
