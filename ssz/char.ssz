@@ -1216,12 +1216,9 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `hb.snapz = hit.snapz;
     `hb.snapt = hit.snapt;
     if(hit.forcenofall) fall = false;
-    branch{
-    cond `typ == .StTy::A:
-      `hb.airtype = `hb.typ = (int)hit.air_type;
-    else:
-      `hb.groundtype = `hb.typ = (int)hit.ground_type;
-    }
+    `hb.groundtype = (int)hit.ground_type;
+    `hb.airtype = (int)hit.air_type;
+    `hb.typ = `typ == .StTy::A ? `hb.airtype : `hb.groundtype;
     `hb.airanimtype = (int)hit.air_animtype;
     `hb.groundanimtype = (int)hit.animtype;
     if(guard && ((int)`typ&hit.guardflag) != 0){
@@ -3864,7 +3861,10 @@ public &Char
       h.fall.animtype = h.animtype;
     }
     if(h.air_animtype == .AnimTy::Unknown) h.air_animtype = h.animtype;
-    if(h.air_type == .ReactTy::Unknown) h.air_type = h.ground_type;
+    if(h.air_type == .ReactTy::Unknown){
+      h.air_type = h.ground_type;
+      if(h.air_type == .ReactTy::Trip) h.air_type = .ReactTy::High;
+    }
     if(h.forcestand == .com.IERR){
       h.forcestand = (int)(h.ground_velocityy != 0.0);
     }
@@ -7126,6 +7126,10 @@ public void draw(float x, float y, float scl)
   int ob = .com.brightness;
   .com.brightness = 256 >> (int)(.super > 0 && .superdarken != 0);
   float bgx = x / .stg~localscl, bgy = y / .stg~localscl;
+  if(!.com.zoom){
+    bgx = .m.ceil(bgx - 0.5);
+    bgy = .m.ceil(bgy - 0.5);
+  }
   if(.envcol_time == 0) branch{
   cond .gs(.gsNOBG):
     .com.screenFill(0x00000000);
@@ -7138,6 +7142,7 @@ public void draw(float x, float y, float scl)
       .drawShadowList(x, y);
     }
     {
+      float x2 = bgx * .stg~localscl, y2 = bgy * .stg~localscl; 
       float off = .stage.envShake.getOffset();
       float yofs =
         (
@@ -7147,18 +7152,18 @@ public void draw(float x, float y, float scl)
       float yofs2 =
         scl > 1.0 ? (240.0 - .com.screenZoffset)*(1.0 - 1.0/scl) : 0.0;
       *.com.scrrect.self rect = .com.scrrect;
-      if(off - .com.boundhigh < yofs - y){
+      if(off - .com.boundhigh < yofs - y2){
         rect.h =
           (
-            (uint)(((yofs - y) - (off - .com.boundhigh)) + 0.5)*.com.scrrect.h
+            (uint)(((yofs - y2) - (off - .com.boundhigh)) + 0.5)*.com.scrrect.h
             + (uint)(.com.GameHeight-1))
           / (uint).com.GameHeight;
         fade(rect=, 255);
       }
-      if(off > -y + yofs2){
+      if(off > -y2 + yofs2){
         rect.h =
           (
-            (uint)(((y - yofs2) + off) + 0.5)*.com.scrrect.h
+            (uint)(((y2 - yofs2) + off) + 0.5)*.com.scrrect.h
             + (uint)(.com.GameHeight-1))
           / (uint).com.GameHeight;
         rect.y = (int)(.com.scrrect.h - rect.h);
@@ -7166,24 +7171,24 @@ public void draw(float x, float y, float scl)
       }
       float bl =
         .m.min!float?(
-          x, (float)(.stg~cam.boundleft - .stg~cam.startx) * .stg~localscl);
+          x2, (float)(.stg~cam.boundleft - .stg~cam.startx) * .stg~localscl);
       float br =
         .m.max!float?(
-          x, (float)(.stg~cam.boundright - .stg~cam.startx) * .stg~localscl);
+          x2, (float)(.stg~cam.boundright - .stg~cam.startx) * .stg~localscl);
       float xofs = (float).com.GameWidth*(1.0/scl - 1.0) / 2.0;
       rect = .com.scrrect;
-      if(x - xofs < bl){
+      if(x2 - xofs < bl){
         rect.w =
           (
-            (uint)((bl - (x - xofs))*scl + 0.5)*.com.scrrect.w
+            (uint)((bl - (x2 - xofs))*scl + 0.5)*.com.scrrect.w
             + (uint)(.com.GameWidth-1))
           / (uint).com.GameWidth;
         fade(rect=, 255);
       }
-      if(x + xofs > br){
+      if(x2 + xofs > br){
         rect.w =
           (
-            (uint)(((x + xofs) - br)*scl + 0.5)*.com.scrrect.w
+            (uint)(((x2 + xofs) - br)*scl + 0.5)*.com.scrrect.w
             + (uint)(.com.GameWidth-1))
           / (uint).com.GameWidth;
         rect.x = (int)(.com.scrrect.w - rect.w);

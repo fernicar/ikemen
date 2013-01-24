@@ -1897,7 +1897,7 @@ public &StateBuilder
         out .= "0.0";////////////////////////////////////////
         typ = 1;
       cond .s.equ("type", token):
-        out .= obj .= "stVal.hb.typ";
+        out .= obj .= "0";
         typ = 2;
       cond .s.equ("animtype", token):
         out .= obj .= "gethitAnimtype()";
