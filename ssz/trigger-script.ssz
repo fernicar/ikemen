@@ -176,6 +176,12 @@ void anim(&.lua.State L=, int re=)
   L.pushNumber((double)(#.cwc > 0 ? .cwc~animno : 0));
 }
 
+void animOwner(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber((double)(#.cwc > 0 ? .cwc~animpno+1 : 0));
+}
+
 void animelemno(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
@@ -897,6 +903,12 @@ void stateno(&.lua.State L=, int re=)
   L.pushNumber((double)(#.cwc > 0 ? .cwc~stVal.no : 0));
 }
 
+void stateOwner(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber((double)(#.cwc > 0 ? .cwc~stVal.playerno+1 : 0));
+}
+
 void statetype(&.lua.State L=, int re=)
 {
   re = 1;
@@ -1042,6 +1054,7 @@ public void registerFunction(&.lua.State L=)
   L.register("animelemno", .animelemno);
   L.register("animelemtime", .animelemtime);
   L.register("animexist", .animexist);
+  L.register("animOwner", .animOwner);
   L.register("animtime", .animtime);
   L.register("authorname", .authorname);
   L.register("backedgebodydist", .backedgebodydist);
@@ -1110,6 +1123,7 @@ public void registerFunction(&.lua.State L=)
   L.register("screenposY", .screenposY);
   L.register("selfanimexist", .selfanimexist);
   L.register("stateno", .stateno);
+  L.register("stateOwner", .stateOwner);
   L.register("statetype", .statetype);
   L.register("stagevar", .stagevar);
   L.register("sysfvar", .sysfvar);
