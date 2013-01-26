@@ -23,6 +23,7 @@ addHotkey('i', true, false, false, 'stand(1);stand(2);stand(3);stand(4)')
 
 
 speed = 1.0
+setAccel(speed)
 
 function changeSpeed()
   if speed >= 4 then
@@ -90,5 +91,17 @@ function info()
       'anim:%d %d elem:%d %d pos:%.3f,%.3f vel:%.3f,%.3f',
       anim(), animtime(), animelemno(0), animelemtime(animelemno(0)),
       posX(), posY(), velX(), velY()))
+end
+
+function status(p)
+  local oldid = id()
+  if not player(p) then return false end
+  ret =
+    string.format(
+      'STA:%s%s%s%6d ANI:%6d %2d LIF:%5d POW:%5d',
+      statetype(), movetype(), physics(),
+      stateno(), anim(), animelemno(0), life(), power())
+  playerid(oldid)
+  return ret;
 end
 

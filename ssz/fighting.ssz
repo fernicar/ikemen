@@ -168,28 +168,20 @@ void game()
   void drawDebug()
   {:<-
     if(!.com.debugdraw || #.fnt.debugFont == 0) ret;
-    float pdraw(&.chr.Char p=, float x)
-    {:<-
-      float y = -(float)(.com.GameHeight-240);
-      `put(x, y=, .s.iToS(p.stVal.time));
-      `put(x, y=, .s.iToS(p.stVal.prevno));
-      `put(x, y=, .s.iToS(p.stVal.no) + " P" + .s.iToS(p.stVal.playerno+1));
-      `put(x, y=, .s.iToS(p.animno) + " P" + .s.iToS(p.animpno+1));
-      `put(x, y=, .s.iToS(p.trAnimElemNo(0)$.chr.v.toI()));
-      `put(x, y=, .s.iToS(p.sysivar[.chr.iLIFE]));
-      ret y;
-    }
-    float y = 48.0 - (float)(.com.GameHeight-240);
-    loop{index i = 0; while; do:
+    float y = -(float)(.com.GameHeight-240);
+    if(#.com.debugScript > 0) loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0){
-        y =
-          .m.max!float?(
-            y, pdraw(
-              .chr.chars[i][0]<>=,
-              ((float).com.GameWidth/(float)#.chr.chars)*(float)i));
+        .dscri.L.getGlobal("status");
+        .dscri.L.pushNumber((double)(i+1));
+        if(!.dscri.L.pcall(1, 1)) break;
+        ^/char status;
+        if(.dscri.L.isString(-1)) status = .dscri.L.toString(-1);
+        .dscri.L.pop(1);
+        if(#status > 0) `put(0.0, y=, status);
       }
       i++;
     while i < #.chr.chars:}
+    y = .m.max!float?(y, 48.0 - (float)(.com.GameHeight-240));
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0) `put(0.0, y=, .chr.cgi[i].def + \n);
       i++;
