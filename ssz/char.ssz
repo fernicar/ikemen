@@ -3617,7 +3617,8 @@ public &Char
         !`isKO() && (
           .m.inRange!int?(120, 159, `stVal.no) || (
             `acttmp > 0 && (`canCtrl() || `stVal.no == 52)
-            && `stVal.mov == .MovTy::I && #`cmd > 0 && `cmd~buffer~B > 0 && (
+            && `stVal.mov == .MovTy::I && #`cmd > 0
+            && (.com.autoguard[`playerno] || `cmd~buffer~B > 0) && (
               (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
               || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
               || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
@@ -5828,7 +5829,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           by.ls(.lsGETHIT)
           || (by.cs1tmp && by.stVal.playerno != hit.player)))) ret false;
     bool guard =
-      (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.ls(.lsGUARD);
+      (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.ls(.lsGUARD)
+      && (!`pyr.ls(.lsGETHIT) || `pyr.stVal.hb.guarded);
     hitting = `pyr.stVal.hitCheck(hit=, guard);
     bool p2s = false;
     {
@@ -5879,6 +5881,16 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       int absdamage = 0;
       branch{
       cond hbset:
+        if(
+          guard && .com.autoguard[`pyr.playerno]
+          && (`pyr.stVal.typ == .StTy::S || `pyr.stVal.typ == .StTy::C)
+          && ((int)`pyr.stVal.typ&hit.guardflag) == 0) branch
+        {
+        cond ((int).StTy::S&hit.guardflag) != 0:
+          `pyr.stVal.typ = .StTy::S;
+        cond ((int).StTy::C&hit.guardflag) != 0:
+          `pyr.stVal.typ = .StTy::C;
+        }
         `pyr.stVal.setHb(
           hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT),
           absdamage=);

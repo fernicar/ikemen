@@ -19,6 +19,7 @@ public &Share
   public int chr_p1mw, chr_p2mw, chr_p1w, chr_p2w, chr_drw;
   public int stt;
   public ^int com;
+  public ^bool autoguard;
   public ^int inputRemap;
   public ^&.cmd.NetInput net;
   public ^&.cmd.FileInput rep;
@@ -52,6 +53,7 @@ public &Share
     `chr_p2w = .com.p2wins;
     `chr_drw = .com.draws;
     `com = .com.com;
+    `autoguard = .com.autoguard;
     `inputRemap = .com.inputRemap;
     `net = .cmd.net;
     `rep = .cmd.replay;
@@ -90,6 +92,7 @@ public &Share
     .com.p2wins = `chr_p2w;
     .com.draws = `chr_drw;
     .com.com = `com;
+    .com.autoguard = `autoguard;
     .com.inputRemap = `inputRemap;
     .cmd.net = `net;
     .cmd.replay = `rep;

@@ -306,14 +306,12 @@ void game()
       }
       i++;
     while i < #.chr.chars:}
-    int minlv = level[0];
+    int minlv = level[0], maxlv = level[0];
     loop{index i = 1; while; do:
-      minlv = .m.min!int?(minlv, level[i]);
-      i++;
-    while i < #.chr.chars:}
-    int maxlv = level[0];
-    loop{index i = 1; while; do:
-      maxlv = .m.max!int?(maxlv, level[i]);
+      if(#.chr.chars[i] > 0){
+        minlv = .m.min!int?(minlv, level[i]);
+        maxlv = .m.max!int?(maxlv, level[i]);
+      }
       i++;
     while i < #.chr.chars:}
     branch{

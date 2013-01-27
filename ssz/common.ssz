@@ -42,10 +42,13 @@ numSimul[0] = numSimul[1] = maxSimul;
 public ^%%char clipboardText.new(maxSimul*2);
 
 public ^int com;
+public ^bool autoguard;
 void comInit()
 {
   .com.new(.maxSimul*2);
   .s.each!int?([void(int c=){c = 4;}], .com);
+  .autoguard.new(.maxSimul*2);
+  .s.each!bool?([void(bool a=){a = false;}], .autoguard);
 }
 comInit();
 
