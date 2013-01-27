@@ -5882,7 +5882,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       branch{
       cond hbset:
         if(
-          guard && .com.autoguard[`pyr.playerno]
+          guard && !`pyr.ls(.lsGETHIT) && .com.autoguard[`pyr.playerno]
           && (`pyr.stVal.typ == .StTy::S || `pyr.stVal.typ == .StTy::C)
           && ((int)`pyr.stVal.typ&hit.guardflag) == 0) branch
         {
