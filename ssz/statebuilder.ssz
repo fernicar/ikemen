@@ -7239,6 +7239,7 @@ public &StateBuilder
       bool val = false;
       if(!`stateParam(param=, "edge", [`paraF_t(data=){
         val = true;
+        if(#.s.trim(data) == 0) ret true;
         if(
           !`argExpression(`state.ctrlList[-1].task=, data=,
             "`setFEdge(", ");", 1)) ret false;
@@ -7251,6 +7252,7 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "player", [`paraF_t(data=){
         val = true;
+        if(#.s.trim(data) == 0) ret true;
         if(
           !`argExpression(
             `state.ctrlList[-1].task=, data=,
