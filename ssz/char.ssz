@@ -5887,9 +5887,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           && (`pyr.stVal.typ == .StTy::S || `pyr.stVal.typ == .StTy::C)
           && ((int)`pyr.stVal.typ&hit.guardflag) == 0) branch
         {
-        cond ((int).StTy::S&hit.guardflag) != 0:
+        cond ((int).StTy::S&hit.guardflag) != 0 && !`pyr.ls(.lsNOSTANDGUARD):
           `pyr.stVal.typ = .StTy::S;
-        cond ((int).StTy::C&hit.guardflag) != 0:
+        cond ((int).StTy::C&hit.guardflag) != 0 && !`pyr.ls(.lsNOCROUCHGUARD):
           `pyr.stVal.typ = .StTy::C;
         }
         `pyr.stVal.setHb(
