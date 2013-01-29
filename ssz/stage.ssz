@@ -631,6 +631,8 @@ public &Stage
         posy += yofs / scl2;
         yofs = 0.0;
       }
+    comm:
+      if(!.com.zoom) posy = .m.ceil(posy - 0.5);
     }
     yofs +=
       `drawOffsetY
