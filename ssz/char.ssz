@@ -7160,19 +7160,19 @@ public void draw(float x, float y, float scl)
       float yofs2 =
         scl > 1.0 ? (240.0 - .com.screenZoffset)*(1.0 - 1.0/scl) : 0.0;
       *.com.scrrect.self rect = .com.scrrect;
-      if(off - .com.boundhigh < yofs - y){
+      if(off < (yofs - y + .com.boundhigh)*scl){
         rect.h =
           (
             (uint).m.ceil(
-              ((yofs - y) - (off - .com.boundhigh)) * (float).com.scrrect.h)
+              ((yofs - y + .com.boundhigh)*scl - off) * (float).com.scrrect.h)
             + (uint)(.com.GameHeight-1))
           / (uint).com.GameHeight;
         fade(rect=, 255);
       }
-      if(off > -y + yofs2){
+      if(off > (-y + yofs2)*scl){
         rect.h =
           (
-            (uint).m.ceil(((y - yofs2) + off) * (float).com.scrrect.h)
+            (uint).m.ceil(((y - yofs2)*scl + off) * (float).com.scrrect.h)
             + (uint)(.com.GameHeight-1))
           / (uint).com.GameHeight;
         rect.y = (int)(.com.scrrect.h - rect.h);
