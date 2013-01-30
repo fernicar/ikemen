@@ -7139,10 +7139,6 @@ public void draw(float x, float y, float scl)
   int ob = .com.brightness;
   .com.brightness = 256 >> (int)(.super > 0 && .superdarken != 0);
   float bgx = x / .stg~localscl, bgy = y / .stg~localscl;
-  if(!.com.zoom){
-    bgx = .m.ceil(bgx - 0.5);
-    bgy = .m.ceil(bgy - 0.5);
-  }
   if(.envcol_time == 0) branch{
   cond .gs(.gsNOBG):
     .com.screenFill(0x00000000);
