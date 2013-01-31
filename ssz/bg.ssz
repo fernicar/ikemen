@@ -86,20 +86,26 @@ public &BGAction
   public void action()
   {
     `x += `vx;
-    if(`sinxlooptime > 0){
+    branch{
+    cond `sinxlooptime > 0:
       `sinxoffset =
         `xradius*.m.sin(2.0*.m.PI*(double)`sinxtime / (double)`sinxlooptime);
       `sinxtime++;
       if(`sinxtime >= `sinxlooptime) `sinxtime = 0;
+    else:
+      `sinxoffset = 0.0;
     }
     `xoffset = `x + `sinxoffset;
     //
     `y += `vy;
-    if(`sinylooptime > 0){
+    branch{
+    cond `sinylooptime > 0:
       `sinyoffset =
         `yradius*.m.sin(2.0*.m.PI*(double)`sinytime / (double)`sinylooptime);
       `sinytime++;
       if(`sinytime >= `sinylooptime) `sinytime = 0;
+    else:
+      `sinyoffset = 0.0;
     }
     `yoffset = `y + `sinyoffset;
   }
