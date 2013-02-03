@@ -3323,7 +3323,12 @@ public &Char
         `setFacing(`p1facing);
         `p1facing = 0;
       }
-      if((`stVal.no == 0 || `stVal.no == 11 || `stVal.no == 20)) `furimuki();
+      if(
+        `stVal.no == 0 || `stVal.no == 11
+        || `stVal.no == 20 || `stVal.no == 52)
+      {
+        `furimuki();
+      }
       if(`keyctrl && #`cmd > 0) branch{
         branch{
         cond `stVal.typ == .StTy::A:
@@ -4618,13 +4623,18 @@ public &Char
     if(`cs1tmp){
       ^&`State st = .states[`stVal.playerno].get(`stVal.no);
       `state = #st > 0 ? st~state : `dummy;
-      if(`stVal.typ == .StTy::S || `stVal.typ == .StTy::C) `furimuki();
       `state(::);
       `cs1tmp = false;
     }
   }
   public void trChangeState2(int n, int p, int anim, int ctrl)
   {
+    if(
+      `minus <= 0
+      && (`stVal.typ == .StTy::S || `stVal.typ == .StTy::C))
+    {
+      `furimuki();
+    }
     if(anim >= 0) `trChangeAnim(anim);
     if(ctrl >= 0) `setCtrl(ctrl != 0);
     if(`changeState1kai(p, n) && `minus == 0 && `id >= 0){
