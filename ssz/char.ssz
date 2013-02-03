@@ -3323,12 +3323,6 @@ public &Char
         `setFacing(`p1facing);
         `p1facing = 0;
       }
-      if(
-        `stVal.no == 0 || `stVal.no == 11
-        || `stVal.no == 20 || `stVal.no == 52)
-      {
-        `furimuki();
-      }
       if(`keyctrl && #`cmd > 0) branch{
         branch{
         cond `stVal.typ == .StTy::A:
@@ -3385,6 +3379,12 @@ public &Char
         case 20:
           `trChangeState(0, -1, 1);
         }
+      }
+      if(
+        `stVal.no == 0 || `stVal.no == 11
+        || `stVal.no == 20 || `stVal.no == 52)
+      {
+        `furimuki();
       }
       if(!`isHitPaused()){
         if(!.roundEnd()){
