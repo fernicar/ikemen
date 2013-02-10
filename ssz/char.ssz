@@ -4311,7 +4311,7 @@ public &Char
   {
     if(.v.isSF()) ret;
     double x = .v.toF();
-    if(x < 0.0){
+    if(x <= 0.0){
       .v.setSF();
       ret;
     }
