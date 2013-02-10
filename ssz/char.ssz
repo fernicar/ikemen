@@ -4300,9 +4300,8 @@ public &Char
   }
   public void trLog(&.Var v1, &.Var v2)
   {
-    if(.v.isSF()) ret;
     double x = v2.toF(), y = v1.toF();
-    if(x < 0.0 || y < 0.0){
+    if(v1.isSF() || v2.isSF() || x <= 0.0 || y <= 0.0){
       .v.setSF();
       ret;
     }
