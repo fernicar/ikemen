@@ -1015,7 +1015,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public float yvel;
   public float yaccel;
   public int hitid;
-  public int p1getp2facing;
   public float mindistx;
   public float maxdistx;
   public float mindisty;
@@ -1054,7 +1053,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `yvel = 0.0;
     `yaccel = 0.0/0.0;
     `hitid = -1;
-    `p1getp2facing = 0;
     `mindistx = 0.0/0.0;
     `maxdistx = 0.0/0.0;
     `mindisty = 0.0/0.0;
@@ -1206,7 +1204,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `hb.fall = hit.fall;
     `fallTime = 0;
     `hb.yaccel = hit.yaccel;
-    `hb.p1getp2facing = hit.p1getp2facing;
     `hb.mindistx = hit.mindistx;
     `hb.maxdistx = hit.maxdistx;
     `hb.mindisty = hit.mindisty;
@@ -2988,9 +2985,6 @@ public &Char
       `sysivar[.iHITPAUSETIME] = 0;
       ^`self c;
       if(#`stVal.hb.by > 0 && #(c = .players.get(`stVal.hb.by[-1].id)) > 0){
-        if(`stVal.hb.p1getp2facing != 0){
-          c~p1facing = `facing*`stVal.hb.p1getp2facing;
-        }
         if(!.m.isnan(`stVal.hb.mindistx)) branch{
         cond c~facing < 0:
           `setPosX(
@@ -5950,19 +5944,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       else:
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE] - 1;
       }
-      if(
-        hbset && (`pyr.facing < 0) == (
-          (pro != 0 ? pro 
-          : by.facing*(hit.p1facing < 0 && hitting == 1 ? -1 : 1)) < 0))
-      {
-        `pyr.stVal.hb.xvel *= -1.0;
-        if(.m.inRange!int?(1, 2, `pyr.stVal.hb.groundtype)){
-          `pyr.stVal.hb.groundtype -= `pyr.stVal.hb.groundtype*2 - 3;
-        }
-        if(.m.inRange!int?(1, 2, `pyr.stVal.hb.airtype)){
-          `pyr.stVal.hb.airtype -= `pyr.stVal.hb.airtype*2 - 3;
-        }
-      }
     }
     branch{
       ^&.snd.Sound sou;
@@ -6042,10 +6023,26 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           byf *= -1;
           by.p1facing = byf;
         }
+        if(hit.p1getp2facing != 0){
+          byf = `pyr.facing*(hit.p1getp2facing < 0 ? -1 : 1);
+          by.p1facing = byf;
+        }
       else:
         byf = pro;
       comm:
         `pyr.p1facing = byf * -hit.p2facing;
+      }
+      if(
+        (`pyr.facing < 0) == (
+          (pro != 0 ? pro : (by.p1facing != 0 ? by.p1facing : by.facing)) < 0))
+      {
+        `pyr.stVal.hb.xvel *= -1.0;
+        if(.m.inRange!int?(1, 2, `pyr.stVal.hb.groundtype)){
+          `pyr.stVal.hb.groundtype -= `pyr.stVal.hb.groundtype*2 - 3;
+        }
+        if(.m.inRange!int?(1, 2, `pyr.stVal.hb.airtype)){
+          `pyr.stVal.hb.airtype -= `pyr.stVal.hb.airtype*2 - 3;
+        }
       }
       if(hit.p1stateno >= 0 && by.changeState1(hit.player, hit.p1stateno)){
         by.setCtrl(false);
