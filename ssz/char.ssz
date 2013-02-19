@@ -2986,7 +2986,6 @@ public &Char
     if(`ls(.lsGETHIT)){
       `stVal.mov = .MovTy::H;
       `sysivar[.iHITPAUSETIME] = 0;
-      `p1facing = 0;
       ^`self c;
       if(#`stVal.hb.by > 0 && #(c = .players.get(`stVal.hb.by[-1].id)) > 0){
         if(`stVal.hb.p1getp2facing != 0){
@@ -3319,10 +3318,6 @@ public &Char
     `acttmp = -(int)p * 2;
     if(!p){
       if(#`palfx > 0) `palfx~step();
-      if(!`isHitPaused()){
-        `setFacing(`p1facing);
-        `p1facing = 0;
-      }
       if(`keyctrl && #`cmd > 0) branch{
         branch{
         cond `stVal.typ == .StTy::A:
@@ -3462,6 +3457,8 @@ public &Char
           while `landCondition():}
           `stVal.time++;
           if(`stVal.mctime > 0) `stVal.mctime++;
+          `setFacing(`p1facing);
+          `p1facing = 0;
         }
         if(`helperindex == 0 && .cgi[`playerno].pctime >= 0){
           .cgi[`playerno].pctime++;
@@ -6028,7 +6025,9 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         if(`pyr.player) `pyr.addPower(hit.guardgivepower);
       }
     comm:
-      if(!hbset || `pyr.ho >= 0) break;
+      if(!hbset) break;
+      `pyr.p1facing = 0;
+      if(`pyr.ho >= 0) break;
       by.addTarget(`pyr.id);
       `pyr.stVal.hb.addByid(by.id, by.sysivar[.iAIRJUGGLE]);
       if(`pyr.hittmp < 2){
@@ -6039,14 +6038,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         int byf;
       cond pro == 0:
         byf = by.facing;
-        if(hit.p1facing != 0){
-          byf *= hit.p1facing < 0 ? -1 : 1;
+        if(hit.p1facing < 0){
+          byf *= -1;
           by.p1facing = byf;
         }
       else:
         byf = pro;
       comm:
-        `pyr.setFacing(byf * -hit.p2facing);
+        `pyr.p1facing = byf * -hit.p2facing;
       }
       if(hit.p1stateno >= 0 && by.changeState1(hit.player, hit.p1stateno)){
         by.setCtrl(false);
