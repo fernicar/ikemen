@@ -2989,7 +2989,7 @@ public &Char
       ^`self c;
       if(#`stVal.hb.by > 0 && #(c = .players.get(`stVal.hb.by[-1].id)) > 0){
         if(`stVal.hb.p1getp2facing != 0){
-          c~p1facing = `p1facing*`stVal.hb.p1getp2facing;
+          c~p1facing = `facing*`stVal.hb.p1getp2facing;
         }
         if(!.m.isnan(`stVal.hb.mindistx)) branch{
         cond c~facing < 0:
