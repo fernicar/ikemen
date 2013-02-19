@@ -3239,9 +3239,9 @@ public &StateBuilder
         data = line;
       else:
         name = .s.toLower(line[0 .. .s.cFind("= "\t, line)]);
+        if(#name == #line) break;
         f = .s.find("=", line);
-        if(f < 0) break;
-        data = .s.trim(line[f+1..-1]);
+        data = f < 0 ? "" : .s.trim(line[f+1..-1]);
       comm:
         {
           bool foo = true;
