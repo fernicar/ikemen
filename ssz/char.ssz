@@ -3276,7 +3276,7 @@ public &Char
   }
   void furimuki()
   {
-    if(`helperindex == 0){
+    if(`ctrl && `helperindex == 0){
       ^`self e = .players.enemyNear(`=, 0);
       if((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX]) >= 0) break;
       branch{
@@ -3312,6 +3312,12 @@ public &Char
     `acttmp = -(int)p * 2;
     if(!p){
       if(#`palfx > 0) `palfx~step();
+      if(
+        !`ls(.lsNOAUTOTURN)
+        && (`stVal.no == 0 || `stVal.no == 11 || `stVal.no == 20))
+      {
+        `furimuki();
+      }
       if(`keyctrl && #`cmd > 0) branch{
         branch{
         cond `stVal.typ == .StTy::A:
@@ -3370,6 +3376,9 @@ public &Char
         }
       }
       if(!`isHitPaused()){
+        if(!`ls(.lsNOAUTOTURN) && `stVal.no == 52){
+          `furimuki();
+        }
         if(!.roundEnd()){
           if(!`isKO() && `sysivar[.iLIFE] > 0) `sysivar[.iSYSFLAG] &= !.sfOVER;
           if((`sysivar[.iSYSFLAG] & .sfOVER) != 0){
@@ -3409,6 +3418,7 @@ public &Char
           `sysivar[.iPAUSEMOVETIME]--;
         }
       }
+      `sysivar[.iSPECIALFLAG] &= !.lsNOAUTOTURN;
       if(`mver0() == 1){
         `sysivar[.iSPECIALFLAG] &= !.lasMask;
         `sysfvar[.fANGLESCALEX] = `sysfvar[.fANGLESCALEY] = 1.0;
@@ -3423,7 +3433,6 @@ public &Char
       if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       `changeState2();
       if(!`cs1tmp){
-        bool oldCtrl = `ctrl;
         `minus = 0;
         `state(::);
         branch{
@@ -3448,13 +3457,6 @@ public &Char
           if(`stVal.mctime > 0) `stVal.mctime++;
           `setFacing(`p1facing);
           `p1facing = 0;
-          if(
-            oldCtrl && !`ls(.lsNOAUTOTURN) && (
-              `stVal.no == 0 || `stVal.no == 11
-              || `stVal.no == 20 || `stVal.no == 52))
-          {
-            `furimuki();
-          }
         }
         if(`helperindex == 0 && .cgi[`playerno].pctime >= 0){
           .cgi[`playerno].pctime++;
@@ -4621,10 +4623,7 @@ public &Char
   }
   public void trChangeState2(int n, int p, int anim, int ctrl)
   {
-    if(
-      `ctrl && `minus <= 0
-      && (`stVal.typ == .StTy::S || `stVal.typ == .StTy::C))
-    {
+    if(`minus <= 0 && (`stVal.typ == .StTy::S || `stVal.typ == .StTy::C)){
       `furimuki();
     }
     if(anim >= 0) `trChangeAnim(anim);
