@@ -3274,7 +3274,7 @@ public &Char
       `stVal.phy == .StTy::A && `isActive() && `sysfvar[.fVY] > 0.0
       && `sysfvar[.fY] >= 0.0 && `stVal.no != 105;
   }
-  void furimuki()
+  public void furimuki()
   {
     if(`ctrl && `helperindex == 0){
       ^`self e = .players.enemyNear(`=, 0);
@@ -3295,29 +3295,15 @@ public &Char
       || (!.roundEnd() && `stVal.no == 5150);
   }
   public void action()
-  {:<-
-    bool isSuperPaused()
-    {
-      ret .super > 0 && (!`isAlive() || `sysivar[.iSUPERMOVETIME] == 0);
-    }
-    bool isNormalPaused()
-    {
-      ret
-        .super <= 0 && .pause > 0
-        && (!`isAlive() || `sysivar[.iPAUSEMOVETIME] == 0);
-    }
+  {
     if(`minus != 2) ret;
-    bool p = isSuperPaused() || isNormalPaused();
+    bool p =
+      .super > 0 ? `sysivar[.iSUPERMOVETIME] == 0
+      : .pause > 0 && `sysivar[.iPAUSEMOVETIME] == 0;
     if(#`cmd == 0) p = false;
     `acttmp = -(int)p * 2;
     if(!p){
       if(#`palfx > 0) `palfx~step();
-      if(
-        !`ls(.lsNOAUTOTURN)
-        && (`stVal.no == 0 || `stVal.no == 11 || `stVal.no == 20))
-      {
-        `furimuki();
-      }
       if(`keyctrl && #`cmd > 0) branch{
         branch{
         cond `stVal.typ == .StTy::A:
@@ -6538,6 +6524,15 @@ void commandUpdate()
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
     .chars[i].[void(p){
+      if(
+        (
+          .super > 0 ? p<>~sysivar[.iSUPERMOVETIME] != 0
+          : .pause <= 0 || p<>~sysivar[.iPAUSEMOVETIME] != 0)
+        && !p<>~ls(.lsNOAUTOTURN)
+        && (p<>~stVal.no == 0 || p<>~stVal.no == 11 || p<>~stVal.no == 20))
+      {
+        p<>~furimuki();
+      }
       if(p<>~cmd~input(p<>~key, p<>~facing)) loop{
         index i = 0;
         bool hp = p<>~isHitPaused();
