@@ -2327,7 +2327,7 @@ public &Char
         while;
       do:
         p = .explods[`playerno][.expdrawlist[`playerno][ii]].player;
-        if(p >= `id){
+        if(p >= `id && (p > `id || .expdrawlist[`playerno][ii] < i)){
           .insIL(.expdrawlist[`playerno]=, ii, i);
           break, break;
         }
