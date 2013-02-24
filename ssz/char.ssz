@@ -4633,6 +4633,7 @@ public &Char
   {
     ^&.cmd.Command cl = `cmd[pno].at(i);
     if(#cl > 0 && `key < 0){
+      if(`mver0() == 1 && `helperindex != 0) ret false;
       ^/char name = cl~name;
       if(
         `helperindex == 0 && (#name == 1 || .s.equ(name[0..4], "hold"))) break;
@@ -5407,6 +5408,10 @@ public &Char
       if(#spr > 0) .cgi[`playerno].sf~palList.remap(spr~palidx, di<>);
     }
     .cgi[`playerno].sf~palList.swapPalMap(pfx~remap=);
+  }
+  public int trAILevel()
+  {
+    ret `mver0() != 1 || `helperindex == 0 ? .com.com[`playerno] : 0;
   }
 }
 

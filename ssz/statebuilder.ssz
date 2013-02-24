@@ -2191,13 +2191,13 @@ public &StateBuilder
       out .= obj .= "trMoveGuarded()";
       typ = 2;
     cond .s.equ("roundstate", token):
-      out .= "`roundState()";
+      out .= obj .= "roundState()";
       typ = 2;
     cond .s.equ("ishometeam", token):
       out .= "((" .= obj .= "playerno&1)==.com.home)";
       typ = 3;
     cond .s.equ("ailevel", token):
-      out .= ".com.com[" .= obj .= "playerno]";
+      out .= obj .= "trAILevel()";
       typ = 2;
     cond .s.equ("const240p", token):
       if(`oneArg(token, temp=, in=)=>typ < 0) ret -1;
