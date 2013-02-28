@@ -77,7 +77,7 @@ public &Snd
           if(wav.channels-0x1 >= 0x2) ret "チャンネル数が不正";
           if(!`f.read!uint?(wav.samplesPerSec=)) ret .com.FileReadError;
           if(wav.samplesPerSec-0x1 >= 0x100000){
-            ret "周波数が不正 " + .s.iToS((int)wav.samplesPerSec);
+            ret "周波数が不正 " + ''(int)wav.samplesPerSec;
           }
           if(!`f.read!uint?(musi=)) ret .com.FileReadError;
           if(!`f.read!ushort?(mushi=)) ret .com.FileReadError;

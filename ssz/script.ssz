@@ -18,7 +18,7 @@ public double numArg(&.lua.State L=, int re=, int argc=, int nresults)
   double num = 0.0;
   argc++;
   if(!L.isNumber(argc)){
-    L.pushString(.s.iToS(argc) + "番目の引数が数ではありません。");
+    L.pushString(''argc + "番目の引数が数ではありません。");
     re = -1;
     ret num;
   }
@@ -32,7 +32,7 @@ public bool blArg(&.lua.State L=, int re=, int argc=, int nresults)
   bool b = false;
   argc++;
   if(!L.isBoolean(argc)){
-    L.pushString(.s.iToS(argc) + "番目の引数が論理値ではありません。");
+    L.pushString(''argc + "番目の引数が論理値ではありません。");
     re = -1;
     ret b;
   }
@@ -46,7 +46,7 @@ public ^char strArg(&.lua.State L=, int re=, int argc=, int nresults)
   ^char str;
   argc++;
   if(!L.isString(argc)){
-    L.pushString(.s.iToS(argc) + "番目の引数が文字列ではありません。");
+    L.pushString(''argc + "番目の引数が文字列ではありません。");
     re = -1;
     ret str;
   }
@@ -62,7 +62,7 @@ public ..refArg<_t>(&.lua.State L=, int re=, int argc=, int nresults) ^_t
   ref r = L.toRef(argc);
   r.cast(obj=);
   if(#obj == 0){
-    L.pushString(.s.iToS(argc) + "番目の引数が不正です。");
+    L.pushString(''argc + "番目の引数が不正です。");
     re = -1;
     ret obj;
   }

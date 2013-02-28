@@ -1,6 +1,5 @@
 EXPORTS
 	YesNo
-	DoubleToStr
 	TazyuuCheck
 	CloseTazyuuHandle
 	GetClipboardStr

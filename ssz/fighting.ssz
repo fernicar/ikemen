@@ -73,7 +73,7 @@ const double lvmul = 2.0**(1.0/12.0);
     `winct.forEach()<, [void(^/char name, ^int cnt){
       buf .= name .= ',';
       loop{index i = 0; while; do:
-        buf .= ' ' .= .s.iToS(cnt[i]);
+        buf .= ' ' .= ''cnt[i];
         i++;
       while i < .sff.NumCharPalletes:}
       buf .= \r\n;
@@ -191,7 +191,7 @@ void game()
       0.0, y=,
       (
         #.tscri.cwc > 0
-        ? "P"+.s.iToS(.tscri.cwc~playerno+1)+":" + .tscri.cwc~name : "")
+        ? "P"+''(.tscri.cwc~playerno+1)+":" + .tscri.cwc~name : "")
       + "> " + `line);
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0){

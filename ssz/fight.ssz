@@ -441,7 +441,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       lrct=, (float)`posx, (float)`posy, 1.0, layerno, `front=, `front_lay=);
     if(`counter_fontn >= 0 && #f > `counter_fontn){
       .laytext(
-        (float)`posx, (float)`posy, 1.0, layerno, .s.iToS(level),
+        (float)`posx, (float)`posy, 1.0, layerno, ''level,
         f[`counter_fontn]=, `counter_fontb, `counter_fonta, `counter_lay=);
     }
   }
@@ -761,7 +761,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
     {
       ret
         `counter_fontn >= 0 && #f > `counter_fontn
-        ? (float)f[`counter_fontn].textWidth(.s.iToS(n)) * `counter_lay.scale.x
+        ? (float)f[`counter_fontn].textWidth(''n) * `counter_lay.scale.x
         : 0.0;
     }
     loop{
@@ -804,7 +804,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
         float z = 1.0 + (float)`shaketime[i]*(1.0/20.0)
           * .m.sin((double)`shaketime[i] * (.m.PI / 2.5));
         .laytext(
-          x/z, (float)`posy/z, z, layerno, .s.iToS(`cur[i]),
+          x/z, (float)`posy/z, z, layerno, ''`cur[i],
           f[`counter_fontn]=, `counter_fontb, -1, `counter_lay=);
       }
     continue:
@@ -1437,7 +1437,7 @@ public void setPerfect(|.WinTy wt=)
     cond #`wins > `useiconupto:
       if(`counter_fontn < 0 || #f <= `counter_fontn) break;
       .laytext(
-        (float)`posx, (float)`posy, 1.0, layerno, .s.iToS(#`wins),
+        (float)`posx, (float)`posy, 1.0, layerno, ''#`wins,
         f[`counter_fontn]=, `counter_fontb, `counter_fonta, `counter_lay=);
     else:
       loop{
@@ -1567,7 +1567,7 @@ public void setPerfect(|.WinTy wt=)
     if(`framespercount > 0 && `counter_fontn >= 0 && #f > `counter_fontn){
       .laytext(
         (float)`posx, (float)`posy, 1.0, layerno,
-        time >= 0 ? .s.iToS(time/`framespercount) : "o",
+        time >= 0 ? ''(time/`framespercount) : "o",
         f[`counter_fontn]=, `counter_fontb, `counter_fonta, `counter_lay=);
     }
   }

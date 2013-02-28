@@ -5,7 +5,6 @@
 #include <windows.h>
 #include <process.h>
 #include <stdint.h>
-#include <comdef.h>
 #include <zlib.h>
 static const unsigned char ASCII_FLAG  = 0x01; /* bit 0 set: file probably ascii text */
 static const unsigned char HEAD_CRC    = 0x02; /* bit 1 set: header CRC present */
@@ -51,36 +50,6 @@ TUserFunc(bool, YesNo, Reference r)
 	return
 		MessageBox(
 			NULL, pu->refToWstr(r).c_str(), L"メッセージ", MB_YESNO) == IDYES;
-}
-
-template<typename T> std::wstring XToStr(T x)
-{
-	_variant_t comvar;
-	comvar = x;
-	return (LPTSTR)(_bstr_t)comvar;
-}
-
-TUserFunc(void, DoubleToStr, double dbl, Reference *r)
-{
-	std::wstring str = XToStr(dbl);
-	int foo = -1;
-	for(int i = 0; i < (int)str.size(); i++){
-		if(str[i] == L',') str[i] = L'.';
-		if(str[i] == L'.'){
-			foo = 0;
-		}else if((str[i] == L'E' || str[i] == L'e') && foo < 0){
-			foo = i;
-		}
-	}
-	if(foo > 0){
-		std::wstring tmp;
-		tmp.append(str.data(), str.data()+foo);
-		tmp += L".0";
-		tmp.append(str.data()+foo, str.data()+str.size());
-		str = tmp;
-	}
-	pu->setSSZFunc();
-	pu->wstrToRef(*r, str);
 }
 
 TUserFunc(void, VeryUnsafeCopy, intptr_t size, void *src, void *dst)

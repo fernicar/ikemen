@@ -2094,7 +2094,7 @@ public &Char
   public void rootInit()
   {:<-
     method$void() init = `dummy;
-    <consteval>(init=, "`stateInit" + .s.iToS(`playerno) + "P");
+    <consteval>(init=, "`stateInit" + ''`playerno + "P");
     init(::);
   }
   void copyParent(`self c=)
@@ -4575,8 +4575,8 @@ public &Char
   {:<-
     if(.changeStateNest >= 2500){
       %char buf .=
-        "2500 loops: " .= `name .= ", " .= .s.iToS(`stVal.prevno) .= " -> "
-        .= .s.iToS(`stVal.no) .= " -> " .= .s.iToS(n);
+        "2500 loops: " .= `name .= ", " .= ''`stVal.prevno .= " -> "
+        .= ''`stVal.no .= " -> " .= ''n;
       .al.alert!self?(buf);
       ret false;
     }

@@ -498,7 +498,7 @@ public &Sprite
       shofs = h.ver0 == 0d1 ? misc : shofs + 0d28;
       i++;
     while i < (index)h.numberOfSprites:
-      ret .s.iToS(ig)+","+.s.iToS(in)+"のスプライトが見つかりません";
+      ret ''ig+","+''in+"のスプライトが見つかりません";
     }
     if(h.ver0 == 0d1){
       `colorPallet = pl.get(`palidx);

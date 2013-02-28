@@ -16,7 +16,7 @@ const ^/char kuuhaktokigou = " !=<>()|&+-*/%,[]^|:"\"\t\r\n;
 {
   %char buf;
   ret
-    buf .= fn .= '(' .= .s.iToS(ln+1) .= ')' .= \r\n .= line .= \r\n .= mess;
+    buf .= fn .= '(' .= ''(ln+1) .= ')' .= \r\n .= line .= \r\n .= mess;
 }
 
 |CtrlTy
@@ -564,13 +564,6 @@ public &StateBuilder
     }
     ret true;
   }
-  ^/char fToS(float f)
-  {
-    ^char tmp;
-    .mes.DoubleToStr(:tmp=, f:);
-    if(.s.find(".", tmp) >= 0) ret tmp;
-    ret tmp + ".0";
-  }
   bool integer(int val=, ^/char token, ^/char in=)
   {
     ^/char istr = token;
@@ -659,7 +652,7 @@ public &StateBuilder
         rtn .= ".v.setSF()";
         typ = 0;
       cond .m.isfinite(d):
-        rtn .= `fToS(d);
+        rtn .= ''d;
         typ = 1;
       cond d > 0.0:
         rtn .= "(1.0/0.0)";
@@ -675,13 +668,13 @@ public &StateBuilder
         rtn .= ".v.setSF()";
         typ = 0;
       cond d < (double).consts.int_t::MIN:
-        rtn .= .s.iToS(.consts.int_t::MIN);
+        rtn .= ''.consts.int_t::MIN;
         typ = 2;
       cond d > (double).consts.int_t::MAX:
-        rtn .= .s.iToS(.consts.int_t::MAX);
+        rtn .= ''.consts.int_t::MAX;
         typ = 2;
       else:
-        rtn .= .s.iToS((int)d);
+        rtn .= ''(int)d;
         typ = 2;
       }
     }
@@ -921,9 +914,9 @@ public &StateBuilder
             }
             out .=
               (not ? "!" : "") .= "(.v.toI()"
-              .= (minequ ? "<=" : "<") .= .s.iToS(min)
+              .= (minequ ? "<=" : "<") .= ''min
               .= "&&" .= ".v.toI()"
-              .= (maxequ ? ">=" : ">") .= .s.iToS(max) .= ')';
+              .= (maxequ ? ">=" : ">") .= ''max .= ')';
           }
         else:
           out .= ".v.toI()" .= (not ? "!=" : "==");
@@ -940,7 +933,7 @@ public &StateBuilder
             out .= "0";
             break, break;
           }
-          out .= .s.iToS(val);
+          out .= ''val;
         }
       }
       break;
@@ -951,7 +944,7 @@ public &StateBuilder
         `lasterror = "数字がありません";
         ret false;
      }
-      out .= .s.iToS(val);
+      out .= ''val;
     }
     typ = 3;
     `usiroOp = comma || hikaku;
@@ -994,16 +987,16 @@ public &StateBuilder
         branch{
         cond .s.equ(v, "IVar"):
           if(tmp >= 60) break, else;
-          out .= obj .= "ivar[" .= .s.iToS(tmp) .= ']';
+          out .= obj .= "ivar[" .= ''tmp .= ']';
         cond .s.equ(v, "FVar"):
           if(tmp >= 40) break, else;
-          out .= obj .= "fvar[" .= .s.iToS(tmp) .= ']';
+          out .= obj .= "fvar[" .= ''tmp .= ']';
         cond .s.equ(v, "SysIVar"):
           if(tmp >= 5) break, else;
-          out .= obj .= "sysivar[" .= .s.iToS(tmp) .= ']';
+          out .= obj .= "sysivar[" .= ''tmp .= ']';
         cond .s.equ(v, "SysFVar"):
           if(tmp >= 5) break, else;
-          out .= obj .= "sysfvar[" .= .s.iToS(tmp) .= ']';
+          out .= obj .= "sysfvar[" .= ''tmp .= ']';
         }
         in = oldin;
         typ = vtyp;
@@ -1275,7 +1268,7 @@ public &StateBuilder
         }
         out .=
           obj .= "trAnimElemTime("
-          .= .s.iToS(val) .= ")$(.v.isSF()?.none:.v.setB(";
+          .= ''val .= ")$(.v.isSF()?.none:.v.setB(";
         if(!`kyuushikiSuperDX(out=, in=, typ=, false)) ret -1;
         out .= "))";
         typ = 0;
@@ -1307,7 +1300,7 @@ public &StateBuilder
           `lasterror = "timemodのは0より大きくなければいけません";
           ret -1;
         }
-        out .= ".v.setI(" .= obj .= "stVal.time%" .= .s.iToS(val) .= ")$";
+        out .= ".v.setI(" .= obj .= "stVal.time%" .= ''val .= ")$";
         out .= '(';
         if(!`kyuushikiSuperDX(out=, in=, typ=, true)) ret -1;
         out .= ')';
@@ -1466,9 +1459,7 @@ public &StateBuilder
           `lasterror = "コマンド"\" + token + \""は存在しません";
           ret false;
         }
-        out .=
-          obj .= "trCommand(" .= .s.iToS(`playerno) .= ","
-          .= .s.iToS(ci<>) .= ")";
+        out .= obj .= "trCommand(" .= ''`playerno .= "," .= ''ci<> .= ")";
         ret true;
       }]) ret -1;
     cond
@@ -1493,7 +1484,7 @@ public &StateBuilder
           out .=  obj .= "trAuthor("\" .= .s.toLower(token) .= \"")";
         else:
           out .=
-            obj .= "trPName(" .= .s.iToS(pn) .= ","\"
+            obj .= "trPName(" .= ''pn .= ","\"
             .= .s.toLower(token) .= \"")";
         }
         ret true;
@@ -2008,7 +1999,7 @@ public &StateBuilder
         ~$bool() f = [bool(){
           int flg;
           if(!`trgAttr(flg=, in=)) ret false;
-          out .= obj .= "trHitDefAttr(" .= .s.iToS(flg) .= ")";
+          out .= obj .= "trHitDefAttr(" .= ''flg .= ")";
           ret true;
         }];
       cond `mver0 == 1:
@@ -2125,7 +2116,7 @@ public &StateBuilder
         int val;
         if(!`integer2(val=, token, in=)) ret -1;
         out .=
-          "((" .= .s.iToS(val) .= "==0)^(.v.setI(" .= .s.iToS(id) .= ")$"
+          "((" .= ''val .= "==0)^(.v.setI(" .= ''id .= ")$"
            .= obj .= ptime .= "$.v.toI()>0&&";
         if(!`kyuushikiSuperDX(out=, in=, typ=, false)) ret -1;
         out .= "))";
@@ -3933,11 +3924,11 @@ public &StateBuilder
         `state.ctrlList[-1].typ == .CtrlTy::Projectile
         ? "pr~hit" : "`stVal.hit";
       `state.ctrlList[-1].task .=
-        obj .= ".player=" .= .s.iToS(`playerno) .= ';';
+        obj .= ".player=" .= ''`playerno .= ';';
       if(!`stateParam(param=, "attr", [`paraF_t(data=){
         int flg;
         if(!`attr(flg=, data, true)) ret false;
-        `state.ctrlList[-1].task .= obj .= ".attr=" .= .s.iToS(flg) .= ';';
+        `state.ctrlList[-1].task .= obj .= ".attr=" .= ''flg .= ';';
         ret true;
       }])) ret false;
       ~$bool(^/char, ^/char) hfset = [bool(^/char name, ^/char data){
@@ -3959,7 +3950,7 @@ public &StateBuilder
         }
         `state.ctrlList[-1].task .=
           obj .= (name[0] == 'h' ? ".hitflag=" : ".guardflag=")
-          .= .s.iToS(flg) .= ';';
+          .= ''flg .= ';';
         ret true;
       }];
       if(!`stateParam(param=, "guardflag", [`paraF_t(data=){
@@ -4058,7 +4049,7 @@ public &StateBuilder
             int flg;
             if(!`attr(flg=, data, false)) ret false;
             `state.ctrlList[-1].task .=
-              obj .= ".reversal_attr=" .= .s.iToS(flg) .= ';';
+              obj .= ".reversal_attr=" .= ''flg .= ';';
             ret true;
           }])) ret false;
           if(!reversal_attr){
@@ -5207,7 +5198,7 @@ public &StateBuilder
       if(!`stateParam(param=, "attr", [`paraF_t(data=){
         int flg;
         if(!`attr(flg=, data, false)) ret false;
-        `state.ctrlList[-1].task .= "a=" .= .s.iToS(flg) .= ';';
+        `state.ctrlList[-1].task .= "a=" .= ''flg .= ';';
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "slot", [`paraF_t(data=){
@@ -5236,7 +5227,7 @@ public &StateBuilder
       }])) ret false;
       `state.ctrlList[-1].task .=
         "if(s<0||s>7)s=0;if(t==0||t<-1)t=1;if(st<0)t=0;"
-        "`stVal.ho[s].player=" .= .s.iToS(`playerno) .= ";"
+        "`stVal.ho[s].player=" .= ''`playerno .= ";"
         "`stVal.ho[s].attr=a;`stVal.ho[s].stateno=st;"
         "`stVal.ho[s].time=t;`stVal.ho[s].forceair=f;";
       ret true;
@@ -5733,8 +5724,7 @@ public &StateBuilder
         if(!`attr(flg=, data, false)) ret false;
         if(`state.ctrlList[-1].typ == .CtrlTy::NotHitBy) flg = !flg;
         `state.ctrlList[-1].task .=
-          (ni ? "`stVal.hb.hitf2=" : "`stVal.hb.hitf1=")
-          .= .s.iToS(flg) .= ';';
+          (ni ? "`stVal.hb.hitf2=" : "`stVal.hb.hitf1=") .= ''flg .= ';';
         ret true;
       }];
       if(!`stateParam(param=, "value", [`paraF_t(data=){
@@ -7917,16 +7907,16 @@ public &StateBuilder
       fname.new(0);
       branch{
       cond `state.i:
-        fname .= "s_I" .= .s.iToS(`state.no);
+        fname .= "s_I" .= ''`state.no;
       cond `state.no < 0:
         {
           ^char tmp;
-          fname .= "s_" .= .s.iToS(`state.no)=>tmp$tmp[1..-1];
+          fname .= "s_" .= (tmp=''`state.no)$tmp[1..-1];
         }
       else:
-        fname .= 's' .= .s.iToS(`state.no);
+        fname .= 's' .= ''`state.no;
       }
-      fname .= '_' .= .s.iToS(`playerno) .= 'P';
+      fname .= '_' .= ''`playerno .= 'P';
       stnoTable.set((long)`state.i << 32 | `state.no, `t);
       if(!stateExist){
         `stnoList.new[-1].set(`state.no, `state.i, fname);
@@ -7944,8 +7934,8 @@ public &StateBuilder
           while;
         do:
           if(!stateExist){
-            tmp = .s.join(.s.iToS(`state.no))<, .s.split("##", lines[i]);
-            buf .= .s.join(.s.iToS(`playerno))<, .s.split("@@", tmp) .= \r\n;
+            tmp = .s.join(''`state.no)<, .s.split("##", lines[i]);
+            buf .= .s.join(''`playerno)<, .s.split("@@", tmp) .= \r\n;
           }
           i++;
         while #lines[i] <= 0 || lines[i][0] != '[' && i < #lines:
@@ -7991,7 +7981,7 @@ public &StateBuilder
         buf .= \t"if(";
         if(`state.ignorehitpause <= 0) buf .= "nh&&";
         if(`state.persistent != 1){
-          buf .= "--`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p<=0&&";
+          buf .= "--`stVal.ps[" .= ''(#`state.ctrlList-1) .= "].p<=0&&";
         }
         branch{
         cond #`state.ctrlList[-1].triggerall > 0:
@@ -8003,7 +7993,7 @@ public &StateBuilder
           }
           if(#item == 0){
             %char tmp;
-            tmp .= fname .= 'c' .= .s.iToS(#`state.ctrlList-1) .= "ta";
+            tmp .= fname .= 'c' .= ''(#`state.ctrlList-1) .= "ta";
             item.new(1);
             item<> = tmp;
             tbl.set(`state.ctrlList[-1].triggerall, item);
@@ -8029,9 +8019,7 @@ public &StateBuilder
           }
           if(#item == 0){
             %char tmp;
-            tmp .=
-              fname .= 'c' .= .s.iToS(#`state.ctrlList-1)
-              .= 't' .= .s.iToS(m+1);
+            tmp .= fname .= 'c' .= ''(#`state.ctrlList-1) .= 't' .= ''(m+1);
             item.new(1);
             item<> = tmp;
             tbl.set(`state.ctrlList[-1].trigger[m], item);
@@ -8050,13 +8038,13 @@ public &StateBuilder
         if(`state.persistent != 1){
           if(`state.persistent <= 0) `state.persistent = .consts.int_t::MAX;
           dbuf .=
-            "`stVal.ps[" .= .s.iToS(#`state.ctrlList-1) .= "].p="
-            .= .s.iToS(`state.persistent) .= ';';
+            "`stVal.ps[" .= ''(#`state.ctrlList-1) .= "].p="
+            .= ''`state.persistent .= ';';
         }
         dbuf .= `state.ctrlList[-1].task;
         item = tbl.get(dbuf);
         if(#item == 0){
-          %char tmp .= fname .= 'c' .= .s.iToS(#`state.ctrlList-1);
+          %char tmp .= fname .= 'c' .= ''(#`state.ctrlList-1);
           item.new(1);
           item<> = tmp;
           tbl.set(dbuf, item);
@@ -8080,7 +8068,7 @@ public &StateBuilder
           buf .= '`' .= item<>;
           branch{
           cond `state.ctrlList[-1].typ == .CtrlTy::Explod:
-            buf .= '(' .= .s.iToS(`state.ignorehitpause) .= ')';
+            buf .= '(' .= ''`state.ignorehitpause .= ')';
           else:
             buf .= "()";
           }
@@ -8132,10 +8120,10 @@ public &StateBuilder
             if(#`state.ctrlList > 0){
               buf .=
                 \t"`stVal.ps.new("
-                .= .s.iToS(#`state.ctrlList) .= ");"\r\n
+                .= ''#`state.ctrlList .= ");"\r\n
                 \t"loop{index i = 0; do:"\r\n
                 \t\t"`stVal.ps[i].p = 0;"\r\n
-                \t"while ++i < " .= .s.iToS(#`state.ctrlList) .= ":"\r\n
+                \t"while ++i < " .= ''#`state.ctrlList .= ":"\r\n
                 \t"}"\r\n;
             }
             if(#`state.deftask > 0){
@@ -8605,16 +8593,16 @@ public &StateBuilder
     ^/char minus = "ssz/minus.cns";
     if(#`stateBulid(buf=, def, minus=)=>error > 0) ret error;
     buf .=
-      "public void c.Char::stateInit" .= .s.iToS(`playerno) .= "P()"\r\n
+      "public void c.Char::stateInit" .= ''`playerno .= "P()"\r\n
       "{"\r\n
-      \t"^&`State st.new(" .= .s.iToS(#`stnoList) .= ");"\r\n;
+      \t"^&`State st.new(" .= ''#`stnoList .= ");"\r\n;
     loop{index i = 0; while; do:
       if(`stnoList[i].no >= 0 && !`stnoList[i].i){
         buf .=
-          \t"st[" .= .s.iToS(i) .= "].state=`" .= `stnoList[i].proc .= "Init;"
-          ".states[" .= .s.iToS(`playerno) .= "].set("
-          .= .s.iToS(`stnoList[i].no) .= ",st[" .= .s.iToS(i)
-          .= ".." .= .s.iToS(i+1) .= "]);"\r\n;
+          \t"st[" .= ''i .= "].state=`" .= `stnoList[i].proc .= "Init;"
+          ".states[" .= ''`playerno .= "].set("
+          .= ''`stnoList[i].no .= ",st[" .= ''i
+          .= ".." .= ''(i+1) .= "]);"\r\n;
       }
       i++;
     while i < #`stnoList:}
@@ -8624,141 +8612,141 @@ public &StateBuilder
       \t"`sysfvar[.fVX] = 0.0;"\r\n
       \t"`sysfvar[.fVY] = 0.0;"\r\n
       \t"`sysivar[.iLIFEMAX] = `sysivar[.iLIFEMAX2] = "
-      .= .s.iToS(`c.d.life) .= ";"\r\n
+      .= ''`c.d.life .= ";"\r\n
       \t"`sysivar[.iPOWERMAX] = `sysivar[.iPOWERMAX2] = "
-      .= .s.iToS(`c.d.power) .= ";"\r\n
-      \t"`sysivar[.iATTACK] = " .= .s.iToS(`c.d.attack) .= ";"\r\n
-      \t"`sysivar[.iDEFENCE] = " .= .s.iToS(`c.d.defence) .= ";"\r\n
+      .= ''`c.d.power .= ";"\r\n
+      \t"`sysivar[.iATTACK] = " .= ''`c.d.attack .= ";"\r\n
+      \t"`sysivar[.iDEFENCE] = " .= ''`c.d.defence .= ";"\r\n
       \t"`sysfvar[.fFALL_DEFENCE_MUL] = "
-      .= `fToS(`c.d.fall_defence_mul) .= ";"\r\n
-      \t"`sysivar[.iLIEDOWN_TIME] = " .= .s.iToS(`c.d.liedown_time) .= ";"\r\n
-      \t"`sysivar[.iAIRJUGGLE] = " .= .s.iToS(`c.d.airjuggle) .= ";"\r\n
+      .= ''`c.d.fall_defence_mul .= ";"\r\n
+      \t"`sysivar[.iLIEDOWN_TIME] = " .= ''`c.d.liedown_time .= ";"\r\n
+      \t"`sysivar[.iAIRJUGGLE] = " .= ''`c.d.airjuggle .= ";"\r\n
       \t"`sysivar[.iSPARKNO] = "
-      .= (`c.d.sparkno >= 0 ? .s.iToS(`c.d.sparkno) : "!.com.IERR")
+      .= (`c.d.sparkno >= 0 ? ''`c.d.sparkno : "!.com.IERR")
       .= ";"\r\n
       \t"`sysivar[.iGUARD_SPARKNO] = " .= (
         `c.d.guard_sparkno >= 0
-        ? .s.iToS(`c.d.guard_sparkno) : "!.com.IERR") .= ";"\r\n
-      \t"`sysivar[.iKO_ECHO] = " .= .s.iToS(`c.d.ko_echo) .= ";"\r\n
-      \t"`sysivar[.iVOLUME] = " .= .s.iToS(`c.d.volume) .= ";"\r\n
+        ? ''`c.d.guard_sparkno : "!.com.IERR") .= ";"\r\n
+      \t"`sysivar[.iKO_ECHO] = " .= ''`c.d.ko_echo .= ";"\r\n
+      \t"`sysivar[.iVOLUME] = " .= ''`c.d.volume .= ";"\r\n
       \t"`sysivar[.iINTPERSISTINDEX] = .m.max!int?(0)<, .m.min!int?(#`ivar, "
-      .= .s.iToS(`c.d.intpersistindex) .= ");"\r\n
+      .= ''`c.d.intpersistindex .= ");"\r\n
       \t"`sysivar[.iFLOATPERSISTINDEX] = .m.max!int?(0)<, .m.min!int?(#`fvar, "
-      .= .s.iToS(`c.d.floatpersistindex) .= ");"\r\n
-      \t"`sysfvar[.fXSCALE] = " .= `fToS(`c.s.xscale) .= ";"\r\n
-      \t"`sysfvar[.fYSCALE] = " .= `fToS(`c.s.yscale) .= ";"\r\n
-      \t"`sysivar[.iGROUND_BACK] = " .= .s.iToS(`c.s.ground_back) .= ";"\r\n
-      \t"`sysivar[.iGROUND_FRONT] = " .= .s.iToS(`c.s.ground_front) .= ";"\r\n
-      \t"`sysivar[.iAIR_BACK] = " .= .s.iToS(`c.s.air_back) .= ";"\r\n
-      \t"`sysivar[.iAIR_FRONT] = " .= .s.iToS(`c.s.air_front) .= ";"\r\n
-      \t"`sysivar[.iHEIGHT] = " .= .s.iToS(`c.s.height) .= ";"\r\n
-      \t"`sysivar[.iATTACK_DIST] = " .= .s.iToS(`c.s.attack_dist) .= ";"\r\n
+      .= ''`c.d.floatpersistindex .= ");"\r\n
+      \t"`sysfvar[.fXSCALE] = " .= ''`c.s.xscale .= ";"\r\n
+      \t"`sysfvar[.fYSCALE] = " .= ''`c.s.yscale .= ";"\r\n
+      \t"`sysivar[.iGROUND_BACK] = " .= ''`c.s.ground_back .= ";"\r\n
+      \t"`sysivar[.iGROUND_FRONT] = " .= ''`c.s.ground_front .= ";"\r\n
+      \t"`sysivar[.iAIR_BACK] = " .= ''`c.s.air_back .= ";"\r\n
+      \t"`sysivar[.iAIR_FRONT] = " .= ''`c.s.air_front .= ";"\r\n
+      \t"`sysivar[.iHEIGHT] = " .= ''`c.s.height .= ";"\r\n
+      \t"`sysivar[.iATTACK_DIST] = " .= ''`c.s.attack_dist .= ";"\r\n
       \t"`sysivar[.iPROJ_ATTACK_DIST] = "
-      .= .s.iToS(`c.s.proj_attack_dist) .= ";"\r\n
-      \t"`sysivar[.iPROJ_DOSCALE] = " .= .s.iToS(`c.s.proj_doscale) .= ";"\r\n
-      \t"`sysivar[.iHEAD_POSX] = " .= .s.iToS(`c.s.head_posx) .= ";"\r\n
-      \t"`sysivar[.iHEAD_POSY] = " .= .s.iToS(`c.s.head_posy) .= ";"\r\n
-      \t"`sysivar[.iMID_POSX] = " .= .s.iToS(`c.s.mid_posx) .= ";"\r\n
-      \t"`sysivar[.iMID_POSY] = " .= .s.iToS(`c.s.mid_posy) .= ";"\r\n
-      \t"`sysivar[.iSHADOWOFFSET] = " .= .s.iToS(`c.s.shadowoffset) .= ";"\r\n
-      \t"`sysivar[.iDRAW_OFFSETX] = " .= .s.iToS(`c.s.draw_offsetx) .= ";"\r\n
-      \t"`sysivar[.iDRAW_OFFSETY] = " .= .s.iToS(`c.s.draw_offsety) .= ";"\r\n
-      \t"`sysivar[.iZ_WIDTH] = " .= .s.iToS(`c.s.z_width) .= ";"\r\n
+      .= ''`c.s.proj_attack_dist .= ";"\r\n
+      \t"`sysivar[.iPROJ_DOSCALE] = " .= ''`c.s.proj_doscale .= ";"\r\n
+      \t"`sysivar[.iHEAD_POSX] = " .= ''`c.s.head_posx .= ";"\r\n
+      \t"`sysivar[.iHEAD_POSY] = " .= ''`c.s.head_posy .= ";"\r\n
+      \t"`sysivar[.iMID_POSX] = " .= ''`c.s.mid_posx .= ";"\r\n
+      \t"`sysivar[.iMID_POSY] = " .= ''`c.s.mid_posy .= ";"\r\n
+      \t"`sysivar[.iSHADOWOFFSET] = " .= ''`c.s.shadowoffset .= ";"\r\n
+      \t"`sysivar[.iDRAW_OFFSETX] = " .= ''`c.s.draw_offsetx .= ";"\r\n
+      \t"`sysivar[.iDRAW_OFFSETY] = " .= ''`c.s.draw_offsety .= ";"\r\n
+      \t"`sysivar[.iZ_WIDTH] = " .= ''`c.s.z_width .= ";"\r\n
       \t"`sysivar[.iATTACK_Z_WIDTH_FRONT] = "
-      .= .s.iToS(`c.s.attack_z_width_front) .= ";"\r\n
+      .= ''`c.s.attack_z_width_front .= ";"\r\n
       \t"`sysivar[.iATTACK_Z_WIDTH_BACK] = "
-      .= .s.iToS(`c.s.attack_z_width_back) .= ";"\r\n
-      \t"`sysfvar[.fWALK_FWD] = " .= `fToS(`c.v.walk_fwd) .= ";"\r\n
-      \t"`sysfvar[.fWALK_BACK] = " .= `fToS(`c.v.walk_back) .= ";"\r\n
-      \t"`sysfvar[.fRUN_FWDX] = " .= `fToS(`c.v.run_fwdx) .= ";"\r\n
-      \t"`sysfvar[.fRUN_FWDY] = " .= `fToS(`c.v.run_fwdy) .= ";"\r\n
-      \t"`sysfvar[.fRUN_BACKX] = " .= `fToS(`c.v.run_backx) .= ";"\r\n
-      \t"`sysfvar[.fRUN_BACKY] = " .= `fToS(`c.v.run_backy) .= ";"\r\n
-      \t"`sysfvar[.fJUMP_NEUX] = " .= `fToS(`c.v.jump_neux) .= ";"\r\n
-      \t"`sysfvar[.fJUMP_NEUY] = " .= `fToS(`c.v.jump_neuy) .= ";"\r\n
-      \t"`sysfvar[.fJUMP_BACK] = " .= `fToS(`c.v.jump_back) .= ";"\r\n
-      \t"`sysfvar[.fJUMP_FWD] = " .= `fToS(`c.v.jump_fwd) .= ";"\r\n
-      \t"`sysfvar[.fRUNJUMP_BACKX] = " .= `fToS(`c.v.runjump_backx) .= ";"\r\n
-      \t"`sysfvar[.fRUNJUMP_BACKY] = " .= `fToS(`c.v.runjump_backy) .= ";"\r\n
-      \t"`sysfvar[.fRUNJUMP_FWDX] = " .= `fToS(`c.v.runjump_fwdx) .= ";"\r\n
-      \t"`sysfvar[.fRUNJUMP_FWDY] = " .= `fToS(`c.v.runjump_fwdy) .= ";"\r\n
-      \t"`sysfvar[.fAIRJUMP_NEUX] = " .= `fToS(`c.v.airjump_neux) .= ";"\r\n
-      \t"`sysfvar[.fAIRJUMP_NEUY] = " .= `fToS(`c.v.airjump_neuy) .= ";"\r\n
-      \t"`sysfvar[.fAIRJUMP_BACK] = " .= `fToS(`c.v.airjump_back) .= ";"\r\n
-      \t"`sysfvar[.fAIRJUMP_FWD] = " .= `fToS(`c.v.airjump_fwd) .= ";"\r\n
+      .= ''`c.s.attack_z_width_back .= ";"\r\n
+      \t"`sysfvar[.fWALK_FWD] = " .= ''`c.v.walk_fwd .= ";"\r\n
+      \t"`sysfvar[.fWALK_BACK] = " .= ''`c.v.walk_back .= ";"\r\n
+      \t"`sysfvar[.fRUN_FWDX] = " .= ''`c.v.run_fwdx .= ";"\r\n
+      \t"`sysfvar[.fRUN_FWDY] = " .= ''`c.v.run_fwdy .= ";"\r\n
+      \t"`sysfvar[.fRUN_BACKX] = " .= ''`c.v.run_backx .= ";"\r\n
+      \t"`sysfvar[.fRUN_BACKY] = " .= ''`c.v.run_backy .= ";"\r\n
+      \t"`sysfvar[.fJUMP_NEUX] = " .= ''`c.v.jump_neux .= ";"\r\n
+      \t"`sysfvar[.fJUMP_NEUY] = " .= ''`c.v.jump_neuy .= ";"\r\n
+      \t"`sysfvar[.fJUMP_BACK] = " .= ''`c.v.jump_back .= ";"\r\n
+      \t"`sysfvar[.fJUMP_FWD] = " .= ''`c.v.jump_fwd .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_BACKX] = " .= ''`c.v.runjump_backx .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_BACKY] = " .= ''`c.v.runjump_backy .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_FWDX] = " .= ''`c.v.runjump_fwdx .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_FWDY] = " .= ''`c.v.runjump_fwdy .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_NEUX] = " .= ''`c.v.airjump_neux .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_NEUY] = " .= ''`c.v.airjump_neuy .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_BACK] = " .= ''`c.v.airjump_back .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_FWD] = " .= ''`c.v.airjump_fwd .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_GROUNDRECOVERX] = "
-      .= `fToS(`c.v.air_gethit_groundrecoverx) .= ";"\r\n
+      .= ''`c.v.air_gethit_groundrecoverx .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_GROUNDRECOVERY] = "
-      .= `fToS(`c.v.air_gethit_groundrecovery) .= ";"\r\n
+      .= ''`c.v.air_gethit_groundrecovery .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_MULX] = "
-      .= `fToS(`c.v.air_gethit_airrecover_mulx) .= ";"\r\n
+      .= ''`c.v.air_gethit_airrecover_mulx .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_MULY] = "
-      .= `fToS(`c.v.air_gethit_airrecover_muly) .= ";"\r\n
+      .= ''`c.v.air_gethit_airrecover_muly .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_ADDX] = "
-      .= `fToS(`c.v.air_gethit_airrecover_addx) .= ";"\r\n
+      .= ''`c.v.air_gethit_airrecover_addx .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_ADDY] = "
-      .= `fToS(`c.v.air_gethit_airrecover_addy) .= ";"\r\n
+      .= ''`c.v.air_gethit_airrecover_addy .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_BACK] = "
-      .= `fToS(`c.v.air_gethit_airrecover_back) .= ";"\r\n
+      .= ''`c.v.air_gethit_airrecover_back .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_FWD] = "
-      .= `fToS(`c.v.air_gethit_airrecover_fwd) .= ";"\r\n
+      .= ''`c.v.air_gethit_airrecover_fwd .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_UP] = "
-      .= `fToS(`c.v.air_gethit_airrecover_up) .= ";"\r\n
+      .= ''`c.v.air_gethit_airrecover_up .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_DOWN] = "
-      .= `fToS(`c.v.air_gethit_airrecover_down) .= ";"\r\n
-      \t"`sysfvar[.fWALK_UP_X] = " .= `fToS(`c.v.walk_up_x) .= ";"\r\n
-      \t"`sysfvar[.fWALK_DOWN_X] = " .= `fToS(`c.v.walk_down_x) .= ";"\r\n
-      \t"`sysfvar[.fRUN_UP_X] = " .= `fToS(`c.v.run_up_x) .= ";"\r\n
-      \t"`sysfvar[.fRUN_UP_Y] = " .= `fToS(`c.v.run_up_y) .= ";"\r\n
-      \t"`sysfvar[.fRUN_DOWN_X] = " .= `fToS(`c.v.run_down_x) .= ";"\r\n
-      \t"`sysfvar[.fRUN_DOWN_Y] = " .= `fToS(`c.v.run_down_y) .= ";"\r\n
-      \t"`sysfvar[.fJUMP_UP_X] = " .= `fToS(`c.v.jump_up_x) .= ";"\r\n
-      \t"`sysfvar[.fJUMP_DOWN_X] = " .= `fToS(`c.v.jump_down_x) .= ";"\r\n
-      \t"`sysfvar[.fRUNJUMP_UP_X] = " .= `fToS(`c.v.runjump_up_x) .= ";"\r\n
+      .= ''`c.v.air_gethit_airrecover_down .= ";"\r\n
+      \t"`sysfvar[.fWALK_UP_X] = " .= ''`c.v.walk_up_x .= ";"\r\n
+      \t"`sysfvar[.fWALK_DOWN_X] = " .= ''`c.v.walk_down_x .= ";"\r\n
+      \t"`sysfvar[.fRUN_UP_X] = " .= ''`c.v.run_up_x .= ";"\r\n
+      \t"`sysfvar[.fRUN_UP_Y] = " .= ''`c.v.run_up_y .= ";"\r\n
+      \t"`sysfvar[.fRUN_DOWN_X] = " .= ''`c.v.run_down_x .= ";"\r\n
+      \t"`sysfvar[.fRUN_DOWN_Y] = " .= ''`c.v.run_down_y .= ";"\r\n
+      \t"`sysfvar[.fJUMP_UP_X] = " .= ''`c.v.jump_up_x .= ";"\r\n
+      \t"`sysfvar[.fJUMP_DOWN_X] = " .= ''`c.v.jump_down_x .= ";"\r\n
+      \t"`sysfvar[.fRUNJUMP_UP_X] = " .= ''`c.v.runjump_up_x .= ";"\r\n
       \t"`sysfvar[.fRUNJUMP_DOWN_X] = "
-      .= `fToS(`c.v.runjump_down_x) .= ";"\r\n
-      \t"`sysfvar[.fAIRJUMP_UP_X] = " .= `fToS(`c.v.airjump_up_x) .= ";"\r\n
+      .= ''`c.v.runjump_down_x .= ";"\r\n
+      \t"`sysfvar[.fAIRJUMP_UP_X] = " .= ''`c.v.airjump_up_x .= ";"\r\n
       \t"`sysfvar[.fAIRJUMP_DOWN_X] = "
-      .= `fToS(`c.v.airjump_down_x) .= ";"\r\n
+      .= ''`c.v.airjump_down_x .= ";"\r\n
       \t"`sysivar[.iAIRJUMP_CNT] = 0;"\r\n
-      \t"`sysivar[.iAIRJUMP_NUM] = " .= .s.iToS(`c.m.airjump_num) .= ";"\r\n
+      \t"`sysivar[.iAIRJUMP_NUM] = " .= ''`c.m.airjump_num .= ";"\r\n
       \t"`sysivar[.iAIRJUMP_HEIGHT] = "
-      .= .s.iToS(`c.m.airjump_height) .= ";"\r\n
-      \t"`sysfvar[.fYACCEL] = " .= `fToS(`c.m.yaccel) .= ";"\r\n
+      .= ''`c.m.airjump_height .= ";"\r\n
+      \t"`sysfvar[.fYACCEL] = " .= ''`c.m.yaccel .= ";"\r\n
       \t"`sysfvar[.fSTAND_FRICTION] = "
-      .= `fToS(`c.m.stand_friction) .= ";"\r\n
+      .= ''`c.m.stand_friction .= ";"\r\n
       \t"`sysfvar[.fCROUCH_FRICTION] = "
-      .= `fToS(`c.m.crouch_friction) .= ";"\r\n
+      .= ''`c.m.crouch_friction .= ";"\r\n
       \t"`sysfvar[.fSTAND_FRICTION_THRESHOLD] = "
-      .= `fToS(`c.m.stand_friction_threshold) .= ";"\r\n
+      .= ''`c.m.stand_friction_threshold .= ";"\r\n
       \t"`sysfvar[.fCROUCH_FRICTION_THRESHOLD] = "
-      .= `fToS(`c.m.crouch_friction_threshold) .= ";"\r\n
+      .= ''`c.m.crouch_friction_threshold .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_GROUNDLEVEL] = "
-      .= `fToS(`c.m.air_gethit_groundlevel) .= ";"\r\n
+      .= ''`c.m.air_gethit_groundlevel .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_GROUNDRECOVER_GROUND_THRESHOLD] = "
-      .= `fToS(`c.m.air_gethit_groundrecover_ground_threshold) .= ";"\r\n
+      .= ''`c.m.air_gethit_groundrecover_ground_threshold .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_GROUNDRECOVER_GROUNDLEVEL] = "
-      .= `fToS(`c.m.air_gethit_groundrecover_groundlevel) .= ";"\r\n
+      .= ''`c.m.air_gethit_groundrecover_groundlevel .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_THRESHOLD] = "
-      .= `fToS(`c.m.air_gethit_airrecover_threshold) .= ";"\r\n
+      .= ''`c.m.air_gethit_airrecover_threshold .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_AIRRECOVER_YACCEL] = "
-      .= `fToS(`c.m.air_gethit_airrecover_yaccel) .= ";"\r\n
+      .= ''`c.m.air_gethit_airrecover_yaccel .= ";"\r\n
       \t"`sysfvar[.fAIR_GETHIT_TRIP_GROUNDLEVEL] = "
-      .= `fToS(`c.m.air_gethit_trip_groundlevel) .= ";"\r\n
+      .= ''`c.m.air_gethit_trip_groundlevel .= ";"\r\n
       \t"`sysfvar[.fDOWN_BOUNCE_OFFSETX] = "
-      .= `fToS(`c.m.down_bounce_offsetx) .= ";"\r\n
+      .= ''`c.m.down_bounce_offsetx .= ";"\r\n
       \t"`sysfvar[.fDOWN_BOUNCE_OFFSETY] = "
-      .= `fToS(`c.m.down_bounce_offsety) .= ";"\r\n
+      .= ''`c.m.down_bounce_offsety .= ";"\r\n
       \t"`sysfvar[.fDOWN_BOUNCE_YACCEL] = "
-      .= `fToS(`c.m.down_bounce_yaccel) .= ";"\r\n
+      .= ''`c.m.down_bounce_yaccel .= ";"\r\n
       \t"`sysfvar[.fDOWN_BOUNCE_GROUNDLEVEL] = "
-      .= `fToS(`c.m.down_bounce_groundlevel) .= ";"\r\n
+      .= ''`c.m.down_bounce_groundlevel .= ";"\r\n
       \t"`sysfvar[.fDOWN_FRICTION_THRESHOLD] = "
-      .= `fToS(`c.m.down_friction_threshold) .= ";"\r\n
-      \t"`state_1 = `s_1_" .= .s.iToS(`playerno) .= "P;"\r\n
-      \t"`state_2 = `s_2_" .= .s.iToS(`playerno) .= "P;"\r\n
-      \t"`state_3 = `s_3_" .= .s.iToS(`playerno) .= "P;"\r\n
-      \t"`state_i1 = `s_I1_" .= .s.iToS(`playerno) .= "P;"\r\n
+      .= ''`c.m.down_friction_threshold .= ";"\r\n
+      \t"`state_1 = `s_1_" .= ''`playerno .= "P;"\r\n
+      \t"`state_2 = `s_2_" .= ''`playerno .= "P;"\r\n
+      \t"`state_3 = `s_3_" .= ''`playerno .= "P;"\r\n
+      \t"`state_i1 = `s_I1_" .= ''`playerno .= "P;"\r\n
       \t"`clearSpSysVar();"\r\n
       "}"\r\n;
     code = buf;

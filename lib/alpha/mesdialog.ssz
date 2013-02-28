@@ -1,6 +1,5 @@
 ﻿
 plugin bool YesNo(:^/char:) = "dll/mesdialog.dll";
-plugin void DoubleToStr(:^char=, double:) = "dll/mesdialog.dll";
 plugin bool GetClipboardStr(:^char=:) = "dll/mesdialog.dll";
 plugin void GetInifileString(:^/char, ^/char, ^/char, ^/char, ^char=:) =
   "dll/mesdialog.dll";
@@ -36,21 +35,6 @@ plugin void GetSharedString(:^char=:) = "dll/mesdialog.dll";
 
 
 lib al = <alert.ssz>;
-
-public void intMes(long i)
-{
-  lib str = <string.ssz>;
-  .al.alert!self?(str.iToS(i));
-}
-
-public void floatMes(double f)
-{
-  ^char s;
-  .DoubleToStr(:s=, f:);
-  .al.alert!self?(s);
-}
-
-
 
 public void veryUnsafeCopy<dst_t, src_t>(dst_t d=, src_t s=)
 {

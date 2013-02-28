@@ -151,7 +151,7 @@ int game()
     ^&.sha.Share share.new(1);
     &.com.SuperDangerousRef sdr;
     sdr.copyRef!&.sha.Share?(share=);
-    %char buf .= "gt<>" .= .s.iToS(sdr.p);
+    %char buf .= "gt<>" .= ''sdr.p;
     ^char ss = buf;
     int res = fight(ss=, share);
     if(res < 0) ret res;
