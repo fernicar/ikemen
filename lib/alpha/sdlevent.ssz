@@ -59,7 +59,7 @@ public bool eventUpdate()
         :
         switch(.sdle.key.keysym.sym){
         case .sdl.SDLKey::RETURN:
-          if(!.sdl.ogl && !.sdl.fullScreen(!!.full)) ret false;
+          if(!.sdl.ogl && .sdl.fullScreen(!!.full)) .sdl.showCursor(!.full);
         case .sdl.SDLKey::F4:
           .end = true;
           ret false;

@@ -195,7 +195,6 @@ void main()
     ret;
   }
 /*?*/
-  .sdl.showCursor(false);
   &.lua.State L;
   if(!.init(L=)) ret;
   if(!L.runFile(.cfg.system)){
