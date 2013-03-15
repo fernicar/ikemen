@@ -2759,33 +2759,33 @@ public &Char
     cond `stVal.mov != .MovTy::H:
       branch{
       cond `playerno == `stVal.playerno:
-        .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
+        .winty[!`playerno&1] = .fgt.WinTy::Suicide;
       cond (`playerno&1) == (`stVal.playerno&1):
-        .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
+        .winty[!`playerno&1] = .fgt.WinTy::Teammate;
       }
     cond `playerno == `stVal.hb.player:
-      .winty[(`playerno+1)&1] = .fgt.WinTy::Suicide;
+      .winty[!`playerno&1] = .fgt.WinTy::Suicide;
     cond `stVal.hb.player >= 0 && (`playerno&1) == (`stVal.hb.player&1):
-      .winty[(`playerno+1)&1] = .fgt.WinTy::Teammate;
+      .winty[!`playerno&1] = .fgt.WinTy::Teammate;
     cond `stVal.hb.guarded:
-      .winty[(`playerno+1)&1] = .fgt.WinTy::C;
+      .winty[!`playerno&1] = .fgt.WinTy::C;
     cond
       (`stVal.hb.attr&((int).AtTy::HA|(int).AtTy::HT|(int).AtTy::HP))
       != 0
       :
-      .winty[(`playerno+1)&1] = .fgt.WinTy::H;
+      .winty[!`playerno&1] = .fgt.WinTy::H;
     cond
       (`stVal.hb.attr&((int).AtTy::SA|(int).AtTy::ST|(int).AtTy::SP))
       != 0
       :
-      .winty[(`playerno+1)&1] = .fgt.WinTy::S;
+      .winty[!`playerno&1] = .fgt.WinTy::S;
     cond
       (`stVal.hb.attr&((int).AtTy::NT|(int).AtTy::ST|(int).AtTy::HT))
       != 0
       :
-      .winty[(`playerno+1)&1] = .fgt.WinTy::Throw;
+      .winty[!`playerno&1] = .fgt.WinTy::Throw;
     else:
-      .winty[(`playerno+1)&1] = .fgt.WinTy::N;
+      .winty[!`playerno&1] = .fgt.WinTy::N;
     }
   }
   public bool attrCheck(&.Hitdef hit=, int cid, |.StTy styp)
@@ -3971,7 +3971,7 @@ public &Char
     if(`sysfvar[.fX] != x){
       `sysfvar[.fX] = x;
       `enemyn.new(0);
-      if(`player) loop{index i = (`playerno+1) & 1; while; do:
+      if(`player) loop{index i = !`playerno & 1; while; do:
         loop{index j = 0; while; do:
           .chars[i][j]~enemyn.new(0);
           j++;
@@ -4104,9 +4104,13 @@ public &Char
   {
     .c = .players.get(id);
   }
-  public void trEnemy(int id)
+  public void trEnemy(int n)
   {
-    .c = .players.enemy(`playerno, id);
+    if(n < 0 || n >= `trNumEnemy()){
+      .c.new(0);
+      ret;
+    }
+    .c = .chars[n*2 + (!`playerno&1)]<>;
   }
   public void trEnemyNear(int id)
   {
@@ -4605,7 +4609,6 @@ public &Char
   }
   public void trChangeState2(int n, int p, int anim, int ctrl)
   {
-    if(`stVal.no == 190 && `minus < 0 && `roundState() < 2) ret;
     if(`minus <= 0 && (`stVal.typ == .StTy::S || `stVal.typ == .StTy::C)){
       `furimuki();
     }
@@ -5113,7 +5116,7 @@ public &Char
   }
   public int  trNumEnemy()
   {
-    int ep = (`playerno^1) & 1;
+    int ep = !`playerno & 1;
     ret .com.tmode[ep] == (int).com.TeamMode::Simul ? .com.numSimul[ep] : 1;
   }
   public int trNumPartner()
@@ -5353,7 +5356,7 @@ public &Char
   }
   public bool isLose()
   {
-    ret .com.win >= 0 && (`playerno+1&1) == .com.win;
+    ret .com.win >= 0 && (!`playerno&1) == .com.win;
   }
   public bool isOver()
   {
@@ -5616,19 +5619,6 @@ public ^&Char PlayerList!&Char?::get(int id)
       .playerid[-1].hi = p~c~helperindex;
       ret p~c;
     }
-    p = p~next;
-  while #p > 0:
-  }
-  ret .consts.null!`_t?();
-}
-public ^&Char PlayerList!&Char?::enemy(int pno, int n)
-{
-  int cnt = 0;
-  loop{
-    *`top.self p = `top;
-    while;
-  do:
-    if((p~c~playerno&1) != (pno&1) && p~c~player && n == cnt++) ret p~c;
     p = p~next;
   while #p > 0:
   }
