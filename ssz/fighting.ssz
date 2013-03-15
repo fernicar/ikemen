@@ -293,7 +293,7 @@ void game()
       if(#.chr.chars[i] > 0){
         .chr.chars[i]<>~rootInit();
         level[i] = .wm.getLevel(i);
-        if(.com.powershare){
+        if(.com.powerShare[i&1]){
           int pmax =
             .m.max!int?(
               .chr.chars[0]<>~sysivar[.chr.iPOWERMAX],

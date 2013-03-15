@@ -1501,7 +1501,6 @@ public &CharGlobalInfo
   public &.tbl.IntTable!int, &.act.Action? actionTable;
   public int palno, drawpalno;
   public ^bool palExist, palSelectable;
-  public int numenemy;
   public short mver0 = 0, mver1 = 0;
   public |.ProjContact pctyp;
   public int pctime, pcid;
@@ -1517,12 +1516,6 @@ public &CharGlobalInfo
   }
 }
 public ^&CharGlobalInfo cgi.new(#.chars);
-
-void resetNumenemy()
-{
-  loop{index i = 0; do: .cgi[i].numenemy = -1; while ++i < #.cgi:}
-}
-resetNumenemy();
 
 public ^&.fgt.Fight fight;
 public bool roundEnd()
@@ -3743,11 +3736,14 @@ public &Char
   }
   public int getSharePower()
   {
-    ret .chars[`playerno & (.com.powershare?1:-1)][0]~sysivar[.iPOWER];
+    ret
+      .chars[`playerno & (.com.powerShare[`playerno&1]?1:-1)]<>
+        ~sysivar[.iPOWER];
   }
   public void addPower(int p)
   {
-    .chars[`playerno&(.com.powershare?1:-1)][0]~setPower(`getSharePower() + p);
+    .chars[`playerno&(.com.powerShare[`playerno&1]?1:-1)]<>
+      ~setPower(`getSharePower() + p);
   }
   public void setFacing(int f)
   {
@@ -4609,6 +4605,7 @@ public &Char
   }
   public void trChangeState2(int n, int p, int anim, int ctrl)
   {
+    if(`stVal.no == 190 && `minus < 0 && `roundState() < 2) ret;
     if(`minus <= 0 && (`stVal.typ == .StTy::S || `stVal.typ == .StTy::C)){
       `furimuki();
     }
@@ -5116,7 +5113,8 @@ public &Char
   }
   public int  trNumEnemy()
   {
-    ret .players.numEnemy(`playerno);
+    int ep = (`playerno^1) & 1;
+    ret .com.tmode[ep] == (int).com.TeamMode::Simul ? .com.numSimul[ep] : 1;
   }
   public int trNumPartner()
   {
@@ -5686,24 +5684,9 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
   pyr.enemyn[-1].hi = en[-1]~helperindex;
   ret en[-1];
 }
-public int PlayerList!&Char?::numEnemy(int pno)
-{
-  if(.cgi[pno].numenemy >= 0) ret .cgi[pno].numenemy;
-  int cnt = 0;
-  loop{
-    *`top.self p = `top;
-    while;
-  do:
-    if((p~c~playerno&1) != (pno&1) && p~c~player) cnt++;
-    p = p~next;
-  while #p > 0:
-  }
-  ret .cgi[pno].numenemy = cnt;
-}
 public void PlayerList!&Char?::add(^&.Char c)
 {
   .playerid.new(0);
-  .resetNumenemy();
   if(#`top == 0){
     `top.new(1);
     `top~c = c;
@@ -5718,7 +5701,6 @@ public void PlayerList!&Char?::destroy(int id)
 {
   if(#`top == 0) ret;
   .playerid.new(0);
-  .resetNumenemy();
   if(`top~c~id == id){
     `top = `top~next;
     if(#`top == 0) `end.new(0);
@@ -7281,7 +7263,6 @@ void resetGbl()
   .winty[0] = .winty[1] = .fgt.WinTy::N;
   .zoomdelay = 0.0;
   .playerid.new(0);
-  .resetNumenemy();
   .waitdown = .fight~ro.over_hittime + .fight~ro.over_waittime + 900;
   .shuttertime = 0;
   .winskipped = false;

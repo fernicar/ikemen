@@ -19,14 +19,14 @@ public &Share
   public int chr_p1mw, chr_p2mw, chr_p1w, chr_p2w, chr_drw;
   public int stt;
   public ^int com;
-  public ^bool autoguard;
+  public ^bool autoguard, powsh;
   public ^int inputRemap;
   public ^&.cmd.NetInput net;
   public ^&.cmd.FileInput rep;
   public ^&.fnt.Font dfnt;
   public ^/char dlua;
   public ^&.snd.Bgm bgm;
-  public bool dbgdw, clsndw, powsh, alvl, fullscr;
+  public bool dbgdw, clsndw, alvl, fullscr;
   public int roundTime;
   public float life;
   public float team1VS2Life;
@@ -62,7 +62,7 @@ public &Share
     `bgm = .snd.bgm;
     `dbgdw = .com.debugdraw;
     `clsndw = .com.clsndraw;
-    `powsh = .com.powershare;
+    `powsh = .com.powerShare;
     `alvl = .com.autolevel;
     `fullscr = .se.full;
     `roundTime = .com.roundTime;
@@ -101,7 +101,7 @@ public &Share
     .snd.bgm = `bgm;
     .com.debugdraw = `dbgdw;
     .com.clsndraw = `clsndw;
-    .com.powershare = `powsh;
+    .com.powerShare = `powsh;
     .com.autolevel = `alvl;
     .se.full = `fullscr;
     .com.roundTime = `roundTime;

@@ -26,9 +26,6 @@ public float zoomSpeed = 12.0;
   Single, Simul, Turns
 }
 
-//Simulでのパワーの共有フラグ
-public bool powershare = true;
-
 //コリジョン表示フラグ
 public bool clsndraw = false;
 
@@ -43,14 +40,17 @@ public ^%%char clipboardText.new(maxSimul*2);
 
 public ^int com;
 public ^bool autoguard;
-void comInit()
+public ^bool powerShare;
+void flagInit()
 {
   .com.new(.maxSimul*2);
   .s.each!int?([void(int c=){c = 4;}], .com);
   .autoguard.new(.maxSimul*2);
   .s.each!bool?([void(bool a=){a = false;}], .autoguard);
+  .powerShare.new(2);
+  .s.each!bool?([void(bool ps=){ps = true;}], .powerShare);
 }
-comInit();
+flagInit();
 
 public ^int inputRemap;
 public void resetRemapInput()
