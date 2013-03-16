@@ -5020,13 +5020,9 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
-      if(#c > 0){
-        c~p1facing = 0;
-        c~setFacing(f);
-      }
+      if(#c > 0) c~setFacing(f);
       i++;
-    while i < #tar:
-    }
+    while i < #tar:}
   }
   public void trTargetState(^/int tar, int state)
   {
@@ -5992,12 +5988,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         }
         if(hit.p1getp2facing != 0){
           byf = `pyr.facing*(hit.p1getp2facing < 0 ? -1 : 1);
-          by.p1facing = byf;
+          if(by.facing != byf) by.p1facing = byf;
         }
       else:
         byf = pro;
       comm:
         `pyr.p1facing = byf * -hit.p2facing;
+        if(`pyr.p1facing == `pyr.facing) `pyr.p1facing = 0;
       }
       if(
         (`pyr.facing < 0) == (
