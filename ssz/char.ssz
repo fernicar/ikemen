@@ -5982,13 +5982,13 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         int byf;
       cond pro == 0:
         byf = by.facing;
-        if(hit.p1facing < 0){
-          byf *= -1;
-          by.p1facing = byf;
-        }
-        if(hit.p1getp2facing != 0){
+        branch{
+        cond hit.p1getp2facing != 0:
           byf = `pyr.facing*(hit.p1getp2facing < 0 ? -1 : 1);
           if(by.facing != byf) by.p1facing = byf;
+        cond hit.p1facing < 0:
+          byf *= -1;
+          by.p1facing = byf;
         }
       else:
         byf = pro;
