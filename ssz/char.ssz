@@ -5020,7 +5020,10 @@ public &Char
     ^`self c;
     loop{index i = 0; while; do:
       c = .players.get(tar[i]);
-      if(#c > 0) c~setFacing(f);
+      if(#c > 0){
+        c~p1facing = 0;
+        c~setFacing(f);
+      }
       i++;
     while i < #tar:
     }
