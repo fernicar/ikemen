@@ -121,6 +121,15 @@ public bool addFrameTime(float t)
   ret true;
 }
 
+public void resetFrameTime()
+{
+  .tickCount = 0;
+  .oldTickCount = .tickCount-1;
+  .tickCountF = 0.0;
+  .lastTick = 0.0;
+  .nextAddTime = .Speed;
+  .oldNextAddTime = .Speed;
+}
 
 public int brightness = 256;
 
