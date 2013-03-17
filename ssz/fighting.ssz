@@ -376,9 +376,6 @@ void game()
       i++;
     while i < #.chr.chars:
     }
-    oldp1wins = .com.p1wins;
-    oldp2wins = .com.p2wins;
-    olddraws = .com.draws;
     .chr.stg~reset();//bgctrlの都合(循環参照可能な型を操作する)でここでreset
     loop{int i = 0; while; do:
       .chr.stg~action();
@@ -412,6 +409,9 @@ void game()
       - .chr.stg~drawOffsetY + 240.0
       - (float).com.GameWidth*(float).chr.stg~localh / (float).chr.stg~localw;
     float tmp;
+    oldp1wins = .com.p1wins;
+    oldp2wins = .com.p2wins;
+    olddraws = .com.draws;
     reset();
   do:
     .com.step = false;
@@ -451,7 +451,7 @@ void game()
         if(#.chr.chars[i] > 0){
           branch{
           cond
-            .com.tmode[i] != (int).com.TeamMode::Turns
+            .com.tmode[i&1] != (int).com.TeamMode::Turns
             || !.chr.chars[i]<>~isWin()
             :
             .chr.chars[i]<>~sysivar[.chr.iLIFE] =
