@@ -5998,18 +5998,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         `pyr.p1facing = byf * -hit.p2facing;
         if(`pyr.p1facing == `pyr.facing) `pyr.p1facing = 0;
       }
-      if(
-        (`pyr.facing < 0) == (
-          (pro != 0 ? pro : (by.p1facing != 0 ? by.p1facing : by.facing)) < 0))
-      {
-        `pyr.stVal.hb.xvel *= -1.0;
-        if(.m.inRange!int?(1, 2, `pyr.stVal.hb.groundtype)){
-          `pyr.stVal.hb.groundtype -= `pyr.stVal.hb.groundtype*2 - 3;
-        }
-        if(.m.inRange!int?(1, 2, `pyr.stVal.hb.airtype)){
-          `pyr.stVal.hb.airtype -= `pyr.stVal.hb.airtype*2 - 3;
-        }
-      }
       if(hit.p1stateno >= 0 && by.changeState1(hit.player, hit.p1stateno)){
         by.setCtrl(false);
       }
@@ -6067,6 +6055,19 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         by.veloff = hit.guard_cornerpush_veloff * (float)by.facing;
       case .StTy::A:
         by.veloff = hit.airguard_cornerpush_veloff * (float)by.facing;
+      }
+    comm:
+      if(
+        (`pyr.facing < 0) == (
+          (pro != 0 ? pro : (by.p1facing != 0 ? by.p1facing : by.facing)) < 0))
+      {
+        `pyr.stVal.hb.xvel *= -1.0;
+        if(.m.inRange!int?(1, 2, `pyr.stVal.hb.groundtype)){
+          `pyr.stVal.hb.groundtype -= `pyr.stVal.hb.groundtype*2 - 3;
+        }
+        if(.m.inRange!int?(1, 2, `pyr.stVal.hb.airtype)){
+          `pyr.stVal.hb.airtype -= `pyr.stVal.hb.airtype*2 - 3;
+        }
       }
     }
     ret true;
