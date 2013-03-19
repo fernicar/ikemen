@@ -6032,7 +6032,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       }
       `pyr.getcombo += hit.numhits*hits;
       if(
-        hitting > 0 && pro == 0 && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
+        hitting > 0 && pro == 0 && `pyr.ls(.lsSCREENBOUND) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
           || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
         ) switch(`pyr.stVal.typ)
@@ -6046,7 +6046,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       }
     else:
       if(
-        hitting > 0 && pro == 0 && !by.cs1tmp && `pyr.ls(.lsSCREENBOUND) && (
+        hitting > 0 && pro == 0 && `pyr.ls(.lsSCREENBOUND) && (
           (by.facing < 0 && `pyr.sysfvar[.fX] <= `pxmi)
           || (by.facing > 0 && `pyr.sysfvar[.fX] >= `pxma))
         ) switch(`pyr.stVal.typ)
