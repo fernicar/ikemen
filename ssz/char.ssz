@@ -3078,7 +3078,7 @@ public &Char
       }
       if(!`cs1tmp) branch{
       cond 
-        `helperid == 0 && !`isKO() && `sysivar[.iLIFE] <= 0
+        `helperid == 0 && (!`isKO() || `stVal.no == 0) && `sysivar[.iLIFE] <= 0
         && `stVal.mov != .MovTy::H && !.gs(.gsNOKO)
         :
         `stVal.hb.fallf = true;
@@ -3413,35 +3413,33 @@ public &Char
       `minus = -1;
       if(`keyctrl && `stVal.playerno == `playerno) `state_1(::);
       `changeState2();
-      if(!`cs1tmp){
-        `minus = 0;
-        `state(::);
-        branch{
-        cond `stVal.no == 5110:
-          if(`sysivar[.iRECOVERTIME] <= 0 && `isAlive()){
-            `trChangeState(5120, -1, -1);
-          }
-        cond `stVal.no == 140:
-          if(`trAnimTime() == 0){
-            `trChangeState(
-              (int)(`stVal.typ == .StTy::C)*11
-              + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
-          }
+      `minus = 0;
+      `state(::);
+      branch{
+      cond `stVal.no == 5110:
+        if(`sysivar[.iRECOVERTIME] <= 0 && `isAlive()){
+          `trChangeState(5120, -1, -1);
         }
-        if(!`isHitPaused()){
-          loop{continue; do:
-            `trChangeState(52, -1, -1);
-          continue:
-            `posUpdate();
-          while `landCondition():}
-          `stVal.time++;
-          if(`stVal.mctime > 0) `stVal.mctime++;
-          `setFacing(`p1facing);
-          `p1facing = 0;
+      cond `stVal.no == 140:
+        if(`trAnimTime() == 0){
+          `trChangeState(
+            (int)(`stVal.typ == .StTy::C)*11
+            + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
         }
-        if(`helperindex == 0 && .cgi[`playerno].pctime >= 0){
-          .cgi[`playerno].pctime++;
-        }
+      }
+      if(!`isHitPaused()){
+        loop{continue; do:
+          `trChangeState(52, -1, -1);
+        continue:
+          `posUpdate();
+        while `landCondition():}
+        `stVal.time++;
+        if(`stVal.mctime > 0) `stVal.mctime++;
+        `setFacing(`p1facing);
+        `p1facing = 0;
+      }
+      if(`helperindex == 0 && .cgi[`playerno].pctime >= 0){
+        .cgi[`playerno].pctime++;
       }
     }
     `xScreenBound();
@@ -6897,7 +6895,7 @@ public float action(
       .com.intro--;
       if(.com.intro == 0) loop{index i = 0; while; do:
         if(#.chars[i] > 0) branch{
-          .chars[i][0]~sysivar[.iSYSFLAG] &= !(.sfKO | .sfOVER);
+          .chars[i][0]~sysivar[.iSYSFLAG] &= !.sfOVER;
         cond .chars[i][0]~stVal.no == 0:
           .chars[i][0]~setCtrl(true);
         else:
