@@ -641,13 +641,6 @@ void setDebugScript(&.lua.State L=, int re=)
   .com.debugScript = dscript;
 }
 
-void setRoundTime(&.lua.State L=, int re=)
-{
-  int argc = 0, nret = 0;
-  int rt = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .com.roundTime = rt;
-}
-
 void setLifeMul(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 0;
@@ -768,7 +761,6 @@ public void init(&.lua.State L=)
   L.register("loadLifebar", .loadLifebar);
   L.register("loadDebugFont", .loadDebugFont);
   L.register("setDebugScript", .setDebugScript);
-  L.register("setRoundTime", .setRoundTime);
   L.register("setLifeMul", .setLifeMul);
   L.register("setTeam1VS2Life", .setTeam1VS2Life);
   L.register("setTurnsRecoveryRate", .setTurnsRecoveryRate);

@@ -16,14 +16,15 @@ addHotkey('F3', false, false, false, 'powMax(1);powMax(2)')
 addHotkey('F4', false, false, false, 'roundReset()')
 addHotkey('F4', false, false, true, 'reload()')
 addHotkey('F5', false, false, false, 'setTime(0)')
-addHotkey('SPACE', false, false, false, 'full(1);full(2);full(3);full(4)')
+addHotkey(
+  'SPACE', false, false, false,
+  'full(1);full(2);full(3);full(4);setTime(getRoundTime())')
 addHotkey('PAUSE', false, false, false, 'togglePause()')
 addHotkey('SCROLLOCK', false, false, false, 'step()')
 addHotkey('i', true, false, false, 'stand(1);stand(2);stand(3);stand(4)')
 
 
 speed = 1.0
-setAccel(speed)
 
 function changeSpeed()
   if speed >= 4 then

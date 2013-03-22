@@ -2124,7 +2124,7 @@ public &StateBuilder
         if(!`integer2(val=, token, in=)) ret -1;
         out .=
           "((" .= ''val .= "==0)^(.v.setI(" .= ''id .= ")$"
-           .= obj .= ptime .= "$.v.toI()>0&&";
+           .= obj .= ptime .= "$.v.toI()>=0&&";
         if(!`kyuushikiSuperDX(out=, in=, typ=, false)) ret -1;
         out .= "))";
       }

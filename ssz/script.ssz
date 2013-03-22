@@ -358,6 +358,19 @@ void setPowerShare(&.lua.State L=, int re=)
   .com.powerShare[pn-1] = ps;
 }
 
+void setRoundTime(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 0;
+  int rt = (int).numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  .com.roundTime = rt;
+}
+
+void getRoundTime(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber((double).com.roundTime);
+}
+
 public void init(&.lua.State L=)
 {
   L.register("sffNew", .sffNew);
@@ -378,6 +391,8 @@ public void init(&.lua.State L=)
   L.register("sszRandom", .sszRandom);
   L.register("setAutoguard", .setAutoguard);
   L.register("setPowerShare", .setPowerShare);
+  L.register("setRoundTime", .setRoundTime);
+  L.register("getRoundTime", .getRoundTime);
 }
 
 
