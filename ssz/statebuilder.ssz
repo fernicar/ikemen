@@ -5146,7 +5146,7 @@ public &StateBuilder
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              "pr~anim=.m.max!int?(0,", ");", 2)) ret false;
+              "pr~anim=", ";", 2)) ret false;
           ret true;
         }])) ret false;
         if(!`stateParam(param=, "supermovetime", [`paraF_t(data=){
