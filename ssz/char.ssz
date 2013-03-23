@@ -2034,7 +2034,7 @@ public &Char
   type stateMethod_t = method dummy.signature;
   public &State
   {
-    public .Char::stateMethod_t state = .Char::dummy;
+    public .Char::stateMethod_t stateDef = .Char::dummy, state = .Char::dummy;
   }
   public ^/char name;
   public ^&.com.PalFX palfx;
@@ -2072,7 +2072,7 @@ public &Char
   public ^&.act.Frame curFrame;
   public %&.snd.Sound sounds;
   public index cpucmd = -1;
-  public method$void() state = dummy, state_1 = dummy,
+  public method$void() stateDef = dummy, state = dummy, state_1 = dummy,
     state_2 = dummy, state_3 = dummy, state_i1 = dummy;
   type action_t = &.act.Action;
   &.sff.AirFileMethods!self? airFileMethods;
@@ -2177,6 +2177,7 @@ public &Char
     `ho = -1;
     `cs1tmp = false;
     `angleset = false;
+    `stateDef = `dummy;
     `state = `dummy;
   }
   void clearHitDef()
@@ -4591,6 +4592,9 @@ public &Char
     if((n >= 170 && n < 190) || (n >= 5150 && n < 5160)){
       `sysivar[.iSYSFLAG] |= .sfOVER;
     }
+    ^&`State st = .states[`stVal.playerno].get(`stVal.no);
+    `stateDef = #st > 0 ? st~stateDef : `dummy;
+    `state = #st > 0 ? st~state : `dummy;
     `cs1tmp = true;
     ret true;
   }
@@ -4600,10 +4604,8 @@ public &Char
   }
   public void changeState2()
   {
-    if(`cs1tmp){
-      ^&`State st = .states[`stVal.playerno].get(`stVal.no);
-      `state = #st > 0 ? st~state : `dummy;
-      `state(::);
+    if(`cs1tmp && !`isHitPaused()){
+      `stateDef(::);
       `cs1tmp = false;
     }
   }

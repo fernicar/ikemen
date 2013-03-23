@@ -26,7 +26,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::S;
@@ -55,7 +54,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::C;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::C;
@@ -80,7 +78,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::C;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::C;
@@ -106,7 +103,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::S;
@@ -147,7 +143,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::S;
@@ -184,7 +179,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::S;
@@ -225,7 +219,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -261,7 +254,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::A;
@@ -281,7 +273,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::A;
@@ -315,7 +306,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::S;
@@ -343,7 +333,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::S;
@@ -376,7 +365,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::A;
@@ -420,7 +408,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::S;
@@ -453,7 +440,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -484,7 +470,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -538,7 +523,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.mov = .MovTy::I;
   `clearHitCount();
   `clearHitDef();
@@ -565,7 +549,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::S;
@@ -594,7 +577,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::C;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::C;
@@ -631,7 +613,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -675,7 +656,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.mov = .MovTy::I;
   `setCtrl(true);
   `clearHitCount();
@@ -714,7 +694,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -757,7 +736,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::S;
@@ -798,7 +776,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::C;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -841,7 +818,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::C;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::C;
@@ -870,7 +846,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -909,7 +884,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -932,7 +906,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -965,7 +938,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -993,7 +965,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -1020,7 +991,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -1086,7 +1056,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1125,7 +1094,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::S;
@@ -1189,7 +1157,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::C;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1225,7 +1192,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::C;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::C;
@@ -1282,7 +1248,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1337,7 +1302,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1380,7 +1344,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1419,7 +1382,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1479,7 +1441,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1509,7 +1470,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1543,7 +1503,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1585,7 +1544,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::L;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1616,7 +1574,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::L;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::C;
@@ -1708,7 +1665,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::L;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1751,7 +1707,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::L;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1865,7 +1820,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::L;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -1913,7 +1867,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::L;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -1969,7 +1922,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::L;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -2004,7 +1956,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::N;
@@ -2064,7 +2015,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::H;
   `stVal.phy = .StTy::A;
@@ -2134,7 +2084,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::A;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -2157,7 +2106,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;
@@ -2196,7 +2144,6 @@ void c.Char::s##_@@P()
 }
 void c.Char::s##_@@PInit()
 {
-  `state = `s##_@@P;
   `stVal.typ = .StTy::S;
   `stVal.mov = .MovTy::I;
   `stVal.phy = .StTy::N;

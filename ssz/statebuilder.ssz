@@ -8606,7 +8606,8 @@ public &StateBuilder
     loop{index i = 0; while; do:
       if(`stnoList[i].no >= 0 && !`stnoList[i].i){
         buf .=
-          \t"st[" .= ''i .= "].state=`" .= `stnoList[i].proc .= "Init;"
+          \t"st[" .= ''i .= "].stateDef=`" .= `stnoList[i].proc .= "Init;"
+          \t"st[" .= ''i .= "].state=`" .= `stnoList[i].proc .= ";"
           ".states[" .= ''`playerno .= "].set("
           .= ''`stnoList[i].no .= ",st[" .= ''i
           .= ".." .= ''(i+1) .= "]);"\r\n;
