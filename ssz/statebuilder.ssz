@@ -8084,6 +8084,10 @@ public &StateBuilder
           || `state.ctrlList[-1].typ == .CtrlTy::TagOut
           :
           buf .= '{';
+        cond<ds>
+          `mver0 == 1 && `state.ctrlList[-1].typ == .CtrlTy::DestroySelf
+          :
+          buf .= '{';
         comm:
           if(`state.ctrlList[-1].typ == .CtrlTy::TagIn) buf .= "if(";
           buf .= '`' .= item<>;
@@ -8096,6 +8100,8 @@ public &StateBuilder
           buf .= `state.ctrlList[-1].typ == .CtrlTy::TagIn ? ')' : ';';
         diff<cs>:
            buf .= "ret;}";
+        diff<ds>:
+           buf .= "if(`ls(.lsDESTROY))ret;}";
         comm:
            buf .= \r\n;
         }
