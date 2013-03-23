@@ -31,6 +31,7 @@ public float zoomdelay = 0.0;
 ^|fgt.WinTy winty.new(2);
 winty[0] = fgt.WinTy::N;
 winty[1] = fgt.WinTy::N;
+public ^index wakewakaLength;
 
 public ^&.stage.Stage stg;
 
@@ -1144,6 +1145,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
 &StateVal
 {
   public ^&.Persistent ps;
+  public ^^bool wakegawakaranai;
   public int no, prevno;
   public short playerno, hitdefContact;
   public int time;
@@ -1162,9 +1164,29 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `ho.new(8);
     `clear();
   }
+  public void clearWw()
+  {
+    loop{index i = 0; while; do:
+      loop{index j = 0; while; do:
+        `wakegawakaranai[i][j] = false;
+        j++;
+      while j < .wakewakaLength[i]:}
+      i++;
+    while i < #.wakewakaLength:}
+  }
   public void clear()
   {
     `ps.new(0);
+    if(#`wakegawakaranai < #.wakewakaLength){
+      `wakegawakaranai.new(#.wakewakaLength);
+    }
+    loop{index i = 0; while; do:
+      if(#`wakegawakaranai[i] < .wakewakaLength[i]){
+        `wakegawakaranai[i].new(.wakewakaLength[i]);
+      }
+      i++;
+    while i < #.wakewakaLength:}
+    `clearWw();
     `no = 0;
     `prevno = 0;
     `playerno = 0;
@@ -1463,6 +1485,16 @@ public ^%^&Char chars.new(.com.maxSimul*2);
 /^%&Projectile projs.new(#chars);
 /^%&Explod explods.new(#chars);
 ^&.tbl.IntTable!int, &Char::State? states.new(#chars);
+
+void initWwl()
+{
+  .wakewakaLength.new(#.chars);
+  loop{index i = 0; while; do:
+    .wakewakaLength[i] = 0;
+    i++;
+  while i < #.wakewakaLength:}
+}
+initWwl();
 
 
 ^%index expdrawlist.new(#.chars), topexpdrawlist.new(#.chars);
@@ -3060,8 +3092,12 @@ public &Char
       }
     }
     if(!`isPaused()){
-      if(`sysivar[.iHITPAUSETIME] > 0) `sysivar[.iHITPAUSETIME]--;
-      if(`sysivar[.iHITPAUSETIME] <= 0){
+      {
+        if(`sysivar[.iHITPAUSETIME] > 0){
+          `sysivar[.iHITPAUSETIME]--;
+          if(`sysivar[.iHITPAUSETIME] > 0) break, break;
+          `stVal.clearWw();
+        }
         if(
           `stVal.typ == .StTy::L && `sysivar[.iRECOVERTIME] > 0
           && `stVal.playerno == `playerno

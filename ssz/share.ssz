@@ -36,6 +36,7 @@ public &Share
   public float zoomMax;
   public float zoomSpeed;
   public ^int numSimul;
+  public ^index wakewakaLength;
   public void copy()
   {
     `c = .chr.chars;
@@ -74,6 +75,7 @@ public &Share
     `zoomMax = .com.zoomMax;
     `zoomSpeed = .com.zoomSpeed;
     `numSimul = .com.numSimul;
+    `wakewakaLength = .chr.wakewakaLength;
   }
   public void push()
   {
@@ -113,6 +115,7 @@ public &Share
     .com.zoomMax = `zoomMax;
     .com.zoomSpeed = `zoomSpeed;
     .com.numSimul = `numSimul;
+    .chr.wakewakaLength = `wakewakaLength;
   }
 }
 

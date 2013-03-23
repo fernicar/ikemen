@@ -216,6 +216,7 @@ void load()
       .chr.chars[i].new(0);
       .code[i] = "";
       charDone[i] = true;
+      .chr.wakewakaLength[i] = 0;
       i += 2;
     while i < #.chr.chars:
     }
@@ -229,6 +230,7 @@ void load()
       .chr.chars[i].new(0);
       .code[i] = "";
       charDone[i] = true;
+      .chr.wakewakaLength[i] = 0;
       i += 2;
     while i < #.chr.chars:
     }

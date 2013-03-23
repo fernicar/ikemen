@@ -7986,7 +7986,20 @@ public &StateBuilder
         }
         if(stateExist) continue;
         buf .= \t"if(";
-        if(`state.ignorehitpause <= 0) buf .= "nh&&";
+        branch{
+        cond `state.ignorehitpause <= 0:
+          buf .= "nh&&";
+        cond
+          `state.ctrlList[-1].typ == .CtrlTy::ChangeState
+          || `state.ctrlList[-1].typ == .CtrlTy::SelfState
+          || `state.ctrlList[-1].typ == .CtrlTy::TagIn
+          || `state.ctrlList[-1].typ == .CtrlTy::TagOut
+          :
+          buf .=
+            "(nh||!!`stVal.wakegawakaranai[" .= ''`playerno .= "]["
+            .= ''.chr.wakewakaLength[`playerno] .= "])&&";
+          .chr.wakewakaLength[`playerno]++;
+        }
         if(`state.persistent != 1){
           buf .= "--`stVal.ps[" .= ''(#`state.ctrlList-1) .= "].p<=0&&";
         }
@@ -8588,6 +8601,7 @@ public &StateBuilder
     }
     `stnoList.new(0);
     `stnoTable.clear();
+    .chr.wakewakaLength[no] = 0;
     %char buf;
     loop{index i = 0; while; do:
       if(#`st[i] > 0 && #`stateBulid(buf=, def, `st[i]=)=>error > 0) ret error;
