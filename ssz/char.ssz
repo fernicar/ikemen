@@ -4476,28 +4476,16 @@ public &Char
     }
     .v.setI(`ani~ani.animElemNo(tim));
   }
-  bool changeAnimCommon(int no)
+  public void trChangeAnim(int no)
   {
     *`ani.self tmp = `getAction(no);
-    if(#tmp == 0) ret false;
+    if(#tmp == 0) ret;
     `ani = tmp;
     `animno = no;
     `animpno = `playerno;
     `sysfvar[.fCLSNXSCALE] = `sysfvar[.fXSCALE];
     `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
-    ret true;
-  }
-  public void defChangeAnim(int no)
-  {
-    ^&.sff.Sprite spr;
-    if(#`ani > 0 && `isHitPaused()) spr = `ani~ani.spr;
-    if(`changeAnimCommon(no) && `isHitPaused())`ani~ani.spr = spr;
-  }
-  public void trChangeAnim(int no)
-  {
-    if(`changeAnimCommon(no) && `isHitPaused()){
-      `curFrame = `ani~ani.currentFrame();
-    }
+    if(`isHitPaused()) `curFrame = `ani~ani.currentFrame();
   }
   public void trChangeAnim2(int no)
   {

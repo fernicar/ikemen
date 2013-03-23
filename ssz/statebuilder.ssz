@@ -3457,7 +3457,7 @@ public &StateBuilder
       if(!`stateParam(param=, "anim", [`paraF_t(data=){
         if(
           !`fullExpression(
-            `state.deftask=, data=, "`defChangeAnim(", ");", 2)) ret false;
+            `state.deftask=, data=, "`trChangeAnim(", ");", 2)) ret false;
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "ctrl", [`paraF_t(data=){
@@ -7990,10 +7990,11 @@ public &StateBuilder
         cond `state.ignorehitpause <= 0:
           buf .= "nh&&";
         cond
-          `state.ctrlList[-1].typ == .CtrlTy::ChangeState
-          || `state.ctrlList[-1].typ == .CtrlTy::SelfState
-          || `state.ctrlList[-1].typ == .CtrlTy::TagIn
-          || `state.ctrlList[-1].typ == .CtrlTy::TagOut
+          `state.no >= 0 && !`state.i && (
+            `state.ctrlList[-1].typ == .CtrlTy::ChangeState
+            || `state.ctrlList[-1].typ == .CtrlTy::SelfState
+            || `state.ctrlList[-1].typ == .CtrlTy::TagIn
+            || `state.ctrlList[-1].typ == .CtrlTy::TagOut)
           :
           buf .=
             "(nh||!!`stVal.wakegawakaranai[" .= ''`playerno .= "]["
