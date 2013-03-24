@@ -8114,8 +8114,7 @@ public &StateBuilder
           if(`state.no >= 0 && !`state.i){
             buf .=
               "void c.Char::" .= fname .= "Init()"\r\n
-              "{"\r\n
-              \t"`state = `" .= fname .= ";"\r\n;
+              "{"\r\n;
             switch(`state.typ){
             case .chr.StTy::S:
               buf .= \t"`stVal.typ = .StTy::S;"\r\n;
