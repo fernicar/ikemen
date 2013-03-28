@@ -2179,6 +2179,7 @@ public &Char
     `backw = `defBW();
     `fedge = `bedge = 0.0;
     `attackmul = (float)`sysivar[.iATTACK] / 100.0;
+    `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
     `enemyn.new(0);
     `targets.new(0);
   }
@@ -3758,7 +3759,7 @@ public &Char
   }
   public void addLife(double l, bool kill, bool absolute)
   {
-    if(`roundState() == 3) ret;
+    if(l == 0.0 || `roundState() == 3) ret;
     `setLife(
       `sysivar[.iLIFE]
       + (int).m.max!double?(
