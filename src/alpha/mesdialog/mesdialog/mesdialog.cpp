@@ -12,7 +12,7 @@ static const unsigned char EXTRA_FIELD = 0x04; /* bit 2 set: extra field present
 static const unsigned char ORIG_NAME   = 0x08; /* bit 3 set: original file name present */
 static const unsigned char COMMENT     = 0x10; /* bit 4 set: file comment present */
 static const unsigned char RESERVED    = 0xE0; /* bits 5..7: reserved */
-#include "LockSingler.h"
+#include "../../../locksingler.hpp"
 
 
 void* (__stdcall *sszrefnewfunc)(intptr_t);

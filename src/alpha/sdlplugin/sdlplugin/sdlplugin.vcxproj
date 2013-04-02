@@ -49,7 +49,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>D:\d\lib\glew\include;D:\d\lib\SDL\include;D:\d\lib\SDL\SDL_image\include;D:\d\lib\SDL\SDL_ttf\include;D:\d\MyProjects\MyLibrary;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\d\lib\glew\include;D:\d\lib\SDL\include;D:\d\lib\SDL\SDL_image\include;D:\d\lib\SDL\SDL_ttf\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>sdlplugin.def</ModuleDefinitionFile>
@@ -66,7 +66,7 @@
       <Optimization>Full</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>D:\d\lib\glew\include;D:\d\lib\SDL\include;D:\d\lib\SDL\SDL_image\include;D:\d\lib\SDL\SDL_ttf\include;D:\d\MyProjects\MyLibrary;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\d\lib\glew\include;D:\d\lib\SDL\include;D:\d\lib\SDL\SDL_image\include;D:\d\lib\SDL\SDL_ttf\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>sdlplugin.def</ModuleDefinitionFile>

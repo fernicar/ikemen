@@ -26,7 +26,7 @@
 #pragma comment(lib, "SDL_ttf.lib")
 
 
-#include "LockSingler.h"
+#include "../../../locksingler.hpp"
 
 #include "IN2.H"
 #define IN_VER_UNICODE 0x0F000100
