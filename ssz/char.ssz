@@ -3009,6 +3009,7 @@ public &Char
     }
     if(`ls(.lsGETHIT)){
       `stVal.mov = .MovTy::H;
+      if(`sysivar[.iHITPAUSETIME] > 0) `stVal.clearWw();
       `sysivar[.iHITPAUSETIME] = 0;
       ^`self c;
       if(#`stVal.hb.by > 0 && #(c = .players.get(`stVal.hb.by[-1].id)) > 0){
