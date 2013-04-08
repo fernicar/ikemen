@@ -64,8 +64,8 @@ public void layspr(
   if(l.scale.y*(float)l.vfacing < 0.0) y2 *= -1.0;
   float xs = l.scale.x*(float)l.facing*.com.WidthScale;
   ^uint pal = spr~colorPallet;
-  if(#fx > 0 && fx~time != 0) pal = fx~getFxPal(pal, false);
-  if(.sff.allPalFX~time != 0) pal = .sff.allPalFX~getFxPal(pal, false);
+  if(#fx > 0 && fx~enable) pal = fx~getFxPal(pal, false);
+  if(.sff.allPalFX~enable) pal = .sff.allPalFX~getFxPal(pal, false);
 /?/*.cfg.OpenGL:
   .sdl.RenderMugenGl(:
     spr~pxl<>, pal<>=, 0, spr~rct=, -x2*.com.WidthScale,
