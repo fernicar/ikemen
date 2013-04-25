@@ -27,7 +27,7 @@ const double lvmul = 2.0**(1.0/12.0);
   ^int zeroAry(int sz)
   {
     ^int a.new(sz);
-    loop{index i = 0; while; do: a[i] = 0; i++; while i < sz:}
+    a:<-[void(i=){i = 0;}];
     ret a;
   }
   public void init()
@@ -37,24 +37,16 @@ const double lvmul = 2.0**(1.0/12.0);
     buf = .s.u8ToS()<, .file.readAll!ubyte?(`wincFN);
     if(#buf > 0 && buf[0] == '\xfeff') buf = buf[1..-1];
     ^^/char lines = .s.splitLines(buf);
-    loop{
-      index i = 0;
-      ^^/char tmp;
-      ^int item;
-      while;
-    do:
-      tmp = .s.split(",", lines[i]);
-      if(#tmp < 2) continue;
-      item = .s.svToAry!int?(" ", .s.trim(tmp[1]));
+    lines:<-[void(l){
+      ^^/char tmp = .s.split(",", l);
+      if(#tmp < 2) ret;
+      ^int item = .s.svToAry!int?(" ", .s.trim(tmp[1]));
       item = item[0 .. .sff.NumCharPalletes];
       if(#item < .sff.NumCharPalletes){
         item = item + `zeroAry(.sff.NumCharPalletes-#item);
       }
       `winct.set(tmp[0], item);
-    continue:
-      i++;
-    while i < #lines:
-    }
+    }];
   }
   delete()
   {
@@ -160,8 +152,7 @@ void game()
         y += (float).fnt.debugFont~sizey/.com.HeightScale,
         1.0/.com.WidthScale,  1.0/.com.HeightScale, 0, 1, t[0..i]);
       t = t[i..-1];
-    while #t > 0:
-    }
+    while #t > 0:}
     .sff.allPalFX~time = tmp;
   }
   %char line;
@@ -194,13 +185,10 @@ void game()
         ? "P"+''(.tscri.cwc~playerno+1)+":" + .tscri.cwc~name : "")
       + "> " + `line);
     loop{index i = 0; while; do:
-      if(#.chr.chars[i] > 0){
-        loop{index j = 0; while; do:
-          `put(0.0, y=, .com.clipboardText[i][j]);
-          j++;
-        while j < #.com.clipboardText[i]:
-        }
-      }
+      if(#.chr.chars[i] > 0) loop{index j = 0; while; do:
+        `put(0.0, y=, .com.clipboardText[i][j]);
+        j++;
+      while j < #.com.clipboardText[i]:}
       y += (float).fnt.debugFont~sizey/.com.HeightScale;
       i++;
     while i < #.chr.chars:}
@@ -374,8 +362,7 @@ void game()
       copyVar(i);
     continue:
       i++;
-    while i < #.chr.chars:
-    }
+    while i < #.chr.chars:}
     .chr.stg~reset();//bgctrlの都合(循環参照可能な型を操作する)でここでreset
     loop{int i = 0; while; do:
       .chr.stg~action();

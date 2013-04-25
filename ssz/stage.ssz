@@ -121,8 +121,7 @@ public &Stage
     loop{index i = 0; while; do:
       if(`bg[i].id == id) bgl .= `bg[i..i+1];
       i++;
-    while i < #`bg:
-    }
+    while i < #`bg:}
   }
   public ^/char load(^/char def)
   {:<-
@@ -422,8 +421,7 @@ public &Stage
     do:
       section(:lines, i=, link=:);
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
     if(!`reflect) `reflection = 0;
     `sf.new(1);
     if(
@@ -663,22 +661,13 @@ public &Stage
   public void reset()
   {
     `bga.clear();
-    loop{index i = 0; while; do:
-      `bg[i].reset();
-      i++;
-    while i < #`bg:
-    }
-    loop{index i = 0; while; do:
-      `bgctrlList[i].currenttime = 0;
-      i++;
-    while i < #`bgctrlList:
-    }
+    `bg:<-[void(i=){i.reset();}];
+    `bgctrlList:<-[void(i=){i.currenttime = 0;}];
     `bgctl.clear();
     loop{index i = #`bgctrlList-1; while; do:
       `bgctl.add(`bgctrlList[i..i+1]);
       i--;
-    while i >= 0:
-    }
+    while i >= 0:}
   }
 }
 

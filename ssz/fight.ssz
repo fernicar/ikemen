@@ -91,8 +91,7 @@ public &ActionList
     loop{index i = 0; while; do:
       if(`actionList[i].no == no) ret `actionList[i..i+1];
       i++;
-    while i < #`actionList:
-    }
+    while i < #`actionList:}
     ret .consts.null!&.bg.Action?();
   }
   public ^action_t newAction(int no)
@@ -752,8 +751,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       }
       `old[i] = combo[i];
       i++;
-    while i < #`cur:
-    }
+    while i < #`cur:}
   }
   public void draw(int layerno, ^&.fnt.Font f)
   {:<-
@@ -952,11 +950,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   {
     `round_default.lay.layerno = 2;
     `round.new(9);
-    loop{index i = 0; while; do:
-      `round[i].lay.layerno = 2;
-      i++;
-    while i < #`round:
-    }
+    `round:<-[void(r=){r.lay.layerno = 2;}];
     `fight.lay.layerno = 2;
     `ko.lay.layerno = 1;
     `dko.lay.layerno = 1;
@@ -1218,23 +1212,21 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public void setup(^&.sff.Sff sf, ^&.fnt.Font f, ^&.snd.Snd s)
   {:<-
     `round_default.setup(sf);
-    loop{index i = 0; while; do:
-      `round[i].setup(sf);
-      if(`round[i].noSound()){
-        `round[i].sndg = `round_default.sndg;
-        `round[i].sndi = `round_default.sndi;
+    `round:<-[void(r=){
+      r.setup(sf);
+      if(r.noSound()){
+        r.sndg = `round_default.sndg;
+        r.sndi = `round_default.sndi;
       }
-      if(`round[i].noDisplay()){
-        `round[i].fontn = `round_default.fontn;
-        `round[i].fontb = `round_default.fontb;
-        `round[i].fonta = `round_default.fonta;
-        `round[i].text = `round_default.text;
-        `round[i].anim.copy(`round_default.anim=);
-        `round[i].lay = `round_default.lay;
+      if(r.noDisplay()){
+        r.fontn = `round_default.fontn;
+        r.fontb = `round_default.fontb;
+        r.fonta = `round_default.fonta;
+        r.text = `round_default.text;
+        r.anim.copy(`round_default.anim=);
+        r.lay = `round_default.lay;
       }
-      i++;
-    while i < #`round:
-    }
+    }];
     `fight.setup(sf);
     `ko.setup(sf);
     `dko.setup(sf);
@@ -1248,11 +1240,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
   public void reset()
   {
     `round_default.reset();
-    loop{index i = 0; while; do:
-      `round[i].reset();
-      i++;
-    while i < #`round:
-    }
+    `round:<-[void(r=){r.reset();}];
     `fight.reset();
     `ko.reset();
     `dko.reset();
@@ -1636,8 +1624,7 @@ public &Fight
         break, break;
       }
       i++;
-    while i< #`actionList:
-    }
+    while i< #`actionList:}
     ret a;
   }
   public ^action_t newAction(int no)
@@ -1820,15 +1807,7 @@ public &Fight
     }
     void setal<_t>(_t x)
     {
-      loop{index j = 0; while; do:
-        loop{index i = 0; while; do:
-          x[j][i].al.actionList = `al.actionList;
-          i++;
-        while i < #x[j]:
-        }
-        j++;
-      while j < #x:
-      }
+      x:<-:<-[void(i=){i.al.actionList = `al.actionList;}];
     }
     setal!`lb.self?(`lb);
     `pb[0].al.actionList = `al.actionList;

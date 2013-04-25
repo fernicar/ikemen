@@ -238,8 +238,7 @@ public &Sprite
       if(!f.read!ubyte?(b=)) ret .com.FileReadError;
       pal[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
       i++;
-    while i < 256:
-    }
+    while i < 256:}
     if(
       !.cfg.SaveMemory || .cfg.OpenGL
       || (index)`rct.w*(index)`rct.h
@@ -305,10 +304,8 @@ public &Sprite
           k = 0;
           size = 0;
         }
-      while --size >= 0:
-      }
-    while j < leng:
-    }
+      while --size >= 0:}
+    while j < leng:}
     `rle = 0;
   }
   public void rle8Decode(^ubyte px=)
@@ -334,10 +331,8 @@ public &Sprite
         while;
       do:
         px[j++] = d;
-      while --size >= 0:
-      }
-    while j < leng:
-    }
+      while --size >= 0:}
+    while j < leng:}
     `rle = 0;
   }
   public void rle5Decode(^ubyte px=)
@@ -363,8 +358,7 @@ public &Sprite
           break, do;
         }
       }
-    while j < leng:
-    }
+    while j < leng:}
     `rle = 0;
   }
   public void lz5Decode(^ubyte px=)
@@ -405,8 +399,7 @@ public &Sprite
         do:
           px[j] = px[j-(index)d];
           j++;
-        while --size >= 0:
-        }
+        while --size >= 0:}
       else:
         loop{
           d = rle[i++];
@@ -420,15 +413,13 @@ public &Sprite
           while;
         do:
           px[j++] = d;
-        while --size >= 0:
-        }
+        while --size >= 0:}
       }
       if(++s >= 0d8){
         s = 0x0;
         ct = rle[i++];
       }
-    while j < leng:
-    }
+    while j < leng:}
     `rle = 0;
   }
   public ^/char loadFromSff(^/char fn, short ig, short in)
@@ -479,8 +470,7 @@ public &Sprite
           : h.firstSpriteHeaderOffset + ip*0d28;
         f.seek((long)shofs, .file.Seek::SET);
         if(!foo(::)) ret .com.FileReadError;
-      while size == 0d0:
-      }
+      while size == 0d0:}
       switch(h.ver0){
       case 0d1:
         if(
@@ -515,8 +505,7 @@ public &Sprite
       if(!f.read!ushort?(indexOfPrevious=)) ret .com.FileReadError;
       if(!f.read!uint?(misc=)) ret .com.FileReadError;
       if(!f.read!uint?(size=)) ret .com.FileReadError;
-    while size == 0d0 && ip != indexOfPrevious:
-    }
+    while size == 0d0 && ip != indexOfPrevious:}
     f.seek((long)(lofs+misc), .file.Seek::SET);
     `colorPallet.new(256);
     loop{
@@ -529,8 +518,7 @@ public &Sprite
       if(!f.read!ubyte?(dummy=)) ret .com.FileReadError;
       `colorPallet[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
       i++;
-    while i < l:
-    }
+    while i < l:}
     `palidx = -1;
     ret "";
   }
@@ -573,18 +561,12 @@ public &Sff
   {
     `spriteTable.clear();
     `palList.clear();
-    loop{
-      index i = 0, foo;
-      ^index idx;
-      while;
+    loop{index i = 0, foo; while;
     do:
       `palList.newPal(foo=);
       i++;
-      idx.new(1);
-      idx<> = foo;
-      `palList.palTable.set(0d1<<0d16 | (uint)i, idx);
-    while i < .NumCharPalletes:
-    }
+      `palList.palTable.set(0d1<<0d16 | (uint)i, ?foo);
+    while i < .NumCharPalletes:}
   }
   public ^/char loadFile(^/char filename, bool chr)
   {
@@ -628,8 +610,7 @@ public &Sff
           if(!f.read!ubyte?(dummy8=)) ret .com.FileReadError;
           pal[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
           i++;
-        while i < l:
-        }
+        while i < l:}
         idx<> = i;
       }
       `palList.setSource(i, pal);
@@ -693,8 +674,7 @@ public &Sff
         [void(^&.Sprite s=){if(#s == 0) s = spriteList[i..i+1];}]);
       shofs = `head.ver0 == 0d1 ? misc : shofs + 0d28;
       i++;
-    while i < (index)`head.numberOfSprites:
-    }
+    while i < (index)`head.numberOfSprites:}
     ret "";
   }
   public ^&.Sprite getSprite(short group, short number)
@@ -832,8 +812,7 @@ public &AirFileMethods<_t>
         break, break;
       }
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
     ret act;
   }
 }
@@ -982,8 +961,7 @@ public &Anim<frame_t>
           oldt = t;
           i = `loopstart;
         }
-      while true:
-      }
+      while true:}
     }
     ret #`frames;
   }
@@ -1013,8 +991,7 @@ public &Anim<frame_t>
       loop{while; do:
         if(`current == #`frames-1 && `frames[`current].time == -1) break;
         `current++;
-      while `frames[`current].time <= 0 && `current < #`frames:
-      }
+      while `frames[`current].time <= 0 && `current < #`frames:}
       if(`current < #`frames) break;
       if(!!foo){
         `current = #`frames-1;

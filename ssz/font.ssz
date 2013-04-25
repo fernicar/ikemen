@@ -1,13 +1,14 @@
 ﻿
 lib file = <file.ssz>;
 lib s = <string.ssz>;
-lib mat = <math.ssz>;
+lib m = <math.ssz>;
 lib consts = <consts.ssz>;
 lib tbl = <table.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
 lib cfg = "config.ssz";
 lib sff = "sff.ssz";
 lib com = "common.ssz";
+lib re = <regex.ssz>;
 
 public &Font
 {
@@ -38,7 +39,7 @@ public &Font
         .com.readPair!int?(`spacingx=, `spacingy=, data);
       }
       if(#(data = sc.get("colors")) > 0){
-        `colors = .mat.min!int?(255)<, .com.aton!int?(data);
+        `colors = .m.min!int?(255)<, .com.aton!int?(data);
       }
       if(#(data = sc.get("offset")) > 0){
         .com.readPair!int?(`offsetx=, `offsety=, data);
@@ -46,16 +47,7 @@ public &Font
     }
     public void map(^^/char lines, index i=)
     {
-      *.s.ptn_t ptn;
-      ptn.compile("%
-        g,-1:%
-          g,-1:%c: "\t";;%
-          cp:%g,1,-1:%nc,0,32:;;;%
-          c: "\t";;%
-        g,-1:%c: "\t";;%
-        g:|%
-          cp:%g,1,-1:%nc,0,32:;;;;%
-        end:;");
+      &.re.Regex rx.init("(\S+)(?:\s+(\S+)(?:\s+(\S+))?)?", 0);
       loop{
         ^/^/char cap;
         char c;
@@ -65,34 +57,32 @@ public &Font
           i--;
           break, break;
         }
-        ptn.search(lines[i][0...s.find(";", lines[i])]);
-        cap = ptn.getCap();
+        cap = rx.search(lines[i][0 .. .s.find(";", lines[i])]);
         if(#cap == 0) continue;
         branch{
-        cond cap[0][0] == '0' && .s.toLowerChar(cap[0][1]) == 'x':
+        cond cap[1][0] == '0' && .s.toLowerChar(cap[1][1]) == 'x':
           c = (char)0;
           loop{index i = 2; while; do:
             branch{
-            cond .mat.inRange!char?('0', '9', cap[0][i]):
-              c = (c<<(char)4) + (cap[0][i] - '0');
-            cond .mat.inRange!char?('a', 'f', .s.toLowerChar(cap[0][i])):
-              c = (c<<(char)4) + (.s.toLowerChar(cap[0][i]) - 'a' + (char)10);
+            cond .m.inRange!char?('0', '9', cap[1][i]):
+              c = (c<<(char)4) + (cap[1][i] - '0');
+            cond .m.inRange!char?('a', 'f', .s.toLowerChar(cap[1][i])):
+              c = (c<<(char)4) + (.s.toLowerChar(cap[1][i]) - 'a' + (char)10);
             else:
               break, break;
             }
             i++;
-          while i < #cap[0]:
-          }
+          while i < #cap[1]:}
         else:
-          c = cap[0]<>;
+          c = cap[1]<>;
         }
-        if(#cap >= 2) ofs = .com.aton!ofs.self?(cap[1]);
+        if(#cap[2] > 0) ofs = .com.aton!ofs.self?(cap[2]);
         `mpl.new[-1];
         `map.set(c, `mpl[#`mpl-1..-1]);
         `mpl[-1].ofs = ofs;
         branch{
-        cond #cap >= 3:
-          `mpl[-1].w = .com.aton!`mpl<>.w.self?(cap[2]);
+        cond #cap[3] > 0:
+          `mpl[-1].w = .com.aton!`mpl<>.w.self?(cap[3]);
           ofs += `mpl[-1].w - `sizex;
         else:
           `mpl[-1].w = `sizex;
@@ -100,8 +90,7 @@ public &Font
       continue:
         ofs += `sizex;
         i++;
-      while i < #lines:
-      }
+      while i < #lines:}
     }
     bool mapflg = true;
     ~$void(^^/char, index=) section = [void(^^/char lines, index i=){
@@ -156,8 +145,7 @@ public &Font
       if(!f.read!ubyte?(b=)) ret .com.FileReadError;
       `img.colorPallet[i] = (uint)r<<0d16 | (uint)g<<0d8 | (uint)b;
       i++;
-    while i < 256:
-    }
+    while i < 256:}
     `img.rlePcxDecode(px=);
     f.seek((long)txtDataOffset, .file.Seek::SET);
     %char buf;
@@ -165,15 +153,13 @@ public &Font
       if(!f.read!ubyte?(ub=)) ret .com.FileReadError;
       buf .= (char)ub;
       txtDataLenght--;
-    while txtDataLenght > 0x0:
-    }
+    while txtDataLenght > 0x0:}
     ^^/char lines = .com.splitLines(buf);
     .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
     loop{index i = 0; while; do:
       section(:lines, i=:);
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
     ^^uint pal;
     pal.new(255 / `colors);
     loop{
@@ -186,15 +172,13 @@ public &Font
         pal[i][256-`colors..256],
         `img.colorPallet[256-`colors*(i+1)..256-`colors*i]);
       i++;
-    while i < #pal:
-    }
+    while i < #pal:}
     void copyCharRect(^ubyte dst, int dw, ^/ubyte src, int x, int w, int h)
     {
       loop{index i = 0; while; do:
         .s.copy!ubyte?(dst[dw*i..w*i+dw], src[w*i+x..w*i+x+dw]);
         i++;
-      while i < h:
-      }
+      while i < h:}
     }
     loop{index i = 0; while; do:
       `mpl[i].img.new(#pal);
@@ -216,11 +200,9 @@ public &Font
         `mpl[i].img[j].rct.y = 0;
         `mpl[i].img[j].colorPallet = pal[j];
         j++;
-      while j < #`mpl[i].img:
-      }
+      while j < #`mpl[i].img:}
       i++;
-    while i < #`mpl:
-    }
+    while i < #`mpl:}
     ret "";
   }
   public int charWidth(char ch)
@@ -233,11 +215,7 @@ public &Font
   public int textWidth(^/char txt)
   {
     int w = 0;
-    loop{index i = 0; while; do:
-      w += `charWidth(txt[i]) + `spacingx;
-      i++;
-    while i < #txt:
-    }
+    txt:<-[void(c){w += `charWidth(c) + `spacingx;}];
     ret w;
   }
   public ^&.sff.Sprite getCharSpr(int bank, char ch)
@@ -272,27 +250,21 @@ public &Font
     float x, float y, float xscl, float yscl, int bank, int align, ^/char txt)
   {
     if(#`mpl == 0) ret;
-    loop{
-      index i = 0;
-      float dx = x + (float)`offsetx*xscl + (float)(.com.GameWidth-320)/2.0;
-      float dy =
-        y + (float)(`offsety - (`sizey-1))*yscl + (float)(.com.GameHeight-240);
-      branch{
-      cond align == 0:
-        dx -= (float)`textWidth(txt)*xscl*0.5;
-      cond align < 0:
-        dx -= (float)`textWidth(txt)*xscl;
-      }
-      ^uint pal = `mpl~img[bank].colorPallet;
-      if(.sff.allPalFX~time != 0) pal = .sff.allPalFX~getFxPal(pal, false);
-      while;
-    do:
-      dx +=
-        `drawChar(dx, dy, xscl, yscl, bank, txt[i], pal)
-        + (float)`spacingx*xscl;
-      i++;
-    while i < #txt:
+    float dx = x + (float)`offsetx*xscl + (float)(.com.GameWidth-320)/2.0;
+    float dy =
+      y + (float)(`offsety - (`sizey-1))*yscl + (float)(.com.GameHeight-240);
+    branch{
+    cond align == 0:
+      dx -= (float)`textWidth(txt)*xscl*0.5;
+    cond align < 0:
+      dx -= (float)`textWidth(txt)*xscl;
     }
+    ^uint pal = `mpl~img[bank].colorPallet;
+    if(.sff.allPalFX~time != 0) pal = .sff.allPalFX~getFxPal(pal, false);
+    txt:<-[void(c){
+      dx +=
+        `drawChar(dx, dy, xscl, yscl, bank, c, pal) + (float)`spacingx*xscl;
+    }];
   }
 }
 

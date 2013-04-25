@@ -396,8 +396,7 @@ public &StateBuilder
     loop{while; do:
       if(!.s.cMatch!char?(.s.blank, text[i])) break;
       i++;
-    while i < #text:
-    }
+    while i < #text:}
     text = text[i..-1];
   }
   ^/char tokenizer(^/char text=)
@@ -518,8 +517,7 @@ public &StateBuilder
     loop{while; do:
       if(.s.cMatch!char?(.kuuhaktokigou, text[i])) break;
       i++;
-    while i < #text:
-    }
+    while i < #text:}
     ^/char tok = .s.toLower(text[0..i]);
     text = text[i..-1];
     ret tok;
@@ -716,8 +714,7 @@ public &StateBuilder
       }
     continue:
       i++;
-    while i < #foo:
-    }
+    while i < #foo:}
     loop{
       index i = 1;
       int hitdefflg = flg;
@@ -824,8 +821,7 @@ public &StateBuilder
       in = in[#tmp .. -1];
     continue:
       `skipBlank(in=);
-    while #in > 0 && in<> == ',':
-    }
+    while #in > 0 && in<> == ',':}
     ret true;
   }
   bool tojikakko(^/char in=)
@@ -838,8 +834,7 @@ public &StateBuilder
       ret false;
     continue:
       token = `tokenizer(in=);
-    while #token > 0 && !.s.equ(")", token) && !.s.equ("]", token):
-    }
+    while #token > 0 && !.s.equ(")", token) && !.s.equ("]", token):}
     `usiroOp = false;
     ret true;
   }
@@ -2540,8 +2535,7 @@ public &StateBuilder
         buf = tmp;
         typ = t;
       }
-    while true:
-    }
+    while true:}
     ret typ;
   }
   int expAdsb(%char out=, ^/char in=)
@@ -2587,8 +2581,7 @@ public &StateBuilder
         buf = tmp;
         typ = t;
       }
-    while true:
-    }
+    while true:}
     ret typ;
   }
   int expGrls(%char out=, ^/char in=)
@@ -2656,8 +2649,7 @@ public &StateBuilder
         buf = tmp;
         typ = 3;
       }
-    while true:
-    }
+    while true:}
     ret typ;
   }
   bool eNeSub(%char buf=, ^/char in=, bool not, int typ=)
@@ -2772,8 +2764,7 @@ public &StateBuilder
       comm:
         if(!`expEquSub(buf=, in=, not, typ=)) ret -1;
       }
-    while true:
-    }
+    while true:}
     ret typ;
   }
   int expAnd(%char out=, ^/char in=)
@@ -2800,8 +2791,7 @@ public &StateBuilder
         in = oldin;
         ret typ;
       }
-    while true:
-    }
+    while true:}
     ret typ;
   }
   int expXor(%char out=, ^/char in=)
@@ -2828,8 +2818,7 @@ public &StateBuilder
         in = oldin;
         ret typ;
       }
-    while true:
-    }
+    while true:}
     ret typ;
   }
   int expOr(%char out=, ^/char in=)
@@ -2856,8 +2845,7 @@ public &StateBuilder
         in = oldin;
         ret typ;
       }
-    while true:
-    }
+    while true:}
     ret typ;
   }
   int expBoolAnd(%char out=, ^/char in=)
@@ -2884,8 +2872,7 @@ public &StateBuilder
         in = oldin;
         ret typ;
       }
-    while true:
-    }
+    while true:}
     ret typ;
   }
   int expBoolXor(%char out=, ^/char in=)
@@ -2912,8 +2899,7 @@ public &StateBuilder
         in = oldin;
         ret typ;
       }
-    while true:
-    }
+    while true:}
     ret typ;
   }
   int expBoolOr(%char out=, ^/char in=)
@@ -2944,8 +2930,7 @@ public &StateBuilder
         in = oldin;
         ret typ;
       }
-    while true:
-    }
+    while true:}
     if(#`maeOp > 0){
       `lasterror = `maeOp + "が不正です";
       ret -1;
@@ -3281,8 +3266,7 @@ public &StateBuilder
       }
     continue:
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
     if(typeid(func_t) == typeid(`stateBulid:<-statedef)){
       ret `stateDef(atomawasi=);
     }

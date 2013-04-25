@@ -606,11 +606,9 @@ void drawFace(&.lua.State L=, int re=)
           .syst.selinf.sel.randomspr~colorPallet);
       }
       i++;
-    while i < .syst.selinf.sel.columns:
-    }
+    while i < .syst.selinf.sel.columns:}
     j++;
-  while j < .syst.selinf.sel.rows:
-  }
+  while j < .syst.selinf.sel.rows:}
 }
 
 void loadLifebar(&.lua.State L=, int re=)

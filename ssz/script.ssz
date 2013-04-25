@@ -186,8 +186,7 @@ public &Command
     loop{index i = 0; while; do:
       if(cl[i].curbuftime > 0) ret true;
       i++;
-    while i < #cl:
-    }
+    while i < #cl:}
     ret false;
   }
   public void addCommand(^/char name, ^/char com, int time)

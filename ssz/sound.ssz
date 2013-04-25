@@ -140,8 +140,7 @@ public &Snd
       }
       subHeaderOffset = nextSubHeaderOffset;
       i++;
-    while i < (index)numberOfSounds:
-    }
+    while i < (index)numberOfSounds:}
     ret "";
   }
   public ^&.Wave getSound(int group, int number)
@@ -238,8 +237,7 @@ public &Sound
         iidx = 0;
         `fidx = 0.0;
       }
-    while i < .sdl.SNDBUFLEN:
-    }
+    while i < .sdl.SNDBUFLEN:}
   }
   void mix_s8(^int buf, float fidxadd, int lv, int rv)
   {
@@ -264,8 +262,7 @@ public &Sound
         iidx = 0;
         `fidx = 0.0;
       }
-    while i < .sdl.SNDBUFLEN:
-    }
+    while i < .sdl.SNDBUFLEN:}
   }
   void mix_m8(^int buf, float fidxadd, int lv, int rv)
   {
@@ -291,8 +288,7 @@ public &Sound
         iidx = 0;
         `fidx = 0.0;
       }
-    while i < .sdl.SNDBUFLEN:
-    }
+    while i < .sdl.SNDBUFLEN:}
   }
   public void mix(^int buf, float left, float right)
   {

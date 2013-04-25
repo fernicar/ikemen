@@ -224,8 +224,7 @@ public int nextLine(index i=, ^/char str)
     break:
       i++;
     }
-  while i < #str:
-  }
+  while i < #str:}
   ret 0;
 }
 
@@ -234,8 +233,7 @@ public %^/char splitLines(^/char str)
   %^/char spl;
   loop{index i = 0; do:
     spl.new[-1] = str[i..-.nextLine(i=, str)+i];
-  while i < #str:
-  }
+  while i < #str:}
   ret spl;
 }
 
@@ -246,9 +244,7 @@ public double atof(^/char str)
   bool mi = s[0] == '-';
   index i = (int)(mi || s[0] == '+'), p = 0;
   double f = 0.0;
-  loop{
-    while;
-  do:
+  loop{while; do:
     branch{
     cond s[i] >= '0' && s[i] <= '9':
       f = f*10.0 + (double)(s[i] - '0');
@@ -259,8 +255,7 @@ public double atof(^/char str)
       break, break;
     }
     i++;
-  while i < #s:
-  }
+  while i < #s:}
   if(p > 0) f *= 10.0**-(double)(i - p);
   if(mi) f = -f;
   ret f;
@@ -367,12 +362,7 @@ public ..atonOF<_t>(^/char str) _t
 public ..ctaOF<_t>(^/char csv) ^_t
 {
   ^^/char spl = .s.split(",", csv);
-  ^_t ary.new(#spl);
-  loop{index i = 0; while; do:
-    ary[i] = .atonOF!_t?(spl[i]);
-    i++;
-  while i < #ary:}
-  ret ary;
+  ret spl:<-[_t(s){ret .atonOF!_t?(s);}];
 }
 
 public void readPairOF<_t>(_t x=, _t y=, ^/char data)
@@ -696,8 +686,7 @@ public &PalFX
         ((tmp | (uint)(((int)((tmp&0xff0000)!=0x0)<<31)>>23)) & 0xffff)
         | (((c>>0d16&0xff) + (uint)adr) * (uint)mr >> 0d8) << 0d16;
       .workpal[i] = tmp | (uint)(((int)((tmp&0xff000000)!=0x0)<<31)>>15);
-    while ++i < 256:
-    }
+    while ++i < 256:}
     ret .workpal;
   }
 }
@@ -761,8 +750,7 @@ public &Section
       }
     continue:
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
   }
   public ^/char get(^/char name)
   {

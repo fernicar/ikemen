@@ -152,8 +152,7 @@ public &Select
     loop{index i = 0; while; do:
       section(:lines, i=:);
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
     .com.loadFile(`charlist[-1].def, `charlist[-1].sprite=)<,
     [^/char(^/char f){
       ^&.sff.Sprite s;
@@ -217,8 +216,7 @@ public &Select
     loop{index i = 0; while; do:
       section(lines, i=);
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
     ret "";
   }
 }

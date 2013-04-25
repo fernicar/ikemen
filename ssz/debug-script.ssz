@@ -113,10 +113,7 @@ void setAILevel(&.lua.State L=, int re=)
     int pn = .tscri.cwc~playerno;
     if(!.m.inRange!int?(0, #.chr.chars-1, pn)) break;
     .com.com[pn] = level;
-    loop{index i = 0; while; do:
-      .chr.chars[pn][i]~key = level == 0 ?  pn : !pn;
-      i++;
-    while i < #.chr.chars[pn]:}
+    .chr.chars[pn]:<-[void(c){c~key = level == 0 ?  pn : !pn;}];
   }
 }
 
@@ -130,10 +127,7 @@ void setTime(&.lua.State L=, int re=)
 void clear(&.lua.State L=, int re=)
 {
   re = 0;
-  loop{index i = 0; while; do:
-    .com.clipboardText[i].new(0);
-    i++;
-  while i < #.com.clipboardText:}
+  .com.clipboardText:<-[void(cb=){cb.new(0);}];
 }
 
 

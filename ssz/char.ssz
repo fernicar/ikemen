@@ -52,29 +52,13 @@ void drawClsn()
   spr.colorPallet.new(256);
   spr.colorPallet<> = 0xff0000;
   spr.setPxl(pxl);
-  loop{index i = 0; while; do:
-    .drawc1[i].draw(spr=, (int)0x3feff);
-    i++;
-  while i < #.drawc1:
-  }
+  .drawc1:<-[void(i=){i.draw(spr=, (int)0x3feff);}];
   spr.colorPallet<> = 0x0000ff;
-  loop{index i = 0; while; do:
-    .drawc2[i].draw(spr=, (int)0x3feff);
-    i++;
-  while i < #.drawc2:
-  }
+  .drawc2:<-[void(i=){i.draw(spr=, (int)0x3feff);}];
   spr.colorPallet<> = 0x00ff00;
-  loop{index i = 0; while; do:
-    .drawc2sp[i].draw(spr=, (int)0x3feff);
-    i++;
-  while i < #.drawc2sp:
-  }
+  .drawc2sp:<-[void(i=){i.draw(spr=, (int)0x3feff);}];
   spr.colorPallet<> = 0x404040;
-  loop{index i = 0; while; do:
-    .drawwh[i].draw(spr=, (int)0x3feff);
-    i++;
-  while i < #.drawwh:
-  }
+  .drawwh:<-[void(i=){i.draw(spr=, (int)0x3feff);}];
 }
 
 &AnimList
@@ -680,15 +664,14 @@ public void appendClipboardText(int p, ^/char text)
 void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
 {
   &.s.Format fm.set(formatText);
-  loop{index j = 0; while; do:
+  vars:<-[void(i){
     branch{
-    cond vars[j].typ == .VarTy::Float:
-      fm.f(vars[j].toF());
+    cond i.typ == .VarTy::Float:
+      fm.f(i.toF());
     else:
-      fm.d(vars[j].toI());
+      fm.d(i.toI());
     }
-    j++;
-  while j < #vars:}
+  }];
   ^/char tmp = .s.join(\n, .s.split("\n", fm.out));
   tmp = .s.join(\t, .s.split("\t", tmp));
   tmp = .s.join(\\, .s.split("\\", tmp));
@@ -1489,10 +1472,7 @@ public ^%^&Char chars.new(.com.maxSimul*2);
 void initWwl()
 {
   .wakewakaLength.new(#.chars);
-  loop{index i = 0; while; do:
-    .wakewakaLength[i] = 0;
-    i++;
-  while i < #.wakewakaLength:}
+  .wakewakaLength:<-[void(i=){i = 0;}];
 }
 initWwl();
 
@@ -2621,7 +2601,7 @@ public &Char
       ret def + ":"\r\n + error;
     }
     lines = .com.splitLines(mainbuf);
-    .s.each!^/char?([void(^/char l=){l=.s.trim(l);}], lines);
+    lines:<-[void(l=){l = .s.trim(l);}];
     .cgi[`playerno].actionList.new(0);
     .cgi[`playerno].actionTable.clear();
     loop{index i = 0; while; do:
@@ -2629,11 +2609,7 @@ public &Char
       i++;
     while i < #lines:
     }
-    loop{index i = 0; while; do:
-      .cgi[`playerno].actionList[i].ani.setup(.cgi[`playerno].sf);
-      i++;
-    while i < #.cgi[`playerno].actionList:
-    }
+    .cgi[`playerno].actionList:<-[void(a=){a.ani.setup(.cgi[`playerno].sf);}];
     .cgi[`playerno].sn.new(1);
     if(
       #.cgi[`playerno].sound > 0
@@ -3482,11 +3458,10 @@ public &Char
       }
     }
     `xScreenBound();
-    if(!p) loop{index i = 0; ^`self c; while; do:
-      c = .players.get(`targets[i]);
+    if(!p) `targets:<-[void(t=){
+      ^`self c = .players.get(t);
       if(#c > 0 && c~sysivar[.iBINDTOID] == `id) c~bind();
-      i++;
-    while i < #`targets:}
+    }];
     `minus = 1;
     `acttmp += (int)`isActive() - (int)`isHitPaused();
     if(`acttmp > 0) branch{
@@ -3994,14 +3969,12 @@ public &Char
     break:
       `parentindex *= -1;
     }
-    loop{index i = 0; while; do:
-      if(`children[i] >= 0){
-        .chars[`playerno][`children[i]]~parentindex *= -1;
-        `children[i] = -1;
+    `children:<-[void(c=){
+      if(c >= 0){
+        .chars[`playerno][c]~parentindex *= -1;
+        c = -1;
       }
-      i++;
-    while i < #`children:
-    }
+    }];
     .players.destroy(`id);
     `helperindex = -1;
   }
@@ -4011,10 +3984,7 @@ public &Char
       `sysfvar[.fX] = x;
       `enemyn.new(0);
       if(`player) loop{index i = !`playerno & 1; while; do:
-        loop{index j = 0; while; do:
-          .chars[i][j]~enemyn.new(0);
-          j++;
-        while j < #.chars[i]:}
+        .chars[i]:<-[void(c=){c~enemyn.new(0);}];
         i += 2;
       while i < #.chars:}
     }
@@ -4944,19 +4914,17 @@ public &Char
     if(id < 0) ret `targets;
     %int tar;
     ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)) tar .= `targets[i];
-      i++;
-    while i < #`targets:
-    }
+    `targets:<-[void(t){
+      c = .players.get(t);
+      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)) tar .= t;
+    }];
     ret tar;
   }
   public void trTargetBind(^/int tar, int time, float x, float y)
   {
     ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(tar[i]);
+    tar:<-[void(t){
+      c = .players.get(t);
       if(#c > 0){
         c~setBindToId(`=);
         c~setBindTime(time);
@@ -4964,9 +4932,7 @@ public &Char
         c~sysfvar[.fBINDPOSX] = x;
         c~sysfvar[.fBINDPOSY] = y;
       }
-      i++;
-    while i < #tar:
-    }
+    }];
   }
   public void trBindToTarget(^/int tar, int time, float x, float y, int hmf)
   {
@@ -5046,100 +5012,83 @@ public &Char
     int f = `facing;
     if(fasing < 0) f *= -1;
     ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(tar[i]);
+    tar:<-[void(t){
+      c = .players.get(t);
       if(#c > 0) c~setFacing(f);
-      i++;
-    while i < #tar:}
+    }];
   }
   public void trTargetState(^/int tar, int state)
   {
     if(state < 0) ret;
     ^`self c;
     int pno = `minus == -2 ? `playerno : `stVal.playerno;
-    loop{index i = 0; while; do:
-      c = .players.get(tar[i]);
+    tar:<-[void(t){
+      c = .players.get(t);
       if(#c > 0){
         c~setCtrl(false);
         c~changeState1kai(pno, state);
       }
-      i++;
-    while i < #tar:
-    }
+    }];
   }
   public void trTargetVelSetX(^/int tar, float vx)
   {
     ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(tar[i]);
+    tar:<-[void(t){
+      c = .players.get(t);
       if(#c > 0) c~setXV(vx);
-      i++;
-    while i < #tar:
-    }
+    }];
   }
   public void trTargetVelSetY(^/int tar, float vy)
   {
     ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(tar[i]);
+    tar:<-[void(t){
+      c = .players.get(t);
       if(#c > 0) c~setYV(vy);
-      i++;
-    while i < #tar:
-    }
+    }];
   }
   public void trTargetVelAddX(^/int tar, float vx)
   {
     ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(tar[i]);
+    tar:<-[void(t){
+      c = .players.get(t);
       if(#c > 0) c~sysfvar[.fVX] += vx;
-      i++;
-    while i < #tar:
-    }
+    }];
   }
   public void trTargetVelAddY(^/int tar, float vy)
   {
     ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(tar[i]);
+    tar:<-[void(t){
+      c = .players.get(t);
       if(#c > 0) c~sysfvar[.fVY] += vy;
-      i++;
-    while i < #tar:
-    }
+    }];
   }
   public void trTargetLifeAdd(^/int tar, int va, bool kill, bool absolute)
   {
     ^`self c;
-    loop{index i = 0; while; do:
-      if(#(c = .players.get(tar[i])) > 0){
+    tar:<-[void(t){
+      if(#(c = .players.get(t)) > 0){
         c~addLife(
           -(double)c~getDamage(
             -(double)va, kill, absolute, `attackmul), true, true);
       }
-      i++;
-    while i < #tar:
-    }
+    }];
   }
   public void trTargetPowerAdd(^/int tar, int pw)
   {
     ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(tar[i]);
+    tar:<-[void(t){
+      c = .players.get(t);
       if(#c > 0) c~addPower(pw);
-      i++;
-    while i < #tar:
-    }
+    }];
   }
   public void trHitAdd(int h)
   {
     `sysivar[.iHITCOUNT] += h;
     ^`self c;
-    loop{index i = 0; while; do:
-      c = .players.get(`targets[i]);
+    `targets:<-[void(t){
+      c = .players.get(t);
       if(#c > 0) c~getcombo += h;
-      i++;
-    while i < #`targets:
-    }
+    }];
   }
   public int  trNumEnemy()
   {
@@ -5226,14 +5175,11 @@ public &Char
     int id = .v.toI();
     .v.typ = .VarTy::Int;
     .v.i = 0;
-    loop{index i = 1; while; do:
+    .chars[`playerno]:<-[void(h=){
       if(
-        .chars[`playerno][i]~helperindex > 0
-        && !.chars[`playerno][i]~ls(.lsDESTROY)
-        && (id <= 0 || id == .chars[`playerno][i]~helperid)) .v.i++;
-      i++;
-    while i < #.chars[`playerno]:
-    }
+        h~helperindex > 0 && !h~ls(.lsDESTROY)
+        && (id <= 0 || id == h~helperid)) .v.i++;
+    }];
   }
   public bool matchExplodId(index i, int id)
   {
@@ -5249,8 +5195,7 @@ public &Char
         .explods[`playerno][i].bindtime = bt;
       }
       i++;
-    while i < #.explods[`playerno]:
-    }
+    while i < #.explods[`playerno]:}
   }
   public void trRemoveExplod(int id)
   {:<-
@@ -5269,8 +5214,7 @@ public &Char
         }
       continue:
         i--;
-      while i >= 0:
-      }
+      while i >= 0:}
     }
     expRemove(id, .expdrawlist=, true);
     expRemove(id, .topexpdrawlist=, false);
@@ -5284,8 +5228,7 @@ public &Char
     loop{index i = 0; while; do:
       if(`matchExplodId(i, id)) .v.i++;
       i++;
-    while i < #.explods[`playerno]:
-    }
+    while i < #.explods[`playerno]:}
   }
   public void trNumTarget()
   {
@@ -5293,19 +5236,17 @@ public &Char
     int id = .v.toI();
     .v.typ = .VarTy::Int;
     .v.i = 0;
-    loop{index i = 0; while; do:
-      if(`targets[i] >= 0) branch{
+    `targets:<-[void(tar){
+      if(tar >= 0) branch{
       cond id < 0:
         .v.i++;
       else:
         {
-          ^`self t = .players.get(`targets[i]);
+          ^`self t = .players.get(tar);
           if(#t > 0 && t~stVal.hb.hitid == id) .v.i++;
         } 
       }
-      i++;
-    while i < #`targets:
-    }
+    }];
   }
   public void trNumProjID()
   {
@@ -5318,21 +5259,16 @@ public &Char
     int d = .m.max!int?(0, id);
     .v.typ = .VarTy::Int;
     .v.i = 0;
-    loop{index i = 0; while; do:
-      if(.projs[`playerno][i].id == d && .projs[`playerno][i].hits >= 0){
-        .v.i++;
-      }
-      i++;
-    while i < #.projs[`playerno]:
-    }
+    .projs[`playerno]:<-[void(p=){
+      if(p.id == d && p.hits >= 0) .v.i++;
+    }];
   }
   public int trNumProj()
   {
     int n = 0;
-    loop{index i = 0; while; do:
-      if(.projs[`playerno][i].id >= 0 && .projs[`playerno][i].hits >= 0) n++;
-      i++;
-    while i < #.projs[`playerno]:}
+    .projs[`playerno]:<-[void(p=){
+      if(p.id >= 0 && p.hits >= 0) n++;
+    }];
     ret n;
   }
   public int trHitPauseTime()
@@ -5634,8 +5570,7 @@ public ^&Char PlayerList!&Char?::get(int id)
   loop{index i = 0; while; do:
     if(.playerid[i].n == id) ret .chars[.playerid[i].pn][.playerid[i].hi];
     i++;
-  while i < #.playerid:
-  }
+  while i < #.playerid:}
   loop{
     *`top.self p = `top;
     while;
@@ -5647,8 +5582,7 @@ public ^&Char PlayerList!&Char?::get(int id)
       ret p~c;
     }
     p = p~next;
-  while #p > 0:
-  }
+  while #p > 0:}
   ret .consts.null!`_t?();
 }
 public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
@@ -5657,8 +5591,7 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
   loop{index i = 0; while; do:
     if(pyr.enemyn[i].n == n) ret .chars[pyr.enemyn[i].pn][pyr.enemyn[i].hi];
     i++;
-  while i < #pyr.enemyn:
-  }
+  while i < #pyr.enemyn:}
   ^^pyr.self en.new(n+1);
   void add(^`pyr.self e, index rng)
   {
@@ -5684,8 +5617,7 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
         ret;
       }
       i++;
-    while i < #`en:
-    }
+    while i < #`en:}
   }
   loop{
     *`top.self p = `top;
@@ -5693,8 +5625,7 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
   do:
     if((p~c~playerno&1) != (pyr.playerno&1) && p~c~player) add(p~c, 0);
     p = p~next;
-  while #p > 0:
-  }
+  while #p > 0:}
   if(#en[-1] == 0) ret .consts.null!&.Char?();
   pyr.enemyn.new[-1].n = n;
   pyr.enemyn[-1].pn = en[-1]~playerno;
@@ -5731,8 +5662,7 @@ public void PlayerList!&Char?::destroy(int id)
       break, break;
     }
     p = p~next;
-  while #p~next > 0:
-  }
+  while #p~next > 0:}
 }
 public void PlayerList!&Char?::action(
   float x, float cvmin=, float cvmax=,
@@ -5765,8 +5695,7 @@ public void PlayerList!&Char?::update(
     p~c~update(cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
   continue:
     p = p~next;
-  while #p > 0:
-  }
+  while #p > 0:}
 }
 public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
 {
@@ -6275,19 +6204,15 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       }
     }
     p = p~next;
-  while #p > 0:
-  }
+  while #p > 0:}
   if(pro) loop{
     index i = 0;
     while;
   do:
-    if(pyr.playerno != i && #.chars[i] > 0) loop{
-      index j = 0;
+    if(pyr.playerno != i && #.chars[i] > 0){
       int orgatktmp = .chars[i]<>~atktmp;
       .chars[i]<>~atktmp = -1;
-      while;
-    do:
-      .projs[i][j].[void(proj=){
+      .projs[i]:<-[void(proj=){
         if(
           proj.id < 0 || proj.hits < 0 || (
             proj.hit.affectteam != 0 && ((pyr.playerno&1) != (i&1))
@@ -6370,14 +6295,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           pyr.hittmp = oldhittmp;
         }
       }];
-      j++;
-    while j < #.projs[i]:
-    break:
       .chars[i]<>~atktmp = orgatktmp;
     }
     i++;
-  while i < #.projs:
-  }
+  while i < #.projs:}
 }
 public void PlayerList!&Char?::getHit(bool pro)
 {
@@ -6405,34 +6326,22 @@ void playSound()
   if(.sdl.setSndBuf(.snd.sndbuf)){
     .snd.sndbufClear();
     .snd.mixSounds();
-    loop{index i = 0; while; do:
-      loop{index j = 0; while; do:
-        if(#.chars[i][j] > 0) loop{index k = 0; while; do:
-          .chars[i][j]~sounds[k].mix(
-            .snd.sndbuf,
-            .com.xmin - .com.screenleft, .com.xmax + .com.screenright);
-          k++;
-        while k < #.chars[i][j]~sounds:}
-        j++;
-      while j < #.chars[i]:}
-      i++;
-    while i < #.chars:}
+    .chars:<-:<-[void(c){
+      if(#c > 0) c~sounds:<-[void(s=){
+        s.mix(
+          .snd.sndbuf,
+          .com.xmin - .com.screenleft, .com.xmax + .com.screenright);
+      }];
+    }];
   }
 }
 void stopAllSound()
 {
   if(.sdl.setSndBuf(.snd.sndbuf)){
     .snd.sndbufClear();
-    loop{index i = 0; while; do:
-      loop{index j = 0; while; do:
-        if(#.chars[i][j] > 0) loop{index k = 0; while; do:
-          .chars[i][j]~sounds[k].sound.new(0);
-          k++;
-        while k < #.chars[i][j]~sounds:}
-        j++;
-      while j < #.chars[i]:}
-      i++;
-    while i < #.chars:}
+    .chars:<-:<-[void(c){
+      if(#c > 0) c~sounds:<-[void(s=){s.sound.new(0);}];
+    }];
   }
 }
 
@@ -6493,21 +6402,17 @@ void gSetNormal(float scl, float x, float y)
 ^&.fgt.LifePower getLifePower()
 {
   %&.fgt.LifePower lpl;
-  loop{index i = 0; while; do:
+  .chars:<-[void(c){
     branch{
-    cond #.chars[i] > 0:
+    cond #c > 0:
       lpl.new[-1].set(
-        (float).chars[i][0]~sysivar[.iLIFE]
-        / (float).chars[i][0]~sysivar[.iLIFEMAX],
-        (float).chars[i][0]~getSharePower()
-        / (float).chars[i][0]~sysivar[.iPOWERMAX],
-        .chars[i][0]~getSharePower() / 1000);
+        (float)c<>~sysivar[.iLIFE] / (float)c<>~sysivar[.iLIFEMAX],
+        (float)c<>~getSharePower() / (float)c<>~sysivar[.iPOWERMAX],
+        c<>~getSharePower() / 1000);
     else:
       lpl.new[-1].set(0.0, 0.0, 0);
     }
-    i++;
-  while i < #.chars:
-  }
+  }];
   ret lpl;
 }
 
@@ -6517,10 +6422,7 @@ void update(
 {
   .players.update(cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
   loop{index i = 0; while; do:
-    loop{index j = 0; while; do:
-      if(.projs[i][j].id >= 0) .projs[i][j].update(i);
-      j++;
-    while j < #.projs[i]:}
+    .projs[i]:<-[void(p=){if(p.id >= 0) p.update(i);}];
     i++;
   while i < #.projs:}
 }
@@ -6579,33 +6481,19 @@ void commandUpdate()
     }];
   continue:
     i++;
-  while i < #.chars:
-  }
+  while i < #.chars:}
 }
 
 void rootAction()
 {
   if(.com.tickNextFrame()){
     loop{index i = 0; while; do:
-      loop{index j = 0; while; do:
-        if(.projs[i][j].id >= 0) .projs[i][j].projClsn(i);
-        j++;
-      while j < #.projs[i]:
-      }
+      .projs[i]:<-[void(p=){if(p.id >= 0) p.projClsn(i);}];
       i++;
-    while i < #.projs:
-    }
+    while i < #.projs:}
     .players.getHit(false);
     .players.getHit(true);
-    loop{index i = 0; while; do:
-      loop{index j = 0; while; do:
-        if(.projs[i][j].id != .com.IERR) .projs[i][j].tick();
-        j++;
-      while j < #.projs[i]:
-      }
-      i++;
-    while i < #.projs:
-    }
+    .projs:<-:<-[void(p=){if(p.id != .com.IERR) p.tick();}];
     .players.tick();
   }
 }
@@ -6616,20 +6504,16 @@ void anim()
     loop{index j = 0; while; do:
       if(.projs[i][j].id >= 0) .projs[i][j].anime(.chars[i]<>~mver0() != 1, i);
       j++;
-    while j < #.projs[i]:
-    }
+    while j < #.projs[i]:}
     i++;
-  while i < #.projs:
-  }
+  while i < #.projs:}
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
       .chars[i][j]~drawAnim();
       j++;
-    while j < #.chars[i]:
-    }
+    while j < #.chars[i]:}
     i++;
-  while i < #.chars:
-  }
+  while i < #.chars:}
 }
 
 public float action(
@@ -6685,30 +6569,24 @@ public float action(
     .rootAction();
   }
   %bool hbuf;
-  loop{index i = 0; while; do:
+  .chars:<-[void(c){
     branch{
-    cond #.chars[i] > 0:
+    cond #c > 0:
       hbuf .=
-        (.chars[i][0]~getcombo != 0 || .chars[i][0]~stVal.mov == .MovTy::H)
-        && (.chars[i][0]~sysivar[.iSYSFLAG] & .sfOVER) == 0;
+        (c<>~getcombo != 0 || c<>~stVal.mov == .MovTy::H)
+        && (c<>~sysivar[.iSYSFLAG] & .sfOVER) == 0;
     else:
       hbuf .= false;
     }
-    i++;
-  while i < #.chars:
-  }
+  }];
   ^int cb.new(2);
   cb[0] = cb[1] = 0;
   loop{index i = 0; while; do:
-    loop{index j = 0; while; do:
-      cb[!i&1] =
-        .m.min!int?(999)<, .m.max!int?(cb[!i&1], .chars[i][j]~getcombo);
-      j++;
-    while j < #.chars[i]:
-    }
+    .chars[i]:<-[void(c){
+      cb[!i&1] = .m.min!int?(999)<, .m.max!int?(cb[!i&1], c~getcombo);
+    }];
     i++;
-  while i < #.chars:
-  }
+  while i < #.chars:}
   .fight~step(.com.tmode, .getLifePower(), hbuf, cb);
   void sprite()
   {
@@ -6735,11 +6613,9 @@ public float action(
           }
         continue:
           j--;
-        while j >= 0:
-        }
+        while j >= 0:}
         i++;
-      while i < #.explods:
-      }
+      while i < #.explods:}
     }
     expUpdate(.expdrawlist=, true);
     expUpdate(.topexpdrawlist=, false);
@@ -7342,10 +7218,7 @@ public void nextRound()
   continue:
     i++;
   while i < #.chars:}
-  loop{index i = 0; while; do:
-    if(#.chars[i] > 0) .chars[i][0]~trSelfState(5900, 0, 0);
-    i++;
-  while i < #.chars:}
+  .chars:<-[void(c){if(#c > 0) c<>~trSelfState(5900, 0, 0);}];
 }
 
 

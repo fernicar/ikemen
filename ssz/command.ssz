@@ -1124,25 +1124,13 @@ public &CommandList
   }
   public void step(int facing, bool ai, bool hitpause, int buftime)
   {
-    loop{index ii = 0; while; do:
-      loop{index i = 0; while; do:
-        `commands[ii][i].step(`buffer, ai, hitpause, buftime);
-        i++;
-      while i < #`commands[ii]:}
-      ii++;
-    while ii < #`commands:}
+    `commands:<-:<-[void(c=){c.step(`buffer, ai, hitpause, buftime);}];
   }
   public void bufReset(int in)
   {
     if(#`buffer == 0) ret;
     `buffer~reset();
-    loop{index ii = 0; while; do:
-      loop{index i = 0; while; do:
-        `commands[ii][i].clear();
-        i++;
-      while i < #`commands[ii]:}
-      ii++;
-    while ii < #`commands:}
+    `commands:<-:<-[void(c=){c.clear();}];
   }
   public void add(&.Command c=)
   {
