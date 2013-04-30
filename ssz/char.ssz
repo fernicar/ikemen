@@ -1457,10 +1457,12 @@ const int sfKO_ROUND_MIDDLE = 0b00000000000000000000000000001000;
     public ^self next;
   }
   ^&Node!_t? top, end;
+  public %^_t drawOrder;
   public void clear()
   {
     `top.new(0);
     `end.new(0);
+    `drawOrder.new(0);
   }
 }
 
@@ -4880,7 +4882,7 @@ public &Char
       h.palfx.new(1);
       h.palfx~remap = .chars[`playerno][`parentindex]~getPalMap() + (index)[];
     }
-    h.trChangeState2(st, `minus == -2 ? `playerno : `stVal.playerno, 0, 1);
+    h.trChangeState2(st, `playerno, 0, 1);
   }
   public void trProjInit(&.Projectile p=, int pt, float x, float y)
   {
@@ -5633,23 +5635,46 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
   ret en[-1];
 }
 public void PlayerList!&Char?::add(^&.Char c)
-{
+{:<-
+  void addDO(^&.Char c){
+    loop{index i = 0; while; do:
+      if(#`drawOrder[i] == 0){
+        `drawOrder[i] = c;
+        break, break;
+      }
+      i++;
+    while i < #`drawOrder:
+      `drawOrder .= c;
+    }
+  }
   .playerid.new(0);
   if(#`top == 0){
     `top.new(1);
     `top~c = c;
     `end = `top;
+    addDO(c);
     ret;
   }
   `end~next.new(1);
   `end = `end~next;
   `end~c = c;
+  addDO(c);
 }
 public void PlayerList!&Char?::destroy(int id)
-{
+{:<-
+  void removeDO(^&.Char c){
+    loop{index i = 0; while; do:
+      if(`drawOrder[i] == c){
+        `drawOrder[i].new(0);
+        break, break;
+      }
+      i++;
+    while i < #`drawOrder:}
+  }
   if(#`top == 0) ret;
   .playerid.new(0);
   if(`top~c~id == id){
+    removeDO(`top~c);
     `top = `top~next;
     if(#`top == 0) `end.new(0);
     ret;
@@ -5657,6 +5682,7 @@ public void PlayerList!&Char?::destroy(int id)
   *`top.self p = `top;
   loop{while; do:
     if(p~next~c~id == id){
+      removeDO(p~next~c);
       p~next = p~next~next;
       if(#p~next == 0) `end = p;
       break, break;
@@ -6508,12 +6534,9 @@ void anim()
     i++;
   while i < #.projs:}
   loop{index i = 0; while; do:
-    loop{index j = 0; while; do:
-      .chars[i][j]~drawAnim();
-      j++;
-    while j < #.chars[i]:}
+    if(#.players.drawOrder[i] > 0) .players.drawOrder[i]~drawAnim();
     i++;
-  while i < #.chars:}
+  while i < #.players.drawOrder:}
 }
 
 public float action(
