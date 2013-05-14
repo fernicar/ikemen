@@ -20,7 +20,7 @@ lib se = <alpha/sdlevent.ssz>;
 
 
 int changeStateNest = 0;
-float oldx = 0.0;
+float curx = 0.0, cury = 0.0;
 int waitdown = 0, shuttertime = 0;
 bool winskipped = false;
 void none;
@@ -431,8 +431,7 @@ public void drawReflection(float x, float y)
       `palfx[i].emulg = (int)((float)`palfx[i-1].emulg * `mulg);
       `palfx[i].emulb = (int)((float)`palfx[i-1].emulb * `mulb);
       i++;
-    while i < #`palfx:
-    }
+    while i < #`palfx:}
   }
   public void recAfterImg(
     &.act.Action a=, float x, float y, float xs, float ys,
@@ -499,8 +498,7 @@ public void drawReflection(float x, float y)
         `alphas, `alphad, br, `palfx[pfxi .. pfxi + 1],
         0, 0, 0.0);
       i += `framegap;
-    while i <= end:
-    }
+    while i <= end:}
     if(rec) `recAfterImg(a=, x, y, xs, ys, an, as, oVer, ax, ay, cfx);
   }
 }
@@ -1768,6 +1766,7 @@ public &Projectile
   public float ticOldX, ticNewX;
   public float ticOldY, ticNewY;
   public &.AfterImage aimg;
+  public ^&.com.PalFX palfx;
   new()
   {
     `clear();
@@ -1815,6 +1814,7 @@ public &Projectile
     `ticOldX = `ticNewX = `x;
     `ticOldY = `ticNewY = `y;
     `aimg.clear();
+    `palfx.new(0);
   }
   public void setX(float x)
   {
@@ -2029,16 +2029,15 @@ public &Projectile
       int br =
         256 >> (int)(
           .super > 0 && .superdarken != 0 && playerNo != .superplayer);
-      ^&.com.PalFX pfx.new(1);
-      pfx~remap = .chars[playerNo]<>~getPalMap();
       .addAnimList(
         .anims=, `ani, `sprpriority, `x, `y, .com.scale,
         (float)`facing*`scalex, `scaley, 0.0, false, oVer, 1.0, 1.0, -1, 0,
-        br, pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
+        br, `palfx,
+        `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
       `aimg.recAndAddAL(
         `ani<>=, `sprpriority, `x, `y, (float)`facing*`scalex, `scaley,
         0.0, false, .cgi[playerNo].mver0 != 1, 1.0, 1.0,
-        .com.tickNextFrame() && notpause, br, pfx);
+        .com.tickNextFrame() && notpause, br, `palfx);
     }
   }
 }
@@ -2308,13 +2307,21 @@ public &Char
     idx = -1;
     ret .consts.null!&.Explod?();
   }
-  public void insertExplod(index i)
+  public void insertExplodEx(index i, int rpg, int rpi)
   {
     if(#.explods[`playerno][i].ani == 0){
       .explods[`playerno][i].id = .com.IERR;
       ret;
     }
-    .explods[`playerno][i].ani~ani.updateSprite();
+    .explods[`playerno][i].[void(e=){
+      e.ani~ani.updateSprite();
+      if(e.ownpal != 0 && e.ani~ani.sff != .fight~fsf){
+        %index remap .= e.palfx~remap;
+        e.palfx.new(1);
+        e.palfx~remap = remap;
+        `remapPalSub(e.palfx, 1, 1, rpg, rpi);
+      }
+    }];
     branch{
     cond .explods[`playerno][i].ontop != 0:
       loop{
@@ -2346,18 +2353,24 @@ public &Char
       }
     }
   }
+  public void insertExplod(index i)
+  {
+    `insertExplodEx(i, -1, 0);
+  }
   public ^&.Projectile newProj()
   {
     loop{index i = 0; while; do:
       if(.projs[`playerno][i].id < 0){
         .projs[`playerno][i].clear();
         .projs[`playerno][i].id = 0;
+        .projs[`playerno][i].palfx = `getPalfx();
         ret .projs[`playerno][i..i+1];
       }
       i++;
     while i < #.projs[`playerno]:
       if(i < .cfg.PlayerProjectileMax){
         .projs[`playerno].new[i].id = 0;
+        .projs[`playerno][i].palfx = `getPalfx();
         ret .projs[`playerno][i..i+1];
       }
     }
@@ -3478,6 +3491,11 @@ public &Char
       if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
       if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
     }
+    if(`stVal.mov == .MovTy::H && `stVal.hb.damage != 0){
+      if(`stVal.hb.guarded) `getcombo = 0;
+      `addLife(-(double)`stVal.hb.damage, true, true);
+    }
+    `stVal.hb.damage = 0;
   }
   public void posUpdate()
   {
@@ -3589,13 +3607,6 @@ public &Char
           `defencemul *= `sysfvar[.fFALL_DEFENCE_MUL];
           `stVal.hb.fallcount++;
         }
-        if(`stVal.hb.damage != 0){
-          if(`stVal.hb.guarded) `getcombo = 0;
-          bool dead = `stVal.hb.damage >= `sysivar[.iLIFE];
-          `addLife(-(double)`stVal.hb.damage, true, true);
-          if(dead) `sysivar[.iLIFE] = 0;
-        }
-        `stVal.hb.damage = 0;
       }
       if(
         (`acttmp > 0 && `stVal.mov != .MovTy::H) || (
@@ -3624,7 +3635,6 @@ public &Char
         if(`stVal.mov != .MovTy::H){
           if(`hittmp > 0) `hittmp = 0;
           `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
-          `stVal.hb.damage = 0;
           `stVal.hb.hittime = -1;
           `stVal.hb.hitshaketime = 0;
           `stVal.hb.fallf = false;
@@ -4812,6 +4822,10 @@ public &Char
         (`facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
         - `getEdge(`fedge));
   }
+  public float trFrontEdge()
+  {
+    ret `facing > 0 ? `trRightEdge() : `trLeftEdge();
+  }
   public int trBackEdgeDist()
   {
     ret
@@ -4824,6 +4838,54 @@ public &Char
       (int)(
         (`facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
         - `getEdge(`bedge));
+  }
+  public float trBackEdge()
+  {
+    ret `facing < 0 ? `trRightEdge() : `trLeftEdge();
+  }
+  public float trLeftEdge()
+  {
+    ret .com.screenx;
+  }
+  public float trRightEdge()
+  {
+    ret .com.screenx + `trGameWidth();
+  }
+  public float trTopEdge()
+  {
+    ret .com.screeny;
+  }
+  public float trBottomEdge()
+  {
+    ret .com.screeny + `trGameHeight();
+  }
+  public float trGameWidth()
+  {
+    ret (float).com.GameWidth/.com.scale;
+  }
+  public float trGameHeight()
+  {
+    ret 240.0/.com.scale;
+  }
+  public float trScreenWidth()
+  {
+    ret (float).com.GameWidth;
+  }
+  public float trScreenHeight()
+  {
+    ret 240.0;
+  }
+  public float trCameraPosX()
+  {
+    ret .curx;
+  }
+  public float trCameraPosY()
+  {
+    ret .cury;
+  }
+  public float trCameraZoom()
+  {
+    ret .com.scale;
   }
   public void trIsHelper()
   {
@@ -4884,7 +4946,8 @@ public &Char
     }
     h.trChangeState2(st, `playerno, 0, 1);
   }
-  public void trProjInit(&.Projectile p=, int pt, float x, float y)
+  public void trProjInit(
+    &.Projectile p=, int pt, float x, float y, bool op, int rpg, int rpi)
   {
     `helproSetPos!p.self?(p=, pt, x, y, 1);
     if(p.anim < -1) p.anim = 0;
@@ -4904,6 +4967,12 @@ public &Char
       p.facing *= -1;
       p.velocityx *= -1.0;
       p.accelx *= -1.0;
+    }
+    if(op){
+      %index remap .= p.palfx~remap;
+      p.palfx.new(1);
+      p.palfx~remap = remap;
+      `remapPalSub(p.palfx, 1, 1, rpg, rpi);
     }
   }
   public void trDestroySelf()
@@ -5354,7 +5423,7 @@ public &Char
   {
     ret `roundState() >= 3 && .com.win < 0;
   }
-  public void trRemapPal(int sg, int sn, int dg, int dn)
+  public void remapPalSub(^&.com.PalFX pfx, int sg, int sn, int dg, int dn)
   {
     if(sg < 0 || sn < 0 || dg < 0 || dn < 0) ret;
     ^index si =
@@ -5363,7 +5432,6 @@ public &Char
       .cgi[`playerno].sf~palList.palTable.get((uint)dg << 0d16 | (ushort)dn);
     if(#si == 0) ret;
     if(#di == 0) di = si;
-    ^&.com.PalFX pfx = `getPalfx();
     if(#pfx~remap == 0) pfx~remap = .cgi[`playerno].sf~palList.getPalMap();
     .cgi[`playerno].sf~palList.swapPalMap(pfx~remap=);
     .cgi[`playerno].sf~palList.remap(si<>, di<>);
@@ -5374,6 +5442,10 @@ public &Char
       if(#spr > 0) .cgi[`playerno].sf~palList.remap(spr~palidx, di<>);
     }
     .cgi[`playerno].sf~palList.swapPalMap(pfx~remap=);
+  }
+  public void trRemapPal(int sg, int sn, int dg, int dn)
+  {
+    `remapPalSub(`getPalfx(), sg, sn, dg, dn);
   }
   public int trAILevel()
   {
@@ -5464,15 +5536,12 @@ public void Explod::update(bool oVer, int playerNo)
     ~_t aal = [_t(a=){
       ^&.com.PalFX pfx;
       branch{
-      cond `ownpal == 0 && `ani~ani.sff != .fight~fsf:
+      cond `ani~ani.sff != .fight~fsf:
         pfx = `palfx;
       cond `ownpal == 0:
         pfx.new(1);
         pfx~copy(`palfx<>);
         pfx~remap.new(0);
-      cond `ani~ani.sff != .fight~fsf:
-        pfx.new(1);
-        pfx~remap = `palfx~remap;
       }
       .addAnimList(
         a=, `ani, `sprpriority, `x+xofs, `y+yofs, cscl,
@@ -5529,9 +5598,11 @@ public void Explod::setPos(&.Char c=)
     c.setPos!`self?(`=, `postype, `offsetx, `offsety, `relativef);
   }
 }
-public void Explod::modify(&.Char c=, &.ModifyExplod mod=, index i)
+public void Explod::modify(
+  &.Char c=, &.ModifyExplod mod=, index i, int rpg, int rpi)
 {
   if(!c.matchExplodId(i, mod.id)) ret;
+  if(`ownpal != 0) c.remapPalSub(`palfx, 1, 1, rpg, rpi);
   if(mod.bindtime != .com.IERR) `bindtime = mod.bindtime;
   if(!.m.isnan(mod.scalex)) `scalex = mod.scalex;
   if(!.m.isnan(mod.scaley)) `scaley = mod.scaley;
@@ -6554,7 +6625,8 @@ public float action(
   bool introSkip = false;
   branch{
   cond .com.tickFrame():
-    .oldx = x;
+    .curx = x;
+    .cury = y;
     .com.xmin = .com.screenx + .com.screenleft;
     .com.xmax =
       .com.screenx + ((float).com.GameWidth / .com.scale) - .com.screenright;

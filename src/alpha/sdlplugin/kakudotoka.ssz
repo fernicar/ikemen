@@ -1,9 +1,6 @@
 ﻿
 lib file = <file.ssz>;
 lib math = <math.ssz>;
-lib str = <string.ssz>;
-
-//ret;
 
 void foo(double d=, index その他=)
 {
@@ -54,7 +51,7 @@ do:
       dtmp = dy;
       dy = 0;
     }
-    buf .= "{" .= str.iToS(dx) .= "," .= str.iToS(dy) .= "}";
+    buf .= "{" .= ''dx .= "," .= ''dy .= "}";
     j++;
     if(j < 256) buf .= ",";
     if(j % 16 == 0) buf .= \r\n;

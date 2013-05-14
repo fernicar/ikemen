@@ -2144,12 +2144,44 @@ public &StateBuilder
     cond .s.equ("frontedgebodydist", token):
       out .= obj .= "trFrontEdgeBodyDist()";
       typ = 2;
+    cond .s.equ("frontedge", token):
+      out .= obj .= "trFrontEdge()";
+      typ = 1;
     cond .s.equ("backedgedist", token):
       out .= obj .= "trBackEdgeDist()";
       typ = 2;
     cond .s.equ("backedgebodydist", token):
       out .= obj .= "trBackEdgeBodyDist()";
       typ = 2;
+    cond .s.equ("backedge", token):
+      out .= obj .= "trBackEdge()";
+      typ = 1;
+    cond .s.equ("leftedge", token):
+      out .= obj .= "trLeftEdge()";
+      typ = 1;
+    cond .s.equ("rightedge", token):
+      out .= obj .= "trRightEdge()";
+      typ = 1;
+    cond .s.equ("topedge", token):
+      out .= obj .= "trTopEdge()";
+      typ = 1;
+    cond .s.equ("bottomedge", token):
+      out .= obj .= "trBottomEdge()";
+      typ = 1;
+    cond .s.equ("camerapos", token):
+      token = `tokenizer(in=);
+      branch{
+      cond .s.equ("x", token):
+        out .= obj .= "trCameraPosX()";
+      cond .s.equ("y", token):
+        out .= obj .= "trCameraPosY()";
+      else:
+        break, else;
+      }
+      typ = 1;
+    cond .s.equ("camerazoom", token):
+      out .= obj .= "trCameraZoom()";
+      typ = 1;
     cond .s.equ("palno", token):
       out .= obj .= "palno()";
       typ = 2;
@@ -2209,10 +2241,16 @@ public &StateBuilder
       out .= "/4.0)";
       typ = 1;
     cond .s.equ("gamewidth", token):
-      out .= "(float).com.GameWidth";
+      out .= obj .= "trGameWidth()";
       typ = 1;
     cond .s.equ("gameheight", token):
-      out .= "240.0";
+      out .= obj .= "trGameHeight()";
+      typ = 1;
+    cond .s.equ("screenwidth", token):
+      out .= obj .= "trScreenWidth()";
+      typ = 1;
+    cond .s.equ("screenheight", token):
+      out .= obj .= "trScreenHeight()";
       typ = 1;
     cond .s.equ("cond", token):
       out .= '(';
@@ -3907,7 +3945,7 @@ public &StateBuilder
       case .CtrlTy::Projectile:
         `state.ctrlList[-1].task .=
           "^&.Projectile pr=`newProj();if(#pr==0)ret;"
-          "int pt=0;float x=0.0,y=0.0;";
+          "int pt=0,rpg=-1,rpi=0;float x=0.0,y=0.0;bool op=false;";
       case .CtrlTy::ReversalDef:
         `state.ctrlList[-1].task .= "`stVal.hit.clear();";
       }
@@ -5147,6 +5185,23 @@ public &StateBuilder
               "pr~pausemovetime=", ";", 2)) ret false;
           ret true;
         }])) ret false;
+        if(!`stateParam(param=, "ownpal", [`paraF_t(data=){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=, "op=", ";", 3)) ret false;
+          ret true;
+        }])) ret false;
+        if(!`stateParam(param=, "remappal", [`paraF_t(data=){
+          if(
+            !`argExpression(
+              `state.ctrlList[-1].task=, data=, "rpg=", ";", 2)) ret false;
+          if(.s.equ(",")<, `tokenizer(data=)){
+            if(
+              !`fullExpression(
+                `state.ctrlList[-1].task=, data=, "rpi=", ";", 2)) ret false;
+          }
+          ret true;
+        }])) ret false;
         if(!`afterImageSub(param=, "afterimage.", "pr~")) ret false;
       }
       `state.ctrlList[-1].task .= "`setHitdefDefault";
@@ -5156,7 +5211,7 @@ public &StateBuilder
           "(pr~hit=,true);"
           "if(pr~remanim==.com.IERR)pr~remanim=pr~hitanim;"
           "if(pr~cancelanim==.com.IERR)pr~cancelanim=pr~remanim;"
-          "`trProjInit(pr<>=,pt,x,y);";
+          "`trProjInit(pr<>=,pt,x,y,op,rpg,rpi);";
       else:
         `state.ctrlList[-1].task .= "(`stVal.hit=,false);";
       }
@@ -6186,7 +6241,7 @@ public &StateBuilder
       case .CtrlTy::Explod:
         `state.ctrlList[-1].task .=
           "index i;^&.Explod e=`newExplod(i=);"
-          "if(#e==0)ret;int t=0;float rx=0.0,ry=0.0;e~id=0;";
+          "if(#e==0)ret;int t=0,rpg=-1,rpi=0;float rx=0.0,ry=0.0;e~id=0;";
         if(!`stateParam(param=, "ownpal", [`paraF_t(data=){
           if(
             !`fullExpression(
@@ -6201,7 +6256,7 @@ public &StateBuilder
           "e~ontop=1;e~sprpriority=.consts.int_t::MIN;e~ownpal=1;";
       case .CtrlTy::ModifyExplod:
         `state.ctrlList[-1].task .=
-          "&.ModifyExplod m;int t=0;float rx=0.0,ry=0.0;";
+          "&.ModifyExplod m;int t=0,rpg=-1,rpi=0;float rx=0.0,ry=0.0;";
       }
       ^/char exp =
         `state.ctrlList[-1].typ == .CtrlTy::ModifyExplod ? "m" : "e<>";
@@ -6250,6 +6305,17 @@ public &StateBuilder
               `lasterror = data + "が無効な値です";
               ret false;
             }
+          }
+          ret true;
+        }])) ret false;
+        if(!`stateParam(param=, "remappal", [`paraF_t(data=){
+          if(
+            !`argExpression(
+              `state.ctrlList[-1].task=, data=, "rpg=", ";", 2)) ret false;
+          if(.s.equ(",")<, `tokenizer(data=)){
+            if(
+              !`fullExpression(
+                `state.ctrlList[-1].task=, data=, "rpi=", ";", 2)) ret false;
           }
           ret true;
         }])) ret false;
@@ -6519,11 +6585,14 @@ public &StateBuilder
         }
         `state.ctrlList[-1].task .=
           "e~offsetx+=.m.randF(-rx,rx);e~offsety+=.m.randF(-ry,ry);"
-          "e~setPos(`=);`setAlpha(t,e~alphas=,e~alphad=);"
-          "`insertExplod(i);";
-        if(`state.ctrlList[-1].typ == .CtrlTy::Explod){
+          "e~setPos(`=);`setAlpha(t,e~alphas=,e~alphad=);";
+        switch(`state.ctrlList[-1].typ){
+        case .CtrlTy::Explod:
           `state.ctrlList[-1].task .=
+            "`insertExplodEx(i,rpg,rpi);"
             "e~ignorehitpause=ih;if(e~ontop != 0)e~sprpriority=0;";
+        case .CtrlTy::GameMakeAnim:
+          `state.ctrlList[-1].task .= "`insertExplod(i);";
         }
       case .CtrlTy::ModifyExplod:
         `state.ctrlList[-1].task .=
@@ -6531,7 +6600,7 @@ public &StateBuilder
           "if(!.m.isnan(m.offsety))m.offsety+=.m.randF(-ry,ry);"
           "`setAlpha(t,m.alphas=,m.alphad=);"
           "loop{index i=0;while;do:"
-          ".explods[`playerno][i].modify(`=,m=,i++);"
+          ".explods[`playerno][i].modify(`=,m=,i++,rpg,rpi);"
           "while i<#.explods[`playerno]:}";
       }
       ret true;

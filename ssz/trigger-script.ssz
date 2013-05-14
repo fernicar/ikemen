@@ -216,6 +216,12 @@ void authorname(&.lua.State L=, int re=)
   L.pushString(#.cwc > 0 ? .chr.cgi[.cwc~playerno].author : "");
 }
 
+void backedge(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trBackEdge() : 0.0);
+}
+
 void backedgebodydist(&.lua.State L=, int re=)
 {
   re = 1;
@@ -226,6 +232,30 @@ void backedgedist(&.lua.State L=, int re=)
 {
   re = 1;
   L.pushNumber(#.cwc > 0 ? (double).cwc~trBackEdgeDist() : 0.0);
+}
+
+void bottomedge(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trBottomEdge() : 0.0);
+}
+
+void cameraposX(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trCameraPosX() : 0.0);
+}
+
+void cameraposY(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trCameraPosY() : 0.0);
+}
+
+void camerazoom(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trCameraZoom() : 0.0);
 }
 
 void canrecover(&.lua.State L=, int re=)
@@ -421,6 +451,12 @@ void facing(&.lua.State L=, int re=)
   L.pushNumber((double)(#.cwc > 0 ? .cwc~facing : 0));
 }
 
+void frontedge(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trFrontEdge() : 0.0);
+}
+
 void frontedgebodydist(&.lua.State L=, int re=)
 {
   re = 1;
@@ -443,7 +479,7 @@ void fvar(&.lua.State L=, int re=)
 void gameheight(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(240.0);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trGameHeight() : 0.0);
 }
 
 void gametime(&.lua.State L=, int re=)
@@ -455,7 +491,7 @@ void gametime(&.lua.State L=, int re=)
 void gamewidth(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber((double).com.GameWidth);
+  L.pushNumber(#.cwc > 0 ? (double).cwc~trGameWidth() : 0.0);
 }
 
 void gethitvar(&.lua.State L=, int re=)
@@ -617,6 +653,12 @@ void ishometeam(&.lua.State L=, int re=)
 {
   re = 1;
   L.pushBoolean(#.cwc > 0 && (.cwc~playerno&1) == .com.home);
+}
+
+void leftedge(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trLeftEdge() : 0.0);
 }
 
 void life(&.lua.State L=, int re=)
@@ -857,6 +899,12 @@ void projhittime(&.lua.State L=, int re=)
     #.cwc > 0 ? .cwc~trProjTime(.chr.ProjContact::Hit)$.chr.v.toF() : 0.0);
 }
 
+void rightedge(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trRightEdge() : 0.0);
+}
+
 void roundno(&.lua.State L=, int re=)
 {
   re = 1;
@@ -875,6 +923,12 @@ void roundstate(&.lua.State L=, int re=)
   L.pushNumber(#.cwc > 0 ? (double).cwc~roundState() : 0.0);
 }
 
+void screenheight(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trScreenHeight() : 0.0);
+}
+
 void screenposX(&.lua.State L=, int re=)
 {
   re = 1;
@@ -887,6 +941,12 @@ void screenposY(&.lua.State L=, int re=)
   re = 1;
   L.pushNumber(
     #.cwc > 0 ? (.cwc~sysfvar[.chr.fY]-.com.screeny)*.com.scale : 0.0);
+}
+
+void screenwidth(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trScreenWidth() : 0.0);
 }
 
 void selfanimexist(&.lua.State L=, int re=)
@@ -986,6 +1046,12 @@ void time(&.lua.State L=, int re=)
   L.pushNumber((double)(#.cwc > 0 ? .cwc~stVal.time : 0));
 }
 
+void topedge(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber(#.cwc > 0 ? .cwc~trTopEdge() : 0.0);
+}
+
 void uniqhitcount(&.lua.State L=, int re=)
 {
   re = 1;
@@ -1057,14 +1123,20 @@ public void registerFunction(&.lua.State L=)
   L.register("animOwner", .animOwner);
   L.register("animtime", .animtime);
   L.register("authorname", .authorname);
+  L.register("backedge", .backedge);
   L.register("backedgebodydist", .backedgebodydist);
   L.register("backedgedist", .backedgedist);
+  L.register("bottomedge", .bottomedge);
+  L.register("cameraposX", .cameraposX);
+  L.register("cameraposY", .cameraposY);
+  L.register("camerazoom", .camerazoom);
   L.register("canrecover", .canrecover);
   L.register("command", .command);
   L.register("const", .const_);
   L.register("ctrl", .ctrl);
   L.register("drawgame", .drawgame);
   L.register("facing", .facing);
+  L.register("frontedge", .frontedge);
   L.register("frontedgebodydist", .frontedgebodydist);
   L.register("frontedgedist", .frontedgedist);
   L.register("fvar", .fvar);
@@ -1084,6 +1156,7 @@ public void registerFunction(&.lua.State L=)
   L.register("inguarddist", .inguarddist);
   L.register("ishelper", .ishelper);
   L.register("ishometeam", .ishometeam);
+  L.register("leftedge", .leftedge);
   L.register("life", .life);
   L.register("lifemax", .lifemax);
   L.register("lose", .lose);
@@ -1116,11 +1189,14 @@ public void registerFunction(&.lua.State L=)
   L.register("projcontacttime", .projcontacttime);
   L.register("projguardedtime", .projguardedtime);
   L.register("projhittime", .projhittime);
+  L.register("rightedge", .rightedge);
   L.register("roundno", .roundno);
   L.register("roundsexisted", .roundsexisted);
   L.register("roundstate", .roundstate);
+  L.register("screenheight", .screenheight);
   L.register("screenposX", .screenposX);
   L.register("screenposY", .screenposY);
+  L.register("screenwidth", .screenwidth);
   L.register("selfanimexist", .selfanimexist);
   L.register("stateno", .stateno);
   L.register("stateOwner", .stateOwner);
@@ -1132,6 +1208,7 @@ public void registerFunction(&.lua.State L=)
   L.register("teamside", .teamside);
   L.register("tickspersecond", .tickspersecond);
   L.register("time", .time);
+  L.register("topedge", .topedge);
   L.register("uniqhitcount", .uniqhitcount);
   L.register("var", .var);
   L.register("velX", .velX);
