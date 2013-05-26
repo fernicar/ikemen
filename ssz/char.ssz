@@ -61,7 +61,7 @@ void drawClsn()
   .drawwh:<-[void(i=){i.draw(spr=, (int)0x3feff);}];
 }
 
-&AnimList
+&AnimSprite
 {
   public ^&.act.Action anim;
   public int priority = 0;
@@ -71,235 +71,230 @@ void drawClsn()
   public short bright = 256;
   public int salpha = -1, dalpha = 0;
   public ^&.com.PalFX fx;
-  public ^self next;
 }
 
-^&AnimList anims, topanims;
+%^&AnimSprite anims, topanims;
 
-&ShadowList
+&ShadowSprite
 {
-  public ^&.AnimList al;
+  public ^&.AnimSprite as;
   public int color, alpha;
   public float offsety = 0.0;
-  public ^self next;
 }
 
-^&ShadowList shadows;
+%^&ShadowSprite shadows;
 
 public void addAnimList(
-  ^&.AnimList al=, ^&.act.Action a, int p,
+  %^&.AnimSprite al=, ^&.act.Action a, int p,
   float x, float y, float cs, float xs, float ys,
   float an, bool as, bool oVer, float ax, float ay,
   int sa, int da, int b, ^&.com.PalFX fx, int sc, int salp, float so)
 {
-  void newdainyuu(^&.AnimList anl=)
+  ^&.AnimSprite newSprite()
   {
-    anl.new(1);
-    anl~anim = `a;
-    anl~priority = `p;
-    anl~x = `x;
-    anl~y = `y;
-    anl~cscl = `cs;
-    anl~xscl = `xs;
-    anl~yscl = `ys;
-    anl~angle = `an;
-    anl~aset = `as;
-    anl~oVer = `oVer;
-    anl~bright = `b;
-    anl~axscl = `ax;
-    anl~ayscl = `ay;
-    anl~salpha = `sa;
-    anl~dalpha = `da;
-    anl~fx = `fx;
-    if(`sc != 0) .addShadowList(anl, `sc, `so, `salp);
+    ^&.AnimSprite as.new(1);
+    as.new(1);
+    as~anim = `a;
+    as~priority = `p;
+    as~x = `x;
+    as~y = `y;
+    as~cscl = `cs;
+    as~xscl = `xs;
+    as~yscl = `ys;
+    as~angle = `an;
+    as~aset = `as;
+    as~oVer = `oVer;
+    as~bright = `b;
+    as~axscl = `ax;
+    as~ayscl = `ay;
+    as~salpha = `sa;
+    as~dalpha = `da;
+    as~fx = `fx;
+    if(`sc != 0) .addShadowList(as, `sc, `so, `salp);
+    ret as;
   }
   if(.se.fskip) ret;
-  ^&.AnimList tmp = al;
-  branch{
-  cond<a> #al == 0:
-  cond<b> p <= al~priority:
-  else:
-    break;
-  comm:
-    newdainyuu(al=);
-  diff<b>:
-    al~next = tmp;
-  comm:
-    ret;
-  }
-  loop{while; do:
-    if(p <= tmp~next~priority){
-      ^&.AnimList tmp2 = tmp~next;
-      newdainyuu(tmp~next=);
-      tmp~next~next = tmp2;
-      break, break;
+  loop{
+    index i = 0, start = 0, length = #al;
+    while;
+  do:
+    i = start + (length >> 1);
+    branch{
+    cond p <= al[i]~priority:
+      length = i - start;
+    cond i == start:
+      i++;
+      length = 0;
+    else:
+      length -= i - start;
+      start = i;
     }
-    tmp = tmp~next;
-  while #tmp~next > 0:
-    newdainyuu(tmp~next=);
+  while length > 0:
+    {
+      *al.self tmp .= al[0 .. i] .= newSprite() .= al[i .. -1];
+      al = tmp;
+    }
   }
 }
 
-public void drawAnimList(^&.AnimList al=, float x, float y)
+public void drawAnimList(%^&.AnimSprite al=, float x, float y)
 {
-  loop{while; do:
-    if(#al~anim > 0){
-      al~anim~ani.salpha = al~salpha;
-      al~anim~ani.dalpha = al~dalpha;
+  loop{index i = 0; while; do:
+    if(#al[i]~anim > 0) al[i]~[void(as=){
+      as.anim~ani.salpha = as.salpha;
+      as.anim~ani.dalpha = as.dalpha;
       branch{
         int ob = .com.brightness;
-        .com.brightness = al~bright;
-        float cs = al~cscl;
-      cond al~angle != 0.0:
-        al~anim~ani.angleDraw(
-          .com.xoffset-(x-al~x)*cs,
-          .com.zoffset+.com.yoffset-.stage.envShake.getOffset()-(y-al~y)*cs,
-          cs*al~xscl, cs*al~yscl, al~angle*(.m.PI/180.0),
-          al~aset, al~axscl, al~ayscl, al~fx, al~oVer);
+        .com.brightness = as.bright;
+        float cs = as.cscl;
+      cond as.angle != 0.0:
+        as.anim~ani.angleDraw(
+          .com.xoffset-(x-as.x)*cs,
+          .com.zoffset+.com.yoffset-.stage.envShake.getOffset()-(y-as.y)*cs,
+          cs*as.xscl, cs*as.yscl, as.angle*(.m.PI/180.0),
+          as.aset, as.axscl, as.ayscl, as.fx, as.oVer);
       else:
-        al~anim~ani.draw(
-          .com.scrrect=, .com.xoffset/cs - (x-al~x),
+        as.anim~ani.draw(
+          .com.scrrect=, .com.xoffset/cs - (x-as.x),
           (.com.zoffset+.com.yoffset-.stage.envShake.getOffset())/cs
-          - (y-al~y), cs, cs, al~xscl, al~xscl,
-          al~yscl, 0.0, (float).com.GameWidth/2.0, al~fx, al~oVer);
+          - (y-as.y), cs, cs, as.xscl, as.xscl,
+          as.yscl, 0.0, (float).com.GameWidth/2.0, as.fx, as.oVer);
       break:
         .com.brightness = ob;
       }
-    }
-    al = al~next;
-  while #al > 0:
-  }
+    }];
+    i++;
+  while i < #al:}
 }
 
-public void addShadowList(^&.AnimList al, int sc, float so, int alpha)
+public void addShadowList(^&.AnimSprite as, int sc, float so, int alpha)
 {
-  void newdainyuu(^&.ShadowList shl=)
+  ^&.ShadowSprite newSprite()
   {
-    shl.new(1);
-    shl~al = `al;
-    shl~color = `sc;
-    shl~alpha = .m.max!int?(0, .m.min!int?(256, `alpha));
-    shl~offsety = `so * (`al~oVer ? 1.5 : 1.0);
+    ^&.ShadowSprite ss.new(1);
+    ss~as = `as;
+    ss~color = `sc;
+    ss~alpha = .m.max!int?(0, .m.min!int?(256, `alpha));
+    ss~offsety = `so * (`as~oVer ? 1.5 : 1.0);
+    ret ss;
   }
-  int p = al~priority;
-  ^&.ShadowList tmp = .shadows;
-  branch{
-  cond<a> #.shadows == 0:
-  cond<b> p <= .shadows~al~priority:
-  else:
-    break;
-  comm:
-    newdainyuu(.shadows=);
-  diff<b>:
-    .shadows~next = tmp;
-  comm:
-    ret;
-  }
-  loop{while; do:
-    if(p <= tmp~next~al~priority){
-      ^&.ShadowList tmp2 = tmp~next;
-      newdainyuu(tmp~next=);
-      tmp~next~next = tmp2;
-      break, break;
+  int p = as~priority;
+  loop{
+    index i = 0, start = 0, length = #.shadows;
+    while;
+  do:
+    i = start + (length >> 1);
+    branch{
+    cond p <= .shadows[i]~as~priority:
+      length = i - start;
+    cond i == start:
+      i++;
+      length = 0;
+    else:
+      length -= i - start;
+      start = i;
     }
-    tmp = tmp~next;
-  while #tmp~next > 0:
-    newdainyuu(tmp~next=);
+  while length > 0:
+    {
+      *.shadows.self tmp .=
+        .shadows[0 .. i] .= newSprite() .= .shadows[i .. -1];
+      .shadows = tmp;
+    }
   }
 }
 
 public void drawShadowList(float x, float y)
 {
-  ^&.ShadowList sl = .shadows;
-  loop{
-    int intensity, color;
-    while;
-  do:
-    if(#sl~al~anim == 0 || #sl~al~anim~ani.spr == 0) continue;
-    intensity = .stg~sdw.intensity;
-    color = sl~color;
-    branch{
-      int alpha = sl~alpha;
+  loop{index i = 0; while; do:
+    if(#.shadows[i]~as~anim == 0 || #.shadows[i]~as~anim~ani.spr == 0){
+      break, continue;
+    }
+    .shadows[i]~[void(ss=){
+      int intensity = .stg~sdw.intensity;
+      int color = ss.color;
       branch{
-      cond sl~al~y < (float).stg~sdw.fadeend*.stg~localscl:
-        break, break, continue;
-      cond sl~al~y < (float).stg~sdw.fadebgn*.stg~localscl:
-        alpha =
-          (int)(
-            (float)alpha * ((float).stg~sdw.fadeend*.stg~localscl-sl~al~y) / (
-              ((float).stg~sdw.fadeend - (float).stg~sdw.fadebgn)
-              * .stg~localscl));
+        int alpha = ss.alpha;
+        branch{
+          cond ss.as~y < (float).stg~sdw.fadeend*.stg~localscl:
+          ret;
+        cond ss.as~y < (float).stg~sdw.fadebgn*.stg~localscl:
+          alpha =
+            (int)(
+              (float)alpha * ((float).stg~sdw.fadeend*.stg~localscl-ss.as~y)
+              / (
+                ((float).stg~sdw.fadeend - (float).stg~sdw.fadebgn)
+                * .stg~localscl));
+        }
+      cond color < 0:
+        color = (int).stg~sdw.color;
+        if(alpha >= 255) break;
+        intensity = intensity * alpha >> 8;
+      else:
+        intensity = 0;
+      comm:
+        color =
+          (
+            ((color&255)*alpha>>8&255) | ((color&255<<8)*alpha>>8&255<<8)
+            | ((color&255<<16)*alpha>>8)&255<<16)
+          & (int)0xffffff;
       }
-    cond color < 0:
-      color = (int).stg~sdw.color;
-      if(alpha >= 255) break;
-      intensity = intensity * alpha >> 8;
-    else:
-      intensity = 0;
-    comm:
-      color =
-        (
-          ((color&255)*alpha>>8&255) | ((color&255<<8)*alpha>>8&255<<8)
-          | ((color&255<<16)*alpha>>8)&255<<16)
-        & (int)0xffffff;
-    }
-    {
       float syscl = .stg~sdw.yscale;
-      float cs = sl~al~cscl;
-      sl~al~anim~ani.shadowDraw(
-        .com.xoffset-(x-sl~al~x)*cs,
+      float cs = ss.as~cscl;
+      ss.as~anim~ani.shadowDraw(
+        .com.xoffset-(x-ss.as~x)*cs,
         .com.zoffset + .com.yoffset - .stage.envShake.getOffset()
-        - (y+sl~al~y*syscl-sl~offsety)*cs,
-        cs*sl~al~xscl, cs*-sl~al~yscl, syscl, sl~al~angle*(.m.PI/180.0),
-        sl~al~aset, sl~al~axscl, sl~al~ayscl, .stage.bgPalFX, sl~al~oVer,
+        - (y+ss.as~y*syscl-ss.offsety)*cs,
+        cs*ss.as~xscl, cs*-ss.as~yscl, syscl, ss.as~angle*(.m.PI/180.0),
+        ss.as~aset, ss.as~axscl, ss.as~ayscl, .stage.bgPalFX, ss.as~oVer,
         (uint)color, intensity);
-    }
+    }];
   continue:
-    sl = sl~next;
-  while #sl > 0:
-  }
+    i++;
+  while i < #.shadows:}
 }
 
 public void drawReflection(float x, float y)
 {
-  ^&.ShadowList sl = .shadows;
-  loop{while; do:
-    if(#sl~al~anim > 0 && #sl~al~anim~ani.frames > 0){
-      if(sl~al~salpha < 0){
-        sl~al~salpha =
+  loop{index i = 0; while; do:
+    if(#.shadows[i]~as~anim == 0 || #.shadows[i]~as~anim~ani.frames == 0){
+      break, continue;
+    }
+    .shadows[i]~[void(ss=){
+      if(ss.as~salpha < 0){
+        ss.as~salpha =
           (int)
-            sl~al~anim~ani.frames[sl~al~anim~ani.drawidx].salpha;
-        sl~al~dalpha =
+            ss.as~anim~ani.frames[ss.as~anim~ani.drawidx].salpha;
+        ss.as~dalpha =
           (int)
-            sl~al~anim~ani.frames[sl~al~anim~ani.drawidx].dalpha;
+            ss.as~anim~ani.frames[ss.as~anim~ani.drawidx].dalpha;
       }
-      int refl = .stg~reflection*sl~alpha >> 8;
-      sl~al~anim~ani.salpha = (int)((float)sl~al~salpha*(float)refl / 255.0);
-      sl~al~anim~ani.dalpha = .m.min!int?(255, sl~al~dalpha + (255-refl));
-      if(sl~al~anim~ani.salpha == 1 && sl~al~anim~ani.dalpha == 255){
-        sl~al~anim~ani.salpha = 0;
+      int refl = .stg~reflection*ss.alpha >> 8;
+      ss.as~anim~ani.salpha = (int)((float)ss.as~salpha*(float)refl / 255.0);
+      ss.as~anim~ani.dalpha = .m.min!int?(255, ss.as~dalpha + (255-refl));
+      if(ss.as~anim~ani.salpha == 1 && ss.as~anim~ani.dalpha == 255){
+        ss.as~anim~ani.salpha = 0;
       }
       branch{
-        float cs = sl~al~cscl;
-      cond sl~al~angle != 0.0:
-        sl~al~anim~ani.angleDraw(
-          .com.xoffset-(x-sl~al~x)*cs,
+        float cs = ss.as~cscl;
+      cond ss.as~angle != 0.0:
+        ss.as~anim~ani.angleDraw(
+          .com.xoffset-(x-ss.as~x)*cs,
           .com.zoffset + .com.yoffset - .stage.envShake.getOffset()
-          - (y+sl~al~y-sl~offsety)*cs,
-          cs*sl~al~xscl, cs*-sl~al~yscl, sl~al~angle*(.m.PI/180.0),
-          sl~al~aset, sl~al~axscl, sl~al~ayscl, sl~al~fx, sl~al~oVer);
+          - (y+ss.as~y-ss.offsety)*cs,
+          cs*ss.as~xscl, cs*-ss.as~yscl, ss.as~angle*(.m.PI/180.0),
+          ss.as~aset, ss.as~axscl, ss.as~ayscl, ss.as~fx, ss.as~oVer);
       else:
-        sl~al~anim~ani.draw(
-          .com.scrrect=, .com.xoffset/cs - (x-sl~al~x),
+        ss.as~anim~ani.draw(
+          .com.scrrect=, .com.xoffset/cs - (x-ss.as~x),
           (.com.zoffset+.com.yoffset-.stage.envShake.getOffset())/cs
-          - (y+sl~al~y-sl~offsety),
-          cs, cs, sl~al~xscl, sl~al~xscl, -sl~al~yscl, 0.0,
-          (float).com.GameWidth/2.0, sl~al~fx, sl~al~oVer);
+          - (y+ss.as~y-ss.offsety),
+          cs, cs, ss.as~xscl, ss.as~xscl, -ss.as~yscl, 0.0,
+          (float).com.GameWidth/2.0, ss.as~fx, ss.as~oVer);
       }
-    }
-    sl = sl~next;
-  while #sl > 0:
-  }
+    }];
+  continue:
+    i++;
+  while i < #.shadows:}
 }
 
 
