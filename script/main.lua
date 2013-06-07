@@ -13,7 +13,7 @@ loadLifebar('data/gms_lifebar/fight.def')
 loadDebugFont('data/gms_lifebar/font2.fnt')
 setDebugScript('script/debug.lua')
 
-selectColumns = 5
+selectColumns = 10
 
 
 assert(loadfile('script/select.lua'))()
