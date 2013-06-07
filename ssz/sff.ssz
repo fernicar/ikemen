@@ -750,7 +750,7 @@ public &FrameMethods<_t>
     ^/char a;
     loop{index i = 6; while; do:
       if(#(a = @s.trim(spl[i])) > 0){
-        a = a[.s.cFind("abAB", a) .. -1];
+        a = a[.s.cFind("asAS", a) .. -1];
         if(#a > 0) break, break;
       }
       i++;
