@@ -749,10 +749,12 @@ public &FrameMethods<_t>
     if(#spl < 7) ret;
     ^/char a;
     loop{index i = 6; while; do:
-      if(#(a = @s.trim(spl[i])) > 0) break;
+      if(#(a = @s.trim(spl[i])) > 0){
+        a = a[.s.cFind("ab", a) .. -1];
+        if(#a > 0) break, break;
+      }
       i++;
-    while i < #spl:
-    }
+    while i < #spl:}
     a = @s.toLower(a);
     branch{
     cond @s.equ(a, "a1"):
