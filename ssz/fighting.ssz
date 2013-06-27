@@ -322,24 +322,58 @@ void game()
         float lm = (float).chr.chars[i][0]~sysivar[.chr.iLIFEMAX];
         lm *= .com.life;
         switch(.com.tmode[i&1]){
-        case (int).com.TeamMode::Single, (int).com.TeamMode::Simul:
-          branch{
-          cond .com.tmode[i&1] == (int).com.TeamMode::Single:
-            if(.com.tmode[i+1 & 1] == (int).com.TeamMode::Simul){
-              lm *= .com.team1VS2Life;
+        case (int).com.TeamMode::Single:
+          switch(.com.tmode[i+1&1]){
+          case (int).com.TeamMode::Simul:
+            lm *= .com.team1VS2Life;
+          case (int).com.TeamMode::Turns:
+            if(.com.numturns[i+1&1] < .chr.fight~ro.match_wins){
+              lm =
+                lm*(float).com.numturns[i+1&1]
+                / (float).chr.fight~ro.match_wins;
             }
-          else:
+          }
+        case (int).com.TeamMode::Simul:
+          switch(.com.tmode[i+1&1]){
+          case (int).com.TeamMode::Simul:
+            if(.com.numSimul[i+1&1] < .com.numSimul[i&1]){
+              lm = lm*(float).com.numSimul[i+1&1] / (float).com.numSimul[i&1];
+            }
+          case (int).com.TeamMode::Turns:
+            if(
+              .com.numturns[i+1&1]
+              < .com.numSimul[i&1] * .chr.fight~ro.match_wins)
+            {
+              lm =
+                lm*(float).com.numturns[i+1&1]
+                / (float)(.com.numSimul[i&1] * .chr.fight~ro.match_wins);
+            }
+          default:
             lm /= (float).com.numSimul[i&1];
           }
-          if(.com.tmode[i+1 & 1] == (int).com.TeamMode::Turns){
-            lm *= 2.0 / (float).chr.fight~ro.match_wins;
-          }
         case (int).com.TeamMode::Turns:
-          lm *=
-            2.0 * (
-              .com.tmode[i+1 & 1] == (int).com.TeamMode::Simul
-              ? .com.team1VS2Life : 1.0)
-            / (float).com.numturns[i&1];
+          switch(.com.tmode[i+1&1]){
+          case (int).com.TeamMode::Single:
+            if(.chr.fight~ro.match_wins < .com.numturns[i&1]){
+              lm =
+                lm * (float).chr.fight~ro.match_wins
+                / (float).com.numturns[i&1];
+            }
+          case (int).com.TeamMode::Simul:
+            if(
+              .com.numSimul[i+1&1] * .chr.fight~ro.match_wins
+              < .com.numturns[i&1])
+            {
+              lm =
+                lm * .com.team1VS2Life
+                * (float)(.com.numSimul[i+1&1] * .chr.fight~ro.match_wins)
+                / (float).com.numturns[i&1];
+            }
+          case (int).com.TeamMode::Turns:
+            if(.com.numturns[i+1&1] < .com.numturns[i&1]){
+              lm = lm*(float).com.numturns[i+1&1] / (float).com.numturns[i&1];
+            }
+          }
         }
         double hoge = .lvmul**((double)-level[i]);
         .chr.chars[i][0]~sysivar[.chr.iLIFEMAX] =
