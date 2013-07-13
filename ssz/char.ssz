@@ -3440,19 +3440,25 @@ public &Char
       `changeState2();
       `minus = 0;
       `state(::);
-      branch{
-      cond `stVal.no == 5110:
-        if(`sysivar[.iRECOVERTIME] <= 0 && `isAlive()){
+      if(!`isHitPaused()){
+        if(`stVal.no == 5110 && `sysivar[.iRECOVERTIME] <= 0 && `isAlive()){
           `trChangeState(5120, -1, -1);
         }
-      cond `stVal.no == 140:
-        if(`trAnimTime() == 0){
-          `trChangeState(
-            (int)(`stVal.typ == .StTy::C)*11
-            + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
+        loop{while; do:
+          branch{
+          cond `stVal.typ == .StTy::L:
+            `state(::);
+          else:
+            `trChangeState(
+              (int)(`stVal.typ == .StTy::C)*11
+              + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
+          }
+        while
+          `stVal.no == 140 && `stVal.time >= (
+            `animpno >= 0 && #`ani > 0 && #`ani~ani.frames > 0
+            ? `ani~ani.totaltime : 0)
+          :
         }
-      }
-      if(!`isHitPaused()){
         loop{continue; do:
           `trChangeState(52, -1, -1);
         continue:
