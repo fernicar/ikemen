@@ -2437,7 +2437,7 @@ public &Char
     enemyExpRemove(.expdrawlist=, true, `id);
     enemyExpRemove(.topexpdrawlist=, false, `id);
   }
-  public void outTarget()
+  public void outTarget(bool expremove)
   {
     if(`hittmp >= 0){
       loop{
@@ -2448,7 +2448,7 @@ public &Char
         c = .players.get(`stVal.hb.by[i].id);
         if(#c > 0){
           c~removeTarget(`id);
-          `enemyExplodsRemove(c~playerno);
+          if(expremove) `enemyExplodsRemove(c~playerno);
         }
         i++;
       while i < #`stVal.hb.by:
@@ -3188,7 +3188,7 @@ public &Char
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY], `getPalfx());
     }
     if(.com.tickNextFrame()){
-      if(`roundState() == 4) `outTarget();
+      if(`roundState() == 4) `outTarget(false);
       if(.supertime < 0){
         if((`playerno&1) != (.superplayer&1) && `stVal.mov == .MovTy::H){
           `defencemul *= .superp2defmul;
@@ -3614,7 +3614,7 @@ public &Char
           `roundState() == 2 && `isKO()
           && (`sysivar[.iSYSFLAG] & .sfOVER) != 0))
       {
-        `outTarget();
+        `outTarget(true);
       }
       `atktmp =
         (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
@@ -3957,7 +3957,7 @@ public &Char
   public void destroySelf()
   {:<-
     if(`helperindex <= 0) ret;
-    `outTarget();
+    `outTarget(true);
     `getcombo = 0;
     loop{
       index i = 0;
