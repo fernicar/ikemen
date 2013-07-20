@@ -3280,7 +3280,7 @@ public &Char
   }
   public int palno()
   {
-    ret `helperindex == 0 ? .cgi[`playerno].palno : 1;
+    ret `helperindex == 0 || `mver0() == 1 ? .cgi[`playerno].palno : 1;
   }
   public int mver0()
   {
