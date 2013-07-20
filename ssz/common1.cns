@@ -2130,7 +2130,8 @@ void c.Char::s##_@@P()
       `rangeSetFVar(0, 39, 0.0);
     }
     if(.cgi[`playerno].sf~head.ver0 != 0d1){
-      `trRemapPal(1, 1, 1, .cgi[`playerno].drawpalno);
+      `trRemapPal(
+        1, 1, 1, `helperindex == 0 ? .cgi[`playerno].drawpalno : 1);
     }
     branch{
     cond .com.round == 1:
