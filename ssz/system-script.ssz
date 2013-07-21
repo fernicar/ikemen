@@ -452,6 +452,12 @@ void setSelCellScale(&.lua.State L=, int re=)
   .syst.selinf.sel.cellscaley = y;
 }
 
+void numSelCells(&.lua.State L=, int re=)
+{
+  re = 1;
+  L.pushNumber((double)#.syst.selinf.sel.charlist);
+}
+
 void setStage(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 1;
@@ -501,6 +507,14 @@ void getCharName(&.lua.State L=, int re=)
   int n = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   ^&.sys.Select::Char c = .syst.selinf.sel.getChar(n);
   L.pushString(#c > 0 ? c~name : "");
+}
+
+void getCharFileName(&.lua.State L=, int re=)
+{
+  int argc = 0, nret = 1;
+  int n = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
+  ^&.sys.Select::Char c = .syst.selinf.sel.getChar(n);
+  L.pushString(#c > 0 ? c~def : "");
 }
 
 void selectChar(&.lua.State L=, int re=)
@@ -747,10 +761,12 @@ public void init(&.lua.State L=)
   L.register("setSelColRow", .setSelColRow);
   L.register("setSelCellSize", .setSelCellSize);
   L.register("setSelCellScale", .setSelCellScale);
+  L.register("numSelCells", .numSelCells);
   L.register("setStage", .setStage);
   L.register("selectStage", .selectStage);
   L.register("setTeamMode", .setTeamMode);
   L.register("getCharName", .getCharName);
+  L.register("getCharFileName", .getCharFileName);
   L.register("selectChar", .selectChar);
   L.register("getStageName", .getStageName);
   L.register("refresh", .refresh);

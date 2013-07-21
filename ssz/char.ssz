@@ -3446,7 +3446,7 @@ public &Char
         }
         loop{while; do:
           branch{
-          cond `stVal.typ == .StTy::L:
+          cond `stVal.typ == .StTy::L && `mver0() != 1:
             `state(::);
           else:
             `trChangeState(
