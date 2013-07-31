@@ -5937,25 +5937,23 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           kill, false, by.attackmul);
       if(hbset && `pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
       cond kill || !live:
-        if(!.gs(.gsNOKO)){
-          `pyr.stVal.hb.fallf = true;
-          if((int)`pyr.stVal.hb.fall.animtype < (int).AnimTy::Back){
-            `pyr.stVal.hb.fall.animtype = .AnimTy::Back;
+        `pyr.stVal.hb.fallf = true;
+        if((int)`pyr.stVal.hb.fall.animtype < (int).AnimTy::Back){
+          `pyr.stVal.hb.fall.animtype = .AnimTy::Back;
+        }
+        branch{
+        cond `pyr.stVal.typ == .StTy::A:
+          if(`pyr.stVal.hb.xvel < 0.0) `pyr.stVal.hb.xvel -= 2.0;
+          if(`pyr.stVal.hb.yvel <= 0.0){
+            `pyr.stVal.hb.yvel -= 2.0;
+            if(`pyr.stVal.hb.yvel > -3.0) `pyr.stVal.hb.yvel = -3.0;
           }
-          branch{
-          cond `pyr.stVal.typ == .StTy::A:
-            if(`pyr.stVal.hb.xvel < 0.0) `pyr.stVal.hb.xvel -= 2.0;
-            if(`pyr.stVal.hb.yvel <= 0.0){
-              `pyr.stVal.hb.yvel -= 2.0;
-              if(`pyr.stVal.hb.yvel > -3.0) `pyr.stVal.hb.yvel = -3.0;
-            }
-          else:
-            if(`pyr.stVal.hb.yvel == 0.0) `pyr.stVal.hb.xvel *= 0.66;
-            if(`pyr.stVal.hb.xvel < 0.0) `pyr.stVal.hb.xvel -= 2.5;
-            if(`pyr.stVal.hb.yvel <= 0.0){
-              `pyr.stVal.hb.yvel -= 2.0;
-              if(`pyr.stVal.hb.yvel > -6.0) `pyr.stVal.hb.yvel = -6.0;
-            }
+        else:
+          if(`pyr.stVal.hb.yvel == 0.0) `pyr.stVal.hb.xvel *= 0.66;
+          if(`pyr.stVal.hb.xvel < 0.0) `pyr.stVal.hb.xvel -= 2.5;
+          if(`pyr.stVal.hb.yvel <= 0.0){
+            `pyr.stVal.hb.yvel -= 2.0;
+            if(`pyr.stVal.hb.yvel > -6.0) `pyr.stVal.hb.yvel = -6.0;
           }
         }
         `pyr.stVal.hb.damage = `pyr.sysivar[.iLIFE];
