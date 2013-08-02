@@ -265,7 +265,6 @@ function init()
   winner = 0
   wins = 0
   rosterTxt()
-  setZoom(rank < 0)
   nextChar = 1
   saikyou = rank == tuyoiBorder+juuni-1
 end
