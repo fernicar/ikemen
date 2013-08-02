@@ -20,6 +20,8 @@ assert(loadfile('script/select.lua'))()
 
 math.randomseed(os.time())
 
+require('script.randomtest')
+
 ------------------------------------------------------------
 sysSff = sffNew('script/system.sff')
 sysSnd = sndNew('script/system.snd')
@@ -451,15 +453,6 @@ end
 
 
 ------------------------------------------------------------
-
-function randSel(pno, winner)
-  if pno == winner then return end
-  setTeamMode(pno, math.random(0, 1)*2, math.random(1, 4))
-  while selectChar(pno, math.random(0, 100000000), math.random(1, 12)) < 2 do
-  end
-end
-
-------------------------------------------------------------
 watchMode = createTextImg(jgFnt, 0, 1, 'Watch Mode', 100, 80)
 p1VsComTxt = createTextImg(jgFnt, 0, 1, '1P vs. Com', 100, 100)
 p1VsP2 = createTextImg(jgFnt, 0, 1, '1P vs. 2P', 100, 120)
@@ -467,6 +460,7 @@ netplay = createTextImg(jgFnt, 0, 1, 'Netplay', 100, 140)
 portChange = createTextImg(jgFnt, 0, 1, '', 100, 160)
 replay = createTextImg(jgFnt, 0, 1, 'Replay', 100, 180)
 comVsP1 = createTextImg(jgFnt, 0, 1, 'Com vs. 1P', 100, 200)
+autoRandomTest = createTextImg(jgFnt, 0, 1, 'Auto Random Test', 100, 220)
 
 connecting = createTextImg(jgFnt, 0, 1, '', 10, 140)
 loading = createTextImg(jgFnt, 0, 1, 'Loading...', 100, 210)
@@ -542,13 +536,7 @@ function main()
       textImgDraw(loading)
       refresh()
     end
-    while true do
-      local winner = game()
-      if true or winner < 0 or gameMode ~= 0 then break end
-      randSel(1, winner)
-      randSel(2, winner)
-      loadStart()
-    end
+    game()
     playBGM(bgm)
   end
 end
@@ -583,8 +571,8 @@ function modeSel()
         gameMode = gameMode + 1
       end
       if gameMode < 0 then
-        gameMode = 6
-      elseif gameMode > 6 then
+        gameMode = 7
+      elseif gameMode > 7 then
         gameMode = 0
       end
       textImgDraw(watchMode)
@@ -594,6 +582,7 @@ function modeSel()
       textImgDraw(portChange)
       textImgDraw(replay)
       textImgDraw(comVsP1)
+      textImgDraw(autoRandomTest)
       animUpdate(p1TmCursor)
       animPosDraw(p1TmCursor, 95, 77 + 20*gameMode)
       cmdInput()
@@ -604,7 +593,6 @@ function modeSel()
     local cancel = false
 
     if gameMode == 0 then
-      setAutoLevel(false)
     elseif gameMode == 1 then
       setCom(1, 0)
     elseif gameMode == 2 then
@@ -658,6 +646,9 @@ function modeSel()
       p1In = 2
       p2In = 2
       setCom(2, 0)
+    elseif gameMode == 7 then
+      script.randomtest.run()
+      cancel = true
     end
     if not cancel then
       main()
