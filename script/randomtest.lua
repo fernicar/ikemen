@@ -256,6 +256,10 @@ function init()
   else
     loadLifebar('data/gms_lifebar/fight.def')
   end
+  for i = 1, 4 do
+    setCom(i, 8)
+  end
+  setAutoLevel(true)
   selectStage(0)
   rakuBenry()
   winner = 0
