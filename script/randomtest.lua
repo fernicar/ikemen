@@ -173,8 +173,8 @@ function rakuBenry()
     for n = 1, math.floor(juuni/4) do
       if #rand >= tuyoninzu then break end
       rand = {}
+      ran = randRank()
       eachAllChars(function(cel)
-        ran = randRank()
         local tmp = 0
         for j = 1, 12 do
           tmp = tmp + veljnz[cel*12 + j]
