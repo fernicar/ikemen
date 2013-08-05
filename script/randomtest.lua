@@ -170,7 +170,7 @@ function rakuBenry()
     charAdd(bimyou, #bimyou)
     rank = juuni
   else
-    for n = 1, math.floor(juuni/4) do
+    for n = 1, 3 do
       if #rand >= tuyoninzu then break end
       rand = {}
       ran = randRank()
