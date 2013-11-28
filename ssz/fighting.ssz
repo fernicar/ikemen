@@ -285,7 +285,7 @@ void game()
         if(.com.powerShare[i&1]){
           int pmax =
             .m.max!int?(
-              .chr.chars[0]<>~sysivar[.chr.iPOWERMAX],
+              .chr.chars[i&1]<>~sysivar[.chr.iPOWERMAX],
               .chr.chars[i]<>~sysivar[.chr.iPOWERMAX]);
           loop{index j = i&1; while; do:
             .chr.chars[j]<>~sysivar[.chr.iPOWERMAX] = pmax;
