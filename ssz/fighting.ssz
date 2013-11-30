@@ -564,7 +564,7 @@ void game()
   /?/*.cfg.OpenGL:
     .sdl.GlSwapBuffers(::);
   /*true:
-    .sdl.screen.flip();
+    .sdl.flip();
   /*?*/
   while !.se.esc && .cmd.update():
     if(.se.esc) .mes.SetSharedString(:"esc":);
@@ -579,10 +579,6 @@ void game()
 
 public void main()
 {
-  if(!.sdl.shareScreen(.cfg.OpenGL)){
-    .al.alert!.self?("初期化に失敗");
-    ret;
-  }
   .game();
   if(.se.end) .mes.SetSharedString(:"end":);
 }

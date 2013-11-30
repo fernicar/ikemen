@@ -74,7 +74,7 @@ const float WidthScale = (float)cfg.Width / (float)GameWidth;
 const float HeightScale = (float)cfg.Height / (float)GameHeight;
 
 public &sdl.Rect scrrect;
-scrrect.set(0, 0, (ushort)cfg.Width, (ushort)cfg.Height);
+scrrect.set(0, 0, cfg.Width, cfg.Height);
 
 
 const float Speed = (float)cfg.GameSpeed / 60.0;
@@ -187,8 +187,8 @@ public bool addHotkey(
 {
   if(#sdlkey == 0) ret false;
   ^/char skey = (sdlkey[0] >= '0' && sdlkey[0] <= '9' ? "_"+sdlkey : sdlkey);
-  |.sdl.SDLKey key;
-  if(!<consteval>(key=, ".sdl.SDLKey::" + skey)) ret false;
+  |.sdl.K key;
+  if(!<consteval>(key=, ".sdl.K::" + skey)) ret false;
   &.se.Key ekey.key = key;
   ekey.ctrl = ctrl;
   ekey.alt = alt;
@@ -464,10 +464,10 @@ public void rectFill(.scrrect.self rect=, uint color, int alpha)
 /?/*.cfg.OpenGL:
   .sdl.MugenFillGl(:rect, color, alpha:);
 /*true:
-  &.sdl.Rect onedot.set(0, 0, 0d1, 0d1), til.set(0, 0, 0d0, 0d0);
+  &.sdl.Rect onedot.set(0, 0, 1, 1), til.set(0, 0, 0, 0);
   %byte dammy;
   .tmppl<> = color;
-  .sdl.screen.renderMugenZoom(
+  .sdl.renderMugenZoom(
     rect=, 0.0, 0.0, .px, .tmppl, -1, onedot=, 0.0, 0.0, til=,
     (float).cfg.Width, (float).cfg.Width, (float).cfg.Height, 0.0, 0d0,
     alpha, 0, dammy=);
@@ -479,7 +479,7 @@ public void screenFill(uint color)
 /?/*.cfg.OpenGL:
   .rectFill(.scrrect=, color, 255);
 /*true:
-  .sdl.screen.fill(.scrrect=, color);
+  .sdl.fill(.scrrect=, color);
 /*?*/
 }
 

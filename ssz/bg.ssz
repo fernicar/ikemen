@@ -180,7 +180,7 @@ public &BackGround
   public float windowdeltax = 0.0, windowdeltay = 0.0;
   new()
   {
-    `startrect.set(-32768, -32768, 0d65535, 0d65535);
+    `startrect.set(-32768, -32768, 65535, 65535);
   }
   public void reset()
   {
@@ -286,8 +286,8 @@ public &BackGround
       }
     }
     if(#(data = sc.get("tile")) > 0){
-      .readPair!ushort?(`anim.tile.w=, `anim.tile.h=, data);
-      if(typ == 2) `anim.tile.h = 0x0;
+      .readPair!int?(`anim.tile.w=, `anim.tile.h=, data);
+      if(typ == 2) `anim.tile.h = 0;
     }
     if(#(data = sc.get("tilespacing")) > 0){
       `anim.tile.x = `anim.tile.y = .com.atonOF!`anim.tile.x.self?(data);
@@ -307,31 +307,21 @@ public &BackGround
     if(#(data = sc.get("window")) > 0){
       ^^/char spl = .splitParams(data);
       spl[0] = .s.trim(spl[0]);
-      if(#spl[0] > 0){
-        `startrect.x =
-          .m.max!int?(-32768, .m.min!int?(32767, .com.atonOF!int?(spl[0])));
-      }
+      if(#spl[0] > 0) `startrect.x = .com.atonOF!int?(spl[0]);
       if(#spl < 2) break;
       spl[1] = .s.trim(spl[1]);
-      if(#spl[1] > 0){
-        `startrect.y =
-          .m.max!int?(-32768, .m.min!int?(32767, .com.atonOF!int?(spl[1])));
-      }
+      if(#spl[1] > 0) `startrect.y = .com.atonOF!int?(spl[1]);
       if(#spl < 3) break;
       spl[2] = .s.trim(spl[2]);
       if(#spl[2] > 0){
         `startrect.w =
-          .m.min!uint?(
-            0d65535,
-            (uint).m.max!int?(0, .com.atonOF!int?(spl[2])+1 - `startrect.x));
+          .m.max!int?(0, .com.atonOF!int?(spl[2])+1 - `startrect.x);
       }
       if(#spl < 4) break;
       spl[3] = .s.trim(spl[3]);
       if(#spl[3] > 0){
         `startrect.h =
-          .m.min!uint?(
-            0d65535,
-            (uint).m.max!int?(0, .com.atonOF!int?(spl[3])+1 - `startrect.y));
+          .m.max!int?(0, .com.atonOF!int?(spl[3])+1 - `startrect.y);
       }
     }
     if(#(data = sc.get("windowdelta")) > 0){
@@ -457,21 +447,15 @@ public &BackGround
         0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `windowdeltay*bgscl)))
       * scl2;
     rect.x =
-      (short).m.max!float?(-32768.0)<, .m.min!float?(32767.0)<,
-      .m.floor(
+      (int).m.floor(
         ((float)rect.x - (x+`camstartx) * `windowdeltax)
         * .com.WidthScale * wsclx);
     rect.y =
-      (short).m.max!float?(-32768.0)<, .m.min!float?(32767.0)<,
-      .m.floor(
+      (int).m.floor(
         (((float)rect.y - y * `windowdeltay) * wscly - shakeY)
         * .com.HeightScale);
-    rect.w =
-      (ushort).m.min!float?(65535.0)<,
-      .m.ceil((float)rect.w * .com.WidthScale * wsclx);
-    rect.h =
-      (ushort).m.min!float?(65535.0)<,
-      .m.ceil((float)rect.h * .com.HeightScale * wscly);
+    rect.w = (int).m.ceil((float)rect.w * .com.WidthScale * wsclx);
+    rect.h = (int).m.ceil((float)rect.h * .com.HeightScale * wscly);
     `anim.draw(
       rect=, x2, y2, sclx, scly, `xtscale*bgscl, xbs*bgscl, ys,
       xras * x2 / (#ys*(float)`anim.spr~rct.h),

@@ -187,14 +187,14 @@ public &Font
           ^ubyte px2;
         cond j == 0:
           `mpl[i].img[j].shareCopy(`img=);
-          `mpl[i].img[j].rct.w = (ushort)`mpl[i].w;
+          `mpl[i].img[j].rct.w = `mpl[i].w;
          px2.new(`mpl[i].w * (int)`img.rct.h);
           copyCharRect(
             px2, `mpl[i].w, px, `mpl[i].ofs, (int)`img.rct.w, (int)`img.rct.h);
           `mpl[i].img[j].setPxl(px2);
         else:
           `mpl[i].img[j].shareCopy(`mpl[i].img[j-1]=);
-          `mpl[i].img[j].rct.w = (ushort)`mpl[i].w;
+          `mpl[i].img[j].rct.w = `mpl[i].w;
         }
         `mpl[i].img[j].rct.x = 0;
         `mpl[i].img[j].rct.y = 0;
@@ -230,7 +230,7 @@ public &Font
     if(ch == ' ') ret (float)`sizex * xscl;
     ^&.sff.Sprite spr = `getCharSpr(bank, ch);
     if(#spr == 0 || #spr~pxl == 0) ret 0.0;
-    &.sdl.Rect tile.set(0, 0, 0x0, 0x0);
+    &.sdl.Rect tile.set(0, 0, 0, 0);
   /?/*.cfg.OpenGL:
     .sdl.RenderMugenGl(:
       spr~pxl<>, pal<>=, 0, spr~rct=, -x*.com.WidthScale,
@@ -238,7 +238,7 @@ public &Font
       xscl*.com.WidthScale, yscl*.com.HeightScale, 1.0,
       0.0, 0.0, .com.brightness*255>>8 | 1<<9, .com.scrrect=, 0.0, 0.0:);
   /*true:
-    .sdl.screen.renderMugenZoom(
+    .sdl.renderMugenZoom(
       .com.scrrect=, 0.0, 0.0, spr~pxl, pal, 0, spr~rct=,
       -x*.com.WidthScale, -y*.com.HeightScale, tile=,
       xscl*.com.WidthScale, xscl*.com.WidthScale, yscl*.com.HeightScale,

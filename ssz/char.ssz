@@ -48,7 +48,7 @@ void drawClsn()
   ^ubyte pxl;
   pxl.new(1);
   pxl<> = 0x0;
-  &.sff.Sprite spr.rct.set(0, 0, 0x1, 0x1);
+  &.sff.Sprite spr.rct.set(0, 0, 1, 1);
   spr.colorPallet.new(256);
   spr.colorPallet<> = 0xff0000;
   spr.setPxl(pxl);
@@ -7140,18 +7140,18 @@ public void draw(float x, float y, float scl)
       if(off < (yofs - y + .com.boundhigh)*scl){
         rect.h =
           (
-            (uint).m.ceil(
+            (int).m.ceil(
               ((yofs - y + .com.boundhigh)*scl - off) * (float).com.scrrect.h)
-            + (uint)(.com.GameHeight-1))
-          / (uint).com.GameHeight;
+            + (.com.GameHeight-1))
+          / .com.GameHeight;
         fade(rect=, 255);
       }
       if(off > (-y + yofs2)*scl){
         rect.h =
           (
-            (uint).m.ceil(((y - yofs2)*scl + off) * (float).com.scrrect.h)
-            + (uint)(.com.GameHeight-1))
-          / (uint).com.GameHeight;
+            (int).m.ceil(((y - yofs2)*scl + off) * (float).com.scrrect.h)
+            + (.com.GameHeight-1))
+          / .com.GameHeight;
         rect.y = (int)(.com.scrrect.h - rect.h);
         fade(rect=, 255);
       }
@@ -7166,17 +7166,17 @@ public void draw(float x, float y, float scl)
       if(x - xofs < bl){
         rect.w =
           (
-            (uint).m.ceil((bl - (x - xofs))*scl * (float).com.scrrect.w)
-            + (uint)(.com.GameWidth-1))
-          / (uint).com.GameWidth;
+            (int).m.ceil((bl - (x - xofs))*scl * (float).com.scrrect.w)
+            + (.com.GameWidth-1))
+          / .com.GameWidth;
         fade(rect=, 255);
       }
       if(x + xofs > br){
         rect.w =
           (
-            (uint).m.ceil(((x + xofs) - br)*scl * (float).com.scrrect.w)
-            + (uint)(.com.GameWidth-1))
-          / (uint).com.GameWidth;
+            (int).m.ceil(((x + xofs) - br)*scl * (float).com.scrrect.w)
+            + (.com.GameWidth-1))
+          / .com.GameWidth;
         rect.x = (int)(.com.scrrect.w - rect.w);
         fade(rect=, 255);
       }
@@ -7221,9 +7221,9 @@ public void draw(float x, float y, float scl)
   }
   if(.shuttertime > 0){
     *.com.scrrect.self rect = .com.scrrect;
-    rect.h = (uint).shuttertime * ((.com.scrrect.h+0d1)>>0d1) / 0d15;
+    rect.h = .shuttertime * ((.com.scrrect.h+1)>>1) / 15;
     fade(rect=, 255);
-    rect.y = (int)(.com.scrrect.h - rect.h);
+    rect.y = .com.scrrect.h - rect.h;
     fade(rect=, 255);
   }
   .com.brightness = ob;

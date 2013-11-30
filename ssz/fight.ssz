@@ -53,7 +53,7 @@ public void layspr(
 {
   if(l.layerno != ln || #spr == 0) ret;
   &.sdl.Rect tile;
-  tile.set(0, 0, 0x0, 0x0);
+  tile.set(0, 0, 0, 0);
   float x2 =
     x + l.offset.x - l.scale.x*(float)(spr~rct.x*l.facing)
     + (float)(.com.GameWidth-320)/2.0;
@@ -73,7 +73,7 @@ public void layspr(
     xs, xs, l.scale.y*(float)l.vfacing*.com.HeightScale, 1.0,
     0.0, 0.0, .com.brightness*255>>8 | 1<<9, .com.scrrect=, 0.0, 0.0:);
 /*true:
-  .sdl.screen.renderMugenZoom(
+  .sdl.renderMugenZoom(
     .com.scrrect=, 0.0, 0.0, spr~pxl, pal,
     0, spr~rct=, -x2*.com.WidthScale, -y2*.com.HeightScale, tile=,
     xs, xs, l.scale.y*(float)l.vfacing*.com.HeightScale,
@@ -229,26 +229,24 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       branch{
       cond `range_xz < `range_xm:
         r.x =
-          (short)(
+          (int)(
             ((float)(`posx + `range_xz) + (float)(.com.GameWidth-320)/2.0)
             * .com.WidthScale + 0.5);
-        r.w =
-          (ushort)((float)(`range_xm-`range_xz+1)*life*.com.WidthScale + 0.5);
+        r.w = (int)((float)(`range_xm-`range_xz+1)*life*.com.WidthScale + 0.5);
       else:
         r.x =
-          (short)(
+          (int)(
             ((float)(`posx + `range_xz+1) + (float)(.com.GameWidth-320)/2.0)
             * .com.WidthScale + 0.5)
           - (short)(
             (float)(`range_xz-`range_xm+1) * life * .com.WidthScale + 0.5);
-        r.w =
-          (ushort)((float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
+        r.w = (int)((float)(`range_xz-`range_xm+1)*life*.com.WidthScale + 0.5);
       }
     }
     setLifeWidth(lrct=, #`mid.frames > 0 && life < `midlife ? life : `midlife);
     setLifeWidth(mrct=, `midlife);
     if(`range_xz < `range_xm) mrct.x += (int)lrct.w;
-    mrct.w -= .m.min!uint?(mrct.w, lrct.w);
+    mrct.w -= .m.min!int?(mrct.w, lrct.w);
     .laydraw(
       mrct=, (float)`posx, (float)`posy, 1.0, layerno, `mid=, `mid_lay=);
     .laydraw(
@@ -414,26 +412,26 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       branch{
       cond `range_xz < `range_xm:
         r.x =
-          (short)(
+          (int)(
             ((float)(`posx + `range_xz) + (float)(.com.GameWidth-320)/2.0)
             * .com.WidthScale + 0.5);
         r.w =
-          (ushort)((float)(`range_xm-`range_xz+1)*power*.com.WidthScale + 0.5);
+          (int)((float)(`range_xm-`range_xz+1)*power*.com.WidthScale + 0.5);
       else:
         r.x =
-          (short)(
+          (int)(
             ((float)(`posx + `range_xz+1) + (float)(.com.GameWidth-320)/2.0)
             * .com.WidthScale + 0.5)
           - (short)(
             (float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
         r.w =
-          (ushort)((float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
+          (int)((float)(`range_xz-`range_xm+1)*power*.com.WidthScale + 0.5);
       }
     }
     setPowerWidth(lrct=, power);
     setPowerWidth(mrct=, `midpower);
     if(`range_xz < `range_xm) mrct.x += (int)lrct.w;
-    mrct.w -= .m.min!uint?(mrct.w, lrct.w);
+    mrct.w -= .m.min!int?(mrct.w, lrct.w);
     .laydraw(
       mrct=, (float)`posx, (float)`posy, 1.0, layerno, `mid=, `mid_lay=);
     .laydraw(

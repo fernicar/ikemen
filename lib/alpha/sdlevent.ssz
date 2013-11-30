@@ -8,23 +8,23 @@ public bool end = false, fskip = false, full = false, esc = false;
 
 public &Key
 {
-  public |.sdl.SDLKey key = .sdl.SDLKey::UNKNOWN;
+  public |.sdl.K key = .sdl.K::UNKNOWN;
   public bool shift = false, ctrl = false, alt = false;
   public bool down = false;
   public void reset()
   {
     `down = false;
   }
-  public void checkDown(|.sdl.SDLKey k, int m)
+  public void checkDown(|.sdl.K k, ushort m)
   {
     `down |=
        `key == k
        && `shift == (
-         (m & ((int).sdl.SDLMod::LSHIFT | (int).sdl.SDLMod::RSHIFT)) != 0)
+         (m & (.sdl.KMOD_LSHIFT | .sdl.KMOD_RSHIFT)) != 0x0)
        && `ctrl == (
-         (m & ((int).sdl.SDLMod::LCTRL | (int).sdl.SDLMod::RCTRL)) != 0)
+         (m & (.sdl.KMOD_LCTRL | .sdl.KMOD_RCTRL)) != 0x0)
        && `alt == (
-         (m & ((int).sdl.SDLMod::LALT | (int).sdl.SDLMod::RALT)) != 0);
+         (m & (.sdl.KMOD_LALT | .sdl.KMOD_RALT)) != 0x0);
   }
 }
 
@@ -46,32 +46,23 @@ public bool eventUpdate()
       ret false;
     case .sdl.EventType::KEYDOWN:
       loop{index i = 0; while; do:
-        .eventKeys[i].checkDown(
-          .sdle.key.keysym.sym, (int).sdle.key.keysym.mod);
+        .eventKeys[i].checkDown(.sdle.key.keysym.sym, .sdle.key.keysym.mod);
         i++;
       while i < #.eventKeys:
       }
       branch{
-      cond
-        (
-          (int).sdle.key.keysym.mod
-          & ((int).sdl.SDLMod::LALT | (int).sdl.SDLMod::RALT)) != 0
-        :
+      cond (.sdle.key.keysym.mod & (.sdl.KMOD_LALT | .sdl.KMOD_RALT)) != 0x0:
         switch(.sdle.key.keysym.sym){
-        case .sdl.SDLKey::RETURN:
-          if(!.sdl.ogl && .sdl.fullScreen(!!.full)) .sdl.showCursor(!.full);
-        case .sdl.SDLKey::F4:
+        case .sdl.K::RETURN:
+          if(.sdl.fullScreen(!!.full)) .sdl.showCursor(!.full);
+        case .sdl.K::F4:
           .end = true;
           ret false;
         }
-      cond
-        (
-          (int).sdle.key.keysym.mod
-          & ((int).sdl.SDLMod::LCTRL | (int).sdl.SDLMod::RCTRL)) != 0
-        :
+      cond (.sdle.key.keysym.mod & (.sdl.KMOD_LCTRL | .sdl.KMOD_RCTRL)) != 0x0:
       else:
         switch(.sdle.key.keysym.sym){
-        case .sdl.SDLKey::ESCAPE:
+        case .sdl.K::ESCAPE:
           .esc = true;
         }
       }

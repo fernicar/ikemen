@@ -149,7 +149,7 @@ public &DrawnClsn
   }
   public void draw(&.sff.Sprite spr=, int alpha)
   {
-    &.sdl.Rect til.set(0, 0, 0d0, 0d0);
+    &.sdl.Rect til.set(0, 0, 0, 0);
     loop{
       index i = 0;
       float x, y, w, h;
@@ -174,7 +174,7 @@ public &DrawnClsn
     /*true:
       {
         %byte dammy;
-        .sdl.screen.renderMugenZoom(
+        .sdl.renderMugenZoom(
           .com.scrrect=, .com.WidthScale*160.0, 0.0, spr.pxl, spr.colorPallet,
           -1, spr.rct=, (-x+160.0)*.com.WidthScale, -y*.com.HeightScale, til=,
           `xscale*.com.WidthScale*w, `xscale*.com.WidthScale*w,

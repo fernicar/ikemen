@@ -128,7 +128,6 @@ int game()
     }
     .mes.SetSharedString(:ss:);
     bool b = .ld.sszc~run();
-    .sdl.shareScreen(.cfg.OpenGL);
     share~push();
     bool w1 = .com.p1wins >= .com.p1mw;
     bool w2 = .com.p2wins >= .com.p2mw;
@@ -185,7 +184,7 @@ int game()
 
 void main()
 {//Itumademo Kanseishinai Eienni Mikansei ENgine
-  if(!.sdl.init("I.K.E.M.E.N", .cfg.Width, .cfg.Height, .cfg.OpenGL)){
+  if(!.sdl.init("I.K.E.M.E.N", .cfg.Width, .cfg.Height, .cfg.OpenGL, true)){
     .error!.self?("初期化に失敗");
     ret;
   }

@@ -20,7 +20,7 @@ addHotkey(
   'SPACE', false, false, false,
   'full(1);full(2);full(3);full(4);setTime(getRoundTime())')
 addHotkey('PAUSE', false, false, false, 'togglePause()')
-addHotkey('SCROLLOCK', false, false, false, 'step()')
+addHotkey('SCROLLLOCK', false, false, false, 'step()')
 addHotkey('i', true, false, false, 'stand(1);stand(2);stand(3);stand(4)')
 
 

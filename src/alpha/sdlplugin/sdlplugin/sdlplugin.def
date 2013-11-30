@@ -6,13 +6,11 @@ EXPORTS
     KeyState
     Fill
     IMGLoad
-    BlitSurfaceEx
     BlitSurface
     Flip
     FreeSurface
     Delay
     GetTicks
-    SetAlpha
     OpenFont
     CloseFont
     RenderFont
@@ -22,8 +20,6 @@ EXPORTS
     SetColorKey
     RenderMugenZoom
     RenderMugenShadow
-    ShareScreen
-    SetSurfaceNull
     SetSndBuf
     CursorShow
     PlayBGM

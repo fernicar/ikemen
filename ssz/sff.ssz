@@ -153,8 +153,11 @@ public &Sprite
   }
   public bool readHeader(&.file.File f=)
   {
-    if(!f.read!short?(`rct.x=)) ret false;
-    if(!f.read!short?(`rct.y=)) ret false;
+    short x, y;
+    if(!f.read!short?(x=)) ret false;
+    `rct.x = x;
+    if(!f.read!short?(y=)) ret false;
+    `rct.y = y;
     if(!f.read!short?(`imageGroup=)) ret false;
     if(!f.read!short?(`imageNumber=)) ret false;
     ret true;
@@ -178,8 +181,8 @@ public &Sprite
     f.seek(offset+66, .file.Seek::SET);
     ushort bpl;
     if(!f.read!ushort?(bpl=)) ret .com.FileReadError;
-    `rct.w = w - x + 0x1;
-    `rct.h = h - y + 0x1;
+    `rct.w = (int)(w - x + 0x1);
+    `rct.h = (int)(h - y + 0x1);
     `rle = encoding == 0x1 ? (int)bpl : 0;
     ret "";
   }
@@ -189,10 +192,16 @@ public &Sprite
   {
     if(!f.read!short?(`imageGroup=)) ret false;
     if(!f.read!short?(`imageNumber=)) ret false;
-    if(!f.read!ushort?(`rct.w=)) ret false;
-    if(!f.read!ushort?(`rct.h=)) ret false;
-    if(!f.read!short?(`rct.x=)) ret false;
-    if(!f.read!short?(`rct.y=)) ret false;
+    ushort w, h;
+    if(!f.read!ushort?(w=)) ret false;
+    `rct.w = (int)w;
+    if(!f.read!ushort?(h=)) ret false;
+    `rct.h = (int)h;
+    short x, y;
+    if(!f.read!short?(x=)) ret false;
+    `rct.x = x;
+    if(!f.read!short?(y=)) ret false;
+    `rct.y = y;
     if(!f.read!ushort?(idxlnked=)) ret false;
     ubyte fmt, dummy;
     if(!f.read!ubyte?(fmt=)) ret false;
@@ -241,8 +250,7 @@ public &Sprite
     while i < 256:}
     if(
       !.cfg.SaveMemory || .cfg.OpenGL
-      || (index)`rct.w*(index)`rct.h
-      < (`rct.w >= 0d256 ? (#px/256)*(index)`rct.w : #px))
+      || `rct.w*`rct.h < (`rct.w >= 256 ? (#px/256)*`rct.w : #px))
     {
       `rlePcxDecode(px=);
     }
@@ -280,9 +288,9 @@ public &Sprite
   {
     if(#px == 0 || `rle <= 0) ret;
     ^/ubyte rle = px;
-    px.new((index)((uint)`rct.w * `rct.h));
+    px.new(`rct.w * `rct.h);
     loop{
-      int w = (int)`rct.w;
+      int w = `rct.w;
       int leng = #px;
       index i = 0, j = 0, k = 0;
     do:
@@ -312,7 +320,7 @@ public &Sprite
   {
     if(#px == 0) ret;
     ^/ubyte rle = px;
-    px.new((index)((uint)`rct.w * `rct.h));
+    px.new(`rct.w * `rct.h);
     loop{
       int leng = #px;
       index i = 0, j = 0;
@@ -339,7 +347,7 @@ public &Sprite
   {
     if(#px == 0) ret;
     ^/ubyte rle = px;
-    px.new((index)((uint)`rct.w * `rct.h));
+    px.new(`rct.w * `rct.h);
     loop{
       int leng = #px;
       index i = 0, j = 0;
@@ -365,7 +373,7 @@ public &Sprite
   {
     if(#px == 0) ret;
     ^/ubyte rle = px;
-    px.new((index)((uint)`rct.w * `rct.h));
+    px.new(`rct.w * `rct.h);
     loop{
       int leng = #px;
       index i = 0, j = 0;
@@ -525,7 +533,7 @@ public &Sprite
   public void draw(float x, float y, float xscale, float yscale, ^uint pal)
   {
     &.sdl.Rect tile;
-    tile.set(0, 0, 0d0, 0d0);
+    tile.set(0, 0, 0, 0);
     float x2 = x - xscale*(float)`rct.x + (float)(.com.GameWidth-320)/2.0;
     float y2 = y - yscale*(float)`rct.y + (float)(.com.GameHeight-240);
     if(xscale < 0.0) x2 *= -1.0;
@@ -538,7 +546,7 @@ public &Sprite
         yscale*.com.HeightScale, 1.0, 0.0, 0.0, 255, .com.scrrect=, 0.0, 0.0:);
     }
   /*true:
-    .sdl.screen.renderMugenZoom(
+    .sdl.renderMugenZoom(
       .com.scrrect=, 0.0, 0.0,
       `pxl, pal, 0, `rct=, -x2*.com.WidthScale, -y2*.com.HeightScale,
       tile=, xscale*.com.WidthScale, xscale*.com.WidthScale,
@@ -836,7 +844,7 @@ public &Anim<frame_t>
   public bool newframe = true, loopend = false;
   new()
   {
-    `tile.set(0, 0, 0d0, 0d0);
+    `tile.set(0, 0, 0, 0);
   }
   public void reset()
   {
@@ -1125,12 +1133,12 @@ public &Anim<frame_t>
       y2 *= -1.0;
       if(oVer) y2 += ys;
     }
-    if(`tile.w == 0x1){
+    if(`tile.w == 1){
       float tmp =
         xs * ((float)`tile.x + (`tile.x > 0 ? 0.0 : (float)`spr~rct.w));
       x2 -= (float)(int)(x2 / tmp) * tmp;
     }
-    if(`tile.h == 0x1){
+    if(`tile.h == 1){
       float tmp =
         ys * ((float)`tile.y + (`tile.y > 0 ? 0.0 : (float)`spr~rct.h));
       y2 -= (float)(int)(y2 / tmp) * tmp;
@@ -1144,7 +1152,7 @@ public &Anim<frame_t>
       cscalex*rasterxadd*(.com.WidthScale/.com.HeightScale),
       0.0, `alphaFoo(), rect=, rx*.com.WidthScale, 0.0:);
   /*true:
-    .sdl.screen.renderMugenZoom(
+    .sdl.renderMugenZoom(
       rect=, rx*.com.WidthScale, 0.0, `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
       (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,
       `tile=, xs*.com.WidthScale,
@@ -1190,7 +1198,7 @@ public &Anim<frame_t>
     .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
     .m.limRange!float?(
       ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
-    .sdl.screen.renderMugenZoom(
+    .sdl.renderMugenZoom(
       .com.scrrect=, rx*.com.WidthScale,
       (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
       `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
@@ -1238,7 +1246,7 @@ public &Anim<frame_t>
     .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
     .m.limRange!float?(
       ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
-    .sdl.screen.renderMugenShadow(
+    .sdl.renderMugenShadow(
       .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
       (y2+ys*vscale*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
       `spr~pxl, color, `spr~rct=,

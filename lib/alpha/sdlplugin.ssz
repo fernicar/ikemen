@@ -1,8 +1,45 @@
 ﻿
-lib th = <thread.ssz>;
-
 plugin void End(::)                         = "dll/sdlplugin.dll";
 plugin bool PollEvent(:&Event=:)            = "dll/sdlplugin.dll";
+public void flip()
+{
+  plugin void Flip(::) = "dll/sdlplugin.dll";
+  Flip(::);
+}
+public void fill(&.Rect r=, uint c)
+{
+  plugin void Fill(:&.Rect=, uint:) = "dll/sdlplugin.dll";
+  Fill(:r=, c:);
+}
+public bool renderMugenZoom(
+  &.Rect dr=, float rcx, float rcy,
+  ^ubyte pxl, ^uint pal, short ckey,
+  &.Rect sr=, float cx, float ty, &.Rect tile=,
+  float xtopscl, float xbotscl, float yscl,
+  float rasterxadd, uint roto, int alpha, int rle, %byte pluginbuf=)
+{
+  plugin bool RenderMugenZoom(:
+    ^/ubyte, uint=, short, &.Rect=, float, float, &.Rect=,
+    float, float, float, float, uint, int, &.Rect=,
+    float, float, int, %byte=:) = "dll/sdlplugin.dll";
+  ret
+    RenderMugenZoom(:
+      pxl, pal<>=, ckey, sr=, cx, ty, tile=, xtopscl, xbotscl,
+      yscl, rasterxadd, roto, alpha, dr=, rcx, rcy, rle, pluginbuf=:);
+}
+public bool renderMugenShadow(
+  &.Rect dr=, float rcx, float rcy, ^ubyte pxl, uint color,
+  &.Rect sr=, float cx, float ty, float xscl, float yscl, float vscl,
+  uint roto, int alpha, int rle, %byte pluginbuf=)
+{
+  plugin bool RenderMugenShadow(:
+    ^/ubyte, uint, &.Rect=, float, float, float, float, float, uint, int,
+    &.Rect=, float, float, int, %byte=:) = "dll/sdlplugin.dll";
+  ret
+    RenderMugenShadow(:
+      pxl, color, sr=, cx, ty, xscl, yscl, vscl, roto, alpha,
+      dr=, rcx, rcy, rle, pluginbuf=:);
+}
 
 public char getLastChar()
 {
@@ -73,451 +110,658 @@ const ubyte BUTTON_WHEELDOWN = 5;
 /* Event enumerations */
 |EventType
 {
-       NOEVENT = 0,      /* Unused (do not remove) */
-       ACTIVEEVENT,      /* Application loses/gains visibility */
-       KEYDOWN,      /* Keys pressed */
-       KEYUP,      /* Keys released */
-       MOUSEMOTION,      /* Mouse moved */
-       MOUSEBUTTONDOWN,    /* Mouse button pressed */
-       MOUSEBUTTONUP,    /* Mouse button released */
-       JOYAXISMOTION,    /* Joystick axis motion */
-       JOYBALLMOTION,    /* Joystick trackball motion */
-       JOYHATMOTION,    /* Joystick hat position change */
-       JOYBUTTONDOWN,    /* Joystick button pressed */
-       JOYBUTTONUP,      /* Joystick button released */
-       QUIT,      /* User-requested quit */
-       SYSWMEVENT,      /* System specific event */
-       EVENT_RESERVEDA,    /* Reserved for future use.. */
-       EVENT_RESERVEDB,    /* Reserved for future use.. */
-       VIDEORESIZE,      /* User resized video mode */
-       VIDEOEXPOSE,      /* Screen needs to be redrawn */
-       EVENT_RESERVED2,    /* Reserved for future use.. */
-       EVENT_RESERVED3,    /* Reserved for future use.. */
-       EVENT_RESERVED4,    /* Reserved for future use.. */
-       EVENT_RESERVED5,    /* Reserved for future use.. */
-       EVENT_RESERVED6,    /* Reserved for future use.. */
-       EVENT_RESERVED7,    /* Reserved for future use.. */
-       /* Events USEREVENT through MAXEVENTS-1 are for your use */
-       USEREVENT = 24,
-       /* This last event is only for bounding internal arrays
-    It is the number of bits in the event mask datatype -- Uint32
-        */
-       NUMEVENTS = 32
+    FIRSTEVENT     = 0,
+    NOEVENT        = 0,
+    /* Application events */
+    QUIT           = 0x100,
+    APP_TERMINATING,
+    APP_LOWMEMORY,
+    APP_WILLENTERBACKGROUND,
+    APP_DIDENTERBACKGROUND,
+    APP_WILLENTERFOREGROUND,
+    APP_DIDENTERFOREGROUND,
+    /* Window events */
+    WINDOWEVENT    = 0x200,
+    SYSWMEVENT,
+    /* Keyboard events */
+    KEYDOWN        = 0x300,
+    KEYUP,
+    /* Text editing events */
+    TEXTEDITING,
+    /* Text input events */
+    TEXTINPUT,
+    /* Mouse motion events */
+    MOUSEMOTION    = 0x400,
+    /* Mouse button events */
+    MOUSEBUTTONDOWN,
+    MOUSEBUTTONUP,
+    /* Mouse wheel events */
+    MOUSEWHEEL,
+    /* Joystick events */
+    JOYAXISMOTION  = 0x600,
+    JOYBALLMOTION,
+    JOYHATMOTION,
+    JOYBUTTONDOWN,
+    JOYBUTTONUP,
+    JOYDEVICEADDED,
+    JOYDEVICEREMOVED,
+    /* Game controller events */
+    CONTROLLERAXISMOTION  = 0x650,
+    CONTROLLERBUTTONDOWN,
+    CONTROLLERBUTTONUP,
+    CONTROLLERDEVICEADDED,
+    CONTROLLERDEVICEREMOVED,
+    CONTROLLERDEVICEREMAPPED,
+    /* Touch events */
+    FINGERDOWN      = 0x700,
+    FINGERUP,
+    FINGERMOTION,
+    /* Gesture events */
+    DOLLARGESTURE   = 0x800,
+    DOLLARRECORD,
+    MULTIGESTURE,
+    /* Clipboard events */
+    CLIPBOARDUPDATE = 0x900, /**< The clipboard changed */
+    /* Drag and drop events */
+    DROPFILE        = 0x1000, /**< The system requests a file open */
+
+    USEREVENT    = 0x8000,
+
+    LASTEVENT    = 0xFFFF
 }
 
 |SDLKey
 {
-  /* The keyboard syms have been cleverly chosen to map to ASCII */
-  UNKNOWN    = 0,
-  FIRST    = 0,
-  BACKSPACE    = 8,
-  TAB    = 9,
-  CLEAR    = 12,
-  RETURN    = 13,
-  PAUSE    = 19,
-  ESCAPE    = 27,
-  SPACE    = 32,
-  EXCLAIM    = 33,
-  QUOTEDBL    = 34,
-  HASH    = 35,
-  DOLLAR    = 36,
-  AMPERSAND    = 38,
-  QUOTE    = 39,
-  LEFTPAREN    = 40,
-  RIGHTPAREN    = 41,
-  ASTERISK    = 42,
-  PLUS    = 43,
-  COMMA    = 44,
-  MINUS    = 45,
-  PERIOD    = 46,
-  SLASH    = 47,
-  _0      = 48,
-  _1      = 49,
-  _2      = 50,
-  _3      = 51,
-  _4      = 52,
-  _5      = 53,
-  _6      = 54,
-  _7      = 55,
-  _8      = 56,
-  _9      = 57,
-  COLON    = 58,
-  SEMICOLON    = 59,
-  LESS    = 60,
-  EQUALS    = 61,
-  GREATER    = 62,
-  QUESTION    = 63,
-  AT      = 64,
-  /* 
-     Skip uppercase letters
-   */
-  LEFTBRACKET  = 91,
-  BACKSLASH    = 92,
-  RIGHTBRACKET  = 93,
-  CARET    = 94,
-  UNDERSCORE    = 95,
-  BACKQUOTE    = 96,
-  a      = 97,
-  b      = 98,
-  c      = 99,
-  d      = 100,
-  e      = 101,
-  f      = 102,
-  g      = 103,
-  h      = 104,
-  i      = 105,
-  j      = 106,
-  k      = 107,
-  l      = 108,
-  m      = 109,
-  n      = 110,
-  o      = 111,
-  p      = 112,
-  q      = 113,
-  r      = 114,
-  s      = 115,
-  t      = 116,
-  u      = 117,
-  v      = 118,
-  w      = 119,
-  x      = 120,
-  y      = 121,
-  z      = 122,
-  DELETE    = 127,
-  /* End of ASCII mapped keysyms */
+    UNKNOWN = 0,
+    a = 4,
+    b = 5,
+    c = 6,
+    d = 7,
+    e = 8,
+    f = 9,
+    g = 10,
+    h = 11,
+    i = 12,
+    j = 13,
+    k = 14,
+    l = 15,
+    m = 16,
+    n = 17,
+    o = 18,
+    p = 19,
+    q = 20,
+    r = 21,
+    s = 22,
+    t = 23,
+    u = 24,
+    v = 25,
+    w = 26,
+    x = 27,
+    y = 28,
+    z = 29,
+    _1 = 30,
+    _2 = 31,
+    _3 = 32,
+    _4 = 33,
+    _5 = 34,
+    _6 = 35,
+    _7 = 36,
+    _8 = 37,
+    _9 = 38,
+    _0 = 39,
+    RETURN = 40,
+    ESCAPE = 41,
+    BACKSPACE = 42,
+    TAB = 43,
+    SPACE = 44,
+    MINUS = 45,
+    EQUALS = 46,
+    LEFTBRACKET = 47,
+    RIGHTBRACKET = 48,
+    BACKSLASH = 49,
+    NONUSHASH = 50,
+    SEMICOLON = 51,
+    APOSTROPHE = 52,
+    GRAVE = 53,
+    COMMA = 54,
+    PERIOD = 55,
+    SLASH = 56,
+    CAPSLOCK = 57,
+    F1 = 58,
+    F2 = 59,
+    F3 = 60,
+    F4 = 61,
+    F5 = 62,
+    F6 = 63,
+    F7 = 64,
+    F8 = 65,
+    F9 = 66,
+    F10 = 67,
+    F11 = 68,
+    F12 = 69,
+    PRINTSCREEN = 70,
+    SCROLLLOCK = 71,
+    PAUSE = 72,
+    INSERT = 73,
+    HOME = 74,
+    PAGEUP = 75,
+    DELETE = 76,
+    END = 77,
+    PAGEDOWN = 78,
+    RIGHT = 79,
+    LEFT = 80,
+    DOWN = 81,
+    UP = 82,
+    NUMLOCKCLEAR = 83,
+    KP_DIVIDE = 84,
+    KP_MULTIPLY = 85,
+    KP_MINUS = 86,
+    KP_PLUS = 87,
+    KP_ENTER = 88,
+    KP_1 = 89,
+    KP_2 = 90,
+    KP_3 = 91,
+    KP_4 = 92,
+    KP_5 = 93,
+    KP_6 = 94,
+    KP_7 = 95,
+    KP_8 = 96,
+    KP_9 = 97,
+    KP_0 = 98,
+    KP_PERIOD = 99,
+    NONUSBACKSLASH = 100,
+    APPLICATION = 101,
+    POWER = 102,
+    KP_EQUALS = 103,
+    F13 = 104,
+    F14 = 105,
+    F15 = 106,
+    F16 = 107,
+    F17 = 108,
+    F18 = 109,
+    F19 = 110,
+    F20 = 111,
+    F21 = 112,
+    F22 = 113,
+    F23 = 114,
+    F24 = 115,
+    EXECUTE = 116,
+    HELP = 117,
+    MENU = 118,
+    SELECT = 119,
+    STOP = 120,
+    AGAIN = 121,
+    UNDO = 122,
+    CUT = 123,
+    COPY = 124,
+    PASTE = 125,
+    FIND = 126,
+    MUTE = 127,
+    VOLUMEUP = 128,
+    VOLUMEDOWN = 129,
 
-  /* International keyboard syms */
-  WORLD_0    = 160,    /* 0xA0 */
-  WORLD_1    = 161,
-  WORLD_2    = 162,
-  WORLD_3    = 163,
-  WORLD_4    = 164,
-  WORLD_5    = 165,
-  WORLD_6    = 166,
-  WORLD_7    = 167,
-  WORLD_8    = 168,
-  WORLD_9    = 169,
-  WORLD_10    = 170,
-  WORLD_11    = 171,
-  WORLD_12    = 172,
-  WORLD_13    = 173,
-  WORLD_14    = 174,
-  WORLD_15    = 175,
-  WORLD_16    = 176,
-  WORLD_17    = 177,
-  WORLD_18    = 178,
-  WORLD_19    = 179,
-  WORLD_20    = 180,
-  WORLD_21    = 181,
-  WORLD_22    = 182,
-  WORLD_23    = 183,
-  WORLD_24    = 184,
-  WORLD_25    = 185,
-  WORLD_26    = 186,
-  WORLD_27    = 187,
-  WORLD_28    = 188,
-  WORLD_29    = 189,
-  WORLD_30    = 190,
-  WORLD_31    = 191,
-  WORLD_32    = 192,
-  WORLD_33    = 193,
-  WORLD_34    = 194,
-  WORLD_35    = 195,
-  WORLD_36    = 196,
-  WORLD_37    = 197,
-  WORLD_38    = 198,
-  WORLD_39    = 199,
-  WORLD_40    = 200,
-  WORLD_41    = 201,
-  WORLD_42    = 202,
-  WORLD_43    = 203,
-  WORLD_44    = 204,
-  WORLD_45    = 205,
-  WORLD_46    = 206,
-  WORLD_47    = 207,
-  WORLD_48    = 208,
-  WORLD_49    = 209,
-  WORLD_50    = 210,
-  WORLD_51    = 211,
-  WORLD_52    = 212,
-  WORLD_53    = 213,
-  WORLD_54    = 214,
-  WORLD_55    = 215,
-  WORLD_56    = 216,
-  WORLD_57    = 217,
-  WORLD_58    = 218,
-  WORLD_59    = 219,
-  WORLD_60    = 220,
-  WORLD_61    = 221,
-  WORLD_62    = 222,
-  WORLD_63    = 223,
-  WORLD_64    = 224,
-  WORLD_65    = 225,
-  WORLD_66    = 226,
-  WORLD_67    = 227,
-  WORLD_68    = 228,
-  WORLD_69    = 229,
-  WORLD_70    = 230,
-  WORLD_71    = 231,
-  WORLD_72    = 232,
-  WORLD_73    = 233,
-  WORLD_74    = 234,
-  WORLD_75    = 235,
-  WORLD_76    = 236,
-  WORLD_77    = 237,
-  WORLD_78    = 238,
-  WORLD_79    = 239,
-  WORLD_80    = 240,
-  WORLD_81    = 241,
-  WORLD_82    = 242,
-  WORLD_83    = 243,
-  WORLD_84    = 244,
-  WORLD_85    = 245,
-  WORLD_86    = 246,
-  WORLD_87    = 247,
-  WORLD_88    = 248,
-  WORLD_89    = 249,
-  WORLD_90    = 250,
-  WORLD_91    = 251,
-  WORLD_92    = 252,
-  WORLD_93    = 253,
-  WORLD_94    = 254,
-  WORLD_95    = 255,    /* 0xFF */
+    KP_COMMA = 133,
+    KP_EQUALSAS400 = 134,
+    INTERNATIONAL1 = 135,
+    INTERNATIONAL2 = 136,
+    INTERNATIONAL3 = 137,
+    INTERNATIONAL4 = 138,
+    INTERNATIONAL5 = 139,
+    INTERNATIONAL6 = 140,
+    INTERNATIONAL7 = 141,
+    INTERNATIONAL8 = 142,
+    INTERNATIONAL9 = 143,
+    LANG1 = 144,
+    LANG2 = 145,
+    LANG3 = 146,
+    LANG4 = 147,
+    LANG5 = 148,
+    LANG6 = 149,
+    LANG7 = 150,
+    LANG8 = 151,
+    LANG9 = 152,
+    ALTERASE = 153,
+    SYSREQ = 154,
+    CANCEL = 155,
+    CLEAR = 156,
+    PRIOR = 157,
+    RETURN2 = 158,
+    SEPARATOR = 159,
+    OUT = 160,
+    OPER = 161,
+    CLEARAGAIN = 162,
+    CRSEL = 163,
+    EXSEL = 164,
+    KP_00 = 176,
+    KP_000 = 177,
+    THOUSANDSSEPARATOR = 178,
+    DECIMALSEPARATOR = 179,
+    CURRENCYUNIT = 180,
+    CURRENCYSUBUNIT = 181,
+    KP_LEFTPAREN = 182,
+    KP_RIGHTPAREN = 183,
+    KP_LEFTBRACE = 184,
+    KP_RIGHTBRACE = 185,
+    KP_TAB = 186,
+    KP_BACKSPACE = 187,
+    KP_A = 188,
+    KP_B = 189,
+    KP_C = 190,
+    KP_D = 191,
+    KP_E = 192,
+    KP_F = 193,
+    KP_XOR = 194,
+    KP_POWER = 195,
+    KP_PERCENT = 196,
+    KP_LESS = 197,
+    KP_GREATER = 198,
+    KP_AMPERSAND = 199,
+    KP_DBLAMPERSAND = 200,
+    KP_VERTICALBAR = 201,
+    KP_DBLVERTICALBAR = 202,
+    KP_COLON = 203,
+    KP_HASH = 204,
+    KP_SPACE = 205,
+    KP_AT = 206,
+    KP_EXCLAM = 207,
+    KP_MEMSTORE = 208,
+    KP_MEMRECALL = 209,
+    KP_MEMCLEAR = 210,
+    KP_MEMADD = 211,
+    KP_MEMSUBTRACT = 212,
+    KP_MEMMULTIPLY = 213,
+    KP_MEMDIVIDE = 214,
+    KP_PLUSMINUS = 215,
+    KP_CLEAR = 216,
+    KP_CLEARENTRY = 217,
+    KP_BINARY = 218,
+    KP_OCTAL = 219,
+    KP_DECIMAL = 220,
+    KP_HEXADECIMAL = 221,
+    LCTRL = 224,
+    LSHIFT = 225,
+    LALT = 226,
+    LGUI = 227,
+    RCTRL = 228,
+    RSHIFT = 229,
+    RALT = 230,
+    RGUI = 231,
+    MODE = 257,
+    AUDIONEXT = 258,
+    AUDIOPREV = 259,
+    AUDIOSTOP = 260,
+    AUDIOPLAY = 261,
+    AUDIOMUTE = 262,
+    MEDIASELECT = 263,
+    WWW = 264,
+    MAIL = 265,
+    CALCULATOR = 266,
+    COMPUTER = 267,
+    AC_SEARCH = 268,
+    AC_HOME = 269,
+    AC_BACK = 270,
+    AC_FORWARD = 271,
+    AC_STOP = 272,
+    AC_REFRESH = 273,
+    AC_BOOKMARKS = 274,
+    BRIGHTNESSDOWN = 275,
+    BRIGHTNESSUP = 276,
+    DISPLAYSWITCH = 277,
+    KBDILLUMTOGGLE = 278,
+    KBDILLUMDOWN = 279,
+    KBDILLUMUP = 280,
+    EJECT = 281,
+    SLEEP = 282,
+    APP1 = 283,
+    APP2 = 284,
 
-  /* Numeric keypad */
-  KP0    = 256,
-  KP1    = 257,
-  KP2    = 258,
-  KP3    = 259,
-  KP4    = 260,
-  KP5    = 261,
-  KP6    = 262,
-  KP7    = 263,
-  KP8    = 264,
-  KP9    = 265,
-  KP_PERIOD    = 266,
-  KP_DIVIDE    = 267,
-  KP_MULTIPLY  = 268,
-  KP_MINUS    = 269,
-  KP_PLUS    = 270,
-  KP_ENTER    = 271,
-  KP_EQUALS    = 272,
-
-  /* Arrows + Home/End pad */
-  UP      = 273,
-  DOWN    = 274,
-  RIGHT    = 275,
-  LEFT    = 276,
-  INSERT    = 277,
-  HOME    = 278,
-  END    = 279,
-  PAGEUP    = 280,
-  PAGEDOWN    = 281,
-
-  /* Function keys */
-  F1      = 282,
-  F2      = 283,
-  F3      = 284,
-  F4      = 285,
-  F5      = 286,
-  F6      = 287,
-  F7      = 288,
-  F8      = 289,
-  F9      = 290,
-  F10    = 291,
-  F11    = 292,
-  F12    = 293,
-  F13    = 294,
-  F14    = 295,
-  F15    = 296,
-
-  /* Key state modifier keys */
-  NUMLOCK    = 300,
-  CAPSLOCK    = 301,
-  SCROLLOCK    = 302,
-  RSHIFT    = 303,
-  LSHIFT    = 304,
-  RCTRL    = 305,
-  LCTRL    = 306,
-  RALT    = 307,
-  LALT    = 308,
-  RMETA    = 309,
-  LMETA    = 310,
-  LSUPER    = 311,    /* Left "Windows" key */
-  RSUPER    = 312,    /* Right "Windows" key */
-  MODE    = 313,    /* "Alt Gr" key */
-  COMPOSE    = 314,    /* Multi-key compose key */
-
-  /* Miscellaneous function keys */
-  HELP    = 315,
-  PRINT    = 316,
-  SYSREQ    = 317,
-  BREAK    = 318,
-  MENU    = 319,
-  POWER    = 320,    /* Power Macintosh power key */
-  EURO    = 321,    /* Some european keyboards */
-  UNDO    = 322,    /* Atari keyboard has Undo */
-
-  /* Add any other keys here */
-
-  LAST
+    NUM_SCANCODES = 512
 }
 
-/* Enumeration of valid key mods (possibly OR'd together) */
-|SDLMod
+
+const int K_SCANCODE_MASK = (1<<30);
+
+|K
 {
-  NONE  = 0x0000,
-  LSHIFT= 0x0001,
-  RSHIFT= 0x0002,
-  LCTRL = 0x0040,
-  RCTRL = 0x0080,
-  LALT  = 0x0100,
-  RALT  = 0x0200,
-  LMETA = 0x0400,
-  RMETA = 0x0800,
-  NUM   = 0x1000,
-  CAPS  = 0x2000,
-  MODE  = 0x4000,
-  RESERVED = 0x8000
+    UNKNOWN = 0,
+
+    RETURN = '\r',
+    ESCAPE = '\o33',
+    BACKSPACE = '\x08',
+    TAB = '\t',
+    SPACE = ' ',
+    EXCLAIM = '!',
+    QUOTEDBL = '"',
+    HASH = '#',
+    PERCENT = '%',
+    DOLLAR = '$',
+    AMPERSAND = '&',
+    QUOTE = '\'',
+    LEFTPAREN = '(',
+    RIGHTPAREN = ')',
+    ASTERISK = '*',
+    PLUS = '+',
+    COMMA = ',',
+    MINUS = '-',
+    PERIOD = '.',
+    SLASH = '/',
+    _0 = '0',
+    _1 = '1',
+    _2 = '2',
+    _3 = '3',
+    _4 = '4',
+    _5 = '5',
+    _6 = '6',
+    _7 = '7',
+    _8 = '8',
+    _9 = '9',
+    COLON = ':',
+    SEMICOLON = ';',
+    LESS = '<',
+    EQUALS = '=',
+    GREATER = '>',
+    QUESTION = '?',
+    AT = '@',
+    /*
+       Skip uppercase letters
+     */
+    LEFTBRACKET = '[',
+    BACKSLASH = '\\',
+    RIGHTBRACKET = ']',
+    CARET = '^',
+    UNDERSCORE = '_',
+    BACKQUOTE = '`',
+    a = 'a',
+    b = 'b',
+    c = 'c',
+    d = 'd',
+    e = 'e',
+    f = 'f',
+    g = 'g',
+    h = 'h',
+    i = 'i',
+    j = 'j',
+    k = 'k',
+    l = 'l',
+    m = 'm',
+    n = 'n',
+    o = 'o',
+    p = 'p',
+    q = 'q',
+    r = 'r',
+    s = 's',
+    t = 't',
+    u = 'u',
+    v = 'v',
+    w = 'w',
+    x = 'x',
+    y = 'y',
+    z = 'z',
+
+    CAPSLOCK = .K_SCANCODE_MASK|.SDLKey::CAPSLOCK,
+
+    F1 = .K_SCANCODE_MASK|.SDLKey::F1,
+    F2 = .K_SCANCODE_MASK|.SDLKey::F2,
+    F3 = .K_SCANCODE_MASK|.SDLKey::F3,
+    F4 = .K_SCANCODE_MASK|.SDLKey::F4,
+    F5 = .K_SCANCODE_MASK|.SDLKey::F5,
+    F6 = .K_SCANCODE_MASK|.SDLKey::F6,
+    F7 = .K_SCANCODE_MASK|.SDLKey::F7,
+    F8 = .K_SCANCODE_MASK|.SDLKey::F8,
+    F9 = .K_SCANCODE_MASK|.SDLKey::F9,
+    F10 = .K_SCANCODE_MASK|.SDLKey::F10,
+    F11 = .K_SCANCODE_MASK|.SDLKey::F11,
+    F12 = .K_SCANCODE_MASK|.SDLKey::F12,
+
+    PRINTSCREEN = .K_SCANCODE_MASK|.SDLKey::PRINTSCREEN,
+    SCROLLLOCK = .K_SCANCODE_MASK|.SDLKey::SCROLLLOCK,
+    PAUSE = .K_SCANCODE_MASK|.SDLKey::PAUSE,
+    INSERT = .K_SCANCODE_MASK|.SDLKey::INSERT,
+    HOME = .K_SCANCODE_MASK|.SDLKey::HOME,
+    PAGEUP = .K_SCANCODE_MASK|.SDLKey::PAGEUP,
+    DELETE = '\d177',
+    END = .K_SCANCODE_MASK|.SDLKey::END,
+    PAGEDOWN = .K_SCANCODE_MASK|.SDLKey::PAGEDOWN,
+    RIGHT = .K_SCANCODE_MASK|.SDLKey::RIGHT,
+    LEFT = .K_SCANCODE_MASK|.SDLKey::LEFT,
+    DOWN = .K_SCANCODE_MASK|.SDLKey::DOWN,
+    UP = .K_SCANCODE_MASK|.SDLKey::UP,
+
+    NUMLOCKCLEAR = .K_SCANCODE_MASK|.SDLKey::NUMLOCKCLEAR,
+    KP_DIVIDE = .K_SCANCODE_MASK|.SDLKey::KP_DIVIDE,
+    KP_MULTIPLY = .K_SCANCODE_MASK|.SDLKey::KP_MULTIPLY,
+    KP_MINUS = .K_SCANCODE_MASK|.SDLKey::KP_MINUS,
+    KP_PLUS = .K_SCANCODE_MASK|.SDLKey::KP_PLUS,
+    KP_ENTER = .K_SCANCODE_MASK|.SDLKey::KP_ENTER,
+    KP_1 = .K_SCANCODE_MASK|.SDLKey::KP_1,
+    KP_2 = .K_SCANCODE_MASK|.SDLKey::KP_2,
+    KP_3 = .K_SCANCODE_MASK|.SDLKey::KP_3,
+    KP_4 = .K_SCANCODE_MASK|.SDLKey::KP_4,
+    KP_5 = .K_SCANCODE_MASK|.SDLKey::KP_5,
+    KP_6 = .K_SCANCODE_MASK|.SDLKey::KP_6,
+    KP_7 = .K_SCANCODE_MASK|.SDLKey::KP_7,
+    KP_8 = .K_SCANCODE_MASK|.SDLKey::KP_8,
+    KP_9 = .K_SCANCODE_MASK|.SDLKey::KP_9,
+    KP_0 = .K_SCANCODE_MASK|.SDLKey::KP_0,
+    KP_PERIOD = .K_SCANCODE_MASK|.SDLKey::KP_PERIOD,
+
+    APPLICATION = .K_SCANCODE_MASK|.SDLKey::APPLICATION,
+    POWER = .K_SCANCODE_MASK|.SDLKey::POWER,
+    KP_EQUALS = .K_SCANCODE_MASK|.SDLKey::KP_EQUALS,
+    F13 = .K_SCANCODE_MASK|.SDLKey::F13,
+    F14 = .K_SCANCODE_MASK|.SDLKey::F14,
+    F15 = .K_SCANCODE_MASK|.SDLKey::F15,
+    F16 = .K_SCANCODE_MASK|.SDLKey::F16,
+    F17 = .K_SCANCODE_MASK|.SDLKey::F17,
+    F18 = .K_SCANCODE_MASK|.SDLKey::F18,
+    F19 = .K_SCANCODE_MASK|.SDLKey::F19,
+    F20 = .K_SCANCODE_MASK|.SDLKey::F20,
+    F21 = .K_SCANCODE_MASK|.SDLKey::F21,
+    F22 = .K_SCANCODE_MASK|.SDLKey::F22,
+    F23 = .K_SCANCODE_MASK|.SDLKey::F23,
+    F24 = .K_SCANCODE_MASK|.SDLKey::F24,
+    EXECUTE = .K_SCANCODE_MASK|.SDLKey::EXECUTE,
+    HELP = .K_SCANCODE_MASK|.SDLKey::HELP,
+    MENU = .K_SCANCODE_MASK|.SDLKey::MENU,
+    SELECT = .K_SCANCODE_MASK|.SDLKey::SELECT,
+    STOP = .K_SCANCODE_MASK|.SDLKey::STOP,
+    AGAIN = .K_SCANCODE_MASK|.SDLKey::AGAIN,
+    UNDO = .K_SCANCODE_MASK|.SDLKey::UNDO,
+    CUT = .K_SCANCODE_MASK|.SDLKey::CUT,
+    COPY = .K_SCANCODE_MASK|.SDLKey::COPY,
+    PASTE = .K_SCANCODE_MASK|.SDLKey::PASTE,
+    FIND = .K_SCANCODE_MASK|.SDLKey::FIND,
+    MUTE = .K_SCANCODE_MASK|.SDLKey::MUTE,
+    VOLUMEUP = .K_SCANCODE_MASK|.SDLKey::VOLUMEUP,
+    VOLUMEDOWN = .K_SCANCODE_MASK|.SDLKey::VOLUMEDOWN,
+    KP_COMMA = .K_SCANCODE_MASK|.SDLKey::KP_COMMA,
+    KP_EQUALSAS400 =
+        .K_SCANCODE_MASK|.SDLKey::KP_EQUALSAS400,
+
+    ALTERASE = .K_SCANCODE_MASK|.SDLKey::ALTERASE,
+    SYSREQ = .K_SCANCODE_MASK|.SDLKey::SYSREQ,
+    CANCEL = .K_SCANCODE_MASK|.SDLKey::CANCEL,
+    CLEAR = .K_SCANCODE_MASK|.SDLKey::CLEAR,
+    PRIOR = .K_SCANCODE_MASK|.SDLKey::PRIOR,
+    RETURN2 = .K_SCANCODE_MASK|.SDLKey::RETURN2,
+    SEPARATOR = .K_SCANCODE_MASK|.SDLKey::SEPARATOR,
+    OUT = .K_SCANCODE_MASK|.SDLKey::OUT,
+    OPER = .K_SCANCODE_MASK|.SDLKey::OPER,
+    CLEARAGAIN = .K_SCANCODE_MASK|.SDLKey::CLEARAGAIN,
+    CRSEL = .K_SCANCODE_MASK|.SDLKey::CRSEL,
+    EXSEL = .K_SCANCODE_MASK|.SDLKey::EXSEL,
+
+    KP_00 = .K_SCANCODE_MASK|.SDLKey::KP_00,
+    KP_000 = .K_SCANCODE_MASK|.SDLKey::KP_000,
+    THOUSANDSSEPARATOR =
+        .K_SCANCODE_MASK|.SDLKey::THOUSANDSSEPARATOR,
+    DECIMALSEPARATOR =
+        .K_SCANCODE_MASK|.SDLKey::DECIMALSEPARATOR,
+    CURRENCYUNIT = .K_SCANCODE_MASK|.SDLKey::CURRENCYUNIT,
+    CURRENCYSUBUNIT =
+        .K_SCANCODE_MASK|.SDLKey::CURRENCYSUBUNIT,
+    KP_LEFTPAREN = .K_SCANCODE_MASK|.SDLKey::KP_LEFTPAREN,
+    KP_RIGHTPAREN = .K_SCANCODE_MASK|.SDLKey::KP_RIGHTPAREN,
+    KP_LEFTBRACE = .K_SCANCODE_MASK|.SDLKey::KP_LEFTBRACE,
+    KP_RIGHTBRACE = .K_SCANCODE_MASK|.SDLKey::KP_RIGHTBRACE,
+    KP_TAB = .K_SCANCODE_MASK|.SDLKey::KP_TAB,
+    KP_BACKSPACE = .K_SCANCODE_MASK|.SDLKey::KP_BACKSPACE,
+    KP_A = .K_SCANCODE_MASK|.SDLKey::KP_A,
+    KP_B = .K_SCANCODE_MASK|.SDLKey::KP_B,
+    KP_C = .K_SCANCODE_MASK|.SDLKey::KP_C,
+    KP_D = .K_SCANCODE_MASK|.SDLKey::KP_D,
+    KP_E = .K_SCANCODE_MASK|.SDLKey::KP_E,
+    KP_F = .K_SCANCODE_MASK|.SDLKey::KP_F,
+    KP_XOR = .K_SCANCODE_MASK|.SDLKey::KP_XOR,
+    KP_POWER = .K_SCANCODE_MASK|.SDLKey::KP_POWER,
+    KP_PERCENT = .K_SCANCODE_MASK|.SDLKey::KP_PERCENT,
+    KP_LESS = .K_SCANCODE_MASK|.SDLKey::KP_LESS,
+    KP_GREATER = .K_SCANCODE_MASK|.SDLKey::KP_GREATER,
+    KP_AMPERSAND = .K_SCANCODE_MASK|.SDLKey::KP_AMPERSAND,
+    KP_DBLAMPERSAND =
+        .K_SCANCODE_MASK|.SDLKey::KP_DBLAMPERSAND,
+    KP_VERTICALBAR =
+        .K_SCANCODE_MASK|.SDLKey::KP_VERTICALBAR,
+    KP_DBLVERTICALBAR =
+        .K_SCANCODE_MASK|.SDLKey::KP_DBLVERTICALBAR,
+    KP_COLON = .K_SCANCODE_MASK|.SDLKey::KP_COLON,
+    KP_HASH = .K_SCANCODE_MASK|.SDLKey::KP_HASH,
+    KP_SPACE = .K_SCANCODE_MASK|.SDLKey::KP_SPACE,
+    KP_AT = .K_SCANCODE_MASK|.SDLKey::KP_AT,
+    KP_EXCLAM = .K_SCANCODE_MASK|.SDLKey::KP_EXCLAM,
+    KP_MEMSTORE = .K_SCANCODE_MASK|.SDLKey::KP_MEMSTORE,
+    KP_MEMRECALL = .K_SCANCODE_MASK|.SDLKey::KP_MEMRECALL,
+    KP_MEMCLEAR = .K_SCANCODE_MASK|.SDLKey::KP_MEMCLEAR,
+    KP_MEMADD = .K_SCANCODE_MASK|.SDLKey::KP_MEMADD,
+    KP_MEMSUBTRACT =
+        .K_SCANCODE_MASK|.SDLKey::KP_MEMSUBTRACT,
+    KP_MEMMULTIPLY =
+        .K_SCANCODE_MASK|.SDLKey::KP_MEMMULTIPLY,
+    KP_MEMDIVIDE = .K_SCANCODE_MASK|.SDLKey::KP_MEMDIVIDE,
+    KP_PLUSMINUS = .K_SCANCODE_MASK|.SDLKey::KP_PLUSMINUS,
+    KP_CLEAR = .K_SCANCODE_MASK|.SDLKey::KP_CLEAR,
+    KP_CLEARENTRY = .K_SCANCODE_MASK|.SDLKey::KP_CLEARENTRY,
+    KP_BINARY = .K_SCANCODE_MASK|.SDLKey::KP_BINARY,
+    KP_OCTAL = .K_SCANCODE_MASK|.SDLKey::KP_OCTAL,
+    KP_DECIMAL = .K_SCANCODE_MASK|.SDLKey::KP_DECIMAL,
+    KP_HEXADECIMAL =
+        .K_SCANCODE_MASK|.SDLKey::KP_HEXADECIMAL,
+
+    LCTRL = .K_SCANCODE_MASK|.SDLKey::LCTRL,
+    LSHIFT = .K_SCANCODE_MASK|.SDLKey::LSHIFT,
+    LALT = .K_SCANCODE_MASK|.SDLKey::LALT,
+    LGUI = .K_SCANCODE_MASK|.SDLKey::LGUI,
+    RCTRL = .K_SCANCODE_MASK|.SDLKey::RCTRL,
+    RSHIFT = .K_SCANCODE_MASK|.SDLKey::RSHIFT,
+    RALT = .K_SCANCODE_MASK|.SDLKey::RALT,
+    RGUI = .K_SCANCODE_MASK|.SDLKey::RGUI,
+
+    MODE = .K_SCANCODE_MASK|.SDLKey::MODE,
+
+    AUDIONEXT = .K_SCANCODE_MASK|.SDLKey::AUDIONEXT,
+    AUDIOPREV = .K_SCANCODE_MASK|.SDLKey::AUDIOPREV,
+    AUDIOSTOP = .K_SCANCODE_MASK|.SDLKey::AUDIOSTOP,
+    AUDIOPLAY = .K_SCANCODE_MASK|.SDLKey::AUDIOPLAY,
+    AUDIOMUTE = .K_SCANCODE_MASK|.SDLKey::AUDIOMUTE,
+    MEDIASELECT = .K_SCANCODE_MASK|.SDLKey::MEDIASELECT,
+    WWW = .K_SCANCODE_MASK|.SDLKey::WWW,
+    MAIL = .K_SCANCODE_MASK|.SDLKey::MAIL,
+    CALCULATOR = .K_SCANCODE_MASK|.SDLKey::CALCULATOR,
+    COMPUTER = .K_SCANCODE_MASK|.SDLKey::COMPUTER,
+    AC_SEARCH = .K_SCANCODE_MASK|.SDLKey::AC_SEARCH,
+    AC_HOME = .K_SCANCODE_MASK|.SDLKey::AC_HOME,
+    AC_BACK = .K_SCANCODE_MASK|.SDLKey::AC_BACK,
+    AC_FORWARD = .K_SCANCODE_MASK|.SDLKey::AC_FORWARD,
+    AC_STOP = .K_SCANCODE_MASK|.SDLKey::AC_STOP,
+    AC_REFRESH = .K_SCANCODE_MASK|.SDLKey::AC_REFRESH,
+    AC_BOOKMARKS = .K_SCANCODE_MASK|.SDLKey::AC_BOOKMARKS,
+
+    BRIGHTNESSDOWN =
+        .K_SCANCODE_MASK|.SDLKey::BRIGHTNESSDOWN,
+    BRIGHTNESSUP = .K_SCANCODE_MASK|.SDLKey::BRIGHTNESSUP,
+    DISPLAYSWITCH = .K_SCANCODE_MASK|.SDLKey::DISPLAYSWITCH,
+    KBDILLUMTOGGLE =
+        .K_SCANCODE_MASK|.SDLKey::KBDILLUMTOGGLE,
+    KBDILLUMDOWN = .K_SCANCODE_MASK|.SDLKey::KBDILLUMDOWN,
+    KBDILLUMUP = .K_SCANCODE_MASK|.SDLKey::KBDILLUMUP,
+    EJECT = .K_SCANCODE_MASK|.SDLKey::EJECT,
+    SLEEP = .K_SCANCODE_MASK|.SDLKey::SLEEP
 }
 
+const ushort KMOD_NONE  = 0x0000;
+const ushort KMOD_LSHIFT= 0x0001;
+const ushort KMOD_RSHIFT= 0x0002;
+const ushort KMOD_LCTRL = 0x0040;
+const ushort KMOD_RCTRL = 0x0080;
+const ushort KMOD_LALT  = 0x0100;
+const ushort KMOD_RALT  = 0x0200;
+const ushort KMOD_LGUI  = 0x0400;
+const ushort KMOD_RGUI  = 0x0800;
+const ushort KMOD_NUM   = 0x1000;
+const ushort KMOD_CAPS  = 0x2000;
+const ushort KMOD_MODE  = 0x4000;
+const ushort KMOD_RESERVED = 0x8000;
+const ushort KMOD_CTRL = (KMOD_LCTRL|KMOD_RCTRL);
+const ushort KMOD_SHIFT = (KMOD_LSHIFT|KMOD_RSHIFT);
+const ushort KMOD_ALT = (KMOD_LALT|KMOD_RALT);
+const ushort KMOD_GUI = (KMOD_LGUI|KMOD_RGUI);
 
-
-
-public &ActiveEvent
-{
-  public |.EventType etype = .EventType::NOEVENT;
-  public ubyte gain;
-  public ubyte state;
-}
 
 
 public &keysym
 {
-  public ubyte scancode;
-  public |.SDLKey sym;
-  public |.SDLMod mod;
-  public ushort unicode;
+  public |.SDLKey scancode;
+  public |.K sym;
+  public ushort mod;
+  public ushort padding;
+  public uint unused;
 }
 public &KeyboardEvent
 {
-  public |.EventType etype = .EventType::NOEVENT;
-  public ubyte which;
+  public uint windowID;
   public ubyte state;
+  public ubyte repeat;
+  public ubyte padding1, padding2;
   public &.keysym keysym;
 }
 
 
 public &MouseMotionEvent
 {
-  public |.EventType etype = .EventType::NOEVENT;
-  public ubyte which;
-  public ubyte state;
-  public ushort x, y;
-  public short xrel;
-  public short yrel;
+  public uint windowID;
+  public uint which;
+  public uint state;
+  public int x, y;
+  public int xrel, yrel;
 }
 
 
 public &MouseButtonEvent
 {
   public |.EventType etype = .EventType::NOEVENT;
-  public ubyte which;
+  public uint which;
   public ubyte button;
   public ubyte state;
-  public ushort x, y;
-}
-
-
-public &JoyAxisEvent
-{
-  public |.EventType etype = .EventType::NOEVENT;
-  public ubyte which;
-  public ubyte axis;
-  public short value;
-}
-
-
-public &JoyBallEvent
-{
-  public |.EventType etype = .EventType::NOEVENT;
-  public ubyte which;
-  public ubyte ball;
-  public short xrel;
-  public short yrel;
-}
-
-
-public &JoyHatEvent
-{
-  public |.EventType etype = .EventType::NOEVENT;
-  public ubyte which;
-  public ubyte hat;
-  public ubyte value;
-}
-
-
-public &JoyButtonEvent
-{
-  public |.EventType etype = .EventType::NOEVENT;
-  public ubyte which;
-  public ubyte button;
-  public ubyte state;
-}
-
-
-public &ResizeEvent
-{
-  public |.EventType etype = .EventType::NOEVENT;
-  public int w;
-  public int h;
-}
-
-
-public &ExposeEvent
-{
-  public |.EventType etype = .EventType::NOEVENT;
-}
-
-
-public &QuitEvent
-{
-  public |.EventType etype = .EventType::NOEVENT;
-}
-
-
-public &UserEvent
-{
-  public |.EventType etype = .EventType::NOEVENT;
-  public int code;
-  public index data1;
-  public index data2;
+  public ubyte padding1, padding2;
+  public int x, y;
 }
 
 
 public &Event
 {
   public |.EventType etype = .EventType::NOEVENT;
-  public &.ActiveEvent active;
+  public uint timestamp;
   public &.KeyboardEvent key;
   public &.MouseMotionEvent motion;
   public &.MouseButtonEvent button;
-  public &.JoyAxisEvent jaxis;
-  public &.JoyBallEvent jball;
-  public &.JoyHatEvent jhat;
-  public &.JoyButtonEvent jbutton;
-  public &.ResizeEvent resize;
-  public &.ExposeEvent expose;
-  public &.QuitEvent quit;
-  public &.UserEvent user;
 }
 
 
 public &Rect
 {
-  public short x, y;
-  public ushort w, h;
-  public void set(short x, short y, ushort w, ushort h)
+  public int x, y;
+  public int w, h;
+  public void set(int x, int y, int w, int h)
   {
     `x = x;
     `y = y;
@@ -549,38 +793,16 @@ public &Surface
     `free();
     `sur = AllocSurface(:w, h:);
   }
-  public void fill(&.Rect r=, uint c)
-  {
-    plugin void Fill(:index, &.Rect=, uint:) = "dll/sdlplugin.dll";
-    Fill(:`sur, r=, c:);
-  }
   public void imgLoad(^/char fn)
   {
     plugin index IMGLoad(:^/char:) = "dll/sdlplugin.dll";
     `free();
     `sur = IMGLoad(:fn:);
   }
-  public void flip()
+  /void blitToWin(&.Rect dr=)
   {
-    plugin void Flip(:index:) = "dll/sdlplugin.dll";
-    Flip(:`sur:);
-  }
-  public void setAlpha(ubyte a)
-  {
-    plugin void SetAlpha(:index, ubyte:) = "dll/sdlplugin.dll";
-    SetAlpha(:`sur, a:);
-  }
-  public void blitEx(&.Rect dr=, `self src, &.Rect sr=)
-  {
-    plugin void BlitSurfaceEx(:
-      index, &.Rect=, index, &.Rect=:) = "dll/sdlplugin.dll";
-    BlitSurfaceEx(:src.sur, sr=, `sur, dr=:);
-  }
-  public void blit(&.Rect dr=, `self src)
-  {
-    plugin void BlitSurface(:index, index, &.Rect=:) =
-      "dll/sdlplugin.dll";
-    BlitSurface(:src.sur, `sur, dr=:);
+    plugin void BlitSurface(:index, &.Rect=:) = "dll/sdlplugin.dll";
+    BlitSurface(:`sur, dr=:);
   }
   public void createPaletteSurface(^ubyte img, ^uint pal, int w, int h)
   {
@@ -592,35 +814,6 @@ public &Surface
   {
     plugin index SetColorKey(:index, int:) = "dll/sdlplugin.dll";
     SetColorKey(:`sur, key:);
-  }
-  public bool renderMugenZoom(
-    &.Rect dr=, float rcx, float rcy,
-    ^ubyte pxl, ^uint pal, short ckey,
-    &.Rect sr=, float cx, float ty, &.Rect tile=,
-    float xtopscl, float xbotscl, float yscl,
-    float rasterxadd, uint roto, int alpha, int rle, %byte pluginbuf=)
-  {
-    plugin bool RenderMugenZoom(:
-      ^/ubyte, uint=, short, &.Rect=, float, float, &.Rect=,
-      float, float, float, float, uint, int, index, &.Rect=,
-      float, float, int, %byte=:) = "dll/sdlplugin.dll";
-    ret
-      RenderMugenZoom(:
-        pxl, pal<>=, ckey, sr=, cx, ty, tile=, xtopscl, xbotscl,
-        yscl, rasterxadd, roto, alpha, `sur, dr=, rcx, rcy, rle, pluginbuf=:);
-  }
-  public bool renderMugenShadow(
-    &.Rect dr=, float rcx, float rcy, ^ubyte pxl, uint color,
-    &.Rect sr=, float cx, float ty, float xscl, float yscl, float vscl,
-    uint roto, int alpha, int rle, %byte pluginbuf=)
-  {
-    plugin bool RenderMugenShadow(:
-      ^/ubyte, uint, &.Rect=, float, float, float, float, float, uint, int,
-      index, &.Rect=, float, float, int, %byte=:) = "dll/sdlplugin.dll";
-    ret
-      RenderMugenShadow(:
-        pxl, color, sr=, cx, ty, xscl, yscl, vscl, roto, alpha,
-        `sur, dr=, rcx, rcy, rle, pluginbuf=:);
   }
 }
 
@@ -643,58 +836,27 @@ public &Font
     `close();
     `font = OpenFont(:fn, size:);
   }
-  public void render(
-    uint color, bool srcalpha, short x, short y, ^/char str,
-    &.Surface sur)
+  public void render(uint color, int x, int y, ^/char str)
   {
     plugin void RenderFont(:
-      index, uint, bool, short, short, ^/char,
-      &.Surface:) = "dll/sdlplugin.dll";
-    RenderFont(:`font, color, srcalpha, x, y, str, sur:);
+      index, uint, int, int, ^/char:) = "dll/sdlplugin.dll";
+    RenderFont(:`font, color, x, y, str:);
   }
 }
 
-public &Surface screen;
 
-&ScreenReleaseGuard
+public bool init(^/char t, int w, int h, bool gl, bool mugen)
 {
-  delete()
-  {
-    plugin void SetSurfaceNull(:&.Surface=:) = "dll/sdlplugin.dll";
-    SetSurfaceNull(:.screen=:);
-  }
-}
-&ScreenReleaseGuard srg;
-/bool ogl = false;
-
-
-public bool init(^/char t, int w, int h, bool gl)
-{
-  plugin void GlInit(:&.Surface=, ^/char, int, int:) = "dll/sdlplugin.dll";
-  plugin void Init(:&.Surface=, ^/char, int, int:) = "dll/sdlplugin.dll";
-  branch{
-  cond gl:
-    GlInit(:.screen=, t, w, h:);
-    .ogl = true;
-  else:
-    Init(:.screen=, t, w, h:);
-  }
-  ret !.screen.null();
-}
-
-public bool shareScreen(bool gl)
-{
-  plugin void ShareScreen(:&.Surface=:) = "dll/sdlplugin.dll";
-  ShareScreen(:.screen=:);
-  .ogl = gl;
-  ret !.screen.null();
+  plugin bool GlInit(:^/char, int, int:) = "dll/sdlplugin.dll";
+  plugin bool Init(:^/char, int, int, bool:) = "dll/sdlplugin.dll";
+  if(gl) ret GlInit(:t, w, h:);
+  ret Init(:t, w, h, mugen:);
 }
 
 public bool fullScreen(bool full)
 {
-  plugin void FullScreen(:&.Surface=, bool:) = "dll/sdlplugin.dll";
-  FullScreen(:.screen=, full:);
-  ret !.screen.null();
+  plugin bool FullScreen(:bool:) = "dll/sdlplugin.dll";
+  ret FullScreen(:full:);
 }
 
 public void showCursor(bool show)
@@ -716,11 +878,11 @@ public &GlTexture
     DeleteGlTexture(:`id:);
     `id = 0x0;
   }
-  public bool load8bitTexture(^ubyte pxl, ushort w, ushort h)
+  public bool load8bitTexture(^ubyte pxl, int w, int h)
   {
-    plugin uint Load8bitTexture(:ubyte=, ushort, ushort:) =
+    plugin uint Load8bitTexture(:ubyte=, int, int:) =
       "dll/sdlplugin.dll";
-    if(#pxl == 0 || #pxl != (index)((uint)w*h)) ret false;
+    if(#pxl == 0 || #pxl != w*h) ret false;
     `clear();
     `id = Load8bitTexture(:pxl<>=, w, h:);
     ret `id != 0x0;

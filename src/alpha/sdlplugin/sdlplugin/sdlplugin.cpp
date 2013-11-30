@@ -14,16 +14,16 @@
 
 
 #include <SDL.h>
-#pragma comment(lib, "SDL.lib")
-#pragma comment(lib, "SDLmain.lib")
+#pragma comment(lib, "SDL2.lib")
+#pragma comment(lib, "SDL2main.lib")
 
 #include <SDL_syswm.h>
 
 #include <SDL_image.h>
-#pragma comment(lib, "SDL_image.lib")
+#pragma comment(lib, "SDL2_image.lib")
 
 #include <SDL_ttf.h>
-#pragma comment(lib, "SDL_ttf.lib")
+#pragma comment(lib, "SDL2_ttf.lib")
 
 
 #include "../../../locksingler.hpp"
@@ -41,9 +41,14 @@ void (__stdcall *sszrefdeletefunc)(void*);
 #include "../../../dll/ssz/ssz/pluginutil.hpp"
 
 int32_t ransuutane;
+SDL_Window* g_window;
+SDL_Renderer* g_renderer;
+SDL_Texture* g_target = nullptr;
+uint32_t* g_pix;
+SDL_GLContext g_gl = nullptr;
+int g_pitch;
 int g_w = 640, g_h = 480;
 uint32_t g_scrflag = 0;
-SDL_Surface *g_screen = nullptr;
 SDL_AudioSpec g_desired;
 HGLRC g_hglrc, g_hglrc2;
 HDC g_hdc;
@@ -52,6 +57,16 @@ DWORD g_mainTreadId;
 
 WNDPROC g_orgProc;
 char16_t g_lastChar = '\0', g_newChar = '\0';
+
+void lockTarget()
+{
+	if(g_target) SDL_LockTexture(g_target, nullptr, (void**)&g_pix, &g_pitch);
+}
+
+void unlockTarget()
+{
+	if(g_target) SDL_UnlockTexture(g_target);
+}
 
 LRESULT CALLBACK wrapProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -79,10 +94,10 @@ void winProcInit()
 {
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
-	SDL_GetWMInfo(&info);
-	g_orgProc = (WNDPROC)GetWindowLong(info.window, GWL_WNDPROC);
+	SDL_GetWindowWMInfo(g_window, &info);
+	g_orgProc = (WNDPROC)GetWindowLong(info.info.win.window, GWL_WNDPROC);
 	if(g_orgProc == wrapProc) return;
-	SetWindowLong(info.window, GWL_WNDPROC, (LONG)wrapProc);
+	SetWindowLong(info.info.win.window, GWL_WNDPROC, (LONG)wrapProc);
 }
 
 
@@ -315,7 +330,7 @@ public:
 	}
 	bool getState(int32_t joy, int32_t btn)
 	{
-		if(joy < 0) return SDL_GetKeyState(nullptr)[btn] == SDL_PRESSED;
+		if(joy < 0) return SDL_GetKeyboardState(nullptr)[btn] == SDL_PRESSED;
 		if(joy >= (int32_t)joys.size() || joys[joy] == nullptr){
 			return false;
 		}
@@ -411,34 +426,53 @@ void sndjoyinit()
 	g_js.init();
 }
 
-TUserFunc(void, Init, int32_t h, int32_t w, Reference cap, SDL_Surface** pps)
+TUserFunc(bool, Init, bool mugen, int32_t h, int32_t w, Reference cap)
 {
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
-		g_screen = *pps = nullptr;
+		return false;
 	}else{
-		winProcInit();
 		TTF_Init();
-		SDL_WM_SetCaption(pu->refToAstr(CP_UTF8, cap).c_str(), nullptr);
 		g_scrflag = SDL_SWSURFACE;
-		g_screen = *pps = SDL_SetVideoMode(w, h, 32, g_scrflag);
+		g_window = SDL_CreateWindow(
+			pu->refToAstr(CP_UTF8, cap).c_str(),
+			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+			w, h, g_scrflag);
+		if(!g_window) return false;
+		g_renderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_ACCELERATED);
+		if(mugen){
+			g_target =
+				SDL_CreateTexture(
+					g_renderer, SDL_PIXELFORMAT_ARGB8888,
+					SDL_TEXTUREACCESS_STREAMING, w, h);
+			SDL_SetTextureBlendMode(g_target, SDL_BLENDMODE_NONE);
+			lockTarget();
+		}
+		winProcInit();
 		g_mainTreadId = GetCurrentThreadId();
 		sndjoyinit();
 	}
 	g_w = w;
 	g_h = h;
+	return true;
 }
 
-TUserFunc(void, GlInit, int32_t h, int32_t w, Reference cap, SDL_Surface** pps)
+TUserFunc(bool, GlInit, int32_t h, int32_t w, Reference cap)
 {
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
-		g_screen = *pps = nullptr;
+		return false;;
 	}else{
-		winProcInit();
 		TTF_Init();
-		SDL_WM_SetCaption(pu->refToAstr(CP_UTF8, cap).c_str(), nullptr);
-		g_scrflag = SDL_OPENGL;
-		g_screen = *pps = SDL_SetVideoMode(w, h, 32, g_scrflag);
-		glewInit();
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+		g_scrflag = SDL_WINDOW_OPENGL;
+		g_window = SDL_CreateWindow(
+			pu->refToAstr(CP_UTF8, cap).c_str(),
+			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w, h, g_scrflag);
+		if(!g_window) return false;
+		g_renderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_ACCELERATED);
+		g_gl = SDL_GL_CreateContext(g_window);
+		if(glewInit() != GLEW_OK) return false;
+		winProcInit();
 		if(h == 0) h = 1; 
 		glShadeModel(GL_SMOOTH);
 		glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -463,23 +497,14 @@ TUserFunc(void, GlInit, int32_t h, int32_t w, Reference cap, SDL_Surface** pps)
 	}
 	g_w = w;
 	g_h = h;
+	return true;
 }
 
-TUserFunc(void, FullScreen, bool fs, SDL_Surface** pps)
+TUserFunc(bool, FullScreen, bool fs)
 {
-	g_screen =
-		*pps =
-		SDL_SetVideoMode(g_w, g_h, 32, g_scrflag | (fs ? SDL_FULLSCREEN : 0));
-}
-
-TUserFunc(void, ShareScreen, SDL_Surface** pps)
-{
-	*pps = g_screen;
-}
-
-TUserFunc(void, SetSurfaceNull, SDL_Surface** pps)
-{
-	*pps = nullptr;
+	return 
+		SDL_SetWindowFullscreen(g_window, fs ? SDL_WINDOW_FULLSCREEN : 0)
+		== 0;
 }
 
 TUserFunc(void, End)
@@ -489,147 +514,57 @@ TUserFunc(void, End)
 	bgmclear(true);
 	SDL_PauseAudio(1);
 	SDL_CloseAudio();
+	if(g_target){
+		unlockTarget();
+		SDL_DestroyTexture(g_target);
+		g_target = nullptr;
+	}
+	if(g_gl){
+		SDL_GL_DeleteContext(g_gl);
+		g_gl = nullptr;
+	}
+	SDL_DestroyRenderer(g_renderer);
+	g_renderer = nullptr;
+	SDL_DestroyWindow(g_window);
+	g_window = nullptr;
 	TTF_Quit();
 	SDL_Quit();
 }
 
 TUserFunc(bool, PollEvent, int8_t* pb)
 {
-	const int activeofs  =            sizeof(int32_t);
+	SDL_Event ev;
 
-	const int keyofs     =  activeofs+sizeof(int32_t)+sizeof(uint8_t)
-									 +sizeof(uint8_t);
+	const int comsz = sizeof(ev.common);
 
-	const int motionofs  =     keyofs+sizeof(int32_t)+sizeof(uint8_t)
-									 +sizeof(uint8_t)+sizeof(uint8_t)
-									 +sizeof(int32_t)+sizeof(int32_t)
-									 +sizeof(uint16_t);
+	const int keyofs     =           0;
 
-	const int buttonofs  =  motionofs+sizeof(int32_t)+sizeof(uint8_t)
-									 +sizeof(uint8_t)+sizeof(uint16_t)
-									 +sizeof(uint16_t)+sizeof(int16_t)
-									 +sizeof(int16_t);
+	const int motionofs  =    keyofs+sizeof(ev.key)-comsz;
 
-	const int jaxisofs   =  buttonofs+sizeof(int32_t)+sizeof(uint8_t)
-									 +sizeof(uint8_t)+sizeof(uint8_t)
-									 +sizeof(uint16_t)+sizeof(uint16_t);
-
-	const int jballofs   =   jaxisofs+sizeof(int32_t)+sizeof(uint8_t)
-									 +sizeof(uint8_t)+sizeof(int16_t);
-
-	const int jhatofs    =   jballofs+sizeof(int32_t)+sizeof(uint8_t)
-									 +sizeof(uint8_t)+sizeof(int16_t)
-									 +sizeof(int16_t);
-
-	const int jbuttonofs =    jhatofs+sizeof(int32_t)+sizeof(uint8_t)
-									 +sizeof(uint8_t)+sizeof(uint8_t);
-
-	const int resizeofs  = jbuttonofs+sizeof(int32_t)+sizeof(uint8_t)
-									 +sizeof(uint8_t)+sizeof(uint8_t);
-
-	const int exposeofs  =  resizeofs+sizeof(int32_t)+sizeof(int32_t)
-									 +sizeof(int32_t);
-
-	const int quitofs    =  exposeofs+sizeof(int32_t);
-
-	const int userofs    =    quitofs+sizeof(int32_t);
+	const int buttonofs  =  motionofs+sizeof(ev.motion)-comsz;
 
 	bool ret;
-	SDL_Event ev;
 	SDL_JoystickUpdate();
 	ret = SDL_PollEvent(&ev) != 0;
 	g_lastChar = g_newChar;
 	if(!ret) g_newChar = '\0';
 
-	*(int32_t *)pb = ev.type;
+	*(int32_t*)pb = ev.type;              pb += sizeof(int32_t);
+	*(uint32_t*)pb = ev.common.timestamp; pb += sizeof(uint32_t);
 	switch(ev.type){
-	case SDL_ACTIVEEVENT:
-		pb += activeofs;
-		*(int32_t *)pb = ev.active.type;           pb += sizeof(int32_t);
-		*(uint8_t *)pb = ev.active.gain;           pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.active.state;          pb += sizeof(uint8_t);
-		break;
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
 		pb += keyofs;
-		*(int32_t *)pb = ev.key.type;              pb += sizeof(int32_t);
-		*(uint8_t *)pb = ev.key.which;             pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.key.state;             pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.key.keysym.scancode;   pb += sizeof(uint8_t);
-		*(int32_t *)pb = ev.key.keysym.sym;        pb += sizeof(int32_t);
-		*(int32_t *)pb = ev.key.keysym.mod;        pb += sizeof(int32_t);
-		*(uint16_t *)pb = ev.key.keysym.unicode;   pb += sizeof(uint16_t);
+		memcpy(pb, (int8_t*)&ev.key+comsz, sizeof(ev.key)-comsz);
 		break;
 	case SDL_MOUSEMOTION:
 		pb += motionofs;
-		*(int32_t *)pb = ev.motion.type;           pb += sizeof(int32_t);
-		*(uint8_t *)pb = ev.motion.which;          pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.motion.state;          pb += sizeof(uint8_t);
-		*(uint16_t *)pb = ev.motion.x;             pb += sizeof(uint16_t);
-		*(uint16_t *)pb = ev.motion.y;             pb += sizeof(uint16_t);
-		*(int16_t *)pb = ev.motion.xrel;           pb += sizeof(int16_t);
-		*(int16_t *)pb = ev.motion.yrel;           pb += sizeof(int16_t);
+		memcpy(pb, (int8_t*)&ev.motion+comsz, sizeof(ev.motion)-comsz);
 		break;
 	case SDL_MOUSEBUTTONDOWN:
 	case SDL_MOUSEBUTTONUP:
 		pb += buttonofs;
-		*(int32_t *)pb = ev.button.type;           pb += sizeof(int32_t);
-		*(uint8_t *)pb = ev.button.which;          pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.button.button;         pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.button.state;          pb += sizeof(uint8_t);
-		*(uint16_t *)pb = ev.button.x;             pb += sizeof(uint16_t);
-		*(uint16_t *)pb = ev.button.y;             pb += sizeof(uint16_t);
-		break;
-	case SDL_JOYAXISMOTION:
-		pb += jaxisofs;
-		*(int32_t *)pb = ev.jaxis.type;            pb += sizeof(int32_t);
-		*(uint8_t *)pb = ev.jaxis.which;           pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.jaxis.axis;            pb += sizeof(uint8_t);
-		*(int16_t *)pb = ev.jaxis.value;           pb += sizeof(int16_t);
-		break;
-	case SDL_JOYBALLMOTION:
-		pb += jballofs;
-		*(int32_t *)pb = ev.jball.type;            pb += sizeof(int32_t);
-		*(uint8_t *)pb = ev.jball.which;           pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.jball.ball;            pb += sizeof(uint8_t);
-		*(int16_t *)pb = ev.jball.xrel;            pb += sizeof(int16_t);
-		*(int16_t *)pb = ev.jball.yrel;            pb += sizeof(int16_t);
-		break;
-	case SDL_JOYHATMOTION:
-		pb += jhatofs;
-		*(int32_t *)pb = ev.jhat.type;             pb += sizeof(int32_t);
-		*(uint8_t *)pb = ev.jhat.which;            pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.jhat.hat;              pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.jhat.value;            pb += sizeof(uint8_t);
-		break;
-	case SDL_JOYBUTTONDOWN:
-	case SDL_JOYBUTTONUP:
-		pb += jbuttonofs;
-		*(int32_t *)pb = ev.jbutton.type;          pb += sizeof(int32_t);
-		*(uint8_t *)pb = ev.jbutton.which;         pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.jbutton.button;        pb += sizeof(uint8_t);
-		*(uint8_t *)pb = ev.jbutton.state;         pb += sizeof(uint8_t);
-		break;
-	case SDL_VIDEORESIZE:
-		pb += resizeofs;
-		*(int32_t *)pb = ev.resize.type;           pb += sizeof(int32_t);
-		*(int32_t *)pb = ev.resize.w;              pb += sizeof(int32_t);
-		*(int32_t *)pb = ev.resize.h;              pb += sizeof(int32_t);
-		break;
-	case SDL_VIDEOEXPOSE:
-		pb += exposeofs;
-		*(int32_t *)pb = ev.expose.type;           pb += sizeof(int32_t);
-		break;
-	case SDL_QUIT:
-		pb += quitofs;
-		*(int32_t *)pb = ev.quit.type;             pb += sizeof(int32_t);
-		break;
-	case SDL_USEREVENT:
-		pb += userofs;
-		*(int32_t *)pb = ev.user.type;             pb += sizeof(int32_t);
-		*(int32_t *)pb = ev.user.code;             pb += sizeof(int32_t);
-		*(intptr_t *)pb = (intptr_t)ev.user.data1; pb += sizeof(intptr_t);
-		*(intptr_t *)pb = (intptr_t)ev.user.data2; pb += sizeof(intptr_t);
+		memcpy(pb, (int8_t*)&ev.button+comsz, sizeof(ev.button)-comsz);
 		break;
 	}
 	return ret;
@@ -642,7 +577,7 @@ TUserFunc(char16_t, GetLastChar)
 
 TUserFunc(bool, KeyState, int32_t key)
 {
-	return SDL_GetKeyState(nullptr)[key] == SDL_PRESSED;
+	return SDL_GetKeyboardState(nullptr)[key] == SDL_PRESSED;
 }
 
 TUserFunc(bool, JoystickButtonState, int32_t btn, int32_t joy)
@@ -650,9 +585,11 @@ TUserFunc(bool, JoystickButtonState, int32_t btn, int32_t joy)
 	return g_js.getState(joy, btn);
 }
 
-TUserFunc(void, Fill, uint32_t color, SDL_Rect* prect, SDL_Surface* ps)
+TUserFunc(void, Fill, uint32_t color, SDL_Rect* prect)
 {
-	SDL_FillRect(ps, prect, color);
+	SDL_SetRenderDrawColor(
+		g_renderer, color>>16&0xff, color>>8&0xff, color&0xff, 0xff);
+	SDL_RenderFillRect(g_renderer, prect);
 }
 
 TUserFunc(intptr_t, IMGLoad, Reference fn)
@@ -660,18 +597,11 @@ TUserFunc(intptr_t, IMGLoad, Reference fn)
 	return (intptr_t)IMG_Load(pu->refToAstr(CP_THREAD_ACP, fn).c_str());
 }
 
-TUserFunc(
-	void, BlitSurfaceEx, SDL_Rect* pdstr,
-	SDL_Surface* pdsts, SDL_Rect* psrcr, SDL_Surface* psrcs)
+TUserFunc(void, BlitSurface, SDL_Rect* prect, SDL_Surface* psrcs)
 {
-	SDL_BlitSurface(psrcs, psrcr, pdsts, pdstr);
-}
-
-TUserFunc(
-	void, BlitSurface, SDL_Rect* prect,
-	SDL_Surface* pdsts, SDL_Surface* psrcs)
-{
-	SDL_BlitSurface(psrcs, nullptr, pdsts, prect);
+	auto tex = SDL_CreateTextureFromSurface(g_renderer, psrcs);
+	SDL_RenderCopy(g_renderer, tex, nullptr, prect);
+	SDL_DestroyTexture(tex);
 }
 
 TUserFunc(
@@ -679,7 +609,7 @@ TUserFunc(
 	int32_t h, int32_t w, SDL_Color* ppl, uint8_t* ppx)
 {
 	SDL_Surface* psrc = SDL_CreateRGBSurfaceFrom(ppx, w, h, 8, w, 0, 0, 0, 0);
-	SDL_SetColors(psrc, ppl, 0, 256);
+	SDL_SetPaletteColors(psrc->format->palette, ppl, 0, 256);
 	SDL_Surface* pdst = SDL_ConvertSurface(psrc, psrc->format, SDL_SWSURFACE);
 	SDL_FreeSurface(psrc);
 	return (intptr_t)pdst;
@@ -687,12 +617,17 @@ TUserFunc(
 
 TUserFunc(void, SetColorKey, uint32_t key, SDL_Surface* psur)
 {
-	SDL_SetColorKey(psur, (key >= 256 ? 0 : SDL_SRCCOLORKEY), key);
+	SDL_SetColorKey(psur, key < 256, key);
 }
 
-TUserFunc(void, Flip, SDL_Surface* ps)
+TUserFunc(void, Flip)
 {
-	SDL_Flip(ps);
+	if(g_target){
+		unlockTarget();
+		SDL_RenderCopy(g_renderer, g_target, nullptr, nullptr);
+		lockTarget();
+	}
+	SDL_RenderPresent(g_renderer);
 }
 
 TUserFunc(intptr_t, AllocSurface, int32_t h, int32_t w)
@@ -718,11 +653,6 @@ TUserFunc(uint32_t, GetTicks)
 	return SDL_GetTicks();
 }
 
-TUserFunc(void, SetAlpha, uint8_t a, SDL_Surface* ps)
-{
-	SDL_SetAlpha(ps, SDL_SRCALPHA, a);
-}
-
 TUserFunc(void, CursorShow, bool show)
 {
 	SDL_ShowCursor(show ? SDL_ENABLE : SDL_DISABLE);
@@ -732,7 +662,6 @@ TUserFunc(intptr_t, OpenFont, int32_t size, Reference font)
 {
 	TTF_Font* pf;
 	pf = TTF_OpenFont(pu->refToAstr(CP_THREAD_ACP, font).c_str(), size);
-	TTF_SetFontStyle (pf, TTF_STYLE_NORMAL);
 	return (intptr_t)pf;
 }
 
@@ -742,18 +671,22 @@ TUserFunc(void, CloseFont, TTF_Font* pf)
 }
 
 TUserFunc(
-	void, RenderFont, SDL_Surface *ps, Reference str,
-	int16_t y, int16_t x, bool srcalpha, SDL_Color c, TTF_Font* pf)
+	void, RenderFont, Reference str, int32_t y, int32_t x,
+	SDL_Color c, TTF_Font* pf)
 {
 	SDL_Surface* psrc;
 	SDL_Rect dest;
+	psrc =
+		TTF_RenderUNICODE_Solid(
+			pf, (Uint16*)pu->refToWstr(str).c_str(), c);
 	dest.x = x;
 	dest.y = y;
-	psrc = TTF_RenderUNICODE_Blended(
-		pf, (Uint16*)pu->refToWstr(str).c_str(), c);
-	SDL_SetAlpha(psrc, (srcalpha ? SDL_SRCALPHA : 0), SDL_ALPHA_OPAQUE);
-	SDL_BlitSurface(psrc, nullptr, ps, &dest);
+	dest.w = psrc->w;
+	dest.h = psrc->h;
+	auto tex = SDL_CreateTextureFromSurface(g_renderer, psrc);
 	SDL_FreeSurface(psrc);
+	SDL_RenderCopy(g_renderer, tex, nullptr, &dest);
+	SDL_DestroyTexture(tex);
 }
 
 struct NormalizeVar
@@ -1820,7 +1753,7 @@ template<typename Img> void mzrLineBilt(
 		rxsrt, rxend, rysrt, ryend, rxlimmask, rylimmask, ifx, ixcl);
 }
 template<typename Img> void mzScreenBilt(
-	typename Funcs<Img>::mzllporc loop, SDL_Surface& dst, SDL_Rect& dr,
+	typename Funcs<Img>::mzllporc loop, SDL_Rect& dr,
 	float rcx, Img pri, uint32_t *ppal, SDL_Rect& srcr, float cx, float ty,
 	SDL_Rect& tile, float xtopscl, float xbotscl, float yscl,
 	float rasterxadd, uint32_t colorkey)
@@ -1830,17 +1763,17 @@ template<typename Img> void mzScreenBilt(
 		dr.w += dr.x;
 		dr.x = 0;
 	}
-	if((int)dr.x+dr.w > dst.w) dr.w -= dr.x+dr.w - dst.w;
+	if((int)dr.x+dr.w > g_w) dr.w -= dr.x+dr.w - g_w;
 	if((int16_t)dr.w <= 0) return;
 	if(dr.y < 0){
 		dr.h += dr.y;
 		dr.y = 0;
 	}
-	if((int)dr.y+dr.h > dst.h) dr.h -= dr.y+dr.h - dst.h;
+	if((int)dr.y+dr.h > g_h) dr.h -= dr.y+dr.h - g_h;
 	if((int16_t)dr.h <= 0) return;
 	float fcx = cx / abs(xtopscl);
-	uint32_t* pdpx = (uint32_t*)dst.pixels;
-	int dstw = dst.pitch / sizeof(uint32_t);
+	uint32_t* pdpx = g_pix;
+	int dstw = g_pitch / sizeof(uint32_t);
 	int ysign;
 	int dybgn;
 	int dyend;
@@ -1951,7 +1884,7 @@ template<typename Img> void mzScreenBilt(
 	}
 }
 template<typename Img> void mzrScreenBilt(
-	typename Funcs<Img>::mrllporc loop, SDL_Surface& dst,
+	typename Funcs<Img>::mrllporc loop,
 	float rcx, float rcy, Img& pri, uint32_t* ppal, SDL_Rect& srcr,
 	float fx, float fy, float xscl, float yscl,
 	uint32_t roto, uint32_t colorkey)
@@ -1966,10 +1899,10 @@ template<typename Img> void mzrScreenBilt(
 			(roto-256 & 0x80) == 0
 			? roto-256 & 0x7f : 128 - (roto-256 & 0x7f)];
 	uint8_t yztofs = 0;
-	uint32_t* pdpx = (uint32_t*)dst.pixels;
-	int dstw = dst.pitch / sizeof(uint32_t);
-	int xlim = dst.w;
-	int ylim = dst.h;
+	uint32_t* pdpx = g_pix;
+	int dstw = g_pitch / sizeof(uint32_t);
+	int xlim = g_w;
+	int ylim = g_h;
 	float tmpx = fx = rcx + (xscl < 0.0f ? fx : -fx);
 	float tmpy = fy = rcy - fy;
 	kaiten(tmpx, tmpy, -((float)PI*(float)roto/512.0f), rcx, rcy, 1.0);
@@ -2011,7 +1944,7 @@ template<typename Img> void mzrScreenBilt(
 	}
 }
 template<copycolorproc ccp> void mRender(
-	SDL_Surface& dst, SDL_Rect dr, float rcx, float rcy, Reference img,
+	SDL_Rect dr, float rcx, float rcy, Reference img,
 	uint32_t *ppal, SDL_Rect psrcr, float cx, float ty, SDL_Rect tile,
 	float xtopscl, float xbotscl, float yscl, float rasterxadd,
 	uint32_t roto, uint32_t colorkey, int rle, Reference *pluginbuf)
@@ -2022,11 +1955,11 @@ template<copycolorproc ccp> void mRender(
 		pri.setImg(img, psrcr.w, rle, pluginbuf);
 		if(roto == 0){
 			mzScreenBilt(
-				mzlLoop<PcxRleImg, ccp>, dst, dr, rcx, pri, ppal, psrcr,
+				mzlLoop<PcxRleImg, ccp>, dr, rcx, pri, ppal, psrcr,
 				cx, ty, tile, xtopscl, xbotscl, yscl, rasterxadd, colorkey);
 		}else{
 			mzrScreenBilt(
-				mzrlLoop<PcxRleImg, ccp>, dst, rcx, rcy, pri, ppal, psrcr,
+				mzrlLoop<PcxRleImg, ccp>, rcx, rcy, pri, ppal, psrcr,
 				cx, ty, xtopscl, yscl, roto, colorkey);
 		}
 	}else{
@@ -2034,11 +1967,11 @@ template<copycolorproc ccp> void mRender(
 		pri.setImg(img, psrcr.w);
 		if(roto == 0){
 			mzScreenBilt(
-				mzlLoop<PalletColorImg, ccp>, dst, dr, rcx, pri, ppal, psrcr,
+				mzlLoop<PalletColorImg, ccp>, dr, rcx, pri, ppal, psrcr,
 				cx, ty, tile, xtopscl, xbotscl, yscl, rasterxadd, colorkey);
 		}else{
 			mzrScreenBilt(
-				mzrlLoop<PalletColorImg, ccp>, dst, rcx, rcy, pri, ppal,
+				mzrlLoop<PalletColorImg, ccp>, rcx, rcy, pri, ppal,
 				psrcr, cx, ty, xtopscl, yscl, roto, colorkey);
 		}
 	}
@@ -2056,7 +1989,7 @@ int foobar(int n)
 }
 TUserFunc(
 	bool, RenderMugenZoom, Reference* pluginbuf, int32_t rle,
-	float rcy, float rcx, SDL_Rect* pdstr, SDL_Surface* pdst, int32_t alpha,
+	float rcy, float rcx, SDL_Rect* pdstr, int32_t alpha,
 	uint32_t roto, float rasterxadd, float yscl, float xbotscl, float xtopscl,
 	SDL_Rect* tile, float ty, float cx, SDL_Rect* psrcr,
 	uint16_t ckey, uint32_t* ppal, Reference img)
@@ -2067,7 +2000,7 @@ TUserFunc(
 	if(tl.w == 0) tl.x = 0;
 	if(tl.h == 0) tl.y = 0;
 	if(
-		pdst->format->BitsPerPixel != 32 || img.len() == 0
+		img.len() == 0
 		|| tl.x <= -(int)psrcr->w || tl.y <= -(int)psrcr->h
 		|| _finite(cx+ty+rcx+rcy+xtopscl+xbotscl+yscl+rasterxadd) == 0
 		|| abs(rcx) > 1.0e5f || abs(rcy) > 1.0e5f
@@ -2107,11 +2040,11 @@ TUserFunc(
 	}
 	if(alpha == -1){
 		mRender<mAddTrans>(
-			*pdst, *pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
+			*pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
 			xtopscl, xbotscl, yscl, rasterxadd, roto, ckey, rle, pluginbuf);
 	}else if(alpha == -2){
 		mRender<mSubTrans>(
-			*pdst, *pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
+			*pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
 			xtopscl, xbotscl, yscl, rasterxadd, roto, ckey, rle, pluginbuf);
 	}else if(alpha <= 0){
 	}else if(alpha < 255){
@@ -2119,25 +2052,25 @@ TUserFunc(
 		ck |= (uint32_t)(alpha&0xff) << 16;
 		ck |= (uint32_t)(256-alpha) << 24;
 		mRender<mAlphaTrans>(
-			*pdst, *pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
+			*pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
 			xtopscl, xbotscl, yscl, rasterxadd, roto, ck, rle, pluginbuf);
 	}else if(alpha < 512){
 		mRender<mTrans>(
-			*pdst, *pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
+			*pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
 			xtopscl, xbotscl, yscl, rasterxadd, roto, ckey, rle, pluginbuf);
 	}else{
 		if((alpha&0xff) == 255 && foobar((alpha&0x3fc00) >> 10)){
 			uint32_t ck = ckey;
 			ck |= foobar((alpha&0x3fc00) >> 10) << 16;
 			mRender<mAdd1Trans>(
-				*pdst, *pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
+				*pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
 				xtopscl, xbotscl, yscl, rasterxadd, roto, ck, rle, pluginbuf);
 		}else{
 			uint32_t ck = ckey;
 			ck |= (uint32_t)(alpha&0xff) << 16;
 			ck |= (uint32_t)(alpha&0x3fc00) << 14;
 			mRender<mAlphaTrans>(
-				*pdst, *pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
+				*pdstr, rcx, rcy, img, ppal, *psrcr, cx, ty, tl,
 				xtopscl, xbotscl, yscl, rasterxadd, roto, ck, rle, pluginbuf);
 		}
 	}
@@ -2513,7 +2446,7 @@ template<typename Img> void mzrShadowLineBilt(
 }
 
 template<typename Img> void mzShadowScreenBilt(
-	typename Funcs<Img>::mzlslporc loop, SDL_Surface& dst, SDL_Rect& dr,
+	typename Funcs<Img>::mzlslporc loop, SDL_Rect& dr,
 	Img pri, uint32_t color, SDL_Rect& srcr,
 	float fx, float fy, float xscl, float yscl, uint32_t alpha)
 {
@@ -2522,15 +2455,15 @@ template<typename Img> void mzShadowScreenBilt(
 		dr.w += dr.x;
 		dr.x = 0;
 	}
-	if((int)dr.x+dr.w > dst.w) dr.w -= dr.x+dr.w - dst.w;
+	if((int)dr.x+dr.w > g_w) dr.w -= dr.x+dr.w - g_w;
 	if((int16_t)dr.w <= 0) return;
 	if(dr.y < 0){
 		dr.h += dr.y;
 		dr.y = 0;
 	}
-	if((int)dr.y+dr.h > dst.h) dr.h -= dr.y+dr.h - dst.h;
+	if((int)dr.y+dr.h > g_h) dr.h -= dr.y+dr.h - g_h;
 	if((int16_t)dr.h <= 0) return;
-	int dstw = dst.pitch / sizeof(uint32_t);
+	int dstw = g_pitch / sizeof(uint32_t);
 	int ysign = yscl < 0.0f ? -1 : 1;
 	fy += yscl < 0.0f ? -0.5f : 0.5f;
 	fx += xscl < 0.0f ? -0.5f : 0.5f;
@@ -2542,7 +2475,7 @@ template<typename Img> void mzShadowScreenBilt(
 		fy += yscl;
 		iy = (int)floor(fy);
 	}
-	uint32_t* pdpx = (uint32_t*)dst.pixels + dstw*iy;
+	uint32_t* pdpx = g_pix + dstw*iy;
 	fy += yscl;
 	while(iy >= dr.y && iy < dr.h){
 		while(iy == (int)floor(fy)){
@@ -2552,11 +2485,11 @@ template<typename Img> void mzShadowScreenBilt(
 		}
 		mzShadowLineBilt(loop, pdpx, dr, fx, pri, color, xscl, alpha);
 		iy += ysign;
-		pdpx = (uint32_t*)dst.pixels + iy*dstw;
+		pdpx = g_pix + iy*dstw;
 	}
 }
 template<typename Img> void mzrShadowScreenBilt(
-	typename Funcs<Img>::mrlslporc loop, SDL_Surface& dst, float rcx,
+	typename Funcs<Img>::mrlslporc loop, float rcx,
 	float rcy, Img& pri, uint32_t color, SDL_Rect& srcr, float fx, float fy,
 	float xscl, float yscl, float vscl, uint32_t roto, uint32_t alpha)
 {
@@ -2575,10 +2508,10 @@ template<typename Img> void mzrShadowScreenBilt(
 			(roto-256 & 0x80) == 0
 			? roto-256 & 0x7f : 128 - (roto-256 & 0x7f)];
 	uint8_t yztofs = 0;
-	uint32_t* pdpx = (uint32_t*)dst.pixels;
-	int dstw = dst.pitch / sizeof(uint32_t);
-	int xlim = dst.w;
-	int ylim = dst.h;
+	uint32_t* pdpx = g_pix;
+	int dstw = g_pitch / sizeof(uint32_t);
+	int xlim = g_w;
+	int ylim = g_h;
 	float tmpx = fx = rcx + (xscl < 0.0f ? fx : -fx);
 	float tmpy = rcy - fy*vscl;
 	fy = rcy - fy;
@@ -2630,7 +2563,7 @@ template<typename Img> void mzrShadowScreenBilt(
 	}
 }
 void mShadowRender(
-	SDL_Surface& pdst, SDL_Rect dr, float rcx, float rcy, Reference img,
+	SDL_Rect dr, float rcx, float rcy, Reference img,
 	uint32_t color, SDL_Rect srcr, float cx, float ty,
 	float xscl, float yscl, float vscl,
 	uint32_t roto, uint32_t alpha, int rle, Reference* pluginbuf)
@@ -2648,11 +2581,11 @@ void mShadowRender(
 		pri.setImg(img, srcr.w, rle, pluginbuf);
 		if(roto == 0){
 			mzShadowScreenBilt(
-				mzlShadowLoop<PcxRleImg>, pdst, dr, pri, color,
+				mzlShadowLoop<PcxRleImg>, dr, pri, color,
 				srcr, cx, ty, xscl, yscl*vscl, alpha);
 		}else{
 			mzrShadowScreenBilt(
-				mzrlShadowLoop<PcxRleImg>, pdst, rcx, rcy, pri, color,
+				mzrlShadowLoop<PcxRleImg>, rcx, rcy, pri, color,
 				srcr, cx, ty, xscl, yscl, vscl, roto, alpha);
 		}
 	}else{
@@ -2660,35 +2593,35 @@ void mShadowRender(
 		pri.setImg(img, srcr.w);
 		if(roto == 0){
 			mzShadowScreenBilt(
-				mzlShadowLoop<PalletColorImg>, pdst, dr, pri,
+				mzlShadowLoop<PalletColorImg>, dr, pri,
 				color, srcr, cx, ty, xscl, yscl*vscl, alpha);
 		}else{
 			mzrShadowScreenBilt(
-				mzrlShadowLoop<PalletColorImg>, pdst, rcx, rcy, pri,
+				mzrlShadowLoop<PalletColorImg>, rcx, rcy, pri,
 				color, srcr, cx, ty, xscl, yscl, vscl, roto, alpha);
 		}
 	}
 }
 TUserFunc(
 	bool, RenderMugenShadow, Reference* pluginbuf, int32_t rle,
-	float rcy, float rcx, SDL_Rect* pdstr, SDL_Surface* pdst, int32_t alpha,
+	float rcy, float rcx, SDL_Rect* pdstr, int32_t alpha,
 	uint32_t roto, float vscl, float yscl, float xscl,
 	float ty, float cx, SDL_Rect* psrcr, uint32_t color, Reference img)
 {
 	if(
-		pdst->format->BitsPerPixel != 32 || img.len() == 0
+		img.len() == 0
 		|| _finite(cx+ty+rcx+rcy+xscl+vscl+yscl) == 0
 		|| abs(rcx) > 1.0e5f || abs(rcy) > 1.0e5f
 		|| abs(cx) > 1.0e5f || abs(ty) > 1.0e5f
 		|| abs(xscl) > 16383.0f
 		|| abs(yscl) > 16383.0f || abs(vscl) > 16383.0f) return false;
 	mShadowRender(
-		*pdst, *pdstr, rcx, rcy, img, color, *psrcr, cx, ty,
+		*pdstr, rcx, rcy, img, color, *psrcr, cx, ty,
 		xscl, yscl, vscl, roto, alpha, rle, pluginbuf);
 	return true;
 }
 
-TUserFunc(uint32_t, Load8bitTexture, uint16_t h, uint16_t w, uint8_t* ppxl)
+TUserFunc(uint32_t, Load8bitTexture, int32_t h, int32_t w, uint8_t* ppxl)
 {
 	static std::basic_string<uint8_t> buf;
 	uint32_t texid;
@@ -2712,7 +2645,7 @@ TUserFunc(void, DeleteGlTexture, uint32_t texid)
 
 TUserFunc(void, GlSwapBuffers)
 {
-	SDL_GL_SwapBuffers();
+	SDL_GL_SwapWindow(g_window);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
