@@ -1407,7 +1407,7 @@ template<typename Img> void mzLineBilt(
 	SDL_Rect tile = til;
 	if(xsign < 0){
 		dxend = dr.x-1;
-		if(til.w == 1){
+		if(til.w == 1 || (uint32_t)til.w > UINT16_MAX){
 			tile.w = UINT16_MAX;
 			if(floor(fx) < (float)(dr.x+dr.w-1)){
 				fx +=
@@ -1445,7 +1445,7 @@ FOOFOOFOO:
 		}
 	}else{
 		dxend = dr.x+dr.w;
-		if(til.w == 1){
+		if(til.w == 1 || (uint32_t)til.w > UINT16_MAX){
 			tile.w = UINT16_MAX;
 			if(floor(fx) > (float)dr.x){
 				fx -=
@@ -1811,7 +1811,7 @@ template<typename Img> void mzScreenBilt(
 		}
 		if(tile.h == 0){
 			tile.h = 1;
-		}else if(tile.h == 1){
+		}else if(tile.h == 1 || (uint32_t)tile.h > UINT16_MAX){
 			tile.h = UINT16_MAX;
 		}
 	}else{
@@ -1826,7 +1826,7 @@ template<typename Img> void mzScreenBilt(
 		sy += (int)n;
 		if(tile.h == 0){
 			tile.h = 1;
-		}else if(tile.h == 1){
+		}else if(tile.h == 1 || (uint32_t)tile.h > UINT16_MAX){
 			tile.h = UINT16_MAX;
 		}
 		if(sy >= srcr.h+tile.y){
@@ -2795,8 +2795,8 @@ void drawTileHolizon(
 		{
 			drawQuads(x1, y1, x2, y2, x3, y3, x4, y4, r, g, b, a, pers);
 		}
-		if(tile.w != 1) n--;
-		if(n <= 0) break;
+		if(tile.w != 1 && n != 0) n--;
+		if(n == 0) break;
 		x4 = x3 + xtopscl*(float)tile.x;
 		x1 = x2 + xbotscl*(float)tile.x;
 		x2 = x1 + xbw;
@@ -2874,8 +2874,8 @@ void drawTile(
 					(x3-x4)/(float)w, (x2-x1)/(float)w,
 					tile, rcx, r, g, b, a, pers);
 			}
-			if(tile.h != 1) n--;
-			if(n <= 0) break;
+			if(tile.h != 1 && n != 0) n--;
+			if(n == 0) break;
 			x4 = x1;
 			y4 = y1 - yscl*vscl*(float)tile.y;
 			x3 = x2;

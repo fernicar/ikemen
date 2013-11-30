@@ -476,11 +476,7 @@ public void rectFill(.scrrect.self rect=, uint color, int alpha)
 
 public void screenFill(uint color)
 {
-/?/*.cfg.OpenGL:
   .rectFill(.scrrect=, color, 255);
-/*true:
-  .sdl.fill(.scrrect=, color);
-/*?*/
 }
 
 ^uint workpal;
