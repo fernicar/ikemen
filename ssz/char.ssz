@@ -4942,9 +4942,8 @@ public &Char
     h.sysfvar[.fVX] = 0.0;
     h.sysfvar[.fVY] = 0.0;
     if(ownpal != 0){
-      %index remap .= .chars[`playerno][`parentindex]~getPalMap();
       h.palfx.new(1);
-      h.palfx~remap = remap;
+      h.palfx~remap = .chars[`playerno][h.parentindex]~getPalMap() + (index)[];
     }
     h.trChangeState2(st, `playerno, 0, 1);
   }
