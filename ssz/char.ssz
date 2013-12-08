@@ -7073,7 +7073,9 @@ public float action(
     if(foobar*tmp > .com.xmax - .com.xmin){
       tmp = (.com.xmax - .com.xmin) / foobar;
     }
-    .zoomdelay = .m.min!float?(1.0, .zoomdelay + 1.0/32.0);
+    if(.com.tickNextFrame()){
+      .zoomdelay = .m.min!float?(1.0, .zoomdelay + 1.0/32.0);
+    }
   else:
     .zoomdelay = 0.0;
   }
