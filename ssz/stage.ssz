@@ -602,6 +602,14 @@ public &Stage
     float bgscl = `hires ? 0.5 : 1.0;
     float yofs = .envShake.getOffset();
     float posx = x, posy = y;
+    branch{
+    cond posy > 0.0:
+      yofs += posy;
+      posy = 0.0;
+    cond posy < .com.boundhigh:
+      yofs += posy - .com.boundhigh;
+      posy = .com.boundhigh;
+    }
     if(`cam.verticalfollow > 0.0) branch{
       float scl2 = `localscl * scl;
     cond yofs < 0.0:

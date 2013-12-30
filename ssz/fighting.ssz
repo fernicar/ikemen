@@ -214,7 +214,7 @@ void game()
       if(lastChar >= '\x20' && lastChar < '\x7f') `line .= lastChar;
     }
   }
-  float x = 0.0, y = 0.0, l = 0.0, r = 0.0;
+  float x = 0.0, y = 0.0, l = 0.0, r = 0.0, bl = 0.0, br = 0.0;
   float scl = 1.0, sclmul = 1.0;
   float newx = x, newy = y;
   int oldp1wins, oldp2wins, olddraws;
@@ -254,6 +254,25 @@ void game()
     .com.screenright = (float).chr.stg~screenright * .chr.stg~localscl;
     .com.xmin = -((float).com.GameWidth/2.0)/.com.scale + .com.screenleft;
     .com.xmax = ((float).com.GameWidth/2.0)/.com.scale - .com.screenright;
+  }
+  float xbound(float scl, float x)
+  {
+    ret
+      .m.max!float?(
+        `bl-(float).com.GameWidth/2.0 + ((float).com.GameWidth/2.0)/scl)<,
+      .m.min!float?(
+        `br+(float).com.GameWidth/2.0 - ((float).com.GameWidth/2.0)/scl, x);
+  }
+  float ybound(float scl, float y)
+  {
+    float tmp = .m.max!float?(0.0, 240.0 - .com.screenZoffset);
+    ret
+      .m.min!float?(0.0)<, 
+      .m.min!float?(tmp*(1.0/scl - 1.0))<,
+      .m.max!float?(
+        .com.boundhigh-240.0 + .m.max!float?(
+          (float).com.GameHeight/scl, tmp + .com.screenZoffset/scl),
+        y + 240.0*(1.0 - .m.min!float?(1.0, scl)));
   }
   loop{
     int stagetime;
@@ -404,10 +423,10 @@ void game()
     while i < stagetime:
     }
     if(.com.round == 1) .snd.bgm~play(.chr.stg~bgmusic);
-    float bl =
+    bl =
       (float)(.chr.stg~cam.boundleft - .chr.stg~cam.startx)
       * .chr.stg~localscl;
-    float br =
+    br =
       (float)(.chr.stg~cam.boundright - .chr.stg~cam.startx)
       * .chr.stg~localscl;
     .com.boundhigh =
@@ -529,20 +548,10 @@ void game()
       : .m.max!float?(0.0)<, .m.min!float?(((float).com.GameWidth/2.0)/scl)<,
       .m.max!float?(-(l-(newx-x)), r-(newx-x));
     x =
-      .m.max!float?(
-        bl-(float).com.GameWidth/2.0 + ((float).com.GameWidth/2.0)/scl)<,
-      .m.min!float?(
-        br+(float).com.GameWidth/2.0 - ((float).com.GameWidth/2.0)/scl)<,
+      xbound(scl)<,
       .m.min!float?(x + l + tmp)<, .m.max!float?(x + r - tmp)<, newx;
     if(!.com.zoom) x = .m.ceil(x*4.0 - 0.5)/4.0;
-    tmp = .m.max!float?(0.0, 240.0 - .com.screenZoffset);
-    y =
-      .m.min!float?(0.0)<, 
-      .m.min!float?(tmp*(1.0/scl - 1.0))<,
-      .m.max!float?(
-        .com.boundhigh-240.0 + .m.max!float?(
-          (float).com.GameHeight/scl, tmp + .com.screenZoffset/scl),
-        newy + 240.0*(1.0 - .m.min!float?(1.0, scl)));
+    y = ybound(scl, newy);
     if(
       .com.tickFrame() && (.chr.super <= 0 || .chr.superpausebg == 0)
       && (.chr.pause <= 0 || .chr.pausebg == 0)) 
@@ -559,7 +568,18 @@ void game()
       break, do;
     }
     if(.se.fskip) while;
-    .chr.draw(x, y, scl);
+    {
+      float dx = x, dy = y, dscl = scl;
+      if(
+        !.m.isnan(.com.drawscale)
+        && !.m.isnan(.com.zoomposx)&& !.m.isnan(.com.zoomposy))
+      {
+        dscl = .m.max!float?(minscl, .com.drawscale);
+        dx = xbound(dscl, x + .com.zoomposx * (dscl - scl) / dscl);
+        dy = y + .com.zoomposy;
+      }
+      .chr.draw(dx, dy, dscl);
+    }
     drawDebug();
   /?/*.cfg.OpenGL:
     .sdl.GlSwapBuffers(::);

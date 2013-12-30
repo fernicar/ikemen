@@ -65,10 +65,9 @@ void drawClsn()
 {
   public ^&.act.Action anim;
   public int priority = 0;
-  public float x = 0.0, y = 0.0, cscl = 1.0;
+  public float x = 0.0, y = 0.0;
   public float xscl = 1.0, yscl = 1.0, angle = 0.0, axscl = 1.0, ayscl = 1.0;
-  public bool aset = false, oVer = false;
-  public short bright = 256;
+  public bool aset = false, oVer = false, screen = false, bright = false;
   public int salpha = -1, dalpha = 0;
   public ^&.com.PalFX fx;
 }
@@ -86,9 +85,9 @@ void drawClsn()
 
 public void addAnimList(
   %^&.AnimSprite al=, ^&.act.Action a, int p,
-  float x, float y, float cs, float xs, float ys,
+  float x, float y, bool scr, float xs, float ys,
   float an, bool as, bool oVer, float ax, float ay,
-  int sa, int da, int b, ^&.com.PalFX fx, int sc, int salp, float so)
+  int sa, int da, bool b, ^&.com.PalFX fx, int sc, int salp, float so)
 {
   ^&.AnimSprite newSprite()
   {
@@ -98,7 +97,7 @@ public void addAnimList(
     as~priority = `p;
     as~x = `x;
     as~y = `y;
-    as~cscl = `cs;
+    as~screen = `scr;
     as~xscl = `xs;
     as~yscl = `ys;
     as~angle = `an;
@@ -137,7 +136,7 @@ public void addAnimList(
   }
 }
 
-public void drawAnimList(%^&.AnimSprite al=, float x, float y)
+public void drawAnimList(%^&.AnimSprite al=, float x, float y, float scl)
 {
   loop{index i = 0; while; do:
     if(#al[i]~anim > 0) al[i]~[void(as=){
@@ -145,19 +144,34 @@ public void drawAnimList(%^&.AnimSprite al=, float x, float y)
       as.anim~ani.dalpha = as.dalpha;
       branch{
         int ob = .com.brightness;
-        .com.brightness = as.bright;
-        float cs = as.cscl;
+        if(as.bright) .com.brightness = 256;
+        float cs = as.screen ? 1.0 : scl, px, py;
       cond as.angle != 0.0:
+        branch{
+        cond as.screen:
+          px = as.x;
+          py = as.y;
+        else:
+          px = .com.xoffset-(x-as.x)*cs;
+          py =
+            .com.zoffset+.com.yoffset-.stage.envShake.getOffset()-(y-as.y)*cs;
+        }
         as.anim~ani.angleDraw(
-          .com.xoffset-(x-as.x)*cs,
-          .com.zoffset+.com.yoffset-.stage.envShake.getOffset()-(y-as.y)*cs,
-          cs*as.xscl, cs*as.yscl, as.angle*(.m.PI/180.0),
+          px, py, cs*as.xscl, cs*as.yscl, as.angle*(.m.PI/180.0),
           as.aset, as.axscl, as.ayscl, as.fx, as.oVer);
       else:
+        branch{
+        cond as.screen:
+          px = as.x;
+          py = as.y;
+        else:
+          px = .com.xoffset/cs - (x-as.x);
+          py =
+            (.com.zoffset+.com.yoffset-.stage.envShake.getOffset())/cs
+            - (y-as.y);
+        }
         as.anim~ani.draw(
-          .com.scrrect=, .com.xoffset/cs - (x-as.x),
-          (.com.zoffset+.com.yoffset-.stage.envShake.getOffset())/cs
-          - (y-as.y), cs, cs, as.xscl, as.xscl,
+          .com.scrrect=, px, py, cs, cs, as.xscl, as.xscl,
           as.yscl, 0.0, (float).com.GameWidth/2.0, as.fx, as.oVer);
       break:
         .com.brightness = ob;
@@ -203,7 +217,7 @@ public void addShadowList(^&.AnimSprite as, int sc, float so, int alpha)
   }
 }
 
-public void drawShadowList(float x, float y)
+public void drawShadowList(float x, float y, float scl)
 {
   loop{index i = 0; while; do:
     if(#.shadows[i]~as~anim == 0 || #.shadows[i]~as~anim~ani.spr == 0){
@@ -239,12 +253,11 @@ public void drawShadowList(float x, float y)
           & (int)0xffffff;
       }
       float syscl = .stg~sdw.yscale;
-      float cs = ss.as~cscl;
       ss.as~anim~ani.shadowDraw(
-        .com.xoffset-(x-ss.as~x)*cs,
+        .com.xoffset-(x-ss.as~x)*scl,
         .com.zoffset + .com.yoffset - .stage.envShake.getOffset()
-        - (y+ss.as~y*syscl-ss.offsety)*cs,
-        cs*ss.as~xscl, cs*-ss.as~yscl, syscl, ss.as~angle*(.m.PI/180.0),
+        - (y+ss.as~y*syscl-ss.offsety)*scl,
+        scl*ss.as~xscl, scl*-ss.as~yscl, syscl, ss.as~angle*(.m.PI/180.0),
         ss.as~aset, ss.as~axscl, ss.as~ayscl, .stage.bgPalFX, ss.as~oVer,
         (uint)color, intensity);
     }];
@@ -253,7 +266,7 @@ public void drawShadowList(float x, float y)
   while i < #.shadows:}
 }
 
-public void drawReflection(float x, float y)
+public void drawReflection(float x, float y, float scl)
 {
   loop{index i = 0; while; do:
     if(#.shadows[i]~as~anim == 0 || #.shadows[i]~as~anim~ani.frames == 0){
@@ -275,20 +288,19 @@ public void drawReflection(float x, float y)
         ss.as~anim~ani.salpha = 0;
       }
       branch{
-        float cs = ss.as~cscl;
       cond ss.as~angle != 0.0:
         ss.as~anim~ani.angleDraw(
-          .com.xoffset-(x-ss.as~x)*cs,
+          .com.xoffset-(x-ss.as~x)*scl,
           .com.zoffset + .com.yoffset - .stage.envShake.getOffset()
-          - (y+ss.as~y-ss.offsety)*cs,
-          cs*ss.as~xscl, cs*-ss.as~yscl, ss.as~angle*(.m.PI/180.0),
+          - (y+ss.as~y-ss.offsety)*scl,
+          scl*ss.as~xscl, scl*-ss.as~yscl, ss.as~angle*(.m.PI/180.0),
           ss.as~aset, ss.as~axscl, ss.as~ayscl, ss.as~fx, ss.as~oVer);
       else:
         ss.as~anim~ani.draw(
-          .com.scrrect=, .com.xoffset/cs - (x-ss.as~x),
-          (.com.zoffset+.com.yoffset-.stage.envShake.getOffset())/cs
+          .com.scrrect=, .com.xoffset/scl - (x-ss.as~x),
+          (.com.zoffset+.com.yoffset-.stage.envShake.getOffset())/scl
           - (y+ss.as~y-ss.offsety),
-          cs, cs, ss.as~xscl, ss.as~xscl, -ss.as~yscl, 0.0,
+          scl, scl, ss.as~xscl, ss.as~xscl, -ss.as~yscl, 0.0,
           (float).com.GameWidth/2.0, ss.as~fx, ss.as~oVer);
       }
     }];
@@ -466,7 +478,7 @@ public void drawReflection(float x, float y)
   public void recAndAddAL(
     &.act.Action a=, int p,
     float x, float y, float xs, float ys, float an, bool as,
-    bool oVer, float ax, float ay, bool rec, int br, ^&.com.PalFX cfx)
+    bool oVer, float ax, float ay, bool rec, bool br, ^&.com.PalFX cfx)
   {
     if(
       `time == 0 || !.m.inRange!int?(1, 32767, `timegap)
@@ -485,7 +497,7 @@ public void drawReflection(float x, float y)
       pfxi = i/`framegap - 1;
       .addAnimList(
         .anims=, `imgs[`imgidx-i&63].anim, p-2,
-        `imgs[`imgidx-i&63].x, `imgs[`imgidx-i&63].y, .com.scale,
+        `imgs[`imgidx-i&63].x, `imgs[`imgidx-i&63].y, false,
         `imgs[`imgidx-i&63].xscl, `imgs[`imgidx-i&63].yscl,
         `imgs[`imgidx-i&63].angle, `imgs[`imgidx-i&63].aset,
         `imgs[`imgidx-i&63].oVer,
@@ -2021,11 +2033,9 @@ public &Projectile
       }
     }
     if(#`ani > 0 && #`ani~ani.spr > 0){
-      int br =
-        256 >> (int)(
-          .super > 0 && .superdarken != 0 && playerNo != .superplayer);
+      bool br = playerNo == .superplayer;
       .addAnimList(
-        .anims=, `ani, `sprpriority, `x, `y, .com.scale,
+        .anims=, `ani, `sprpriority, `x, `y, false,
         (float)`facing*`scalex, `scaley, 0.0, false, oVer, 1.0, 1.0, -1, 0,
         br, `palfx,
         `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
@@ -3156,8 +3166,7 @@ public &Char
     float ys = `sysfvar[.fYSCALE];
     if(#`ani > 0) branch{
       int sp = `sprpriority;
-      int br = 256 >> (int)(
-        .super > 0 && .superdarken != 0 && `playerno != .superplayer);
+      bool br = `playerno == .superplayer;
       float an;
       branch{
       cond `ls(.lsANGLEDRAW):
@@ -3177,7 +3186,7 @@ public &Char
         .anims=, `ani, sp,
         x - (float)(
           (int)(`stVal.hb.hitshaketime > 0 && (`stVal.time&1) != 0) * `facing),
-        y, .com.scale, xs, ys, an, `angleset, `mver0() != 1,
+        y, false, xs, ys, an, `angleset, `mver0() != 1,
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
         `ls(.lsTRANS) ? `sysivar[.iALPHAS] : -1,
         `sysivar[.iALPHAD], br, `getPalfx(),
@@ -5528,17 +5537,16 @@ public void Explod::update(bool oVer, int playerNo)
       ret;
     }
   }
-  float scl = 1.0, cscl = .com.scale, xofs = 0.0, yofs = 0.0;
+  float scl = 1.0;
+  bool screen = false;
   if(`bindtime != 0) branch{
   cond `postype >= 4:
-    cscl = 1.0;
+    screen = true;
     `x =
-      .com.camerax + `offsetx + (
+      `offsetx + (
         `postype == 4
         ? -(float).com.GameWidth/2.0 : (float).com.GameWidth/2.0);
-    xofs = -.com.xoffset;
-    `y = .com.cameray + `offsety - .com.zoffset;
-    yofs = -.com.yoffset + .stage.envShake.getOffset();
+    `y = `offsety;
   else:
     {
       ^&.Char bc = .players.get(`bindid);
@@ -5591,11 +5599,10 @@ public void Explod::update(bool oVer, int playerNo)
         pfx~remap.new(0);
       }
       .addAnimList(
-        a=, `ani, `sprpriority, `x+xofs, `y+yofs, cscl,
+        a=, `ani, `sprpriority, `x, `y, screen,
         (float)`facing*`scalex*scl, (float)`vfacing*`scaley*scl,
         0.0, false, oVer, 1.0, 1.0, `alphas < 0 ? -1 : `alphas,
-        `alphad, 256 >> (int)(
-          .super > 0 && .superdarken != 0 && playerNo != .superplayer),
+        `alphad, playerNo == .superplayer,
         pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
         `alphas < 0 ? 256 : `alphas, 0.0);
     }];
@@ -6674,6 +6681,9 @@ public float action(
     .stage.bgPalFX~step();
     .stage.envShake.next();
     if(.envcol_time > 0) .envcol_time--;
+    .com.drawscale = 0.0/0.0;
+    .com.zoomposx = 0.0;
+    .com.zoomposy = 0.0;
     branch{
     cond .super > 0:
       .super--;
@@ -6724,9 +6734,9 @@ public float action(
   {
     if(#.superanim > 0){
       .addAnimList(
-        .topanims=, .superanim, 5, .superposx, .superposy, .com.scale,
+        .topanims=, .superanim, 5, .superposx, .superposy, false,
         (float).superfacing, 1.0, 0.0, false,
-        .chars[.superplayer]<>~mver0() != 1, 1.0, 1.0, -1, 0, 256,
+        .chars[.superplayer]<>~mver0() != 1, 1.0, 1.0, -1, 0, true,
         .superpmap, 0, 0, 0.0);
       if(.superanim~ani.loopend) .superanim.new(0);
     }
@@ -7164,8 +7174,8 @@ public void draw(float x, float y, float scl)
     .stg~bgDraw(false, bgx, bgy, scl);
   comm:
     if(!.gs(.gsGLOBALNOSHADOW)){
-      if(.stg~reflection > 0) .drawReflection(x, y);
-      .drawShadowList(x, y);
+      if(.stg~reflection > 0) .drawReflection(x, y, scl*.stg~ztopscale);
+      .drawShadowList(x, y, scl*.stg~ztopscale);
     }
     {
       float off = .stage.envShake.getOffset();
@@ -7230,7 +7240,7 @@ public void draw(float x, float y, float scl)
     .fight~ro.draw(0, .ko, winner);
   }
   if(.envcol_time == 0 || .envcol_under != 0){
-    .drawAnimList(.anims=, x, y);
+    .drawAnimList(.anims=, x, y, scl*.stg~ztopscale);
   }
   if(.envcol_time == 0 && !.gs(.gsNOFG)) .stg~bgDraw(true, bgx, bgy, scl);
   if(.envcol_time != 0 && .envcol_under == 0){
@@ -7238,7 +7248,7 @@ public void draw(float x, float y, float scl)
   }
   .fight~draw(1, lpl, names, .gs(.gsNOBARDISPLAY), facefx, .superplayer);
   .fight~ro.draw(1, .ko, winner);
-  .drawAnimList(.topanims=, x, y);
+  .drawAnimList(.topanims=, x, y, scl*.stg~ztopscale);
   .fight~draw(2, lpl, names, .gs(.gsNOBARDISPLAY), facefx, .superplayer);
   .fight~ro.draw(2, .ko, winner);
   void fade(.com.scrrect.self rect=, int alpha)

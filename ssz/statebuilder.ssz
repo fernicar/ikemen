@@ -57,6 +57,7 @@ const ^/char kuuhaktokigou = " !=<>()|&+-*/%,[]^|:"\"\t\r\n;
   ForceFeedback,
   VictoryQuote,
   RemapPal,
+  Zoom,
   Null
 }
 &StateCtrl
@@ -3219,6 +3220,8 @@ public &StateBuilder
         if(!`tagOut(am=)) ret false;
       case .CtrlTy::RemapPal:
         if(!`remapPal(am=)) ret false;
+      case .CtrlTy::Zoom:
+        if(!`zoom(am=)) ret false;
       default:
         {
           bool error = false;
@@ -7653,6 +7656,33 @@ public &StateBuilder
       ret true;
     }]);
   }
+  bool zoom(&.tbl.NameTable!^/char? param=)
+  {
+    ret `stateSec(param=,[bool(){
+      `state.ctrlList[-1].task .= ".com.drawscale=.com.scale;";
+      if(!`stateParam(param=, "pos", [`paraF_t(data=){
+        if(
+          !`argExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".com.zoomposx=", ";", 1)) ret false;
+        if(.s.equ(",")<, `tokenizer(data=)){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=,
+              ".com.zoomposy=", ";", 1)) ret false;
+        }
+        ret true;
+      }])) ret false;
+      if(!`stateParam(param=, "scale", [`paraF_t(data=){
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=,
+            ".com.drawscale=", ";", 1)) ret false;
+        ret true;
+      }])) ret false;
+      ret true;
+    }]);
+  }
   ^/char stateBulid(%char buf=, ^/char def, ^/char st=)
   {:<-
     public bool statedef(^/char sec, ^/char name, ^/char data)
@@ -7851,6 +7881,8 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::VictoryQuote;
         cond .s.equ(s, "remappal"):
           `state.ctrlList[-1].typ = .CtrlTy::RemapPal;
+        cond .s.equ(s, "zoom"):
+          `state.ctrlList[-1].typ = .CtrlTy::Zoom;
         cond .s.equ(s, "null"):
           `state.ctrlList[-1].typ = .CtrlTy::Null;
         else:
