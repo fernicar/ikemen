@@ -574,7 +574,7 @@ void game()
         !.m.isnan(.com.drawscale)
         && !.m.isnan(.com.zoomposx)&& !.m.isnan(.com.zoomposy))
       {
-        dscl = .m.max!float?(minscl, .com.drawscale);
+        dscl = .m.max!float?(minscl, .com.drawscale/.chr.stg~ztopscale);
         dx = xbound(dscl, x + .com.zoomposx * (dscl - scl) / dscl);
         dy = y + .com.zoomposy;
       }
