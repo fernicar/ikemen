@@ -2076,7 +2076,7 @@ public &Char
   public float offsetx, offsety;
   public float veloff;
   public float ticOldX, drawX, ticOldY, drawY;
-  public %&.RdCacheInfo enemyn;
+  public ^%&.RdCacheInfo enemyn;
   public ^&.act.Frame curFrame;
   public %&.snd.Sound sounds;
   public index cpucmd = -1;
@@ -2090,6 +2090,7 @@ public &Char
     `sysivar.new(60);
     `fvar.new(40);
     `sysfvar.new(80);
+    `enemyn.new(2);
     `clearVal();
   }
   public void rootInit()
@@ -2112,6 +2113,11 @@ public &Char
     `sysivar[.iLIFE] = `sysivar[.iLIFEMAX];
     `sysivar[.iPOWER] = 0;
     `clearSpSysVar();
+  }
+  public void enemynClear()
+  {
+    `enemyn[0].new(0);
+    `enemyn[1].new(0);
   }
   public void clearSpSysVar()
   {
@@ -2156,7 +2162,7 @@ public &Char
     `fedge = `bedge = 0.0;
     `attackmul = (float)`sysivar[.iATTACK] / 100.0;
     `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
-    `enemyn.new(0);
+    `enemynClear();
     `targets.new(0);
   }
   public void clearVal()
@@ -3208,7 +3214,7 @@ public &Char
       : (
         .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime) && (
           (.chars[`playerno]<>~sysivar[.iSYSFLAG] & .sfOVER) != 0
-          || !.chars[`playerno]<>~isAlive())
+          || .chars[`playerno]<>~isKO())
         ? 4 : 3);
   }
   public bool isKO()
@@ -3295,8 +3301,8 @@ public &Char
   public void furimuki()
   {
     if(`ctrl && `helperindex == 0){
-      ^`self e = .players.enemyNear(`=, 0);
-      if((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX]) >= 0) break;
+      ^`self e = .players.enemyNear(`=, 0, true);
+      if((int)`facing*(int)`distX(e) >= 0) break;
       branch{
       cond `stVal.typ == .StTy::S:
         `trChangeAnim(5);
@@ -3308,9 +3314,7 @@ public &Char
   }
   public bool isHouchied()
   {
-    ret
-      (`sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE) != 0
-      || (!.roundEnd() && `stVal.no == 5150);
+    ret (`sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE) != 0;
   }
   public void action()
   {
@@ -3387,7 +3391,7 @@ public &Char
           if(!`isKO() && `sysivar[.iLIFE] > 0){
             `sysivar[.iSYSFLAG] &= !(.sfOVER | .sfKO_ROUND_MIDDLE);
           }
-          if((`sysivar[.iSYSFLAG] & .sfOVER) != 0){
+          if(`stVal.no == 5150 || (`sysivar[.iSYSFLAG] & .sfOVER) != 0){
             `sysivar[.iSYSFLAG] |= .sfKO_ROUND_MIDDLE;
           }
         }
@@ -3995,9 +3999,9 @@ public &Char
   {
     if(`sysfvar[.fX] != x){
       `sysfvar[.fX] = x;
-      `enemyn.new(0);
+      `enemynClear();
       if(`player) loop{index i = !`playerno & 1; while; do:
-        .chars[i]:<-[void(c=){c~enemyn.new(0);}];
+        .chars[i]:<-[void(c=){c~enemynClear();}];
         i += 2;
       while i < #.chars:}
     }
@@ -4042,7 +4046,7 @@ public &Char
       o.facing *= `facing;
     case 1://p2
       {
-        ^`self c = .players.enemyNear(`=, 0);
+        ^`self c = .players.enemyNear(`=, 0, true);
         if(#c == 0) break;
         if(!.m.isnan(x)) o.setX(c~sysfvar[.fX] + (float)c~facing*x);
         if(!.m.isnan(y)) o.setY(c~sysfvar[.fY] + y);
@@ -4136,7 +4140,7 @@ public &Char
   }
   public void trEnemyNear(int id)
   {
-    .c = .players.enemyNear(`=, id);
+    .c = .players.enemyNear(`=, id, false);
   }
   public void trRoot()
   {
@@ -4667,10 +4671,18 @@ public &Char
   {
     ret `keyctrl && #`cmd > 0 && `commandSub(pno, i);
   }
+  public ^self getP2()
+  {
+    ^`self e = .players.enemyNear(`=, 0, true);
+    if(#e > 0 && e~isKO() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
+      e.new(0);
+    }
+    ret e;
+  }
   public void trP2Life()
   {
-    ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
+    ^`self e = `getP2();
+    if(#e == 0){
       .v.setSF();
       ret;
     }
@@ -4682,17 +4694,17 @@ public &Char
   }
   public void trP2DistX()
   {
-    ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
+    ^`self e = `getP2();
+    if(#e == 0){
       .v.setSF();
       ret;
     }
-    .v.setF((float)((int)`facing*(int)(e~sysfvar[.fX] - `sysfvar[.fX])));
+    .v.setF((float)((int)`facing*(int)`distX(e)));
   }
   public void trP2DistY()
   {
-    ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
+    ^`self e = `getP2();
+    if(#e == 0){
       .v.setSF();
       ret;
     }
@@ -4700,12 +4712,12 @@ public &Char
   }
   public void trP2BodyDistX()
   {
-    ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
+    ^`self e = `getP2();
+    if(#e == 0){
       .v.setSF();
       ret;
     }
-    float dist = e~sysfvar[.fX] - `sysfvar[.fX];
+    float dist = `distX(e);
     bool bar = dist == 0.0 || (dist < 0.0) ^ (e~facing < 0);
     .v.setF()<, (float)(
       (int)(
@@ -4718,8 +4730,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF()<, (float)(
-      (int)`facing*(int)(.chars[`playerno][0]~sysfvar[.fX] - `sysfvar[.fX]));
+    .v.setF((float)((int)`facing*(int)`distX(.chars[`playerno]<>)));
   }
   public void trRootDistY()
   {
@@ -4736,7 +4747,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF()<, (float)((int)`facing*(int)(.c~sysfvar[.fX] - `sysfvar[.fX]));
+    .v.setF((float)((int)`facing*(int)`distX(.c)));
   }
   public void trParentDistY()
   {
@@ -4753,8 +4764,8 @@ public &Char
   }
   public void trP2StateType(|.StTy st)
   {
-    ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
+    ^`self e = `getP2();
+    if(#e == 0){
       .v.setSF();
       ret;
     }
@@ -4762,8 +4773,8 @@ public &Char
   }
   public void trP2StateNo()
   {
-    ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
+    ^`self e = `getP2();
+    if(#e == 0){
       .v.setSF();
       ret;
     }
@@ -4775,16 +4786,35 @@ public &Char
   }
   public void trP2MoveType(|.MovTy mt)
   {
-    ^`self e = .players.enemyNear(`=, 0);
-    if(#e == 0 || (!e~isAlive() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0)){
+    ^`self e = `getP2();
+    if(#e == 0){
       .v.setSF();
       ret;
     }
     .v.setB(mt == e~stVal.mov);
   }
-  public bool trPName(int no, ^/char name)
+  public float distX(^`self c)
   {
+    ret c~sysfvar[.fX] - `sysfvar[.fX];
+  }
+  public bool trPName(int no, ^/char name)
+  {:<-
     if(no <= 0 || #.chars < no) ret false;
+    void addSorted(%index sorted=, int c)
+    {
+      loop{index i = 0; while; do:
+        if(
+          (!.chars[c]<>~isHouchied() && .chars[sorted[i]]<>~isHouchied()) || (
+            .chars[c]<>~isHouchied() == .chars[sorted[i]]<>~isHouchied()
+            && #`distX(.chars[c]<>) < #`distX(.chars[sorted[i]]<>)))
+        {
+          .insIL(sorted=, i, c);
+          ret;
+        }
+        i++;
+      while i < #sorted:}
+      sorted .= c;
+    }
     int foo;
     branch{
     cond (no & 1) == 1 && no - 1 <= `playerno:
@@ -4794,12 +4824,28 @@ public &Char
       else:
         foo = ((no - 1) - 2) + (`playerno & 1);
       }
+    cond no == 2:
+      {
+        ^`self e = `getP2();
+        ret #e > 0 && .s.equ(name, .s.toLower(.chars[e~playerno]<>~name));
+      }
     else:
       foo = (no - 1) ^ (`playerno & 1);
+      if((no & 1) == 0) loop{
+        int i = foo & 1;
+        %index sorted;
+        while;
+      do:
+        if(#.chars[i] > 0) addSorted(sorted=, i);
+        i += 2;
+      while i < #.chars:
+        if(#sorted <= foo >> 2) ret false;
+        foo = sorted[foo >> 2];
+      }
     }
     if(
       #.chars[foo] == 0 || (
-        no == 2 && !.chars[foo]<>~isAlive()
+        no == 2 && .chars[foo]<>~isKO()
         && (.chars[foo]<>~sysivar[.iSYSFLAG] & .sfOVER) != 0))
     {
       ret false;
@@ -5023,7 +5069,7 @@ public &Char
     if(!.m.isnan(bx)) `setX(c~sysfvar[.fX] + (float)c~facing*bx);
     if(!.m.isnan(by)) `setY(c~sysfvar[.fY] + by);
     `trTargetBind(
-      tar[0..1], time, (float)`facing*(c~sysfvar[.fX] - `sysfvar[.fX]),
+      tar[0..1], time, (float)`facing*`distX(c),
       c~sysfvar[.fY] - `sysfvar[.fY]);
   }
   public void setBindFacing(int f)
@@ -5571,7 +5617,7 @@ public void Explod::setPos(&.Char c=)
     if(`bindtime == 0) `bindtime = 1;
   case 1:
     {
-      ^&.Char bc = .players.enemyNear(c=, 0);
+      ^&.Char bc = .players.enemyNear(c=, 0, true);
       if(#bc == 0) break;
       `bindid = bc~id;
       `facing *= bc~facing*`relativef;
@@ -5659,32 +5705,26 @@ public ^&Char PlayerList!&Char?::get(int id)
   while #p > 0:}
   ret .consts.null!`_t?();
 }
-public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
+public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n, bool p2)
 {
   if(n < 0) ret .consts.null!pyr.self?();
+  %&.RdCacheInfo enen = pyr.enemyn[(int)p2];
   loop{index i = 0; while; do:
-    if(pyr.enemyn[i].n == n) ret .chars[pyr.enemyn[i].pn][pyr.enemyn[i].hi];
+    if(enen[i].n == n) ret .chars[enen[i].pn][enen[i].hi];
     i++;
-  while i < #pyr.enemyn:}
+  while i < #enen:}
   ^^pyr.self en.new(n+1);
   void add(^`pyr.self e, index rng)
   {
-    bool foo<_t>(_t a, _t b, int id1, int id2)
-    {
-      ret a <= b && (a < b || id1 < id2);
-    }
     loop{index i = rng; while; do:
       if(#`en[i] == 0){
         `en[i] = e;
         ret;
       }
       if(
-        (!e~isKO() && `en[i]~isKO()) || (
-          !e~isKO() ? foo!float?(
-            #(e~sysfvar[.fX] - `pyr.sysfvar[.fX]),
-            #(`en[i]~sysfvar[.fX] - `pyr.sysfvar[.fX]), e~id, `en[i]~id)
-          : `en[i]~isKO() && foo!int?(
-            -(int)`en[i]~isHouchied(), -(int)e~isHouchied(), e~id, `en[i]~id)))
+        (`p2 && !e~isHouchied() && `en[i]~isHouchied()) || (
+          (!`p2 || e~isHouchied() == `en[i]~isHouchied())
+          && #`pyr.distX(e) < #`pyr.distX(`en[i])))
       {
         self(`en[i], i+1);
         `en[i] = e;
@@ -5701,9 +5741,9 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n)
     p = p~next;
   while #p > 0:}
   if(#en[-1] == 0) ret .consts.null!&.Char?();
-  pyr.enemyn.new[-1].n = n;
-  pyr.enemyn[-1].pn = en[-1]~playerno;
-  pyr.enemyn[-1].hi = en[-1]~helperindex;
+  enen.new[-1].n = n;
+  enen[-1].pn = en[-1]~playerno;
+  enen[-1].hi = en[-1]~helperindex;
   ret en[-1];
 }
 public void PlayerList!&Char?::add(^&.Char c)
@@ -6148,7 +6188,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
     while;
   do:
     if(p~c~id < 0) continue;
-    p~c~enemyn.new(0);
+    p~c~enemynClear();
     contact = 0;
     if(
       p~c~atktmp == 0 || p~c~id == pyr.id || (
@@ -6157,8 +6197,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         != (p~c~stVal.hit.affectteam > 0))) continue;
     if(
       p~c~stVal.mov == .MovTy::A && .m.inRange!float?(
-        0.0, p~c~attackdist,
-        (pyr.sysfvar[.fX] - p~c~sysfvar[.fX])*(float)p~c~facing))
+        0.0, p~c~attackdist, -pyr.distX(p~c)*(float)p~c~facing))
     {
       pyr.inguarddist = true;
     }
@@ -6179,7 +6218,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       if(
         p~c~stVal.mov == .MovTy::A && .m.inRange!float?(
           0.0, (float)p~c~stVal.hit.guard_dist,
-          (pyr.sysfvar[.fX] - p~c~sysfvar[.fX])*(float)p~c~facing))
+          -pyr.distX(p~c)*(float)p~c~facing))
       {
         pyr.inguarddist = true;
       }
@@ -6250,7 +6289,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         pyr.pushed = p~c~pushed = true;
         const float foo = 0.5;
         branch{
-          float tmp = pyr.sysfvar[.fX] - p~c~sysfvar[.fX];
+          float tmp = -pyr.distX(p~c);
         cond tmp < 0.0:
           pyr.sysfvar[.fX] -= (pr - el) * foo;
           p~c~sysfvar[.fX] += (pr - el) * foo;
@@ -6354,8 +6393,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           if(
             .m.inRange!float?(
               0.0, (float)proj.hit.guard_dist,
-              (pyr.sysfvar[.fX] - .chars[i]<>~sysfvar[.fX])
-              * (float).chars[i]<>~facing))
+              -pyr.distX(.chars[i]<>) * (float).chars[i]<>~facing))
           {
             pyr.inguarddist = true;
           }
