@@ -12,6 +12,9 @@
 #pragma comment(lib, "OpenGL32.Lib")
 #pragma comment(lib, "GlU32.Lib")
 
+#include <png.h>
+#pragma comment(lib, "libpng.lib")
+#pragma comment(lib, "zlib1.lib")
 
 #include <SDL.h>
 #pragma comment(lib, "SDL2.lib")
@@ -53,7 +56,6 @@ SDL_AudioSpec g_desired;
 HGLRC g_hglrc, g_hglrc2;
 HDC g_hdc;
 DWORD g_mainTreadId;
-
 
 WNDPROC g_orgProc;
 char16_t g_lastChar = '\0', g_newChar = '\0';
@@ -595,6 +597,48 @@ TUserFunc(void, Fill, uint32_t color, SDL_Rect* prect)
 TUserFunc(intptr_t, IMGLoad, Reference fn)
 {
 	return (intptr_t)IMG_Load(pu->refToAstr(CP_THREAD_ACP, fn).c_str());
+}
+
+TUserFunc(void, DecodePNG8, FILE* fp, int32_t* h, int32_t* w, Reference* out)
+{
+	pu->setSSZFunc();
+	out->releaseanddelete();
+	*w = *h = 0;
+	if(!fp) return;
+	uint8_t header[8] = {0};
+	fread(header, 1, 8, fp);
+	if(png_sig_cmp(header, 0, 8)) return;
+	auto png_ptr =
+		png_create_read_struct(
+			PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	if(!png_ptr) return;
+	auto info_ptr = png_create_info_struct(png_ptr);
+	if(!info_ptr){
+		png_destroy_read_struct(&png_ptr, nullptr, nullptr);
+		return;
+	}
+	png_init_io(png_ptr, fp);
+	png_set_sig_bytes(png_ptr, 8);
+	png_read_info(png_ptr, info_ptr);
+	uint32_t width, height;
+	int bit_depth, color_type;
+	if(
+		png_get_IHDR(
+			png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
+			nullptr, nullptr, nullptr)
+		&& color_type == PNG_COLOR_TYPE_PALETTE && bit_depth <= 8)
+	{
+		if(bit_depth < 8) png_set_expand(png_ptr);
+		auto pngw = *w = width;
+		auto pngh = *h = height;
+		out->refnew(pngh, pngw);
+		auto p = (png_bytep)out->atpos();
+		auto pp = new png_bytep[pngh];
+		for(int i = pngh-1; i >= 0; i--) pp[i] = p + pngw*i;
+		png_read_image(png_ptr, pp);
+		delete [] pp;
+	}
+	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 }
 
 TUserFunc(void, BlitSurface, SDL_Rect* prect, SDL_Surface* psrcs)

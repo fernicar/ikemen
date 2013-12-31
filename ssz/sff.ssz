@@ -260,15 +260,20 @@ public &Sprite
   public ^/char readV2(&.file.File f=, long ofs, uint dsz)
   {
     f.seek(ofs+4, .file.Seek::SET);
-    ^ubyte px.new((index)dsz);
-    f.readAry!ubyte?(px);
+    ^ubyte px;
     if(`rle < 0) switch(-`rle){
+      if(-`rle <= 4){
+        px.new((index)dsz);
+        f.readAry!ubyte?(px);
+      }
     case 2:
       `rle8Decode(px=);
     case 3:
       `rle5Decode(px=);
     case 4:
       `lz5Decode(px=);
+    case 10:
+      px = .sdl.decodePNG8(`rct.w=, `rct.h=, f=);
     default:
       ret "不明な形式です";
     }

@@ -66,14 +66,14 @@
       <Optimization>Full</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>D:\d\lib\glew\include;D:\d\lib\SDL2\include;D:\d\lib\SDL2\SDL2_image\include;D:\d\lib\SDL2\SDL2_ttf\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\d\lib\glew\include;D:\d\lib\SDL2\include;D:\d\lib\SDL2\SDL2_image\include;D:\d\lib\SDL2\SDL2_ttf\include;D:\d\lib\lpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>sdlplugin.def</ModuleDefinitionFile>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>D:\d\lib\glew\lib\Release\Win32;D:\d\lib\SDL2\lib\x86;D:\d\lib\SDL2\SDL2_image\lib\x86;D:\d\lib\SDL2\SDL2_ttf\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\d\lib\glew\lib\Release\Win32;D:\d\lib\SDL2\lib\x86;D:\d\lib\SDL2\SDL2_image\lib\x86;D:\d\lib\SDL2\SDL2_ttf\lib\x86;D:\d\lib\lpng\projects\visualc71\Win32_LIB_Release;D:\d\lib\zlib\projects\visualc6\Win32_DLL_Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -6,6 +6,7 @@ EXPORTS
     KeyState
     Fill
     IMGLoad
+    DecodePNG8
     BlitSurface
     Flip
     FreeSurface

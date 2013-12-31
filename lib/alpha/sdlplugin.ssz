@@ -1,4 +1,6 @@
 ﻿
+lib f = <file.ssz>;
+
 plugin void End(::)                         = "dll/sdlplugin.dll";
 plugin bool PollEvent(:&Event=:)            = "dll/sdlplugin.dll";
 public void flip()
@@ -45,6 +47,15 @@ public char getLastChar()
 {
   plugin char GetLastChar(::) = "dll/sdlplugin.dll";
   ret GetLastChar(::);
+}
+
+public ^ubyte decodePNG8(int w=, int h=, &.f.File file=)
+{
+  plugin void DecodePNG8(:
+    ^ubyte=, int=, int=, &.f.File:) = "dll/sdlplugin.dll";
+  ^ubyte img;
+  DecodePNG8(:img=, w=, h=, file:);
+  ret img;
 }
 
 plugin bool KeyState(:|SDLKey:)             = "dll/sdlplugin.dll";
