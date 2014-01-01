@@ -252,11 +252,6 @@ end
 
 
 function init()
-  if math.random(0, 1) == 1 then
-    loadLifebar('data/gms_lifebar/fight.def')
-  else
-    loadLifebar('data/gms_lifebar/fight.def')
-  end
   for i = 1, 4 do
     setCom(i, 8)
   end
