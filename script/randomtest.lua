@@ -162,9 +162,10 @@ function rakuBenry()
   roster = {}
   nextChar = 1
   debugText = ''
-  if #zero > 0 then
-    charAdd(zero, #zero)
-    charAdd(kai, tuyoninzu - #zero)
+  local numZero = #zero
+  if numZero > 0 then
+    charAdd(zero, numZero)
+    charAdd(kai, tuyoninzu - numZero)
     rank = 0
   elseif #bimyou >= math.max(tuyoninzu*20, math.floor((numChars*3)/20)) then
     charAdd(bimyou, #bimyou)
@@ -196,7 +197,7 @@ function rakuBenry()
       rank = -1
     end
   end
-  if #zero == 0 then
+  if numZero == 0 then
     while total ~= 0 do
       local i = math.random(1, #veljnz)
       if total > 0 then
@@ -251,6 +252,11 @@ end
 
 
 function init()
+  if math.random(0, 1) == 1 then
+    loadLifebar('data/gms_lifebar/fight.def')
+  else
+    loadLifebar('data/gms_lifebar/fight.def')
+  end
   for i = 1, 4 do
     setCom(i, 8)
   end
