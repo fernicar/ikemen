@@ -5573,9 +5573,19 @@ public void Explod::update(bool oVer, int playerNo)
   if(.com.tickNextFrame()){
     if(`bindtime > 0){
       `bindtime--;
-      if(act && `bindtime == 0){
-        `x += `velocityx*(float)(`facing*`relativef);
-        `y += `velocityy;
+      if(`bindtime == 0){
+        switch(`postype){
+        case 4://left
+          `setX(.com.screenx + `offsetx/.com.scale);
+          `setY(.com.screeny + `offsety/.com.scale);
+        case 5://right
+          `setX(.com.screenx + ((float).com.GameWidth + `offsetx)/.com.scale);
+          `setY(.com.screeny + `offsety/.com.scale);
+        }
+        if(act){
+          `x += `velocityx*(float)(`facing*`relativef);
+          `y += `velocityy;
+        }
       }
     }
     if(!act) break;
