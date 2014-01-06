@@ -878,7 +878,7 @@ public void showCursor(bool show)
 
 public &GlTexture
 {
-  uint id = 0;
+  uint id = 0x0;
   delete()
   {
     `clear();
@@ -891,11 +891,17 @@ public &GlTexture
   }
   public bool load8bitTexture(^ubyte pxl, int w, int h)
   {
-    plugin uint Load8bitTexture(:ubyte=, int, int:) =
-      "dll/sdlplugin.dll";
+    plugin uint Load8bitTexture(:ubyte=, int, int:) = "dll/sdlplugin.dll";
     if(#pxl == 0 || #pxl != w*h) ret false;
     `clear();
     `id = Load8bitTexture(:pxl<>=, w, h:);
+    ret `id != 0x0;
+  }
+  public bool loadPngTexture(int w=, int h=, &.f.File file=)
+  {
+    plugin uint LoadPngTexture(:int=, int=, &.f.File:) = "dll/sdlplugin.dll";
+    `clear();
+    `id = LoadPngTexture(:w=, h=, file:);
     ret `id != 0x0;
   }
 }
@@ -905,6 +911,13 @@ plugin bool InitMugenGl(::) = "dll/sdlplugin.dll";
 plugin bool RenderMugenGl(:
   &GlTexture, uint=, int, &Rect=, float, float, &Rect=, float, float, float,
   float, float, float, int, &Rect=, float, float:) = "dll/sdlplugin.dll";
+plugin bool RenderMugenGlFc(:
+  &GlTexture, &Rect=, float, float, &Rect=, float, float, float,
+  float, float, float, int, &Rect=, float, float, bool, float,
+  float, float, float, float, float, float:) = "dll/sdlplugin.dll";
+plugin bool RenderMugenGlFcS(:
+  &GlTexture, &Rect=, float, float, &Rect=, float, float, float,
+  float, float, float, int, &Rect=, float, float, uint:) = "dll/sdlplugin.dll";
 plugin void GlSwapBuffers(::) = "dll/sdlplugin.dll";
 
 public bool bindGlContext()

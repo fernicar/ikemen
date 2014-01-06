@@ -3327,7 +3327,7 @@ public &Char
   }
   public void action()
   {
-    if(`minus != 2) ret;
+    if(`minus != 2 || `ls(.lsDESTROY)) ret;
     bool p =
       .super > 0 ? `sysivar[.iSUPERMOVETIME] == 0
       : .pause > 0 && `sysivar[.iPAUSEMOVETIME] == 0;
@@ -5031,10 +5031,14 @@ public &Char
       `remapPalSub(p.palfx, 1, 1, rpg, rpi);
     }
   }
-  public void trDestroySelf()
+  public void trDestroySelf(bool recursive, bool removeexplods)
   {
     if(`helperindex <= 0) ret;
     `sysivar[.iSPECIALFLAG] |= .lsDESTROY;
+    if(removeexplods) `trRemoveExplod(-1);
+    if(recursive) `children:<-[void(c=){
+      if(c >= 0) .chars[`playerno][c]~trDestroySelf(recursive, removeexplods);
+    }];
   }
   public %int getTarget(int id)
   {

@@ -148,7 +148,7 @@ public &Sprite
   }
   public ^uint getPal(&.PalleteList pl=)
   {
-    if(#`colorPallet > 0) ret `colorPallet;
+    if(#`colorPallet > 0 || `rle == -12) ret `colorPallet;
     ret pl.get(`palidx);
   }
   public bool readHeader(&.file.File f=)
@@ -274,6 +274,15 @@ public &Sprite
       `lz5Decode(px=);
     case 10:
       px = .sdl.decodePNG8(`rct.w=, `rct.h=, f=);
+    case 11, 12:
+    /?/*.cfg.OpenGL:
+      `rle = -12;
+      `pxl.new(1);
+      if(!`pxl~loadPngTexture(`rct.w=, `rct.h=, f=)) default;
+    /*true:
+      `rct.w = `rct.h = 0;
+    /*?*/
+      ret "";
     default:
       ret "不明な形式です";
     }
@@ -346,7 +355,6 @@ public &Sprite
         px[j++] = d;
       while --size >= 0:}
     while j < leng:}
-    `rle = 0;
   }
   public void rle5Decode(^ubyte px=)
   {
@@ -372,7 +380,6 @@ public &Sprite
         }
       }
     while j < leng:}
-    `rle = 0;
   }
   public void lz5Decode(^ubyte px=)
   {
@@ -433,7 +440,6 @@ public &Sprite
         ct = rle[i++];
       }
     while j < leng:}
-    `rle = 0;
   }
   public ^/char loadFromSff(^/char fn, short ig, short in)
   {
@@ -535,6 +541,77 @@ public &Sprite
     `palidx = -1;
     ret "";
   }
+  public void setFcPalFx(
+    ^&.com.PalFX fx, int trans, bool neg=, float color=,
+    float ar=, float ag=, float ab=, float mr=, float mg=, float mb=)
+  {
+    void set(&.com.PalFX pf=)
+    {
+      `neg = pf.einvertall != 0;
+      `color = pf.ecolor;
+      `ar = (float)pf.eaddr / 255.0;
+      `ag = (float)pf.eaddg / 255.0;
+      `ab = (float)pf.eaddb / 255.0;
+      branch{
+      cond `trans == -2 && pf.enegType == 0:
+        `ar *= -1.0;
+        `ag *= -1.0;
+        `ab *= -1.0;
+        `mr = (float)(pf.emulg + pf.emulb) / 128.0;
+        `mg = (float)(pf.emulr + pf.emulb) / 128.0;
+        `mb = (float)(pf.emulr + pf.emulg) / 128.0;
+      else:
+        `mr = (float)pf.emulr / 256.0;
+        `mg = (float)pf.emulg / 256.0;
+        `mb = (float)pf.emulb / 256.0;
+      }
+    }
+    branch{
+    cond .allPalFX~enable:
+      branch{
+      cond #fx > 0 && fx~enable:
+        {
+          &.com.PalFX synth.copy(fx<>);
+          synth.synthesize(.allPalFX<>);
+          set(synth=);
+        }
+      else:
+        set(.allPalFX<>=);
+      }
+    cond #fx > 0 && fx~enable:
+      set(fx<>=);
+    else:
+      neg = false;
+      color = 1.0;
+      ar = ag = ab = 0.0;
+      mr = mg = mb = 1.0;
+    }
+  }
+/?/*.cfg.OpenGL:
+  public void glDraw(
+    ^uint pal, float x, float y, &.sdl.Rect tile=, float xts, float xbs,
+    float ys, float rxadd, float agl, int trans, &.sdl.Rect window=,
+    float rcx, float rcy, ^&.com.PalFX fx)
+  {
+    branch{
+    cond `rle == -12:
+      {
+        bool neg;
+        float color;
+        float ar, ag, ab, mr, mg, mb;
+        `setFcPalFx(fx, trans, neg=, color=, ar=, ag=, ab=, mr=, mg=, mb=);
+        .sdl.RenderMugenGlFc(:
+          `pxl<>, `rct=, x, y, tile=, xts, xbs, ys,
+          1.0, rxadd, agl, trans, window=, rcx, rcy,
+          neg, color, ar, ag, ab, mr, mg, mb:);
+      }
+    else:
+      .sdl.RenderMugenGl(:
+        `pxl<>, pal<>=, 0, `rct=, x, y, tile=, xts, xbs, ys,
+        1.0, rxadd, agl, trans, window=, rcx, rcy:);
+    }
+  }
+/*?*/
   public void draw(float x, float y, float xscale, float yscale, ^uint pal)
   {
     &.sdl.Rect tile;
@@ -545,10 +622,12 @@ public &Sprite
     if(yscale < 0.0) y2 *= -1.0;
   /?/*.cfg.OpenGL:
     if(#`pxl > 0){
-      .sdl.RenderMugenGl(:
-        `pxl<>, pal<>=, 0, `rct=, -x2*.com.WidthScale, -y2*.com.HeightScale,
+      ^&.com.PalFX nullfx;
+      `glDraw(
+        pal, -x2*.com.WidthScale, -y2*.com.HeightScale,
         tile=, xscale*.com.WidthScale, xscale*.com.WidthScale,
-        yscale*.com.HeightScale, 1.0, 0.0, 0.0, 255, .com.scrrect=, 0.0, 0.0:);
+        yscale*.com.HeightScale, 0.0, 0.0, 255,
+        .com.scrrect=, 0.0, 0.0, nullfx);
     }
   /*true:
     .sdl.renderMugenZoom(
@@ -1097,6 +1176,7 @@ public &Anim<frame_t>
     diff<remap>:
       `sff~palList.swapPalMap(fx~remap=);
     }
+    if(#pal == 0) ret pal;
     branch{
     cond #fx > 0 && fx~enable && .allPalFX~enable:
       {
@@ -1149,13 +1229,12 @@ public &Anim<frame_t>
       y2 -= (float)(int)(y2 / tmp) * tmp;
     }
   /?/*.cfg.OpenGL:
-    ^uint pal = `palFoo(fx);
-    .sdl.RenderMugenGl(:
-      `spr~pxl<>, pal<>=, `mask, `spr~rct=, (rx-x2)*.com.WidthScale,
-      -y2*.com.HeightScale, `tile=, xs*.com.WidthScale,
-      cscalex*bs*(float)h*.com.WidthScale, ys*.com.HeightScale, 1.0,
+    `spr~glDraw(
+      `palFoo(fx), (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,
+      `tile=, xs*.com.WidthScale, cscalex*bs*(float)h*.com.WidthScale,
+      ys*.com.HeightScale,
       cscalex*rasterxadd*(.com.WidthScale/.com.HeightScale),
-      0.0, `alphaFoo(), rect=, rx*.com.WidthScale, 0.0:);
+      0.0, `alphaFoo(), rect=, rx*.com.WidthScale, 0.0, fx);
   /*true:
     .sdl.renderMugenZoom(
       rect=, rx*.com.WidthScale, 0.0, `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
@@ -1183,15 +1262,13 @@ public &Anim<frame_t>
       ret;
     }
   /?/*.cfg.OpenGL:
-    ^uint pal = `palFoo(fx);
-    .sdl.RenderMugenGl(:
-      `spr~pxl<>, pal<>=, `mask, `spr~rct=,
-      #xs*(float)`spr~rct.x*.com.WidthScale,
+    `spr~glDraw(
+      `palFoo(fx), #xs*(float)`spr~rct.x*.com.WidthScale,
       #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
       xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
-      ys*(float)v*.com.HeightScale, 1.0, 0.0, agl,
-      `alphaFoo(), .com.scrrect=, rx*.com.WidthScale,
-      (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
+      ys*(float)v*.com.HeightScale, 0.0, agl, `alphaFoo(),
+      .com.scrrect=, rx*.com.WidthScale,
+      (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale, fx);
   /*true:
     uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
     if(uagl == 0x0){
@@ -1231,19 +1308,31 @@ public &Anim<frame_t>
       if(ys*vscale < 0.0 && oVer) y2 -= ys*vscale;
     }
   /?/*.cfg.OpenGL:
-    if(color != 0x0) loop{index i = 0; do:
+    if(color != 0x0 && `spr~rle != -12) loop{index i = 0; do:
       .com.tmppl[i] = color;
     while ++i < 256:}
-    ~$void(int) draw = [void(int alp){
-      .sdl.RenderMugenGl(:
-        `spr~pxl<>, .com.tmppl<>=, `mask, `spr~rct=,
-        #xs*(float)`spr~rct.x*.com.WidthScale,
-        #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
-        xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
-        ys*(float)v*.com.HeightScale, vscale, 0.0, agl,
-        alp, .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
-        (y2+ys*vscale*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
-    }];
+    ~$void(int) draw =
+      `spr~rle == -12 ? [void(int alp){
+        .sdl.RenderMugenGlFcS(:
+          `spr~pxl<>, `spr~rct=,
+          #xs*(float)`spr~rct.x*.com.WidthScale,
+          #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
+          xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
+          ys*(float)v*.com.HeightScale, vscale, 0.0, agl,
+          alp, .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
+          (y2+ys*vscale*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
+          color:);
+      }]
+      : [void(int alp){
+        .sdl.RenderMugenGl(:
+          `spr~pxl<>, .com.tmppl<>=, `mask, `spr~rct=,
+          #xs*(float)`spr~rct.x*.com.WidthScale,
+          #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
+          xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
+          ys*(float)v*.com.HeightScale, vscale, 0.0, agl,
+          alp, .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
+          (y2+ys*vscale*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
+      }];
     if((int)color > 0) draw(:-2:);
     if(alpha > 0) draw(:(256-alpha) << 10 | 1 << 9:);
   /*true:

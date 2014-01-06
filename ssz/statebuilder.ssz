@@ -6233,7 +6233,20 @@ public &StateBuilder
   bool destroySelf(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
-      `state.ctrlList[-1].task .= "`trDestroySelf();";
+      `state.ctrlList[-1].task .= "bool rec=false,rem=false;";
+      if(!`stateParam(param=, "recursive", [`paraF_t(data=){
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "rec=", ";", 3)) ret false;
+        ret true;
+      }])) ret false;
+      if(!`stateParam(param=, "removeexplods", [`paraF_t(data=){
+        if(
+          !`fullExpression(
+            `state.ctrlList[-1].task=, data=, "rem=", ";", 3)) ret false;
+        ret true;
+      }])) ret false;
+      `state.ctrlList[-1].task .= "`trDestroySelf(rec,rem);";
       ret true;
     }]);
   }
