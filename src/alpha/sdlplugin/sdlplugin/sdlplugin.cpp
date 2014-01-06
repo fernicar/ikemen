@@ -392,6 +392,8 @@ public:
 Joystick g_js;
 
 GLhandleARB g_mugenshader = 0;
+GLhandleARB g_mugenshaderFc = 0;
+GLhandleARB g_mugenshaderFcS = 0;
 GLuint g_glpalette = 0;
 
 
@@ -628,14 +630,33 @@ TUserFunc(void, DecodePNG8, FILE* fp, int32_t* h, int32_t* w, Reference* out)
 			nullptr, nullptr, nullptr)
 		&& color_type == PNG_COLOR_TYPE_PALETTE && bit_depth <= 8)
 	{
-		if(bit_depth < 8) png_set_expand(png_ptr);
-		auto pngw = *w = width;
-		auto pngh = *h = height;
-		out->refnew(pngh, pngw);
+		*w = width;
+		*h = height;
+		out->refnew(height, width);
 		auto p = (png_bytep)out->atpos();
-		auto pp = new png_bytep[pngh];
-		for(int i = pngh-1; i >= 0; i--) pp[i] = p + pngw*i;
+		auto pp = new png_bytep[height];
+		for(int i = height-1; i >= 0; i--) pp[i] = p + width*i;
 		png_read_image(png_ptr, pp);
+		switch(bit_depth){
+		case 1:
+			for(uint32_t y = 0; y < height; y++){
+				for(int i = width-1; i >= 0; i--){
+					pp[y][i] = (pp[y][i>>3] & 1 << (i&7)) >> (i&7);
+				}
+			}
+		case 2:
+			for(uint32_t y = 0; y < height; y++){
+				for(int i = width-1; i >= 0; i--){
+					pp[y][i] = (pp[y][i>>2] & 3 << (i&3)*2) >> (i&3)*2;
+				}
+			}
+		case 4:
+			for(uint32_t y = 0; y < height; y++){
+				for(int i = width-1; i >= 0; i--){
+					pp[y][i] = (pp[y][i>>1] & 15 << (i&1)*4) >> (i&1)*4;
+				}
+			}
+		}
 		delete [] pp;
 	}
 	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
@@ -2667,7 +2688,6 @@ TUserFunc(
 
 TUserFunc(uint32_t, Load8bitTexture, int32_t h, int32_t w, uint8_t* ppxl)
 {
-	static std::basic_string<uint8_t> buf;
 	uint32_t texid;
 	glGenTextures(1, &texid);
 	glBindTexture(GL_TEXTURE_2D, texid);
@@ -2679,6 +2699,62 @@ TUserFunc(uint32_t, Load8bitTexture, int32_t h, int32_t w, uint8_t* ppxl)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	return texid;
+}
+
+TUserFunc(uint32_t, LoadPngTexture, FILE* fp, int32_t* h, int32_t* w)
+{
+	*w = *h = 0;
+	if(!fp) return 0;
+	uint8_t header[8] = {0};
+	fread(header, 1, 8, fp);
+	if(png_sig_cmp(header, 0, 8)) return 0;
+	auto png_ptr =
+		png_create_read_struct(
+			PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	if(!png_ptr) return 0;
+	auto info_ptr = png_create_info_struct(png_ptr);
+	if(!info_ptr){
+		png_destroy_read_struct(&png_ptr, nullptr, nullptr);
+		return 0;
+	}
+	png_init_io(png_ptr, fp);
+	png_set_sig_bytes(png_ptr, 8);
+	png_read_info(png_ptr, info_ptr);
+	uint32_t width, height;
+	int bit_depth, color_type;
+	uint32_t texid = 0;
+	if(
+		png_get_IHDR(
+			png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
+			nullptr, nullptr, nullptr))
+	{
+		if(bit_depth > 8) png_set_strip_16(png_ptr);
+		png_set_expand(png_ptr);
+		if((color_type & PNG_COLOR_MASK_ALPHA) == 0){
+			png_set_add_alpha(png_ptr, 0xFF, PNG_FILLER_AFTER);
+		}
+		*w = width;
+		*h = height;
+		auto buff = new png_byte[width * height * 4];
+		auto p = buff;
+		auto pp = new png_bytep[height];
+		for(int i = height-1; i >= 0; i--) pp[i] = p + width*i*4;
+		png_read_image(png_ptr, pp);
+		delete [] pp;
+		png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
+		glGenTextures(1, &texid);
+		glBindTexture(GL_TEXTURE_2D, texid);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RGBA,
+			width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buff);
+		delete [] buff;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	}
 	return texid;
 }
 
@@ -2702,7 +2778,6 @@ TUserFunc(bool, InitMugenGl)
 		"}";
 	const GLchar* fragShader =
 		"#version 140\n"
-		"out vec4 fragColor;"
 		"uniform sampler2D tex;"
 		"uniform samplerBuffer pal;"
 		"uniform int msk;"
@@ -2710,17 +2785,50 @@ TUserFunc(bool, InitMugenGl)
 		"void main(void){"
 			"int i = int(round(255.0*texture(tex, gl_TexCoord[0].st).r));"
 			"vec4 c;"
-			"fragColor ="
+			"gl_FragColor ="
 				"i == msk ? vec4(0.0)"
 				": (c = texelFetchBuffer(pal, i), vec4(c.b, c.g, c.r, alp));"
 		"}";
+	const GLchar* fragShaderFc =
+		"#version 140\n"
+		"uniform sampler2D tex;"
+		"uniform bool neg;"
+		"uniform float gray;"
+		"uniform vec3 add;"
+		"uniform vec3 mul;"
+		"uniform float alp;"
+		"void main(void){"
+			"vec4 c = texture(tex, gl_TexCoord[0].st);"
+			"if(neg) c.rgb = vec3(1.0) - c.rgb;"
+			"float gcol = (c.r + c.g + c.b) / 3.0;"
+			"c.r += (gcol - c.r) * gray + add.r;"
+			"c.g += (gcol - c.g) * gray + add.g;"
+			"c.b += (gcol - c.b) * gray + add.b;"
+			"c.rgb *= mul;"
+			"c.a *= alp;"
+			"gl_FragColor = c;"
+		"}";
+	const GLchar* fragShaderFcS =
+		"#version 140\n"
+		"uniform sampler2D tex;"
+		"uniform vec3 color;"
+		"uniform float alp;"
+		"void main(void){"
+			"vec4 c = texture(tex, gl_TexCoord[0].st);"
+			"c.rgb = color * c.a;"
+			"c.a *= alp;"
+			"gl_FragColor = c;"
+		"}";
 	if(
 		!GLEW_VERSION_3_1
-		|| !GLEW_ARB_vertex_shader || !GLEW_ARB_fragment_shader)
+		|| !GLEW_ARB_vertex_shader || !GLEW_ARB_fragment_shader
+		|| g_mugenshader != 0 || g_mugenshaderFc != 0 || g_mugenshaderFcS != 0)
 	{
 		return false;
 	}
 	g_mugenshader = glCreateProgramObjectARB();
+	g_mugenshaderFc = glCreateProgramObjectARB();
+	g_mugenshaderFcS = glCreateProgramObjectARB();
 	GLhandleARB hVertShaderObject = glCreateShaderObjectARB(GL_VERTEX_SHADER);
 	GLhandleARB hFragShaderObject =
 		glCreateShaderObjectARB(GL_FRAGMENT_SHADER);
@@ -2731,27 +2839,72 @@ TUserFunc(bool, InitMugenGl)
 	length = strlen((char*)vertShader);
 	glShaderSource(
 		hVertShaderObject, 1, (const GLchar**)&vertShader, &length);
-	length = strlen((char*)fragShader);
-	glShaderSource(
-		hFragShaderObject, 1, (const GLchar**)&fragShader, &length);
 	glCompileShader(hVertShaderObject);
 	glGetObjectParameterivARB(
 		hVertShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &vert_compiled);
-	if(vert_compiled == 0) return false;
+	if(vert_compiled == 0) goto fail;
+	glGenBuffers(1, &g_glpalette);
+
+	length = strlen((char*)fragShader);
+	glShaderSource(
+		hFragShaderObject, 1, (const GLchar**)&fragShader, &length);
 	glCompileShader(hFragShaderObject);
 	glGetObjectParameterivARB(
 		hFragShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &frag_compiled);
-	if(frag_compiled == 0) return false;
+	if(frag_compiled == 0) goto fail;
 	glAttachObjectARB(g_mugenshader, hVertShaderObject);
 	glAttachObjectARB(g_mugenshader, hFragShaderObject);
-	glDeleteObjectARB(hVertShaderObject);
-	glDeleteObjectARB(hFragShaderObject);
 	glLinkProgram(g_mugenshader);
 	glGetObjectParameterivARB(
 		g_mugenshader, GL_OBJECT_LINK_STATUS_ARB, &linked);
-	if(linked == 0) return false;
-	glGenBuffers(1, &g_glpalette);
+	if(linked == 0) goto fail;
+
+	glDeleteObjectARB(hFragShaderObject);
+	hFragShaderObject =
+		glCreateShaderObjectARB(GL_FRAGMENT_SHADER);
+	length = strlen((char*)fragShaderFc);
+	glShaderSource(
+		hFragShaderObject, 1, (const GLchar**)&fragShaderFc, &length);
+	glCompileShader(hFragShaderObject);
+	glGetObjectParameterivARB(
+		hFragShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &frag_compiled);
+	if(frag_compiled == 0) goto fail;
+	glAttachObjectARB(g_mugenshaderFc, hVertShaderObject);
+	glAttachObjectARB(g_mugenshaderFc, hFragShaderObject);
+	glLinkProgram(g_mugenshaderFc);
+	glGetObjectParameterivARB(
+		g_mugenshaderFc, GL_OBJECT_LINK_STATUS_ARB, &linked);
+	if(linked == 0) goto fail;
+
+	glDeleteObjectARB(hFragShaderObject);
+	hFragShaderObject =
+		glCreateShaderObjectARB(GL_FRAGMENT_SHADER);
+	length = strlen((char*)fragShaderFcS);
+	glShaderSource(
+		hFragShaderObject, 1, (const GLchar**)&fragShaderFcS, &length);
+	glCompileShader(hFragShaderObject);
+	glGetObjectParameterivARB(
+		hFragShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &frag_compiled);
+	if(frag_compiled == 0) goto fail;
+	glAttachObjectARB(g_mugenshaderFcS, hVertShaderObject);
+	glAttachObjectARB(g_mugenshaderFcS, hFragShaderObject);
+	glLinkProgram(g_mugenshaderFcS);
+	glGetObjectParameterivARB(
+		g_mugenshaderFcS, GL_OBJECT_LINK_STATUS_ARB, &linked);
+	if(linked == 0) goto fail;
+
+	glDeleteObjectARB(hVertShaderObject);
+	glDeleteObjectARB(hFragShaderObject);
 	return true;
+
+fail:
+	glDeleteObjectARB(g_mugenshader);
+	glDeleteObjectARB(g_mugenshaderFc);
+	glDeleteObjectARB(g_mugenshaderFcS);
+	g_mugenshader = g_mugenshaderFc = g_mugenshaderFcS = 0;
+	glDeleteObjectARB(hVertShaderObject);
+	glDeleteObjectARB(hFragShaderObject);
+	return false;
 }
 
 void drawQuads(
@@ -2933,6 +3086,71 @@ void drawTile(
 	}
 }
 
+void renderMugenGl(
+	float rcy, float rcx, int alpha, float angle, float rasterxadd,
+	float vscl, float yscl, float xbotscl, float xtopscl, const SDL_Rect& tl,
+	float y, float x, const SDL_Rect& r, GLhandleARB shader)
+{
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0, g_w, 0, g_h, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glTranslated(0, g_h, 0);
+	if(alpha == -1){
+		glUniform1f(glGetUniformLocation(shader, "alp"), 1.0);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		drawTile(
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
+			angle, rcx, rcy, 1, 1, 1, 1);
+	}else if(alpha == -2){
+		glUniform1f(glGetUniformLocation(shader, "alp"), 1.0);
+		glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+		drawTile(
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
+			angle, rcx, rcy, 1, 1, 1, 1);
+	}else if(alpha <= 0){
+	}else if(alpha < 255){
+		glUniform1f(
+			glGetUniformLocation(shader, "alp"),
+			(GLfloat)alpha / 255.0f);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		drawTile(
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
+			angle, rcx, rcy, 1, 1, 1, (GLfloat)alpha / 255.0f);
+	}else if(alpha < 512){
+		glUniform1f(glGetUniformLocation(shader, "alp"), 1.0);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		drawTile(
+			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
+			angle, rcx, rcy, 1, 1, 1, 1);
+	}else{
+		int src = alpha & 0xff;
+		int dst = (alpha & 0x3fc00) >> 10;
+		if(dst < 255){
+			glUniform1f(
+				glGetUniformLocation(shader, "alp"),
+				1.0f - (GLfloat)dst / 255.0f);
+			glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+			drawTile(
+				r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
+				angle, rcx, rcy, 1, 1, 1, 1.0f - (GLfloat)dst / 255.0f);
+		}
+		if(src > 0){
+			glUniform1f(
+				glGetUniformLocation(shader, "alp"), (GLfloat)src / 255.0f);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+			drawTile(
+				r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
+				angle, rcx, rcy, 1, 1, 1, (GLfloat)src / 255.0f);
+		}
+	}
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+}
+
 TUserFunc(
 	bool, RenderMugenGl, float rcy, float rcx, SDL_Rect* dstr, int alpha,
 	float angle, float rasterxadd, float vscl, float yscl,
@@ -2961,81 +3179,132 @@ TUserFunc(
 	rcy = -rcy;
 	if(yscl < 0) y = -y;
 	y += rcy;
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, texid);
-	glActiveTexture(GL_TEXTURE1);
 	glBindBuffer(GL_TEXTURE_BUFFER, g_glpalette);
 	glBufferData(GL_TEXTURE_BUFFER, 4*256, ppal, GL_STATIC_DRAW);
 	glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA8, g_glpalette);
 	glUniform1i(glGetUniformLocation(g_mugenshader, "pal"), 1);
-	glActiveTexture(GL_TEXTURE0);
 	glUseProgram(g_mugenshader);
 	glUniform1i(glGetUniformLocation(g_mugenshader, "msk"), mask);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texid);
 	glDisable(GL_DEPTH_TEST);
-	glScissor(dstr->x, g_h - (dstr->y+dstr->h), dstr->w, dstr->h);
 	glEnable(GL_SCISSOR_TEST);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0, g_w, 0, g_h, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	glScissor(dstr->x, g_h - (dstr->y+dstr->h), dstr->w, dstr->h);
 	//
-	glTranslated(0, g_h, 0);
-	if(alpha == -1){
-		glUniform1f(glGetUniformLocation(g_mugenshader, "alp"), 1.0);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
-			angle, rcx, rcy, 1, 1, 1, 1);
-	}else if(alpha == -2){
-		glUniform1f(glGetUniformLocation(g_mugenshader, "alp"), 1.0);
-		glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
-			angle, rcx, rcy, 1, 1, 1, 1);
-	}else if(alpha <= 0){
-	}else if(alpha < 255){
-		glUniform1f(
-			glGetUniformLocation(g_mugenshader, "alp"),
-			(GLfloat)alpha / 255.0f);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
-			angle, rcx, rcy, 1, 1, 1, (GLfloat)alpha / 255.0f);
-		glUseProgram(0);
-	}else if(alpha < 512){
-		glUniform1f(glGetUniformLocation(g_mugenshader, "alp"), 1.0);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
-			angle, rcx, rcy, 1, 1, 1, 1);
-	}else{
-		int src = alpha & 0xff;
-		int dst = (alpha & 0x3fc00) >> 10;
-		glUniform1f(
-			glGetUniformLocation(g_mugenshader, "alp"),
-			1.0f - (GLfloat)dst / 255.0f);
-		glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
-			angle, rcx, rcy, 1, 1, 1, 1.0f - (GLfloat)dst / 255.0f);
-		glUniform1f(
-			glGetUniformLocation(g_mugenshader, "alp"), (GLfloat)src / 255.0f);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		drawTile(
-			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
-			angle, rcx, rcy, 1, 1, 1, (GLfloat)src / 255.0f);
-	}
+	renderMugenGl(
+		rcy, rcx, alpha, angle, rasterxadd, vscl, yscl, xbotscl, xtopscl,
+		tl, y, x, r, g_mugenshader);
 	//
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
 	glDisable(GL_SCISSOR_TEST);
-	glUseProgram(0);
 	glDisable(GL_TEXTURE_2D);
+	glUseProgram(0);
+	return true;
+}
+
+TUserFunc(
+	bool, RenderMugenGlFc, float mulb, float mulg, float mulr,
+	float addb, float addg, float addr, float color, bool neg,
+	float rcy, float rcx, SDL_Rect* dstr, int alpha,
+	float angle, float rasterxadd, float vscl, float yscl,
+	float xbotscl, float xtopscl, SDL_Rect* tile, float y, float x,
+	SDL_Rect* rect, uint32_t texid)
+{
+	if(
+		texid == 0
+		|| _finite(
+			x+y+rcx+rcy+xtopscl+xbotscl+yscl+vscl+rasterxadd+angle) == 0)
+	{
+		return false;
+	}
+	if(vscl < 0.0f){
+		vscl *= -1;
+		yscl *= -1;
+		angle *= -1;
+	}
+	SDL_Rect r = *rect, tl = *tile;
+	if(tl.x > 0) tl.x -= r.w;
+	if(tl.y > 0) tl.y -= r.h;
+	if(tl.w == 0) tl.x = 0;
+	if(tl.h == 0) tl.y = 0;
+	if(xtopscl >= 0) x = -x;
+	x += rcx;
+	rcy = -rcy;
+	if(yscl < 0) y = -y;
+	y += rcy;
+	glUseProgram(g_mugenshaderFc);
+	glUniform1i(glGetUniformLocation(g_mugenshaderFc, "neg"), neg);
+	glUniform1f(glGetUniformLocation(g_mugenshaderFc, "gray"), 1 - color);
+	glUniform3f(
+		glGetUniformLocation(g_mugenshaderFc, "add"), addr, addg, addb);
+	glUniform3f(
+		glGetUniformLocation(g_mugenshaderFc, "mul"), mulr, mulg, mulb);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texid);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(dstr->x, g_h - (dstr->y+dstr->h), dstr->w, dstr->h);
+	//
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glOrtho(0, g_w, 0, g_h, -1, 1);
+	glPopMatrix();
+	renderMugenGl(
+		rcy, rcx, alpha, angle, rasterxadd, vscl, yscl, xbotscl, xtopscl,
+		tl, y, x, r, g_mugenshaderFc);
+	//
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_TEXTURE_2D);
+	glUseProgram(0);
+	return true;
+}
+
+TUserFunc(
+	bool, RenderMugenGlFcS, uint32_t color,
+	float rcy, float rcx, SDL_Rect* dstr, int alpha,
+	float angle, float rasterxadd, float vscl, float yscl,
+	float xbotscl, float xtopscl, SDL_Rect* tile, float y, float x,
+	SDL_Rect* rect, uint32_t texid)
+{
+	if(
+		texid == 0
+		|| _finite(
+			x+y+rcx+rcy+xtopscl+xbotscl+yscl+vscl+rasterxadd+angle) == 0)
+	{
+		return false;
+	}
+	if(vscl < 0.0f){
+		vscl *= -1;
+		yscl *= -1;
+		angle *= -1;
+	}
+	SDL_Rect r = *rect, tl = *tile;
+	if(tl.x > 0) tl.x -= r.w;
+	if(tl.y > 0) tl.y -= r.h;
+	if(tl.w == 0) tl.x = 0;
+	if(tl.h == 0) tl.y = 0;
+	if(xtopscl >= 0) x = -x;
+	x += rcx;
+	rcy = -rcy;
+	if(yscl < 0) y = -y;
+	y += rcy;
+	glUseProgram(g_mugenshaderFcS);
+	glUniform3f(
+		glGetUniformLocation(g_mugenshaderFcS, "color"),
+		(float)(color>>16&0xff)/255, (float)(color>>8&0xff)/255,
+		(float)(color&0xff)/255);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texid);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(dstr->x, g_h - (dstr->y+dstr->h), dstr->w, dstr->h);
+	//
+	renderMugenGl(
+		rcy, rcx, alpha, angle, rasterxadd, vscl, yscl, xbotscl, xtopscl,
+		tl, y, x, r, g_mugenshaderFcS);
+	//
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_TEXTURE_2D);
+	glUseProgram(0);
 	return true;
 }
 
@@ -3063,9 +3332,8 @@ TUserFunc(void, MugenFillGl, int32_t alpha, uint32_t color, SDL_Rect rect)
 	glOrtho(0, g_w, 0, g_h, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glLoadIdentity();
-	//
 	glTranslated(0, g_h, 0);
+	//
 	if(alpha == -1){
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		rectFillGl(r, g, b, 1.0f, rect);
@@ -3076,7 +3344,6 @@ TUserFunc(void, MugenFillGl, int32_t alpha, uint32_t color, SDL_Rect rect)
 	}else if(alpha < 255){
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		rectFillGl(r, g, b, (GLfloat)alpha / 256.0f, rect);
-		glUseProgram(0);
 	}else if(alpha < 512){
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		rectFillGl(r, g, b, 1.0f, rect);
@@ -3089,9 +3356,8 @@ TUserFunc(void, MugenFillGl, int32_t alpha, uint32_t color, SDL_Rect rect)
 		rectFillGl(r, g, b, (GLfloat)src / 255.0f, rect);
 	}
 	//
-	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 }
 

@@ -32,10 +32,13 @@ EXPORTS
     SetVolume
     GlInit
     Load8bitTexture
+    LoadPngTexture
     DeleteGlTexture
     GlSwapBuffers
     InitMugenGl
     RenderMugenGl
+    RenderMugenGlFc
+    RenderMugenGlFcS
     MugenFillGl
     BindGlContext
     UnbindGlContext
