@@ -589,9 +589,9 @@ public &Sprite
   }
 /?/*.cfg.OpenGL:
   public void glDraw(
-    ^uint pal, float x, float y, &.sdl.Rect tile=, float xts, float xbs,
-    float ys, float rxadd, float agl, int trans, &.sdl.Rect window=,
-    float rcx, float rcy, ^&.com.PalFX fx)
+    ^uint pal, int mask, float x, float y, &.sdl.Rect tile=,
+    float xts, float xbs, float ys, float rxadd, float agl, int trans,
+    &.sdl.Rect window=, float rcx, float rcy, ^&.com.PalFX fx)
   {
     branch{
     cond `rle == -12:
@@ -607,7 +607,7 @@ public &Sprite
       }
     else:
       .sdl.RenderMugenGl(:
-        `pxl<>, pal<>=, 0, `rct=, x, y, tile=, xts, xbs, ys,
+        `pxl<>, pal<>=, mask, `rct=, x, y, tile=, xts, xbs, ys,
         1.0, rxadd, agl, trans, window=, rcx, rcy:);
     }
   }
@@ -624,7 +624,7 @@ public &Sprite
     if(#`pxl > 0){
       ^&.com.PalFX nullfx;
       `glDraw(
-        pal, -x2*.com.WidthScale, -y2*.com.HeightScale,
+        pal, 0, -x2*.com.WidthScale, -y2*.com.HeightScale,
         tile=, xscale*.com.WidthScale, xscale*.com.WidthScale,
         yscale*.com.HeightScale, 0.0, 0.0, 255,
         .com.scrrect=, 0.0, 0.0, nullfx);
@@ -1230,7 +1230,7 @@ public &Anim<frame_t>
     }
   /?/*.cfg.OpenGL:
     `spr~glDraw(
-      `palFoo(fx), (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,
+      `palFoo(fx), `mask, (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,
       `tile=, xs*.com.WidthScale, cscalex*bs*(float)h*.com.WidthScale,
       ys*.com.HeightScale,
       cscalex*rasterxadd*(.com.WidthScale/.com.HeightScale),
@@ -1263,7 +1263,7 @@ public &Anim<frame_t>
     }
   /?/*.cfg.OpenGL:
     `spr~glDraw(
-      `palFoo(fx), #xs*(float)`spr~rct.x*.com.WidthScale,
+      `palFoo(fx), `mask, #xs*(float)`spr~rct.x*.com.WidthScale,
       #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
       xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
       ys*(float)v*.com.HeightScale, 0.0, agl, `alphaFoo(),
