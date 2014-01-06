@@ -51,7 +51,7 @@ public void layspr(
   float x, float y, int ln, ^&.sff.Sprite spr, &.com.Layout l=,
   ^&.com.PalFX fx)
 {
-  if(l.layerno != ln || #spr == 0) ret;
+  if(l.layerno != ln || #spr == 0 || #spr~pxl == 0) ret;
   &.sdl.Rect tile;
   tile.set(0, 0, 0, 0);
   float x2 =
