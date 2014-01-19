@@ -458,7 +458,7 @@ public &BackGround
     rect.h = (int).m.ceil((float)rect.h * .com.HeightScale * wscly);
     `anim.draw(
       rect=, x2, y2, sclx, scly, `xtscale*bgscl, xbs*bgscl, ys,
-      xras * x2 / (#ys*(float)`anim.spr~rct.h),
+      xras * x2 / (#ys*localscl*(float)`anim.spr~rct.h),
       (float).com.GameWidth/2.0, fx, true);
   }
 }
