@@ -488,9 +488,9 @@ void setTeamMode(&.lua.State L=, int re=)
     ret;
   }
   int nt = 1;
-  if(tm == 2){
+  if(tm >= 1){
     nt = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-    if(!.m.inRange!int?(1, #.chr.chars, nt)){
+    if(!.m.inRange!int?(1, 4, nt)){
       L.pushString("チーム人数が不正です。");
       re = -1;
       ret;
@@ -498,7 +498,8 @@ void setTeamMode(&.lua.State L=, int re=)
   }
   .syst.selinf.p[pn-1].selchr.new(0);
   .com.tmode[pn-1] = tm;
-  .com.numturns[pn-1] = nt;
+  .com.numturns[pn-1] = .com.numSimul[pn-1] = nt;
+  if(tm == 1 && nt == 1) .com.tmode[pn-1] = 0;
 }
 
 void getCharName(&.lua.State L=, int re=)
