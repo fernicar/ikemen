@@ -104,22 +104,25 @@ const double lvmul = 2.0**(1.0/12.0);
     while i < #item:}
     `winct.set(.chr.cgi[pn].def, item);
   }
+  /int winPoint(index i)
+  {
+    ret
+      .com.tmode[i+1&1] == (int).com.TeamMode::Simul ? (
+        .com.tmode[i&1] != (int).com.TeamMode::Simul ? .com.numSimul[i+1&1]
+        : .com.numSimul[i+1&1] > .com.numSimul[i&1]
+        ? .com.numSimul[i+1&1] / .com.numSimul[i&1] : 1)
+      : 1;
+  }
   void win(index i)
   {
     ^int item = `getItem(.chr.cgi[i].def);
-    item[.chr.chars[i][0]~palno()-1] +=
-      .com.tmode[i+1&1] == (int).com.TeamMode::Simul
-      && .com.tmode[i&1] != (int).com.TeamMode::Simul
-      ? .com.numSimul[i+1&1] : 1;
+    item[.chr.chars[i][0]~palno()-1] += `winPoint(i);
     `setItem(i, item);
   }
   void lose(index i)
   {
     ^int item = `getItem(.chr.cgi[i].def);
-    item[.chr.chars[i][0]~palno()-1] -=
-      .com.tmode[i+1&1] == (int).com.TeamMode::Simul
-      && .com.tmode[i&1] != (int).com.TeamMode::Simul
-      ? .com.numSimul[i+1&1] : 1;
+    item[.chr.chars[i][0]~palno()-1] -= `winPoint(i);
     `setItem(i, item);
   }
   public int getLevel(index i)
