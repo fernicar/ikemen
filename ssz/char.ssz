@@ -6549,9 +6549,10 @@ void gSetNormal(float scl, float x, float y)
   .com.scrxmax =
     (float)(.stg~cam.boundright - .stg~cam.startx)*.stg~localscl
     + ((float).com.GameWidth/2.0)/.stg~ztopscale;
-  .com.screenx = x - ((float).com.GameWidth/2.0) / .com.scale;
+  .com.screenx = x - ((float).com.GameWidth/2.0) / .com.scale - .com.xoffset;
   .com.screeny =
-    y - (.com.zoffset - (float)(.com.GameHeight-240)*scl) / .com.scale;
+    y - (.com.zoffset - (float)(.com.GameHeight-240)*scl) / .com.scale
+    - .com.yoffset;
   .com.camerax = x;
   .com.cameray = y + (float)(.com.GameHeight-240);
   .com.screenleft = (float).stg~screenleft*.stg~localscl;
@@ -6689,9 +6690,10 @@ public float action(
   cond .com.tickFrame():
     .curx = x;
     .cury = y;
-    .com.xmin = .com.screenx + .com.screenleft;
+    .com.xmin = .com.screenx + .com.xoffset + .com.screenleft;
     .com.xmax =
-      .com.screenx + ((float).com.GameWidth / .com.scale) - .com.screenright;
+      .com.screenx + .com.xoffset
+      + ((float).com.GameWidth / .com.scale) - .com.screenright;
     if(.com.xmin > .com.xmax){
       .com.xmin = .com.xmax = (.com.xmin + .com.xmax) * 0.5;
     }
