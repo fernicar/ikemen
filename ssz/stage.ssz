@@ -97,7 +97,7 @@ public &Stage
   /int reflection = 0;
   /bool hires = false, resetbg = true, debugbg = false, reflect = true;
   /int localw = 320, localh = 240;
-  /float localscl, drawOffsetY = 0.0;
+  /float localscl, xscale = 1.0, yscale = 1.0, drawOffsetY = 0.0;
   type action_t = &.bg.Action;
   &.sff.AirFileMethods!self? airFileMethods;
   new()
@@ -224,7 +224,12 @@ public &Stage
       }
       if(#(data = sc.get("localcoord")) > 0){
         .bg.readPair!int?(`localw=, `localh=, data);
-        `localscl = (float).com.GameWidth / (float)`localw;
+      }
+      if(#(data = sc.get("xscale")) > 0){
+        `xscale = .com.atonOF!`xscale.self?(data);
+      }
+      if(#(data = sc.get("yscale")) > 0){
+        `yscale = .com.atonOF!`yscale.self?(data);
       }
     }
     public void shadow(&.com.Section sc=)
@@ -285,7 +290,6 @@ public &Stage
     {
       `bgcdef.ctrlbg.new(0);
       `bgcdef.looptime = -1;
-      `bgcdef.positionlink = false;
       ^/char data;
       branch{
       cond #(data = sc.get("ctrlid")) > 0:
@@ -345,9 +349,6 @@ public &Stage
         }
       }
       `bgctrlList[-1].read(sc=, #`bgctrlList);
-      if(`bgctrlList[-1].ctrlbg == `bgcdef.ctrlbg){
-        `bgctrlList[-1].positionlink |= `bgcdef.positionlink;
-      }
     }
     bool unicode = false;
     bool infoflg = true, cameraflg = true, playerinfoflg = true;
@@ -399,14 +400,23 @@ public &Stage
         bgdefflg = false;
       else:
         if(secname[-1] == ' ') secname = secname[0 .. #secname-1];
-        branch{
-        cond .s.equ(secname, "bg"):
-          bg(sc=, link=);
-        cond .s.equ(secname, "bgctrldef"):
-          bgctrldef(sc=);
-        cond .s.equ(secname, "bgctrl"):
-          bgctrl(sc=);
-        }
+        if(.s.equ(secname, "bg")) bg(sc=, link=);
+      }
+    }];
+    ~$void(^^/char, index=) ctrlSec = [void(^^/char lines, index i=){
+      ^/char sec = lines[i];
+      ^/char secname = .com.sectionName(sec=);
+      if(#secname == 0) ret;
+      i++;
+      &.com.Section sc;
+      if(secname[-1] == ' ') secname = secname[0 .. #secname-1];
+      branch{
+      cond .s.equ(secname, "bgctrldef"):
+        sc.parse(lines, i=);
+        bgctrldef(sc=);
+      cond .s.equ(secname, "bgctrl"):
+        sc.parse(lines, i=);
+        bgctrl(sc=);
       }
     }];
     ^/char error;
@@ -422,6 +432,10 @@ public &Stage
       section(:lines, i=, link=:);
       i++;
     while i < #lines:}
+    loop{index i = 0; while; do:
+      ctrlSec(:lines, i=:);
+      i++;
+    while i < #lines:}
     if(!`reflect) `reflection = 0;
     `sf.new(1);
     if(
@@ -430,6 +444,7 @@ public &Stage
     {
       ret def + ":"\r\n + error;
     }
+    `localscl = (float).com.GameWidth / (float)`localw;
     if(!.m.isfinite(`leftbound)) `leftbound = 1000.0/`localscl;
     `leftbound -= (float)`localw / 2.0;
     `leftbound *= `localscl;
@@ -437,9 +452,9 @@ public &Stage
     `rightbound -= (float)`localw / 2.0;
     `rightbound *= `localscl;
     loop{
-      index i = 0, link = 0;
-      int zofs = 0;
-    while; do:
+      index i = 0, link = 0, zlink = -1;
+      while;
+    do:
       `bg[i].setup(
         `sf, (float)`cam.startx,
         [void(^&.bg.Action act=, int n){act = `getAction(n);}]);
@@ -450,12 +465,10 @@ public &Stage
       else:
         link = i;
       }
-      if(`zoffsetlink > 0 && `bg[i].id == `zoffsetlink){
-        zofs = (int)`bg[i].starty;
-      }
+      if(`zoffsetlink > 0 && zlink < 0 && `bg[i].id == `zoffsetlink) zlink = i;
       i++;
     while i < #`bg:
-      `zoffset += zofs;
+      if(zlink >= 0) `zoffset += (int)`bg[zlink].starty;
     }
     `drawOffsetY =
       (float)`localw/(float)`localh > (float).com.GameWidth/240.0
@@ -482,20 +495,20 @@ public &Stage
     switch(bgc.typ){
     case .bg.BgcType::Anim:
       {
-        ^&.bg.Action act = `getAction((int)bgc.x);
+        ^&.bg.Action act = `getAction(bgc.v1);
         if(#act > 0) bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
-          bg.actionno = (int)bgc.x;
+          bg.actionno = bgc.v1;
           bg.anim.setFrames(act~frames, act~loopstart);
           bg.anim.current = 0;
         }];
       }
     case .bg.BgcType::Visible:
       bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
-        bg.visible = (int)bgc.x != 0;
+        bg.visible = bgc.v1 != 0;
       }];
     case .bg.BgcType::Enable:
       bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
-        bg.visible = bg.active = (int)bgc.x != 0;
+        bg.visible = bg.active = bgc.v1 != 0;
       }];
     case .bg.BgcType::PosSet:
       bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
@@ -516,39 +529,37 @@ public &Stage
         if(bgc.sety) `bga.y += bgc.y;
       }
     case .bg.BgcType::SinX:
-      bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
-        bg.bga.xradius = bgc.x;
-        bg.bga.sinxlooptime = (int)bgc.y;
-        if(bg.bga.sinxlooptime > 0){
-          bg.bga.sinxtime =
-            (int)((float)bgc.n*bgc.y/360.0) % bg.bga.sinxlooptime;
-          if(bg.bga.sinxtime < 0) bg.bga.sinxtime += bg.bga.sinxlooptime;
-        }
-      }];
-      if(bgc.positionlink){
-        `bga.xradius = bgc.x;
-        `bga.sinxlooptime = (int)bgc.y;
-        if(`bga.sinxlooptime > 0){
-          `bga.sinxtime = (int)((float)bgc.n*bgc.y/360.0) % `bga.sinxlooptime;
-          if(`bga.sinxtime < 0) `bga.sinxtime += `bga.sinxlooptime;
+      {
+        if(bgc.v1 == 0) bgc.v2 = 0;
+        float tmp = (float)bgc.v3 / 360.0;
+        int sxt = (int)((tmp - (float)(int)tmp) * (float)bgc.v2);
+        if(sxt < 0) sxt += #bgc.v2;
+        bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
+          bg.bga.xradius = bgc.x;
+          bg.bga.sinxlooptime = bgc.v2;
+          bg.bga.sinxtime = sxt;
+        }];
+        if(bgc.positionlink){
+          `bga.xradius = bgc.x;
+          `bga.sinxlooptime = bgc.v2;
+          `bga.sinxtime = sxt;
         }
       }
     case .bg.BgcType::SinY:
-      bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
-        bg.bga.yradius = bgc.x;
-        bg.bga.sinylooptime = (int)bgc.y;
-        if(bg.bga.sinylooptime > 0){
-          bg.bga.sinytime =
-            (int)((float)bgc.n*bgc.y/360.0) % bg.bga.sinylooptime;
-          if(bg.bga.sinytime < 0) bg.bga.sinytime += bg.bga.sinylooptime;
-        }
-      }];
-      if(bgc.positionlink){
-        `bga.yradius = bgc.x;
-        `bga.sinylooptime = (int)bgc.y;
-        if(`bga.sinylooptime > 0){
-          `bga.sinytime = (int)((float)bgc.n*bgc.y/360.0) % `bga.sinylooptime;
-          if(`bga.sinytime < 0) `bga.sinytime += `bga.sinylooptime;
+      {
+        if(bgc.v1 == 0) bgc.v2 = 0;
+        float tmp = (float)bgc.v3 / 360.0;
+        int syt = (int)((tmp - (float)(int)tmp) * (float)bgc.v2);
+        if(syt < 0) syt += #bgc.v2;
+        bgLoop(bgc.ctrlbg)<, [`bglsig_t(bg=){
+          bg.bga.yradius = bgc.x;
+          bg.bga.sinylooptime = bgc.v2;
+          bg.bga.sinytime = syt;
+        }];
+        if(bgc.positionlink){
+          `bga.yradius = bgc.x;
+          `bga.sinylooptime = bgc.v2;
+          `bga.sinytime = syt;
         }
       }
     case .bg.BgcType::VelSet:
@@ -576,8 +587,7 @@ public &Stage
     `bgctl.step!`self?(`=);
     `bga.action();
     loop{
-      index i = 0, link = 0;
-      float yofs = 0.0;
+      index i = 0, link = 0, zlink = -1;
       while;
     do:
       `bg[i].bga.action();
@@ -588,13 +598,11 @@ public &Stage
       else:
         link = i;
       }
-      if(`zoffsetlink > 0 && `bg[i].id == `zoffsetlink){
-        yofs = `bg[i].bga.yoffset;
-      }
+      if(`zoffsetlink > 0 && zlink < 0 && `bg[i].id == `zoffsetlink) zlink = i;
       if(`bg[i].active) `bg[i].anim.action();
       i++;
     while i < #`bg:
-      `bga.yoffset += yofs;
+      if(zlink >= 0) `bga.yoffset += `bg[zlink].bga.yoffset;
     }
   }
   public void bgDraw(bool t, float x, float y, float scl)
@@ -651,7 +659,8 @@ public &Stage
         / 480.0);
     loop{index i = 0; while; do:
       if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){
-        `bg[i].draw(posx, posy, scl, .bgPalFX, bgscl, `localscl, yofs);
+        `bg[i].draw(
+          posx, posy, scl, .bgPalFX, bgscl, `localscl, `xscale, `yscale, yofs);
       }
       i++;
     while i < #`bg:}

@@ -229,7 +229,7 @@ public &BackGround
     }
     if(#(data = sc.get("positionlink")) > 0){
       `positionlink = .com.atonOF!int?(data) != 0;
-      if(`positionlink = #link > 0){
+      if(`positionlink && #link > 0){
         `startvx = link~startvx;
         `startvy = link~startvy;
         `deltax = link~deltax;
@@ -406,12 +406,13 @@ public &BackGround
   }
   public void draw(
     float x, float y, float scl, ^&.com.PalFX fx,
-    float bgscl, float localscl, float shakeY)
+    float bgscl, float localscl, float xscale, float yscale, float shakeY)
   {
     float xras = ((`rasterxbspeed-`rasterxtspeed) / `rasterxtspeed);
     float xbs = `xbscale;
     float dx = .m.max!float?(0.0, `deltax*bgscl);
     float sclx = .m.max!float?(0.0, scl + (1.0 - scl)*(1.0 - dx));
+    float lxscl = localscl * xscale, lyscl = localscl * yscale;
     if(sclx != 0.0){
       float tmp = 1.0 / sclx;
       xbs *= 
@@ -420,32 +421,36 @@ public &BackGround
       xras -= tmp - 1.0;
       xbs *= tmp;
     }
-    sclx *= localscl;
+    sclx *= lxscl;
     float scly =
       .m.max!float?(
         0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `deltay*bgscl)))
       * localscl;
-    float x2 = `startx - (x+`camstartx)*`deltax + `bga.xoffset;
-    float y2 = `starty - y*`deltay + `bga.yoffset;
-    float scl2 = bgscl*localscl;
+    float x2 = `startx - (x/xscale+`camstartx)*`deltax + `bga.xoffset;
+    float y2 = `starty - (y/yscale)*`deltay + `bga.yoffset;
     if(!.com.zoom){
-      if(`rasterxbspeed == `rasterxtspeed) x2 = .m.floor(x2/scl2)*scl2;
-      y2 = .m.floor(y2/scl2)*scl2;
+      if(`rasterxbspeed == `rasterxtspeed && `bga.sinxlooptime <= 0){
+        x2 = .m.floor(x2/bgscl)*bgscl;
+      }
+      if(`bga.sinylooptime <= 0){
+        y2 = .m.floor(y2/bgscl)*bgscl;
+      }
     }
     float ys = (100.0 - y * `yscaledelta) * bgscl /`yscalestart;
     x2 *= bgscl;
     y2 *= bgscl;
     y2 += ((float).com.GameHeight - shakeY) / scly - 240.0;
+    scly *= yscale;
      &.sdl.Rect rect;
     rect = `startrect;
     float wsclx =
       .m.max!float?(
         0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `windowdeltax*bgscl)))
-      * scl2;
+      * bgscl * lxscl;
     float wscly =
       .m.max!float?(
         0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `windowdeltay*bgscl)))
-      * scl2;
+      * bgscl * lyscl;
     rect.x =
       (int).m.floor(
         ((float)rect.x - (x+`camstartx) * `windowdeltax)
@@ -458,7 +463,7 @@ public &BackGround
     rect.h = (int).m.ceil((float)rect.h * .com.HeightScale * wscly);
     `anim.draw(
       rect=, x2, y2, sclx, scly, `xtscale*bgscl, xbs*bgscl, ys,
-      xras * x2 / (#ys*localscl*(float)`anim.spr~rct.h),
+      xras * x2 / (#ys*lyscl*(float)`anim.spr~rct.h),
       (float).com.GameWidth/2.0, fx, true);
   }
 }
@@ -474,13 +479,14 @@ public &BGCtrl
   public int currenttime = 0, starttime = 0, endtime = 0, looptime = -1;
   public |.BgcType typ = .BgcType::Null;
   public float x = 0.0, y = 0.0;
-  public int n = 0;
+  public int v1 = 0, v2 = 0, v3 = 0;
   public bool setx = false, sety = false;
   public bool positionlink = false, flag = false;
   /index idx = 0;
   public void read(&.com.Section sc=, index idx)
   {
     `idx = idx;
+    bool xy = false;
     ^/char data;
     if(#(data = sc.get("type")) > 0){
       branch{
@@ -495,16 +501,20 @@ public &BGCtrl
         `typ = .BgcType::Null;
       cond .s.equ(typ, "posset"):
         `typ = .BgcType::PosSet;
+        xy = true;
       cond .s.equ(typ, "posadd"):
         `typ = .BgcType::PosAdd;
+        xy = true;
       cond .s.equ(typ, "sinx"):
         `typ = .BgcType::SinX;
       cond .s.equ(typ, "siny"):
         `typ = .BgcType::SinY;
       cond .s.equ(typ, "velset"):
         `typ = .BgcType::VelSet;
+        xy = true;
       cond .s.equ(typ, "veladd"):
         `typ = .BgcType::VelAdd;
+        xy = true;
       }
     }
     if(#(data = sc.get("time")) > 0){
@@ -521,20 +531,21 @@ public &BGCtrl
     if(#(data = sc.get("positionlink")) > 0){
       `positionlink = .com.atonOF!int?(data) != 0;
     }
-    if(#(data = sc.get("value")) > 0){
-      ^float val = .cta!float?(data);
+    if(!xy && #(data = sc.get("value")) > 0){
+      ^int val = .cta!int?(data);
       if(#val < 1) break;
-      `x = val[0];
+      `v1 = val[0];
       if(#val < 2) break;
-      `y = val[1];
+      `v2 = val[1];
       if(#val < 3) break;
-      `n = (int)val[1];
+      `v3 = val[1];
+      `x = .com.atof(data);
     }
-    if(#(data = sc.get("x")) > 0){
+    if(xy && #(data = sc.get("x")) > 0){
       `setx = true;
       `x = .com.atof(data);
     }
-    if(#(data = sc.get("y")) > 0){
+    if(xy && #(data = sc.get("y")) > 0){
       `sety = true;
       `y = .com.atof(data);
     }
@@ -551,7 +562,6 @@ public &ActiveCtrlList
   ^&Cell top;
   public void add(^&.BGCtrl bgc)
   {
-    bgc~currenttime = bgc~starttime;
     if(#`top == 0){
       `top.new(1);
       `top~bgc = bgc;
@@ -643,10 +653,15 @@ public &BGCTimeLine
       wtime += bgc~looptime - bgc~currenttime;
     }
     wtime += bgc~starttime;
+    bgc~currenttime = bgc~starttime;
+    if(wtime < 0){
+      bgc~currenttime -= wtime;
+      wtime = 0;
+    }
     if(#`top == 0){
       `top.new(1);
       `top~waittime = wtime;
-      `top~bgcList.new[-1] = bgc;
+      `top~bgcList .= bgc;
       ret;
     }
     loop{
@@ -657,18 +672,17 @@ public &BGCTimeLine
       if(#tmp~nextnode == 0){
         tmp~nextnode.new(1);
         tmp~nextnode~waittime = wtime;
-        tmp~nextnode~bgcList.new[-1] = bgc;
+        tmp~nextnode~bgcList .= bgc;
         break, break;
       }
       tmp = tmp~nextnode;
     while wtime > tmp~waittime:
       branch{
       cond wtime == tmp~waittime:
-        tmp~bgcList.new[-1] = bgc;
+        tmp~bgcList .= bgc;
       else:
         {
-          ^&`BGCTLNode tmp2;
-          tmp2.new(1);
+          ^&`BGCTLNode tmp2.new(1);
           tmp2~waittime = tmp~waittime - wtime;
           tmp2~bgcList = tmp~bgcList;
           tmp2~nextnode = tmp~nextnode;
