@@ -118,6 +118,7 @@ public &Stage
   }
   void getBG(%^&.bg.BackGround bgl=, int id)
   {
+    if(id < 0) ret;
     loop{index i = 0; while; do:
       if(`bg[i].id == id) bgl .= `bg[i..i+1];
       i++;
@@ -465,7 +466,9 @@ public &Stage
       else:
         link = i;
       }
-      if(`zoffsetlink > 0 && zlink < 0 && `bg[i].id == `zoffsetlink) zlink = i;
+      if(`zoffsetlink >= 0 && zlink < 0 && `bg[i].id == `zoffsetlink){
+        zlink = i;
+      }
       i++;
     while i < #`bg:
       if(zlink >= 0) `zoffset += (int)`bg[zlink].starty;
@@ -598,7 +601,9 @@ public &Stage
       else:
         link = i;
       }
-      if(`zoffsetlink > 0 && zlink < 0 && `bg[i].id == `zoffsetlink) zlink = i;
+      if(`zoffsetlink >= 0 && zlink < 0 && `bg[i].id == `zoffsetlink){
+        zlink = i;
+      }
       if(`bg[i].active) `bg[i].anim.action();
       i++;
     while i < #`bg:
