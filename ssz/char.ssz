@@ -6541,8 +6541,8 @@ void gSetNormal(float scl, float x, float y)
       + (240.0 - (float).com.GameWidth*(float).stg~localh / (float).stg~localw)
       + (float)(.com.GameHeight - 240))
     + (1.0 - scl)*(float).com.GameHeight;
-  .com.yoffset = .stg~bga.yoffset*.stg~localscl*scl;
-  .com.xoffset = .stg~bga.xoffset*.stg~localscl*scl;
+  .com.yoffset = .stg~bga.yoffset*.stg~localscl*.stg~yscale*scl;
+  .com.xoffset = .stg~bga.xoffset*.stg~localscl*.stg~xscale*scl;
   .com.scrxmin =
     (float)(.stg~cam.boundleft - .stg~cam.startx)*.stg~localscl
     - ((float).com.GameWidth/2.0)/.stg~ztopscale;

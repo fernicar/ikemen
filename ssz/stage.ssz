@@ -471,7 +471,7 @@ public &Stage
       }
       i++;
     while i < #`bg:
-      if(zlink >= 0) `zoffset += (int)`bg[zlink].starty;
+      if(zlink >= 0) `zoffset += (int)(`bg[zlink].starty*`yscale);
     }
     `drawOffsetY =
       (float)`localw/(float)`localh > (float).com.GameWidth/240.0
