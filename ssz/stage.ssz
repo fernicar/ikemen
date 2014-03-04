@@ -92,7 +92,7 @@ public &Stage
   /float leftbound = 0.0/0.0, rightbound = 0.0/0.0;
   /int screenleft = 15, screenright = 15;
   /int zoffset = 0;
-  /int zoffsetlink = 0;
+  /int zoffsetlink = -1;
   /float ztopscale = 1.0;
   /int reflection = 0;
   /bool hires = false, resetbg = true, debugbg = false, reflect = true;
