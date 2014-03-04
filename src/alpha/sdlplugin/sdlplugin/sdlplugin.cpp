@@ -2742,7 +2742,6 @@ TUserFunc(uint32_t, LoadPngTexture, FILE* fp, int32_t* h, int32_t* w)
 		for(int i = height-1; i >= 0; i--) pp[i] = p + width*i*4;
 		png_read_image(png_ptr, pp);
 		delete [] pp;
-		png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 		glGenTextures(1, &texid);
 		glBindTexture(GL_TEXTURE_2D, texid);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -2755,6 +2754,7 @@ TUserFunc(uint32_t, LoadPngTexture, FILE* fp, int32_t* h, int32_t* w)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	}
+	png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 	return texid;
 }
 
