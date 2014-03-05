@@ -510,7 +510,7 @@ public &NetInput
         `kb[`lo].setCurTime(`time);
         `kb[`re].setCurTime(`time);
         loop{index i = 0; while; do:
-          `rep.write!&.KeyInfo?(`kb[i].data[`time]=);
+          `rep.write!&.KeyInfo?(`kb[i].data[`time&31]=);
           i++;
         while i < #`kb:
         }
