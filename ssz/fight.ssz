@@ -1082,6 +1082,7 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
           if(!`round_default.end(`dt)) break;
         comm:
           `callFight();
+          ret true;
         }
         ret false;
       case 1:
