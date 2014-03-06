@@ -6919,7 +6919,8 @@ public float action(
     branch{
     cond
       .shuttertime > 0
-      || (.cmd.anybutton() && .com.intro > .fight~ro.ctrl_time):
+      || (.cmd.anybutton() && .com.intro > .fight~ro.ctrl_time)
+      :
       if(++.shuttertime == 15){
         .resetGblEffect();
         .com.intro = .fight~ro.ctrl_time;
@@ -6944,6 +6945,7 @@ public float action(
           - ox;
         introSkip = true;
         .fight~ro.callFight();
+        posreset();
       }
     }
   else:
@@ -6956,8 +6958,8 @@ public float action(
       if(.gs(.gsINTRO) && .com.intro <= .fight~ro.ctrl_time){
         .com.intro = .fight~ro.ctrl_time + 1;
       }
-    cond .com.intro > 0:
       if(.com.intro == .fight~ro.ctrl_time) posreset();
+    cond .com.intro > 0:
       .com.intro--;
       if(.com.intro == 0) loop{index i = 0; while; do:
         if(#.chars[i] > 0) branch{
