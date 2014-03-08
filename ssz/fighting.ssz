@@ -270,7 +270,8 @@ void game()
   {
     float tmp = .m.max!float?(0.0, 240.0 - .com.screenZoffset);
     ret
-      .m.min!float?(0.0)<, 
+      .m.max!float?(0.0, .com.boundhigh)
+      + .m.min!float?(0.0)<, 
       .m.min!float?(tmp*(1.0/scl - 1.0))<,
       .m.max!float?(
         .com.boundhigh-240.0 + .m.max!float?(
@@ -441,9 +442,13 @@ void game()
         - (float).com.GameWidth*(float).chr.stg~localh
         / (float).chr.stg~localw)
       : 0.0;
+    if(.chr.stg~cam.boundhigh > 0){
+      .com.boundhigh += (float).chr.stg~cam.boundhigh * .chr.stg~localscl;
+    }
     float xminscl =
       (float).com.GameWidth / ((float).com.GameWidth+(float)(-bl + br));
-    float yminscl = (float).com.GameHeight / (240.0-.com.boundhigh);
+    float yminscl =
+      (float).com.GameHeight / (240.0-.m.min!float?(0.0, .com.boundhigh));
     float minscl =
       .m.max!float?(.com.zoomMin)<, .m.min!float?(.com.zoomMax)<,
       .m.max!float?(xminscl, yminscl);

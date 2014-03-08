@@ -156,8 +156,7 @@ public &Stage
         `cam.boundright = .com.atonOF!`cam.boundright.self?(data);
       }
       if(#(data = sc.get("boundhigh")) > 0){
-        `cam.boundhigh =
-          .m.min!int?(0, .com.atonOF!`cam.boundhigh.self?(data));
+        `cam.boundhigh = .com.atonOF!`cam.boundhigh.self?(data);
       }
       if(#(data = sc.get("verticalfollow")) > 0){
         `cam.verticalfollow = .com.atof(data);
@@ -618,18 +617,19 @@ public &Stage
     float posx = x, posy = y;
     float scl2 = `localscl * scl;
     branch{
-    cond posy > 0.0:
-      yofs += posy * scl2;
-      posy = 0.0;
-    cond posy < (double)`cam.boundhigh:
-      yofs += (posy - (double)`cam.boundhigh) * scl2;
-      posy = (double)`cam.boundhigh;
+      float bhtmp = (float).m.max!int?(0, `cam.boundhigh);
+    cond posy > bhtmp:
+      yofs += (posy - bhtmp) * scl2;
+      posy = bhtmp;
+    cond posy < (float)`cam.boundhigh:
+      yofs += (posy - (float)`cam.boundhigh) * scl2;
+      posy = (float)`cam.boundhigh;
     }
     if(`cam.verticalfollow > 0.0) branch{
     cond yofs < 0.0:
       branch{
         float temp =
-          ((double)`cam.boundhigh - posy) * scl2
+          ((float)`cam.boundhigh - posy) * scl2
           + (
             scl > 1.0 ? (.com.screenZoffset + (float)(.com.GameHeight - 240))
             : (float).com.GameHeight)
