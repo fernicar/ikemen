@@ -156,7 +156,8 @@ public &Stage
         `cam.boundright = .com.atonOF!`cam.boundright.self?(data);
       }
       if(#(data = sc.get("boundhigh")) > 0){
-        `cam.boundhigh = .com.atonOF!`cam.boundhigh.self?(data);
+        `cam.boundhigh =
+          .m.min!int?(0, .com.atonOF!`cam.boundhigh.self?(data));
       }
       if(#(data = sc.get("verticalfollow")) > 0){
         `cam.verticalfollow = .com.atof(data);
