@@ -162,7 +162,7 @@ public &BackGround
   public &.sff.Anim!&.Frame? anim;
   public &.BGAction bga;
   public int id = 0;
-  public float startx = 0.0, starty = 0.0, camstartx = 0.0;
+  public float startx = 0.0, starty = 0.0, xofs = 0.0, camstartx = 0.0;
   public float deltax = 1.0, deltay = 1.0;
   public float xtscale = 1.0, xbscale = 1.0;
   public float rasterxtspeed = 1.0, rasterxbspeed = 1.0;
@@ -289,13 +289,13 @@ public &BackGround
       .readPair!int?(`anim.tile.w=, `anim.tile.h=, data);
       if(typ == 2) `anim.tile.h = 0;
     }
-    if(#(data = sc.get("tilespacing")) > 0){
+    if(typ != 2 && #(data = sc.get("tilespacing")) > 0){
       `anim.tile.x = `anim.tile.y = .com.atonOF!`anim.tile.x.self?(data);
     }
-    if(typ == 2 && #(data = sc.get("width")) > 0){
+    if(typ == 2) branch{
+    cond #(data = sc.get("width")) > 0:
       .readPair!ushort?(`twidth=, `bwidth=, data);
-    }
-    if(typ == 2 && #(data = sc.get("xscale")) > 0){
+    cond #(data = sc.get("xscale")) > 0:
       .readPair!float?(`rasterxtspeed=, `rasterxbspeed=, data);
     }
     if(typ == 2 && #(data = sc.get("yscalestart")) > 0){
@@ -382,6 +382,7 @@ public &BackGround
       if(#spr == 0) break;
       `xtscale = (float)`twidth / (float)spr~rct.w;
       `xbscale = (float)`bwidth / (float)spr~rct.w;
+      `xofs = (float)`twidth / 2.0 + (float)spr~rct.x*`xtscale;
     }
     branch{
     cond `actionno >= 0:
@@ -426,7 +427,7 @@ public &BackGround
       .m.max!float?(
         0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `deltay*bgscl)))
       * localscl;
-    float x2 = `startx - (x/xscale+`camstartx)*`deltax + `bga.xoffset;
+    float x2 = `startx + `xofs - (x/xscale+`camstartx)*`deltax + `bga.xoffset;
     float y2 = `starty - (y/yscale)*`deltay + `bga.yoffset;
     if(!.com.zoom){
       if(`rasterxbspeed == `rasterxtspeed && `bga.sinxlooptime <= 0){

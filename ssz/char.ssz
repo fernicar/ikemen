@@ -150,7 +150,7 @@ public void drawAnimList(%^&.AnimSprite al=, float x, float y, float scl)
         branch{
         cond as.screen:
           px = as.x;
-          py = as.y;
+          py = as.y + (float)(.com.GameHeight - 240);
         else:
           px = .com.xoffset-(x-as.x)*cs;
           py =
@@ -163,7 +163,7 @@ public void drawAnimList(%^&.AnimSprite al=, float x, float y, float scl)
         branch{
         cond as.screen:
           px = as.x;
-          py = as.y;
+          py = as.y + (float)(.com.GameHeight - 240);
         else:
           px = .com.xoffset/cs - (x-as.x);
           py =
