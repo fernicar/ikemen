@@ -458,7 +458,9 @@ public &BackGround
         * .com.WidthScale * wsclx);
     rect.y =
       (int).m.floor(
-        (((float)rect.y - y * `windowdeltay) * wscly - shakeY)
+        (
+          ((float)rect.y - y * `windowdeltay) * wscly - shakeY
+          + (float)(.com.GameHeight - 240))
         * .com.HeightScale);
     rect.w = (int).m.ceil((float)rect.w * .com.WidthScale * wsclx);
     rect.h = (int).m.ceil((float)rect.h * .com.HeightScale * wscly);
