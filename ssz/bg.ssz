@@ -382,7 +382,7 @@ public &BackGround
       if(#spr == 0) break;
       `xtscale = (float)`twidth / (float)spr~rct.w;
       `xbscale = (float)`bwidth / (float)spr~rct.w;
-      `xofs = (float)`twidth / 2.0 + (float)spr~rct.x*`xtscale;
+      `xofs = -(float)`twidth / 2.0 + (float)spr~rct.x*`xtscale;
     }
     branch{
     cond `actionno >= 0:
