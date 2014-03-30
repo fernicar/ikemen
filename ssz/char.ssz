@@ -4080,6 +4080,9 @@ public &Char
         o.setX(.com.screenx + ((float).com.GameWidth + x)/.com.scale);
       }
       if(!.m.isnan(y)) o.setY(.com.screeny + y/.com.scale);
+    case 6:
+      if(!.m.isnan(x)) o.setX(.curx + x);
+      if(!.m.isnan(y)) o.setY(.cury + y);
     }
   }
   public void setAlpha(int trans, int salpha=, int dalpha=)

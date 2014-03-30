@@ -4106,6 +4106,8 @@ public &StateBuilder
             `state.ctrlList[-1].task .= "pt=4;";
           cond text[0] == 'r':
             `state.ctrlList[-1].task .= "pt=5;";
+          cond text[0] == 'n':
+            `state.ctrlList[-1].task .= "pt=6;";
           else:
             `lasterror = data + "が無効な値です";
             ret false;
@@ -6074,6 +6076,8 @@ public &StateBuilder
           `state.ctrlList[-1].task .= "pt=4;";
         cond text[0] == 'r':
           `state.ctrlList[-1].task .= "pt=5;";
+        cond text[0] == 'n':
+          `state.ctrlList[-1].task .= "pt=6;";
         else:
           `lasterror = data + "が無効な値です";
           ret false;
@@ -6294,6 +6298,8 @@ public &StateBuilder
             `state.ctrlList[-1].task .= exp .= ".postype=4;";
           cond text[0] == 'r':
             `state.ctrlList[-1].task .= exp .= ".postype=5;";
+          cond text[0] == 'n':
+            `state.ctrlList[-1].task .= exp .= ".postype=6;";
           else:
             `lasterror = data + "が無効な値です";
             ret false;
