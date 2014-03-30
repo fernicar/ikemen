@@ -430,10 +430,13 @@ public &BackGround
     float x2 = `startx + `xofs - (x/xscale+`camstartx)*`deltax + `bga.xoffset;
     float y2 = `starty - (y/yscale)*`deltay + `bga.yoffset;
     if(!.com.zoom){
-      if(`rasterxbspeed == `rasterxtspeed && `bga.sinxlooptime <= 0){
+      if(
+        `rasterxbspeed == `rasterxtspeed
+        && `bga.sinxlooptime <= 0 && `bga.sinxoffset == 0.0)
+      {
         x2 = .m.floor(x2/bgscl)*bgscl;
       }
-      if(`bga.sinylooptime <= 0){
+      if(`bga.sinylooptime <= 0 && `bga.sinyoffset == 0.0){
         y2 = .m.floor(y2/bgscl)*bgscl;
       }
     }
