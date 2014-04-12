@@ -443,7 +443,7 @@ public &BackGround
     float ys = (100.0 - y * `yscaledelta) * bgscl /`yscalestart;
     x2 *= bgscl;
     y2 *= bgscl;
-    y2 += ((float).com.GameHeight - shakeY) / scly - 240.0;
+    y2 += (((float).com.GameHeight - shakeY) / scly - 240.0)/yscale;
     scly *= yscale;
      &.sdl.Rect rect;
     rect = `startrect;
