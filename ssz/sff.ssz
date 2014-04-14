@@ -1250,10 +1250,10 @@ public &Anim<frame_t>
     float axscl, float ayscl, ^&.com.PalFX fx, bool oVer)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
-    float rx = x + (float).com.GameWidth/2.0;
     int h = `frames[`drawidx].h;
     int v = `frames[`drawidx].v;
     float xs = xscale * axscl, ys = yscale * ayscl;
+    float rx = x+xs*(float)(h*`frames[`drawidx].x)+(float).com.GameWidth/2.0;
     float agl = angle*(float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
     if(!angleset){
       `draw(
@@ -1297,13 +1297,13 @@ public &Anim<frame_t>
     uint color, int alpha)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
-    float x2 = x, y2 = y;
     int h = `frames[`drawidx].h;
     int v = `frames[`drawidx].v;
     float xs = xscale * axscl, ys = yscale * ayscl;
+    float x2 = x + xs*(float)(h*`frames[`drawidx].x);
+    float y2 = y + ys*vscale*(float)(v*`frames[`drawidx].y);
     float agl = angle*(float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
     if(!angleset){
-      x2 += xs*(float)(h*`frames[`drawidx].x);
       if(xs < 0.0 && oVer) x2 -= xs;
       if(ys*vscale < 0.0 && oVer) y2 -= ys*vscale;
     }
@@ -1320,8 +1320,7 @@ public &Anim<frame_t>
           xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
           ys*(float)v*.com.HeightScale, vscale, 0.0, agl,
           alp, .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
-          (y2+ys*vscale*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
-          color:);
+          y2*.com.HeightScale, color:);
       }]
       : [void(int alp){
         .sdl.RenderMugenGl(:
@@ -1331,7 +1330,7 @@ public &Anim<frame_t>
           xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
           ys*(float)v*.com.HeightScale, vscale, 0.0, agl,
           alp, .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
-          (y2+ys*vscale*(float)(v*`frames[`drawidx].y))*.com.HeightScale:);
+          y2*.com.HeightScale:);
       }];
     if((int)color > 0) draw(:-2:);
     if(alpha > 0) draw(:(256-alpha) << 10 | 1 << 9:);
@@ -1342,8 +1341,7 @@ public &Anim<frame_t>
       ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
     .sdl.renderMugenShadow(
       .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
-      (y2+ys*vscale*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
-      `spr~pxl, color, `spr~rct=,
+      y2*.com.HeightScale, `spr~pxl, color, `spr~rct=,
       #xs*(float)`spr~rct.x*.com.WidthScale,
       #ys*(float)`spr~rct.y*.com.HeightScale,
       xs*(float)h*.com.WidthScale, ys*(float)v*.com.HeightScale, vscale,
