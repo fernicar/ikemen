@@ -1378,7 +1378,7 @@ public &StateBuilder
       out .= obj .= "trId()";
       typ = 2;
     cond .s.equ("facing", token):
-      out .= obj .= "facing";
+      out .= "(int)" .= obj .= "facing";
       typ = 2;
     cond .s.equ("hitcount", token):
       out .= obj .= "sysivar[.iHITCOUNT]";
@@ -2134,7 +2134,7 @@ public &StateBuilder
       out .= obj .= "canCtrl()";
       typ = 3;
     cond .s.equ("teamside", token):
-      out .= "((" .= obj .= "playerno&1)+1)";
+      out .= "((int)(" .= obj .= "playerno&1)+1)";
       typ = 2;
     cond .s.equ("nokosnd", token):
       out .= ".gs(.gsNOKOSND)";
