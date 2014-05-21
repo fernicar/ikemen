@@ -3517,10 +3517,11 @@ public &Char
     bool nobindy = `sysivar[.iBINDTIME] == 0 || .m.isnan(`sysfvar[.fBINDPOSY]);
     if(nobindx) `ticOldX = `drawX = `sysfvar[.fX];
     if(nobindy) `ticOldY = `drawY = `sysfvar[.fY];
-    if(!`ls(.lsPOSFREEZEX)){
+    branch{
+    cond `ls(.lsPOSFREEZEX):
+      if(nobindx) `setPosX(`ticOldX + `veloff);
+    else:
       if(nobindx) `setPosX(`ticOldX + `sysfvar[.fVX]*(float)`facing + `veloff);
-      `veloff *= 0.7;
-      if(#`veloff < 1.0) `veloff = 0.0;
       switch(`stVal.phy){
       case .StTy::S:
         `sysfvar[.fVX] *= `sysfvar[.fSTAND_FRICTION];
@@ -3529,6 +3530,8 @@ public &Char
         `sysfvar[.fVX] *= `sysfvar[.fCROUCH_FRICTION];
       }
     }
+    `veloff *= 0.7;
+    if(#`veloff < 1.0) `veloff = 0.0;
     if(!`ls(.lsPOSFREEZEY)){
       if(nobindy) `setPosY(`ticOldY + `sysfvar[.fVY]);
       if(`stVal.phy == .StTy::A) `gravity();
@@ -5050,7 +5053,7 @@ public &Char
     ^`self c;
     `targets:<-[void(t){
       c = .players.get(t);
-      if(#c > 0 && (id < 0 || c~stVal.hb.hitid == id)) tar .= t;
+      if(#c > 0 && c~stVal.hb.hitid == id) tar .= t;
     }];
     ret tar;
   }
