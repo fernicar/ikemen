@@ -8589,7 +8589,7 @@ public &StateBuilder
       if(#secname == 0) ret;
       i++;
       &.com.Section sc.parse(lines, i=);
-      if(!.s.equ(secname, "command")) ret;
+      if(!.s.equ(secname[0 .. 7], "command")) ret;
       `cmdl~ctmp.new(1);
       `cmdl~ctmp~time = `cmdl~defaultTime;
       `cmdl~ctmp~buffertime = `cmdl~defaultBufferTime;
