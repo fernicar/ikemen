@@ -1741,6 +1741,8 @@ public &Projectile
   public int cancelanim;
   public float scalex;
   public float scaley;
+  public float clsnscalex;
+  public float clsnscaley;
   public int remove;
   public int removetime;
   public float velocityx;
@@ -1788,6 +1790,8 @@ public &Projectile
     `cancelanim = .com.IERR;
     `scalex = 1.0;
     `scaley = 1.0;
+    `clsnscalex = 1.0;
+    `clsnscaley = 1.0;
     `remove = 1;
     `removetime = -1;
     `velocityx = 0.0;
@@ -1914,8 +1918,9 @@ public &Projectile
     ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn2;
     ^&.act.Rect clsn2 = `ani~ani.currentFrame()=>frm$frm~clsn2;
     &.ClsnHantei ch.set(
-      pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
-      `scalex, `scaley, `x, `y, `facing > 0 ? .pLrSet : .mLrSet);
+      pr.clsnscalex, pr.clsnscaley, pr.x, pr.y,
+      pr.facing > 0 ? .pLrSet : .mLrSet,
+      `clsnscalex, `clsnscaley, `x, `y, `facing > 0 ? .pLrSet : .mLrSet);
     loop{index i = 0; while; do:
       loop{index j = 0; while; do:
         if(ch.hantei(clsn1[i], clsn2[j])) ret true;
@@ -2014,11 +2019,11 @@ public &Projectile
       if(#frm == 0) break;
       ^&.act.Rect clsn = frm~clsn1;
       if(#clsn > 0){
-        .drawc1.new[-1].set(clsn, `x, `y, (float)`facing*`scalex, `scaley);
+        .drawc1.new[-1].set(clsn, `x, `y, (float)`facing*`clsnscalex, `scaley);
       }
       clsn = frm~clsn2;
       if(#clsn > 0){
-        .drawc2.new[-1].set(clsn, `x, `y, (float)`facing*`scalex, `scaley);
+        .drawc2.new[-1].set(clsn, `x, `y, (float)`facing*`clsnscalex, `scaley);
       }
     }
     bool notpause = `hitpause <= 0 && !`paused();
@@ -2941,7 +2946,8 @@ public &Char
     ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn1;
     ^&.act.Rect clsn2 = `curFrame~clsn2;
     &.ClsnHantei ch.set(
-      pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
+      pr.clsnscalex, pr.clsnscaley, pr.x, pr.y,
+      pr.facing > 0 ? .pLrSet : .mLrSet,
       `sysfvar[.fCLSNXSCALE], `sysfvar[.fCLSNYSCALE],
       `sysfvar[.fX] + `offsetX(), `sysfvar[.fY] + `offsetY(),
       `facing > 0 ? .pLrSet : .mLrSet);
@@ -2963,7 +2969,8 @@ public &Char
     ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn2;
     ^&.act.Rect clsn2 = `curFrame~clsn1;
     &.ClsnHantei ch.set(
-      pr.scalex, pr.scaley, pr.x, pr.y, pr.facing > 0 ? .pLrSet : .mLrSet,
+      pr.clsnscalex, pr.clsnscaley, pr.x, pr.y,
+      pr.facing > 0 ? .pLrSet : .mLrSet,
       `sysfvar[.fCLSNXSCALE], `sysfvar[.fCLSNYSCALE],
       `sysfvar[.fX] + `offsetX(), `sysfvar[.fY] + `offsetY(),
       `facing > 0 ? .pLrSet : .mLrSet);
@@ -5025,6 +5032,8 @@ public &Char
       p.scalex *= `sysfvar[.fXSCALE];
       p.scaley *= `sysfvar[.fYSCALE];
     }
+    p.clsnscalex = `sysfvar[.fXSCALE];
+    p.clsnscaley = `sysfvar[.fYSCALE];
     if(p.velocityx < 0.0){
       p.facing *= -1;
       p.velocityx *= -1.0;
@@ -6443,12 +6452,12 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
               proj.timemiss = !.m.max!int?(0, proj.misstime);
               branch{
               cond #hit == 1:
-                .cgi[i].pctyp == .ProjContact::Hit;
+                .cgi[i].pctyp = .ProjContact::Hit;
                 .cgi[i].pctime = 0;
                 .cgi[i].pcid = proj.id;
                 proj.hitpause = .m.max!int?(0, proj.hit.pausetime);
               else:
-                .cgi[i].pctyp == .ProjContact::Guarded;
+                .cgi[i].pctyp = .ProjContact::Guarded;
                 .cgi[i].pctime = 0;
                 .cgi[i].pcid = proj.id;
                 proj.hitpause = .m.max!int?(0, proj.hit.guard_pausetime);
