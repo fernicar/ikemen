@@ -2019,11 +2019,13 @@ public &Projectile
       if(#frm == 0) break;
       ^&.act.Rect clsn = frm~clsn1;
       if(#clsn > 0){
-        .drawc1.new[-1].set(clsn, `x, `y, (float)`facing*`clsnscalex, `scaley);
+        .drawc1.new[-1].set(
+          clsn, `x, `y, (float)`facing*`clsnscalex, `clsnscaley);
       }
       clsn = frm~clsn2;
       if(#clsn > 0){
-        .drawc2.new[-1].set(clsn, `x, `y, (float)`facing*`clsnscalex, `scaley);
+        .drawc2.new[-1].set(
+          clsn, `x, `y, (float)`facing*`clsnscalex, `clsnscaley);
       }
     }
     bool notpause = `hitpause <= 0 && !`paused();
