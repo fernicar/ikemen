@@ -6411,7 +6411,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           && pyr.hitProjCheck(proj=))
         {
           proj.hits = -2;
-          .cgi[i].pctyp == .ProjContact::Cancel;
+          .cgi[i].pctyp = .ProjContact::Cancel;
           .cgi[i].pctime = 0;
           .cgi[i].pcid = proj.id;
           pyr.stVal.hitdefContact = 1;
