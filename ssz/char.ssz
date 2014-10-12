@@ -3665,6 +3665,7 @@ public &Char
           `stVal.hb.hitshaketime = 0;
           `stVal.hb.fallf = false;
           `stVal.hb.fallcount = 0;
+          `stVal.hb.hitid = -1;
           `getcombo = 0;
         }
         if(`stVal.hb.hitshaketime > 0) `stVal.hb.hitshaketime--;
@@ -4496,8 +4497,8 @@ public &Char
     `ani = tmp;
     `animno = no;
     `animpno = `playerno;
-    `sysfvar[.fCLSNXSCALE] = `sysfvar[.fXSCALE];
-    `sysfvar[.fCLSNYSCALE] = `sysfvar[.fYSCALE];
+    `sysfvar[.fCLSNXSCALE] = .chars[`playerno]<>~sysfvar[.fXSCALE];
+    `sysfvar[.fCLSNYSCALE] = .chars[`playerno]<>~sysfvar[.fYSCALE];
     if(`isHitPaused()) `curFrame = `ani~ani.currentFrame();
   }
   public void trChangeAnim2(int no)
