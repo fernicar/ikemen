@@ -1891,7 +1891,7 @@ public &StateBuilder
         out .= "0.0";////////////////////////////////////////
         typ = 1;
       cond .s.equ("type", token):
-        out .= "0";
+        out .= "(int)0";
         typ = 2;
       cond .s.equ("animtype", token):
         out .= obj .= "gethitAnimtype()";
@@ -1945,7 +1945,7 @@ public &StateBuilder
         out .= obj .= "stVal.hb.getYaccel()";
         typ = 1;
       cond .s.equ("hitid", token) || .s.equ("chainid", token):
-        out .= obj .= "stVal.hb.hitid";
+        out .= "(int)0";
         typ = 2;
       cond .s.equ("guarded", token):
         out .= obj .= "stVal.hb.guarded";
@@ -1987,7 +1987,7 @@ public &StateBuilder
         out .= obj .= "stVal.hb.fall.envshake_phase";
         typ = 1;
       cond .s.equ("fall.envshake.dir", token):
-        out .= "0";
+        out .= "(int)0";
         typ = 2;
       cond .s.equ("isbound", token):
         out .= obj .= "isBound()";
@@ -2012,7 +2012,7 @@ public &StateBuilder
           bool not;
           if(!`kyuushiki(not=, in=)){
             if(!.cfg.IgnoreMostErrors) ret -1;
-            out .= "0";
+            out .= "(int)0";
             typ = 2;
             break, break;
           }
