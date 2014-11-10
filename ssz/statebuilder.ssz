@@ -4266,7 +4266,10 @@ public &StateBuilder
         `state.ctrlList[-1].task .= obj;
         if(
           !`fullExpression(
-            `state.ctrlList[-1].task=, data=, ".id=", ";", 2)) ret false;
+            `state.ctrlList[-1].task=, data=, ".id=.m.max!int?(0,", ");", 2))
+        {
+          ret false;
+        }
         ret true;
       }])) ret false;
       if(!`stateParam(param=, "chainid", [`paraF_t(data=){

@@ -2837,7 +2837,10 @@ public &Char
       .super > 0 && .superunhittable != 0
       && `playerno == .superplayer) ret false;
     if(hit.chainid >= 0 && `stVal.hb.hitid != hit.chainid) ret false;
-    if(#`stVal.hb.by > 0 && `stVal.hb.by[-1].id == cid){
+    if(
+      `stVal.mov == .MovTy::H
+      && #`stVal.hb.by > 0 && `stVal.hb.by[-1].id == cid)
+    {
       if(hit.nochainid1 >= 0 && `stVal.hb.hitid == hit.nochainid1) ret false;
       if(hit.nochainid2 >= 0 && `stVal.hb.hitid == hit.nochainid2) ret false;
     }
@@ -3665,7 +3668,6 @@ public &Char
           `stVal.hb.hitshaketime = 0;
           `stVal.hb.fallf = false;
           `stVal.hb.fallcount = 0;
-          `stVal.hb.hitid = -1;
           `getcombo = 0;
         }
         if(`stVal.hb.hitshaketime > 0) `stVal.hb.hitshaketime--;
@@ -5393,7 +5395,7 @@ public &Char
         {
           ^`self t = .players.get(tar);
           if(#t > 0 && t~stVal.hb.hitid == id) .v.i++;
-        } 
+        }
       }
     }];
   }
