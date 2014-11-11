@@ -5545,7 +5545,7 @@ public &StateBuilder
   {
     ret `stateSec(param=,[bool(){
       `state.ctrlList[-1].task .=
-        "%int tar=`getTarget(-1);if(#tar==0)ret;int va=0,k=1,a=1;";
+        "%int tar=`getTarget(-1);if(#tar==0)ret;int va=0,k=1,a=0;";
       if(!`stateParam(param=, "id", [`paraF_t(data=){
         if(
           !`fullExpression(
