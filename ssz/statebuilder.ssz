@@ -674,13 +674,13 @@ public &StateBuilder
         rtn .= ".v.setSF()";
         typ = 0;
       cond d < (double).consts.int_t::MIN:
-        rtn .= ''.consts.int_t::MIN;
+        rtn .= "(int)" .= ''.consts.int_t::MIN;
         typ = 2;
       cond d > (double).consts.int_t::MAX:
-        rtn .= ''.consts.int_t::MAX;
+        rtn .= "(int)" .= ''.consts.int_t::MAX;
         typ = 2;
       else:
-        rtn .= ''(int)d;
+        rtn .= "(int)" .= ''(int)d;
         typ = 2;
       }
     }
