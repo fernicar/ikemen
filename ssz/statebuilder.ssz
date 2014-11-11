@@ -917,9 +917,9 @@ public &StateBuilder
             }
             out .=
               (not ? "!" : "") .= "(.v.toI()"
-              .= (minequ ? "<=" : "<") .= ''min
+              .= (minequ ? ">=" : ">") .= ''min
               .= "&&" .= ".v.toI()"
-              .= (maxequ ? ">=" : ">") .= ''max .= ')';
+              .= (maxequ ? "<=" : "<") .= ''max .= ')';
           }
         else:
           out .= ".v.toI()" .= (not ? "!=" : "==");
