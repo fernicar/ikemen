@@ -4410,7 +4410,7 @@ public &Char
       cond i2 < 0:
         branch{
           float f = ((float)i1)**(float)i2;
-        cond .chars[`stVal.playerno]<>~mver0() == 1:
+        cond .cgi[`stVal.playerno].mver0 == 1:
           r.setF(f);
         else:
           .mes.veryUnsafeCopy!int, float?(r.i=, f=);
@@ -4426,7 +4426,7 @@ public &Char
             if(
               (
                 i2 & (int)1<<(
-                  bit == hb || .chars[`stVal.playerno]<>~mver0() == 1
+                  bit == hb || .cgi[`stVal.playerno].mver0 == 1
                   ? bit : (hb-1)-bit))
               != 0)
             {
@@ -4724,7 +4724,8 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF((float)((int)`facing*(int)`distX(e)));
+    float dist = (float)`facing * `distX(e);
+    .v.setF(.cgi[`stVal.playerno].mver0 == 1 ? dist : (float)(int)dist);
   }
   public void trP2DistY()
   {
@@ -4744,10 +4745,10 @@ public &Char
     }
     float dist = `distX(e);
     bool bar = dist == 0.0 || (dist < 0.0) ^ (e~facing < 0);
-    .v.setF()<, (float)(
-      (int)(
-        (float)`facing*(dist + (float)e~facing * (bar ? e~frontw : -e~backw))
-        - `frontw));
+    dist =
+      (float)`facing*(dist + (float)e~facing * (bar ? e~frontw : -e~backw))
+      - `frontw;
+    .v.setF(.cgi[`stVal.playerno].mver0 == 1 ? dist : (float)(int)dist);
   }
   public void trRootDistX()
   {
@@ -4755,7 +4756,8 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF((float)((int)`facing*(int)`distX(.chars[`playerno]<>)));
+    float dist = (float)`facing * `distX(.chars[`playerno]<>);
+    .v.setF(.cgi[`stVal.playerno].mver0 == 1 ? dist : (float)(int)dist);
   }
   public void trRootDistY()
   {
@@ -4772,7 +4774,8 @@ public &Char
       .v.setSF();
       ret;
     }
-    .v.setF((float)((int)`facing*(int)`distX(.c)));
+    float dist = (float)`facing * `distX(.c);
+    .v.setF(.cgi[`stVal.playerno].mver0 == 1 ? dist : (float)(int)dist);
   }
   public void trParentDistY()
   {
@@ -5675,7 +5678,7 @@ public void Explod::setPos(&.Char c=)
       if(`postype == 3) `offsetx *= -1.0;
       `postype = 5;
     else:
-      if(`postype == 2){
+      if(`postype == 2 && c.mver0() != 1){
         `postype = 4;
         c.setPos!`self?(`=, `postype, `offsetx, `offsety, `relativef);
         break, break;
@@ -6680,7 +6683,7 @@ void anim()
 {
   loop{index i = 0; while; do:
     loop{index j = 0; while; do:
-      if(.projs[i][j].id >= 0) .projs[i][j].anime(.chars[i]<>~mver0() != 1, i);
+      if(.projs[i][j].id >= 0) .projs[i][j].anime(.cgi[i].mver0 != 1, i);
       j++;
     while j < #.projs[i]:}
     i++;
@@ -6774,7 +6777,7 @@ public float action(
       .addAnimList(
         .topanims=, .superanim, 5, .superposx, .superposy, false,
         (float).superfacing, 1.0, 0.0, false,
-        .chars[.superplayer]<>~mver0() != 1, 1.0, 1.0, -1, 0, true,
+        .cgi[.superplayer].mver0 != 1, 1.0, 1.0, -1, 0, true,
         .superpmap, 0, 0, 0.0);
       if(.superanim~ani.loopend) .superanim.new(0);
     }
@@ -6784,7 +6787,7 @@ public float action(
       loop{index i = 0; while; do:
         loop{index j = #drawlist[i]-1; while; do:
           if(drawlist[i][j] < 0) continue;
-          .explods[i][drawlist[i][j]].update(.chars[i]<>~mver0() != 1, i);
+          .explods[i][drawlist[i][j]].update(.cgi[i].mver0 != 1, i);
           if(.explods[i][drawlist[i][j]].id == .com.IERR) branch{
           cond delI:
             .delIL(drawlist[i]=, j);

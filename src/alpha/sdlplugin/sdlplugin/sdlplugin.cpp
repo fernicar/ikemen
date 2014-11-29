@@ -622,7 +622,7 @@ TUserFunc(void, DecodePNG8, FILE* fp, int32_t* h, int32_t* w, Reference* out)
 	png_init_io(png_ptr, fp);
 	png_set_sig_bytes(png_ptr, 8);
 	png_read_info(png_ptr, info_ptr);
-	uint32_t width, height;
+	png_uint_32 width, height;
 	int bit_depth, color_type;
 	if(
 		png_get_IHDR(
@@ -2721,7 +2721,7 @@ TUserFunc(uint32_t, LoadPngTexture, FILE* fp, int32_t* h, int32_t* w)
 	png_init_io(png_ptr, fp);
 	png_set_sig_bytes(png_ptr, 8);
 	png_read_info(png_ptr, info_ptr);
-	uint32_t width, height;
+	png_uint_32 width, height;
 	int bit_depth, color_type;
 	uint32_t texid = 0;
 	if(

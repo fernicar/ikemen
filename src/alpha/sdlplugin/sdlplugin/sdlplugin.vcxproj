@@ -68,7 +68,7 @@
       <Optimization>Full</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>D:\d\lib\glew\include;D:\d\lib\SDL2\include;D:\d\lib\SDL2\SDL2_image\include;D:\d\lib\SDL2\SDL2_ttf\include;D:\d\lib\lpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\d\lib\glew\include;D:\d\lib\SDL2\include;D:\d\lib\SDL2\SDL2_image\include;D:\d\lib\SDL2\SDL2_ttf\include;D:\d\lib\lpng;D:\d\lib\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>sdlplugin.def</ModuleDefinitionFile>
