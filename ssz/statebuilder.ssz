@@ -1945,7 +1945,7 @@ public &StateBuilder
         out .= obj .= "stVal.hb.getYaccel()";
         typ = 1;
       cond .s.equ("hitid", token) || .s.equ("chainid", token):
-        out .= "(int)0";
+        out .= obj .= "trHitId()";
         typ = 2;
       cond .s.equ("guarded", token):
         out .= obj .= "stVal.hb.guarded";

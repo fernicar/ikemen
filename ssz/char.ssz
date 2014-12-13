@@ -5297,6 +5297,10 @@ public &Char
   {
     ret `stVal.mov != .MovTy::H ? -`stVal.hb.yvel : 0.0;
   }
+  public int trHitId()
+  {
+    ret `stVal.hb.hitid > 0 ? `stVal.hb.hitid : 0;
+  }
   public void trProjTime(|.ProjContact pct)
   {
     if(.v.isSF()) ret;
