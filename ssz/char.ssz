@@ -3955,7 +3955,7 @@ public &Char
     sou~sound = w;
     sou~chrx = x;
     branch{
-      int vol = .m.max!int?(0, .m.min!int?(51200, vo));
+      int vol = .m.max!int?(0, .m.min!int?(25600, vo));
     cond `mver0() == 1:
       sou~setVol(!f ? `sysivar[.iVOLUME] * vol / 100 : 256);
     else:
