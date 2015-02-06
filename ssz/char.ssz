@@ -3955,10 +3955,11 @@ public &Char
     sou~sound = w;
     sou~chrx = x;
     branch{
+      int vol = .m.max!int?(0, .m.min!int?(65538, vo));
     cond `mver0() == 1:
-      sou~setVol(!f ? `sysivar[.iVOLUME]*vo/100 : 256);
+      sou~setVol(!f ? `sysivar[.iVOLUME] * vol / 100 : 256);
     else:
-      sou~setVol(vo + (!f ? `sysivar[.iVOLUME] : 256));
+      sou~setVol(vol + (!f ? `sysivar[.iVOLUME] : 256));
     }
     sou~loop_ = lp;
     sou~lowpriority = lw;
