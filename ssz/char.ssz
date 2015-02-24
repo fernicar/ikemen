@@ -3406,7 +3406,10 @@ public &Char
           cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
             `trChangeState(0, -1, -1);
           }
-          if(`inguarddist && `sf(.sfGUARD) && !`inGuardState()){
+          if(
+            `inguarddist && `sf(.sfGUARD) && `cmd~buffer~B > 0
+            && !`inGuardState())
+          {
             `trChangeState(120, -1, -1);
           }
         }
