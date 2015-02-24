@@ -3356,18 +3356,18 @@ public &Char
     if(#`cmd == 0) p = false;
     `acttmp = -(int)p * 2;
     `sysivar[.iSYSFLAG] &= !.sfGUARD;
+    if(
+      !(`isKO() || `ctrlOver()) && (`ctrl || `stVal.no == 52)
+      && `stVal.mov == .MovTy::I && #`cmd > 0
+      && (.com.autoguard[`playerno] || `cmd~buffer~B > 0) && (
+        (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+        || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+        || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))
+    {
+      `sysivar[.iSYSFLAG] |= .sfGUARD;
+    }
     if(!p){
       if(#`palfx > 0) `palfx~step();
-      if(
-        !(`isKO() || `ctrlOver()) && (`ctrl || `stVal.no == 52)
-        && `stVal.mov == .MovTy::I && #`cmd > 0
-        && (.com.autoguard[`playerno] || `cmd~buffer~B > 0) && (
-          (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-          || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-          || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))
-      {
-        `sysivar[.iSYSFLAG] |= .sfGUARD;
-      }
       if(`keyctrl && #`cmd > 0) branch{
         branch{
         cond `stVal.typ == .StTy::A:
