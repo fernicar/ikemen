@@ -1425,8 +1425,7 @@ const int lsFRONTWCHANGE  = 0b00000000000001000000000000000000;
 const int lsBACKWCHANGE   = 0b00000000000010000000000000000000;
 const int lsFEDGECHANGE   = 0b00000000000100000000000000000000;
 const int lsBEDGECHANGE   = 0b00000000001000000000000000000000;
-const int lsGUARD         = 0b00000000010000000000000000000000;
-const int lsDESTROY       = 0b00000000100000000000000000000000;
+const int lsDESTROY       = 0b00000000010000000000000000000000;
 
 const int lasMask =
   lsNOAUTOTURN | lsNOWALK | lsNOSTANDGUARD | lsNOCROUCHGUARD | lsNOAIRGUARD
@@ -1453,6 +1452,7 @@ const int sfAIRJUMP         = 0b00000000000000000000000000000001;
 const int sfOVER            = 0b00000000000000000000000000000010;
 const int sfKO              = 0b00000000000000000000000000000100;
 const int sfKO_ROUND_MIDDLE = 0b00000000000000000000000000001000;
+const int sfGUARD           = 0b00000000000000000000000000010000;
 
 &PlayerList<_t>
 {
@@ -2506,9 +2506,13 @@ public &Char
     ^&.com.PalFX pfx = `getPalfx();
     ret pfx~remap;
   }
-  public bool ls(int mask)
+  /bool ls(int mask)
   {
     ret (`sysivar[.iSPECIALFLAG] & mask) == mask;
+  }
+  /bool sf(int mask)
+  {
+    ret (`sysivar[.iSYSFLAG] & mask) == mask;
   }
   public ^/char load(^/char def)
   {:<-
@@ -3223,39 +3227,38 @@ public &Char
       `ticOldY = `sysfvar[.fY];
     }
   }
-  public int roundState()
+  /int roundState()
   {
     ret
       .com.intro > .fight~ro.ctrl_time+1 ? 0
       : .fight~ro.cur == 0 ? 1
       : !.roundEnd() ? 2
       : (
-        .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime) && (
-          (.chars[`playerno]<>~sysivar[.iSYSFLAG] & .sfOVER) != 0
-          || .chars[`playerno]<>~isKO())
+        .com.intro < -(.fight~ro.over_hittime + .fight~ro.over_waittime)
+        && (.chars[`playerno]<>~sf(.sfOVER) || .chars[`playerno]<>~isKO())
         ? 4 : 3);
   }
-  public bool isKO()
+  /bool isKO()
   {
-    ret (`sysivar[.iSYSFLAG] & .sfKO) != 0;
+    ret `sf(.sfKO);
   }
-  public bool isAlive()
+  /bool isAlive()
   {
     ret !`isKO();
   }
-  public bool isPaused()
+  /bool isPaused()
   {
     ret `acttmp <= -2;
   }
-  public bool isHitPaused()
+  /bool isHitPaused()
   {
     ret `sysivar[.iHITPAUSETIME] > 0;
   }
-  public bool isActive()
+  /bool isActive()
   {
     ret !`isPaused() && !`isHitPaused();
   }
-  public bool isBound()
+  /bool isBound()
   {
     loop{index i = 0; while; do:
       if(`sysivar[.iBINDTOID] == `stVal.hb.by[i].id) ret true;
@@ -3263,15 +3266,15 @@ public &Char
     while i < #`stVal.hb.by:}
     ret false;
   }
-  public bool isFall()
+  /bool isFall()
   {
     ret `stVal.hb.fallf;
   }
-  public float getHeight()
+  /float getHeight()
   {
     ret (float)`sysivar[.iHEIGHT];
   }
-  public float getEdge(float base)
+  /float getEdge(float base)
   {
     ret
       base + (
@@ -3280,41 +3283,47 @@ public &Char
         : `stVal.typ == .StTy::L ? 2.0
         : 0.0);
   }
-  public float defFW()
+  /float defFW()
   {
     ret
       (float)(
         `stVal.typ == .StTy::A
         ? `sysivar[.iAIR_FRONT] : `sysivar[.iGROUND_FRONT]);
   }
-  public float defBW()
+  /float defBW()
   {
     ret
       (float)(
         `stVal.typ == .StTy::A
         ? `sysivar[.iAIR_BACK] : `sysivar[.iGROUND_BACK]);
   }
-  public float offsetX()
+  /float offsetX()
   {
     ret (float)`sysivar[.iDRAW_OFFSETX]*(float)`facing + `offsetx;
   }
-  public float offsetY()
+  /float offsetY()
   {
     ret (float)`sysivar[.iDRAW_OFFSETY] + `offsety;
   }
-  public int palno()
+  /int palno()
   {
     ret `helperindex == 0 || `mver0() == 1 ? .cgi[`playerno].palno : 1;
   }
-  public int mver0()
+  /int mver0()
   {
     ret .cgi[`playerno].mver0;
   }
-  public bool landCondition()
+  /bool landCondition()
   {
     ret
       `stVal.phy == .StTy::A && `isActive() && `sysfvar[.fVY] > 0.0
       && `sysfvar[.fY] >= 0.0 && `stVal.no != 105;
+  }
+  /bool inGuardState()
+  {
+    ret
+      `stVal.no == 120 || (`stVal.no >= 130 && `stVal.no <= 132)
+      || `stVal.no == 140 || (`stVal.no >= 150 && `stVal.no <= 155);
   }
   public void furimuki()
   {
@@ -3330,9 +3339,9 @@ public &Char
       `setFacing(-`facing);
     }
   }
-  public bool isHouchied()
+  /bool isHouchied()
   {
-    ret (`sysivar[.iSYSFLAG] & .sfKO_ROUND_MIDDLE) != 0;
+    ret `sf(.sfKO_ROUND_MIDDLE);
   }
   public void action()
   {
@@ -3342,8 +3351,19 @@ public &Char
       : .pause > 0 && `sysivar[.iPAUSEMOVETIME] == 0;
     if(#`cmd == 0) p = false;
     `acttmp = -(int)p * 2;
+    `sysivar[.iSYSFLAG] &= !.sfGUARD;
     if(!p){
       if(#`palfx > 0) `palfx~step();
+      if(
+        !(`isKO() || `ctrlOver()) && (`ctrl || `stVal.no == 52)
+        && `stVal.mov == .MovTy::I && #`cmd > 0
+        && (.com.autoguard[`playerno] || `cmd~buffer~B > 0) && (
+          (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
+          || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
+          || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))
+      {
+        `sysivar[.iSYSFLAG] |= .sfGUARD;
+      }
       if(`keyctrl && #`cmd > 0) branch{
         branch{
         cond `stVal.typ == .StTy::A:
@@ -3357,7 +3377,7 @@ public &Char
         cond !.roundEnd() && `stVal.typ == .StTy::S && `cmd~buffer~U > 0:
           if(`stVal.no != 40) `trChangeState(40, -1, -1);
         cond
-          `stVal.typ == .StTy::A && (`sysivar[.iSYSFLAG]&.sfAIRJUMP) != 0
+          `stVal.typ == .StTy::A && `sf(.sfAIRJUMP)
           && `sysfvar[.fY] <= (float)`sysivar[.iAIRJUMP_HEIGHT]
           && `sysivar[.iAIRJUMP_CNT] < `sysivar[.iAIRJUMP_NUM]
           && `cmd~buffer~U > 0
@@ -3375,21 +3395,14 @@ public &Char
             if(`stVal.no != 12) `trChangeState(12, -1, -1);
           cond
             !`ls(.lsNOWALK) && `stVal.typ == .StTy::S && (
-              `cmd~buffer~F > 0 || (
-                (!`inguarddist || `ls(.lsNOSTANDGUARD)) && `cmd~buffer~B > 0))
+              `cmd~buffer~F > 0
+              || (!(`inguarddist && `sf(.sfGUARD)) && `cmd~buffer~B > 0))
             :
             if(`stVal.no != 20) `trChangeState(20, -1, -1);
           cond `stVal.no == 20 && (`cmd~buffer~F < 0 && `cmd~buffer~B < 0):
             `trChangeState(0, -1, -1);
           }
-          if(
-            `inguarddist && `stVal.mov == .MovTy::I
-            && (`stVal.no < 120 || `stVal.no >= 160) && (
-              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD)))
-            && `cmd~buffer~B > 0)
-          {
+          if(`inguarddist && `sf(.sfGUARD) && !`inGuardState()){
             `trChangeState(120, -1, -1);
           }
         }
@@ -3409,19 +3422,14 @@ public &Char
           if(!`isKO() && `sysivar[.iLIFE] > 0){
             `sysivar[.iSYSFLAG] &= !(.sfOVER | .sfKO_ROUND_MIDDLE);
           }
-          if(`stVal.no == 5150 || (`sysivar[.iSYSFLAG] & .sfOVER) != 0){
+          if(`stVal.no == 5150 || `sf(.sfOVER)){
             `sysivar[.iSYSFLAG] |= .sfKO_ROUND_MIDDLE;
           }
         }
-        if(
-          (`stVal.no >= 170 && `stVal.no < 190)
-          || (`stVal.no >= 5150 && `stVal.no < 5160))
-        {
-          `sysivar[.iSYSFLAG] |= .sfOVER;
-        }
+        if(`stVal.no == 5150) `sysivar[.iSYSFLAG] |= .sfOVER;
         `sysivar[.iSPECIALFLAG] =
           `player ? (
-            (!`isKO() || (`sysivar[.iSYSFLAG] & .sfOVER) == 0)
+            (!`isKO() || !`sf(.sfOVER))
             ? (
               .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY
               | (`roundState() > 0 ? .lsPLAYERPUSH : 0))
@@ -3636,8 +3644,7 @@ public &Char
       }
       if(
         (`acttmp > 0 && `stVal.mov != .MovTy::H) || (
-          `roundState() == 2 && `isKO()
-          && (`sysivar[.iSYSFLAG] & .sfOVER) != 0))
+          `roundState() == 2 && `isKO() && `sf(.sfOVER)))
       {
         `outTarget(true);
       }
@@ -3645,19 +3652,8 @@ public &Char
         (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
         && `acttmp > 0 ? 1 : 0;
       `ho = -1;
-      if(
-        !`isKO() && (
-          .m.inRange!int?(120, 159, `stVal.no) || (
-            `acttmp > 0 && (`canCtrl() || `stVal.no == 52)
-            && `stVal.mov == .MovTy::I && #`cmd > 0
-            && (.com.autoguard[`playerno] || `cmd~buffer~B > 0) && (
-              (`stVal.typ == .StTy::S && !`ls(.lsNOSTANDGUARD))
-              || (`stVal.typ == .StTy::C && !`ls(.lsNOCROUCHGUARD))
-              || (`stVal.typ == .StTy::A && !`ls(.lsNOAIRGUARD))))))
-      {
-        `sysivar[.iSPECIALFLAG] |= .lsGUARD;
-      }
       if(`acttmp > 0){
+        if(`inGuardState()) `sysivar[.iSYSFLAG] |= .sfGUARD;
         if(`stVal.mov != .MovTy::H){
           if(`hittmp > 0) `hittmp = 0;
           `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
@@ -4628,9 +4624,6 @@ public &Char
     `stVal.no = n;
     `stVal.playerno = p;
     `stVal.time = 0;
-    if((n >= 170 && n < 190) || (n >= 5150 && n < 5160)){
-      `sysivar[.iSYSFLAG] |= .sfOVER;
-    }
     ^&`State st = .states[`stVal.playerno].get(`stVal.no);
     `stateDef = #st > 0 ? st~stateDef : `dummy;
     `state = #st > 0 ? st~state : `dummy;
@@ -4700,7 +4693,7 @@ public &Char
   public ^self getP2()
   {
     ^`self e = .players.enemyNear(`=, 0, true);
-    if(#e > 0 && e~isKO() && (e~sysivar[.iSYSFLAG] & .sfOVER) != 0){
+    if(#e > 0 && e~isKO() && e~sf(.sfOVER)){
       e.new(0);
     }
     ret e;
@@ -4873,9 +4866,8 @@ public &Char
       }
     }
     if(
-      #.chars[foo] == 0 || (
-        no == 2 && .chars[foo]<>~isKO()
-        && (.chars[foo]<>~sysivar[.iSYSFLAG] & .sfOVER) != 0))
+      #.chars[foo] == 0
+      || (no == 2 && .chars[foo]<>~isKO() && .chars[foo]<>~sf(.sfOVER)))
     {
       ret false;
     }
@@ -5481,7 +5473,7 @@ public &Char
   public bool isOver()
   {
     ret
-      (`sysivar[.iSYSFLAG] & .sfOVER) != 0 || (
+      `sf(.sfOVER) || (
         `ctrlOver() && `ctrl
         && `stVal.typ != .StTy::A && `stVal.phy != .StTy::A);
   }
@@ -5938,7 +5930,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           by.ls(.lsGETHIT)
           || (by.cs1tmp && by.stVal.playerno != hit.player)))) ret false;
     bool guard =
-      (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.ls(.lsGUARD)
+      (pro != 0 || !by.ls(.lsUNGUARDABLE)) && `pyr.sf(.sfGUARD)
       && (!`pyr.ls(.lsGETHIT) || `pyr.stVal.hb.guarded);
     hitting = `pyr.stVal.hitCheck(hit=, guard);
     bool p2s = false;
@@ -6761,8 +6753,7 @@ public float action(
     branch{
     cond #c > 0:
       hbuf .=
-        (c<>~getcombo != 0 || c<>~stVal.mov == .MovTy::H)
-        && (c<>~sysivar[.iSYSFLAG] & .sfOVER) == 0;
+        (c<>~getcombo != 0 || c<>~stVal.mov == .MovTy::H) && !c<>~sf(.sfOVER);
     else:
       hbuf .= false;
     }
@@ -7106,10 +7097,8 @@ public float action(
                   * (float).com.time * (1.0/60.0) * .com.turnsRecoveryRate);
               .m.limMax!int?(c.sysivar[.iLIFE]=, c.sysivar[.iLIFEMAX]);
             }
-            if(
-              (c.sysivar[.iSYSFLAG] & .sfOVER) == 0
-              && c.isActive() && !c.isKO())
-            {
+            if(!c.sf(.sfOVER) && c.isActive() && !c.isKO()){
+              c.sysivar[.iSYSFLAG] |= .sfOVER;
               c.trSelfState(c.isWin() ? 180 : (c.isLose() ? 170 : 175), -1, 1);
             }
           }];

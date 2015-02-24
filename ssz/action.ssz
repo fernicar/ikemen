@@ -137,9 +137,9 @@ public &Action
 
 public &DrawnClsn
 {
-  public ^&.Rect clsn;
+  public ^/&.Rect clsn;
   public float x, y, xscale, yscale;
-  public void set(^&.Rect cl, float x, float y, float xs, float ys)
+  public void set(^/&.Rect cl, float x, float y, float xs, float ys)
   {
     `clsn = cl;
     `x = (x - .com.camerax) * .com.scale;
@@ -147,7 +147,7 @@ public &DrawnClsn
     `xscale = xs * .com.scale;
     `yscale = ys * .com.scale;
   }
-  public void draw(&.sff.Sprite spr=, int alpha)
+  /void draw(&.sff.Sprite spr=, int alpha)
   {
     &.sdl.Rect til.set(0, 0, 0, 0);
     loop{
