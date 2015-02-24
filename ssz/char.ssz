@@ -3274,11 +3274,11 @@ public &Char
   {
     ret (float)`sysivar[.iHEIGHT];
   }
-  /float getEdge(float base, bool st)
+  /float getEdge(float base, bool actually)
   {
     ret
       base + (
-        (st ? `stMver0() : `mver0()) == 1 ? 0.0
+        actually && `stMver0() == 1 ? 0.0
         : `stVal.typ == .StTy::A ? 1.0
         : `stVal.typ == .StTy::L ? 2.0
         : 0.0);
@@ -3608,11 +3608,11 @@ public &Char
       float min, max;
       branch{
       cond `facing > 0:
-        min = .com.xmin + `getEdge(`bedge, false);
-        max = .com.xmax - `getEdge(`fedge, false);
+        min = .com.xmin + `getEdge(`bedge, true);
+        max = .com.xmax - `getEdge(`fedge, true);
       else:
-        min = .com.xmin + `getEdge(`fedge, false);
-        max = .com.xmax - `getEdge(`bedge, false);
+        min = .com.xmin + `getEdge(`fedge, true);
+        max = .com.xmax - `getEdge(`bedge, true);
       }
       .m.limRange!float?(x=, min, max);
     }
@@ -3695,19 +3695,19 @@ public &Char
       float min, max;
       branch{
       cond `facing > 0:
-        min = .com.xmin + `getEdge(`bedge, false);
-        max = .com.xmax - `getEdge(`fedge, false);
+        min = .com.xmin + `getEdge(`bedge, true);
+        max = .com.xmax - `getEdge(`fedge, true);
       else:
-        min = .com.xmin + `getEdge(`fedge, false);
-        max = .com.xmax - `getEdge(`bedge, false);
+        min = .com.xmin + `getEdge(`fedge, true);
+        max = .com.xmax - `getEdge(`bedge, true);
       }
       .m.limRange!float?(`drawX=, min, max);
     }
     if(`ls(.lsMOVECAMERAX)){
       leftest = .m.max!float?(.com.xmin)<, .m.min!float?(
-        `drawX-`getEdge(`facing > 0 ? `bedge : `fedge, false), leftest);
+        `drawX-`getEdge(`facing > 0 ? `bedge : `fedge, true), leftest);
       rightest = .m.min!float?(.com.xmax)<, .m.max!float?(
-        `drawX+`getEdge(`facing > 0 ? `fedge : `bedge, false), rightest);
+        `drawX+`getEdge(`facing > 0 ? `fedge : `bedge, true), rightest);
       if(
         `acttmp > 0 && !`ls(.lsPOSFREEZEX)
         && (`sysivar[.iBINDTIME] == 0 || .m.isnan(`sysfvar[.fBINDPOSX])))
@@ -4891,7 +4891,7 @@ public &Char
     ret
       (int)(
         (`facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
-        - (`stMver0() == 1 ? `fedge : `getEdge(`fedge, true)));
+        - (`stMver0() == 1 ? `fedge : `getEdge(`fedge, false)));
   }
   public float trFrontEdge()
   {
@@ -4908,7 +4908,7 @@ public &Char
     ret
       (int)(
         (`facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
-        - (`stMver0() == 1 ? `bedge : `getEdge(`bedge, true)));
+        - (`stMver0() == 1 ? `bedge : `getEdge(`bedge, false)));
   }
   public float trBackEdge()
   {
@@ -6213,11 +6213,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
     *`top.self p = `top;
     branch{
     cond pyr.facing > 0:
-      pxmi = .com.xmin + pyr.getEdge(pyr.bedge, false);
-      pxma = .com.xmax - pyr.getEdge(pyr.fedge, false);
+      pxmi = .com.xmin + pyr.getEdge(pyr.bedge, true);
+      pxma = .com.xmax - pyr.getEdge(pyr.fedge, true);
     else:
-      pxmi = .com.xmin + pyr.getEdge(pyr.fedge, false);
-      pxma = .com.xmax - pyr.getEdge(pyr.bedge, false);
+      pxmi = .com.xmin + pyr.getEdge(pyr.fedge, true);
+      pxma = .com.xmax - pyr.getEdge(pyr.bedge, true);
     }
     pyr.inguarddist = false;
     pyr.sysivar[.iSPECIALFLAG] &= !.lsGETHIT;
@@ -6368,11 +6368,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           float l, r, x = p~c~sysfvar[.fX];
           branch{
           cond p~c~facing > 0:
-            l = .com.xmin + p~c~getEdge(p~c~bedge, false);
-            r = .com.xmax - p~c~getEdge(p~c~fedge, false);
+            l = .com.xmin + p~c~getEdge(p~c~bedge, true);
+            r = .com.xmax - p~c~getEdge(p~c~fedge, true);
           else:
-            l = .com.xmin + p~c~getEdge(p~c~fedge, false);
-            r = .com.xmax - p~c~getEdge(p~c~bedge, false);
+            l = .com.xmin + p~c~getEdge(p~c~fedge, true);
+            r = .com.xmax - p~c~getEdge(p~c~bedge, true);
           }
           .m.limRange!float?(p~c~sysfvar[.fX]=, l, r);
         }
