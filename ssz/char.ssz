@@ -1888,7 +1888,7 @@ public &Projectile
         if(#`ani == 0 && `id >= 0) `id = !`id;
       }
     }
-    if(`paused() || `hitpause != 0) ret;
+    if(`paused(playerNo) || `hitpause != 0) ret;
     if(.com.tickFrame()){
       `ticOldX = `x;
       `ticNewX = `x + `velocityx*(float)`facing;
@@ -1977,9 +1977,9 @@ public &Projectile
       i++;
     while `hits >= 0 && i < playerNo:}
   }
-  bool paused()
+  bool paused(int playerNo)
   {
-    branch{
+    if(!.chars[playerNo]<>~isPaused()) branch{
     cond .super > 0:
       if(`supermovetime == 0) ret true;
     cond .pause > 0:
@@ -1987,7 +1987,7 @@ public &Projectile
     }
     ret false;
   }
-  public void tick()
+  public void tick(int playerNo)
   {
     if(`timemiss < 0){
       `timemiss = !`timemiss;
@@ -2003,7 +2003,7 @@ public &Projectile
       `hit.air_juggle = 0;
     }
     if(`hits < 0) `hitpause = 0;
-    if(`paused()) ret;
+    if(`paused(playerNo)) ret;
     if(`hitpause <= 0){
       if(`removetime > 0) `removetime--;
       if(`timemiss > 0) `timemiss--;
@@ -2011,7 +2011,8 @@ public &Projectile
   }
   public void anime(bool oVer, int playerNo)
   {
-    if(.com.tickFrame() && #`ani > 0 && !`paused() && `hitpause == 0){
+    bool notpause = `hitpause <= 0 && !`paused(playerNo);
+    if(.com.tickFrame() && #`ani > 0 && notpause){
       `ani~ani.updateSprite();
     }
     if(.com.clsndraw && #`ani > 0){
@@ -2028,9 +2029,8 @@ public &Projectile
           clsn, `x, `y, (float)`facing*`clsnscalex, `clsnscaley);
       }
     }
-    bool notpause = `hitpause <= 0 && !`paused();
-    if(.com.tickNextFrame() && !`paused()){
-      if(#`ani > 0 && `hitpause == 0) `ani~ani.action();
+    if(.com.tickNextFrame() && (notpause || !`paused(playerNo))){
+      if(#`ani > 0 && notpause) `ani~ani.action();
       branch{
       cond `hitpause > 0:
         `hitpause--;
@@ -6677,7 +6677,10 @@ void rootAction()
     while i < #.projs:}
     .players.getHit(false);
     .players.getHit(true);
-    .projs:<-:<-[void(p=){if(p.id != .com.IERR) p.tick();}];
+    loop{index i = 0; while; do:
+      .projs[i]:<-[void(p=){if(p.id != .com.IERR) p.tick(i);}];
+      i++;
+    while i < #.projs:}
     .players.tick();
   }
 }

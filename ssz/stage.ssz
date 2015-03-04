@@ -660,7 +660,7 @@ public &Stage
       (`drawOffsetY + (float)(`localh - 240)*`localscl)
       * scl**(
         (
-          160.0*(1.6875*(float)`localw + (float)`localh) / (float)`localw
+          (360.0 * (float)`localw + 160.0 * (float)`localh) / (float)`localw
           + `drawOffsetY)
         / 480.0);
     loop{index i = 0; while; do:
