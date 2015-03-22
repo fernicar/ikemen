@@ -499,7 +499,7 @@ public &PalFX
   public float color;
   public int invertall;
   public int negType;
-  public %index remap;
+  public %*index remap;
   public int emulr, emulg, emulb;
   public int eaddr, eaddg, eaddb;
   public float ecolor;
