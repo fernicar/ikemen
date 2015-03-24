@@ -447,10 +447,8 @@ public &Stage
     }
     `localscl = (float).com.GameWidth / (float)`localw;
     if(!.m.isfinite(`leftbound)) `leftbound = 1000.0/`localscl;
-    `leftbound -= (float)`localw / 2.0;
     `leftbound *= `localscl;
     if(!.m.isfinite(`rightbound)) `rightbound = 1000.0/`localscl;
-    `rightbound -= (float)`localw / 2.0;
     `rightbound *= `localscl;
     loop{
       index i = 0, link = 0, zlink = -1;
