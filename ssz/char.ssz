@@ -2704,7 +2704,8 @@ public &Char
         i++;
       while i < .sff.NumCharPalletes:
         if(tmp == 0){
-          ^&.sff.Sprite spr = .cgi[`playerno].sf~getSprite(9000, 0);
+          ^&.sff.Sprite spr;
+          if(`mver0() != 1) spr = .cgi[`playerno].sf~getSprite(9000, 0);
           if(#spr == 0) spr = .cgi[`playerno].sf~getSprite(0, 0);
           if(#spr > 0){
             .s.copy!uint?(

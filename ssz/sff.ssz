@@ -731,9 +731,9 @@ public &Sff
         if(
           !spriteList[i].readHeaderV2(
             f=, misc=, size=, lofs, tofs, indexOfPrevious=))
-          {
-            ret .com.FileReadError;
-          }
+        {
+          ret .com.FileReadError;
+        }
       }
       branch{
         bool ps;
