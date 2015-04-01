@@ -2715,6 +2715,7 @@ public &Char
         }
       }
     else:
+      tmp = 1;
       loop{int i = 0; while; do:
         .cgi[`playerno].palExist[i] =
           #.cgi[`playerno].sf~palList.palTable.get(
@@ -2774,7 +2775,8 @@ public &Char
         .cgi[`playerno].palno = 1;
         .cgi[`playerno].palExist[0] = .cgi[`playerno].palSelectable[0] = true;
       }
-   }
+    }
+    if(tmp == 0) .cgi[`playerno].drawpalno = -1;
     ret true;
   }
   public void clearDef()
