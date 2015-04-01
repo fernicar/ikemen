@@ -22,6 +22,7 @@ function addWithRefresh(addFn, text)
   local nextRefresh = os.clock() + 0.02
   for i, c
     in ipairs(script.randomtest.strsplit('\n',
+                                         text:gsub('^%s*(.-)%s*$', '%1')))
   do
     addFn(c)
     if os.clock() >= nextRefresh then
