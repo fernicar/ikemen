@@ -16,11 +16,36 @@ setDebugScript('script/debug.lua')
 selectColumns = 10
 
 
+require('script.randomtest')
+
+function addWithRefresh(addFn, text)
+  local nextRefresh = os.clock() + 0.02
+  for i, c
+    in ipairs(script.randomtest.strsplit('\n',
+  do
+    addFn(c)
+    if os.clock() >= nextRefresh then
+      refresh()
+      nextRefresh = os.clock() + 0.02
+    end
+  end
+end
+
+orgAddChar = addChar
+orgAddStage = addStage
+
+function addChar(text)
+  addWithRefresh(orgAddChar, text)
+end
+
+function addStage(text)
+  addWithRefresh(orgAddStage, text)
+end
+
 assert(loadfile('script/select.lua'))()
 
-math.randomseed(os.time())
 
-require('script.randomtest')
+math.randomseed(os.time())
 
 ------------------------------------------------------------
 sysSff = sffNew('script/system.sff')
