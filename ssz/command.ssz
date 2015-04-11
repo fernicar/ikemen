@@ -926,7 +926,7 @@ public &Command
       j++;
     while j < #`hold:
       if((!allHold || notHeld > 1) && `cmdidx == #`cmd - 1){
-        ret `cmd[`cmdidx].slash ? true : false;
+        ret `cmd[`cmdidx].slash;
       }
     }
     if(!ai && `cmd[`cmdidx].slash){
