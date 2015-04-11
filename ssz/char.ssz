@@ -2703,14 +2703,18 @@ public &Char
         }
         i++;
       while i < .sff.NumCharPalletes:
-        if(tmp == 0){
-          ^&.sff.Sprite spr;
-          if(`mver0() != 1) spr = .cgi[`playerno].sf~getSprite(9000, 0);
-          if(#spr == 0) spr = .cgi[`playerno].sf~getSprite(0, 0);
-          if(#spr > 0){
-            .s.copy!uint?(
-              .cgi[`playerno].sf~palList.get(0),
-              .cgi[`playerno].sf~palList.get(spr~palidx));
+        if(tmp == 0) branch{
+        cond `mver0() == 1:
+          .cgi[`playerno].sf~palList.palTable.remove((uint)1 << 0d16 | 0x1);
+        else:
+          {
+            ^&.sff.Sprite spr = .cgi[`playerno].sf~getSprite(9000, 0);
+            if(#spr == 0) spr = .cgi[`playerno].sf~getSprite(0, 0);
+            if(#spr > 0){
+              .s.copy!uint?(
+                .cgi[`playerno].sf~palList.get(0),
+                .cgi[`playerno].sf~palList.get(spr~palidx));
+            }
           }
         }
       }
@@ -2776,7 +2780,6 @@ public &Char
         .cgi[`playerno].palExist[0] = .cgi[`playerno].palSelectable[0] = true;
       }
     }
-    if(tmp == 0) .cgi[`playerno].drawpalno = -1;
     ret true;
   }
   public void clearDef()

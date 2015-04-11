@@ -686,13 +686,14 @@ public &Command
     public int tametime = 1;
     public bool slash = false, greater = false, direction = false;
     public bool padding = false;
-    public bool isDirection()
+    /bool isDirection()
     {
       ret !`slash && #`key == 1 && `key[0] < .Key::a;
     }
   }
   public ^/char name;
-  public %|.Key held;
+  public %^/|.Key hold;
+  public ^bool held;
   public %&CmdButton cmd;
   public index cmdidx = 0, tameidx = -1;
   public int time = 1, current = 0;
@@ -839,33 +840,10 @@ public &Command
       j++;
     while j < #cmds:
     }
-  }
-  bool slacheck(&.Buffer kbuf, &`CmdButton cmd1, &`CmdButton cmd2)
-  {
-    if(!cmd2.slash) ret true;
-    loop{index i = 0; while; do:
-      if(kbuf.keyState(cmd1.key[i]) > 1) loop{index j = 0; while; do:
-        if(cmd1.key[i] == cmd2.key[j]) ret false;
-        j++;
-      while j < #cmd2.key:
-      }
-      i++;
-    while i < #cmd1.key:
-    }
-    if(cmd1.slash){
-      loop{index i = 0; while; do:
-        if(kbuf.keyState(cmd1.key[i]) == 2) break, break;
-        i++;
-      while i < #cmd1.key:
-      }
-      loop{index i = 0; while; do:
-        if(kbuf.keyState(cmd2.key[i]) <= 1) break, break;
-        i++;
-      while i < #cmd2.key:
-      }
-      ret false;
-    }
-    ret true;
+    `hold.new(0);
+    `cmd:<-[void(c){if(c.slash) `hold .= c.key;}];
+    `held.new(#`hold);
+    `held:<-[void(h=){h = false;}];
   }
   bool isDToB(&`CmdButton cmd1, &`CmdButton cmd2)
   {:<-
@@ -898,7 +876,7 @@ public &Command
     }
     ret foo(cmd1, cmd2);
   }
-  bool cmdChek(&.Buffer kbuf, bool ai)
+  bool cmdChek(&.Buffer kbuf, bool ai, ^bool holdTemp=)
   {
     ~$bool() fail = [bool(){
       branch{
@@ -916,30 +894,43 @@ public &Command
           j++;
         while j < #`cmd[`cmdidx-1].key:
           `clear();
-          ret `cmdChek(kbuf, ai);
+          ret self(kbuf, ai, holdTemp=);
         }
       }
       ret true;
     }];
-    if(`cmdidx > 0 && !`slacheck(kbuf, `cmd[`cmdidx-1], `cmd[`cmdidx])){
-      ret fail(::);
-    }
-    branch{
-    cond<sla> `cmd[`cmdidx].slash:
-      `held = `cmd[`cmdidx].key;
-    comm:
-      if(#`held > 0 && (!ai || `cmd[`cmdidx].slash)) loop{
-        index i = 0;
-        while;
-      do:
-        if(kbuf.keyState(`held[i]) > 0) break;
-        i++;
-      while i < #`held:
-        ret `cmdidx != 0 && `cmd[`cmdidx].slash;
+    if(#`hold > 0 && !ai) loop{
+      index j = 0;
+      if(#holdTemp == 0){
+        holdTemp.new((int).Key::ns + 1);
+        holdTemp:<-[void(t=){t = true;}];
       }
-    diff<sla>:
-      `cmdidx++;
-      ret true;
+      int notHeld = 0;
+      bool allHold = true;
+      while;
+    do:
+      loop{index i = 0; while; do:
+        branch{
+          int ks = kbuf.keyState(`hold[j][i]);
+        cond !`held[j] && holdTemp[(int)`hold[j][i]] && ks == 1:
+          `held[j] = true;
+          holdTemp[(int)`hold[j][i]] = false;
+        comm:
+          if(ks > 0) break, break;
+        }
+        i++;
+      while i < #`hold[j]:
+        allHold = false;
+      }
+      notHeld += (int)!`held[j];
+      j++;
+    while j < #`hold:
+      if((!allHold || notHeld > 1) && `cmdidx == #`cmd - 1){
+        ret `cmd[`cmdidx].slash ? true : false;
+      }
+    }
+    if(!ai && `cmd[`cmdidx].slash){
+      ret ++`cmdidx >= #`cmd || self(kbuf, ai, holdTemp=);
     }
     if(`tameidx != `cmdidx) branch{
     cond `cmd[`cmdidx].tametime > 1:
@@ -979,7 +970,7 @@ public &Command
       if(!foo) ret fail(::);
       `cmdidx++;
       if(`cmdidx < #`cmd && `isDToB(`cmd[`cmdidx-1], `cmd[`cmdidx])){
-        ret `cmdChek(kbuf, ai);
+        ret self(kbuf, ai, holdTemp=);
       }
     }
     ret true;
@@ -990,7 +981,8 @@ public &Command
     if(#`cmd == 0) ret;
     {
       int ocbt = `curbuftime;
-      if(#kbuf == 0 || !`cmdChek(kbuf<>, ai)){
+      ^bool holdTemp;
+      if(#kbuf == 0 || !`cmdChek(kbuf<>, ai, holdTemp=)){
         index foo = `tameidx == `cmdidx && `cmdidx == 0 ? 0 : -1;
         `clear();
         `tameidx = foo;
@@ -1018,11 +1010,12 @@ public &Command
     `tameidx = -1;
     `current = 0;
     `curbuftime = 0;
-    `held.new(0);
+    `held:<-[void(h=){h = false;}];
   }
   public void copy(`self c=)
   {
     `name = c.name;
+    `hold = c.hold;
     `held = c.held;
     `cmd = c.cmd;
     `cmdidx = c.cmdidx;
