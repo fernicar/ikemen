@@ -690,6 +690,14 @@ public &Command
     {
       ret !`slash && #`key == 1 && `key[0] < .Key::a;
     }
+    public void clear()
+    {
+      `key.new(0);
+      `tametime = 1;
+      `slash = false;
+      `greater = false;
+      `direction = false;
+    }
   }
   public ^/char name;
   public %^/|.Key hold;
@@ -710,13 +718,20 @@ public &Command
       ret '\0';
     }
     `cmd.new(0);
+    `hold.new(0);
     ^^/char cmds = .str.split(",", cmdstr);
     loop{
       index i = 0, j = 0;
       bool tilde = false;
       while;
     do:
-      `cmd.new[j];
+      branch{
+      cond #`cmd == 1 && `cmd~slash:
+        `hold .= `cmd~key;
+        `cmd~clear();
+      else:
+        `cmd.new[j];
+      }
       i = 0;
       switch(nextChar(cmds[j], i=)){
       case '>':
@@ -840,7 +855,6 @@ public &Command
       j++;
     while j < #cmds:
     }
-    `hold.new(0);
     `cmd:<-[void(c){if(c.slash) `hold .= c.key;}];
     `held.new(#`hold);
     `held:<-[void(h=){h = false;}];
@@ -906,7 +920,7 @@ public &Command
         holdTemp:<-[void(t=){t = true;}];
       }
       int notHeld = 0;
-      bool allHold = true;
+      bool allHold = true, anyHeld = false;
       while;
     do:
       loop{index i = 0; while; do:
@@ -923,10 +937,11 @@ public &Command
         allHold = false;
       }
       notHeld += (int)!`held[j];
+      anyHeld |= `held[j];
       j++;
     while j < #`hold:
       if((!allHold || notHeld > 1) && `cmdidx == #`cmd - 1){
-        ret `cmd[`cmdidx].slash;
+        ret (anyHeld || `cmdidx > 0) && `cmd[`cmdidx].slash;
       }
     }
     if(!ai && `cmd[`cmdidx].slash){
