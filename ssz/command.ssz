@@ -917,20 +917,23 @@ public &Command
       }
       ret true;
     }];
+    int notHeld = 0;
     if(#`hold > 0 && !ai) loop{
       index j = 0;
       if(#holdTemp == 0){
         holdTemp.new((int).Key::ns + 1);
         holdTemp:<-[void(t=){t = true;}];
       }
-      int notHeld = 0;
       bool allHold = true;
       while;
     do:
       loop{index i = 0; while; do:
         branch{
           int ks = kbuf.keyState(`hold[j][i]);
-        cond !`held[j] && holdTemp[(int)`hold[j][i]] && ks == 1:
+        cond
+          ks == 1 && (`cmdidx > 0 || #`hold > 1)
+          && !`held[j] && holdTemp[(int)`hold[j][i]]
+          :
           `held[j] = true;
           holdTemp[(int)`hold[j][i]] = false;
         comm:
@@ -944,11 +947,29 @@ public &Command
       anyHeld |= `held[j];
       j++;
     while j < #`hold:
-      if((!allHold || notHeld > 1) && `cmdidx == #`cmd - 1){
+      if(`cmdidx == #`cmd - 1 && (!allHold || notHeld > 1)){
         ret anyHeld || `cmdidx > 0;
       }
     }
     if(!ai && `cmd[`cmdidx].slash){
+      if(`cmdidx > 0) branch{
+      cond notHeld == 1:
+        if(#`cmd[`cmdidx - 1].key > 1) ret false;
+        if(
+          `cmd[`cmdidx - 1].key<> >= .Key::a
+          && `cmd[`cmdidx - 1].key<> <= .Key::s
+          && kbuf.keyState(`cmd[`cmdidx - 1].key<>) > 0
+          && kbuf.keyState(`cmd[`cmdidx - 1].key<>)
+          <= kbuf.lastDirectionTime()) ret true;
+      cond #`cmd[`cmdidx - 1].key > 1:
+        loop{index i = 0; while; do:
+          if(
+            `cmd[`cmdidx - 1].key[i] >= .Key::a
+            && `cmd[`cmdidx - 1].key[i] <= .Key::s
+            && kbuf.keyState(`cmd[`cmdidx - 1].key[i]) > 0) ret false;
+          i++;
+        while i < #`cmd[`cmdidx - 1].key:}
+      }
       `cmdidx++;
       ret true;
     }
