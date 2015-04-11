@@ -730,16 +730,16 @@ public &Command
         `hold .= `cmd~key;
         `cmd~clear();
       else:
-        `cmd.new[j];
+        `cmd.new[-1];
       }
       i = 0;
       switch(nextChar(cmds[j], i=)){
       case '>':
-        `cmd[j].greater = true;
+        `cmd[-1].greater = true;
         i++;
         switch(nextChar(cmds[j], i=)){
         case '/':
-          `cmd[j].slash = true;
+          `cmd[-1].slash = true;
           i++;
         default:<-
           break, break;
@@ -755,84 +755,84 @@ public &Command
           n = n*10 + (int)(cmds[j][i] -'0');
           i++;
         while i < #cmds[j] && '0' <= cmds[j][i] && cmds[j][i] <= '9':
-          if(n > 0) `cmd[j].tametime = n;
+          if(n > 0) `cmd[-1].tametime = n;
         }
       case '/':
-        `cmd[j].slash = true;
+        `cmd[-1].slash = true;
         i++;
       }
       loop{while; do:
         switch(nextChar(cmds[j], i=)){
         case 'B':
-          `cmd[j].key .= (tilde ? .Key::nB : .Key::B);
+          `cmd[-1].key .= (tilde ? .Key::nB : .Key::B);
           tilde = false;
         case 'D':
           branch{
           cond cmds[j][i+1] == 'B':
             i++;
-            `cmd[j].key .= (tilde ? .Key::nDB : .Key::DB);
+            `cmd[-1].key .= (tilde ? .Key::nDB : .Key::DB);
           cond cmds[j][i+1] == 'F':
             i++;
-            `cmd[j].key .= (tilde ? .Key::nDF : .Key::DF);
+            `cmd[-1].key .= (tilde ? .Key::nDF : .Key::DF);
           else:
-            `cmd[j].key .= (tilde ? .Key::nD : .Key::D);
+            `cmd[-1].key .= (tilde ? .Key::nD : .Key::D);
           }
           tilde = false;
         case 'F':
-          `cmd[j].key .= (tilde ? .Key::nF : .Key::F);
+          `cmd[-1].key .= (tilde ? .Key::nF : .Key::F);
           tilde = false;
         case 'U':
           branch{
           cond cmds[j][i+1] == 'B':
             i++;
-            `cmd[j].key .= (tilde ? .Key::nUB : .Key::UB);
+            `cmd[-1].key .= (tilde ? .Key::nUB : .Key::UB);
           cond cmds[j][i+1] == 'F':
             i++;
-            `cmd[j].key .= (tilde ? .Key::nUF : .Key::UF);
+            `cmd[-1].key .= (tilde ? .Key::nUF : .Key::UF);
           else:
-            `cmd[j].key .= (tilde ? .Key::nU : .Key::U);
+            `cmd[-1].key .= (tilde ? .Key::nU : .Key::U);
           }
           tilde = false;
           //
-        case 'a': `cmd[j].key .= (tilde ? .na : .a); tilde = false;
-        case 'b': `cmd[j].key .= (tilde ? .nb : .b); tilde = false;
-        case 'c': `cmd[j].key .= (tilde ? .nc : .c); tilde = false;
-        case 'x': `cmd[j].key .= (tilde ? .nx : .x); tilde = false;
-        case 'y': `cmd[j].key .= (tilde ? .ny : .y); tilde = false;
-        case 'z': `cmd[j].key .= (tilde ? .nz : .z); tilde = false;
-        case 's': `cmd[j].key .= (tilde ? .ns : .s); tilde = false;
+        case 'a': `cmd[-1].key .= (tilde ? .na : .a); tilde = false;
+        case 'b': `cmd[-1].key .= (tilde ? .nb : .b); tilde = false;
+        case 'c': `cmd[-1].key .= (tilde ? .nc : .c); tilde = false;
+        case 'x': `cmd[-1].key .= (tilde ? .nx : .x); tilde = false;
+        case 'y': `cmd[-1].key .= (tilde ? .ny : .y); tilde = false;
+        case 'z': `cmd[-1].key .= (tilde ? .nz : .z); tilde = false;
+        case 's': `cmd[-1].key .= (tilde ? .ns : .s); tilde = false;
           //
         case '$':
           i++;
           switch(nextChar(cmds[j], i=)){
           case 'B':
-            `cmd[j].key .= (tilde ? .Key::nBs : .Key::Bs);
+            `cmd[-1].key .= (tilde ? .Key::nBs : .Key::Bs);
             tilde = false;
           case 'D':
             branch{
             cond cmds[j][i+1] == 'B':
               i++;
-              `cmd[j].key .= (tilde ? .Key::nDBs : .Key::DBs);
+              `cmd[-1].key .= (tilde ? .Key::nDBs : .Key::DBs);
             cond cmds[j][i+1] == 'F':
               i++;
-              `cmd[j].key .= (tilde ? .Key::nDFs : .Key::DFs);
+              `cmd[-1].key .= (tilde ? .Key::nDFs : .Key::DFs);
             else:
-              `cmd[j].key .= (tilde ? .Key::nDs : .Key::Ds);
+              `cmd[-1].key .= (tilde ? .Key::nDs : .Key::Ds);
             }
             tilde = false;
           case 'F':
-            `cmd[j].key .= (tilde ? .Key::nFs : .Key::Fs);
+            `cmd[-1].key .= (tilde ? .Key::nFs : .Key::Fs);
             tilde = false;
           case 'U':
             branch{
             cond cmds[j][i+1] == 'B':
               i++;
-              `cmd[j].key .= (tilde ? .Key::nUBs : .Key::UBs);
+              `cmd[-1].key .= (tilde ? .Key::nUBs : .Key::UBs);
             cond cmds[j][i+1] == 'F':
               i++;
-              `cmd[j].key .= (tilde ? .Key::nUFs : .Key::UFs);
+              `cmd[-1].key .= (tilde ? .Key::nUFs : .Key::UFs);
             else:
-              `cmd[j].key .= (tilde ? .Key::nUs : .Key::Us);
+              `cmd[-1].key .= (tilde ? .Key::nUs : .Key::Us);
             }
             tilde = false;
           default:
@@ -849,8 +849,11 @@ public &Command
         i++;
         while i < #cmds[j]:
       }
-      if(j >= 1 && `cmd[j].isDirection() && `cmd[j-1].isDirection()){
-        `cmd[j].direction = true;
+      if(
+        #`cmd >= 2 && `cmd[-1].isDirection()
+        && `cmd[#`cmd - 2].isDirection())
+      {
+        `cmd[-1].direction = true;
       }
       j++;
     while j < #cmds:
