@@ -726,9 +726,9 @@ public &Command
       while;
     do:
       branch{
-      cond #`cmd == 1 && `cmd~slash:
-        `hold .= `cmd~key;
-        `cmd~clear();
+      cond #`cmd > 0 && `cmd[-1].slash:
+        `hold .= `cmd[-1].key;
+        `cmd[-1].clear();
       else:
         `cmd.new[-1];
       }
@@ -857,8 +857,8 @@ public &Command
       }
       j++;
     while j < #cmds:
+      if(`cmd[-1].slash) `hold .= `cmd[-1].key;
     }
-    `cmd:<-[void(c){if(c.slash) `hold .= c.key;}];
     `held.new(#`hold);
     `held:<-[void(h=){h = false;}];
   }
@@ -895,10 +895,11 @@ public &Command
   }
   bool cmdChek(&.Buffer kbuf, bool ai, ^bool holdTemp=)
   {
+    bool anyHeld = false;
     ~$bool() fail = [bool(){
       branch{
       cond `cmdidx == 0:
-        ret false;
+        ret anyHeld;
       else:
         if(!ai && (`cmd[`cmdidx].greater || `cmd[`cmdidx].direction)) loop{
           index j = 0;
@@ -923,7 +924,7 @@ public &Command
         holdTemp:<-[void(t=){t = true;}];
       }
       int notHeld = 0;
-      bool allHold = true, anyHeld = false;
+      bool allHold = true;
       while;
     do:
       loop{index i = 0; while; do:
@@ -944,11 +945,12 @@ public &Command
       j++;
     while j < #`hold:
       if((!allHold || notHeld > 1) && `cmdidx == #`cmd - 1){
-        ret (anyHeld || `cmdidx > 0) && `cmd[`cmdidx].slash;
+        ret anyHeld || `cmdidx > 0;
       }
     }
     if(!ai && `cmd[`cmdidx].slash){
-      ret ++`cmdidx >= #`cmd || self(kbuf, ai, holdTemp=);
+      `cmdidx++;
+      ret true;
     }
     if(`tameidx != `cmdidx) branch{
     cond `cmd[`cmdidx].tametime > 1:
@@ -957,7 +959,7 @@ public &Command
         if(
           ai ? .m.rand(0, `cmd[`cmdidx].tametime) != 0
           : -kbuf.keyState(`cmd[`cmdidx].key[i])
-          < `cmd[`cmdidx].tametime) ret `cmdidx != 0;
+          < `cmd[`cmdidx].tametime) ret anyHeld || `cmdidx > 0;
         i++;
       while i < #`cmd[`cmdidx].key:
         `tameidx = `cmdidx;
