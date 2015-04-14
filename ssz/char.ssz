@@ -3663,7 +3663,7 @@ public &Char
       }
       `atktmp =
         (`stVal.mov != .MovTy::I || `stVal.hit.reversal_attr > 0)
-        && `acttmp > 0 ? 1 : 0;
+        && !`isHitPaused() ? 1 : 0;
       `ho = -1;
       if(`acttmp > 0){
         if(`inGuardState()) `sysivar[.iSYSFLAG] |= .sfGUARD;
