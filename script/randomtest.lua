@@ -267,20 +267,20 @@ end
 
 function run()
   init()
+  refresh()
   while not esc() do
-    refresh()
     randSel(1, winner)
     randSel(2, winner)
     loadStart()
-    oldwinner = winner
+    local oldwinner = winner
     winner = game()
-    if winner < 0 then break end
+    if winner < 0 or esc() then break end
     oldwins = wins
     wins = wins + 1
     if winner ~= oldwinner then wins = 1 end
     if winner <= 0 or wins >= 20 or wins == oldwins then
       init()
     end
+    refresh()
   end
 end
-

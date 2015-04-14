@@ -4682,7 +4682,8 @@ public &Char
       if(`mver0() == 1 && `helperindex != 0) ret false;
       ^/char name = cl~name;
       if(
-        `helperindex == 0 && (#name == 1 || .s.equ(name[0..4], "hold"))) break;
+        `helperindex == 0 && #cl~cmd == 1 && #cl~cmd~key == 1
+        && (int)cl~cmd~slash == #cl~hold) break;
       ret i >= 0 && i == `cpucmd;
     }
     loop{index i = 0; while; do:
@@ -5467,8 +5468,8 @@ public &Char
     ret `stVal.mctyp == .MoveContact::Guarded ? #`stVal.mctime : 0;
   }
   public int trMatchNo()
-  {////////////////////////////////////////////////////////////////////////////
-    ret 1;
+  {
+    ret .com.match;
   }
   public int trRoundsExisted()
   {

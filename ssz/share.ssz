@@ -15,7 +15,7 @@ public &Share
   public ^&.chr.fgt.Fight f;
   public ^&.stage.Stage st;
   public ^int tm, nt, re;
-  public int chr_home, chr_round;
+  public int chr_home, chr_match, chr_round;
   public int chr_p1mw, chr_p2mw, chr_p1w, chr_p2w, chr_drw;
   public int stt;
   public ^int com;
@@ -47,6 +47,7 @@ public &Share
     `nt = .com.numturns;
     `re = .com.rexisted;
     `chr_home = .com.home;
+    `chr_match = .com.match;
     `chr_round = .com.round;
     `chr_p1mw = .com.p1mw;
     `chr_p2mw = .com.p2mw;
@@ -87,6 +88,7 @@ public &Share
     .com.numturns = `nt;
     .com.rexisted = `re;
     .com.home = `chr_home;
+    .com.match = `chr_match;
     .com.round = `chr_round;
     .com.p1mw = `chr_p1mw;
     .com.p2mw = `chr_p2mw;

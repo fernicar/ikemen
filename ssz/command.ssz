@@ -1004,8 +1004,13 @@ public &Command
       while;
     do:
       n = kbuf.keyState2(`cmd[`cmdidx].key[i]);
-      foo |= n == 1 || (ai && n > 0 && `cmd[`cmdidx].slash);
-      if(n <= 0 || n > 7) ret fail(::);
+      branch{
+      cond `cmd[`cmdidx].slash:
+        foo |= n > 0;
+      else:
+        foo |= n == 1;
+        if(n <= 0 || n > 7) ret fail(::);
+      }
       i++;
     while i < #`cmd[`cmdidx].key:
       if(!foo) ret fail(::);
@@ -1147,7 +1152,7 @@ public &CommandList
             s = .sdl.JoystickButtonState(:jn, .cfg.in[in].s:);
           }
         else:
-          break;
+          l = r = u = d = a = b = c = x = y = z = s = false;
         comm:
           `buffer~input(
             facing < 0 ? r : l, d, facing < 0 ? l : r, u, a, b, c, x, y, z, s);

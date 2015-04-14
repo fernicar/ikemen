@@ -151,6 +151,7 @@ public int intro = 20;
 //ホームチーム 1P:0, 2P:1
 public int home = 0;
 
+public int match = 1;
 public int p1mw = 2, p2mw = 2;
 
 //ラウンドNo.
