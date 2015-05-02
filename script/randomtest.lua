@@ -252,10 +252,11 @@ end
 
 
 function init()
-  for i = 1, 4 do
+  for i = 1, 8 do
     setCom(i, 8)
   end
   setAutoLevel(true)
+  setMatchNo(1)
   selectStage(0)
   rakuBenry()
   winner = 0
@@ -277,7 +278,11 @@ function run()
     if winner < 0 or esc() then break end
     oldwins = wins
     wins = wins + 1
-    if winner ~= oldwinner then wins = 1 end
+    if winner ~= oldwinner then
+      wins = 1
+      setHomeTeam(winner == 1 and 2 or 1)
+    end
+    setMatchNo(wins)
     if winner <= 0 or wins >= 20 or wins == oldwins then
       init()
     end

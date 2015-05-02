@@ -1,4 +1,4 @@
-﻿
+
 lib mes = <alpha/mesdialog.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
 lib s = <string.ssz>;
@@ -73,7 +73,6 @@ int game()
   .com.rexisted[0] = .com.rexisted[1] = 0;
   .chr.fight~wi[0].clear();
   .chr.fight~wi[1].clear();
-  .com.home = 0;
   .com.draws = 0;
   bool load()
   {

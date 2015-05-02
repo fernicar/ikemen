@@ -1,4 +1,4 @@
-﻿
+
 lib str = <string.ssz>;
 lib consts = <consts.ssz>;
 lib mes = <alpha/mesdialog.ssz>;

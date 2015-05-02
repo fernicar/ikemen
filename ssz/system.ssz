@@ -1,4 +1,4 @@
-﻿
+
 lib file = <file.ssz>;
 lib s = <string.ssz>;
 lib m = <math.ssz>;

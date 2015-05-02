@@ -576,11 +576,12 @@ function modeSel()
     p1In = 1
     p2In = 1
 
-    setCom(1, 8)
-    setCom(2, 8)
-    setCom(3, 8)
-    setCom(4, 8)
+    for i = 1, 8 do
+      setCom(i, 8)
+    end
     setAutoLevel(false)
+    setMatchNo(1)
+    setHomeTeam(1)
     resetRemapInput()
 
     textImgSetText(portChange, 'Port Change(' .. getListenPort() .. ')')

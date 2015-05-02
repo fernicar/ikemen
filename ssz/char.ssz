@@ -1,4 +1,4 @@
-﻿
+
 lib file = <file.ssz>;
 lib s = <string.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
@@ -6995,11 +6995,11 @@ public float action(
       .com.intro--;
       if(.com.intro == 0) loop{index i = 0; while; do:
         if(#.chars[i] > 0) branch{
-          .chars[i][0]~sysivar[.iSYSFLAG] &= !.sfOVER;
-        cond .chars[i][0]~stVal.no == 0:
-          .chars[i][0]~setCtrl(true);
-        else:
-          .chars[i][0]~trSelfState(0, -1, 1);
+          .chars[i]<>~sysivar[.iSYSFLAG] &= !.sfOVER;
+        cond .chars[i]<>~stVal.no == 0:
+          .chars[i]<>~setCtrl(true);
+        cond .chars[i]<>~isAlive():
+          .chars[i]<>~trSelfState(0, -1, 1);
         }
         i++;
       while i < #.chars:}

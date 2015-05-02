@@ -1,4 +1,4 @@
-﻿
+
 lib mes = <alpha/mesdialog.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
 lib s = <string.ssz>;

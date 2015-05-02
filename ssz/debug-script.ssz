@@ -1,4 +1,4 @@
-﻿
+
 lib lua = <alpha/lua.ssz>;
 lib sc = "script.ssz";
 lib chr = "char.ssz";

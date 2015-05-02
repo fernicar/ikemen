@@ -1,4 +1,4 @@
-﻿
+
 lib file = <file.ssz>;
 lib sh = <shell.ssz>;
 lib s = <string.ssz>;
