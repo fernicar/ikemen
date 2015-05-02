@@ -7113,7 +7113,7 @@ public float action(
                   * (float).com.time * (1.0/60.0) * .com.turnsRecoveryRate);
               .m.limMax!int?(c.sysivar[.iLIFE]=, c.sysivar[.iLIFEMAX]);
             }
-            if(!c.sf(.sfOVER) && c.isActive() && !c.isKO()){
+            if(!c.sf(.sfOVER) && !c.isHitPaused() && !c.isKO()){
               c.sysivar[.iSYSFLAG] |= .sfOVER;
               c.trSelfState(c.isWin() ? 180 : (c.isLose() ? 170 : 175), -1, 1);
             }
