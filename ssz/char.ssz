@@ -2071,7 +2071,7 @@ public &Char
   public &.AfterImage aimg;
   public int id, helperindex, helperid, parentindex, key;
   public %int children;
-  public %int targets;
+  public %int targets, targetsOfHit;
   public byte playerno;
   public byte facing;
   public bool keyctrl;
@@ -2396,35 +2396,35 @@ public &Char
   }
   public void addTarget(int id)
   {
-    loop{index i = 0; while; do:
-      if(`targets[i] < 0 || `targets[i] == id){
-        `targets[i] = id;
-        break, break;
-      }
-      i++;
-    while i < #`targets:
-      `targets .= id;
-    }
+    if(!`hasTarget(id)) `targets .= id;
+    `targetsOfHit .= id;
   }
-  public bool isTarget(int id)
+  /bool hasTarget(int id)
   {
     loop{index i = 0; while; do:
       if(`targets[i] == id) ret true;
       i++;
-    while i < #`targets:
-    }
+    while i < #`targets:}
+    ret false;
+  }
+  /bool hasTargetOfHit(int id)
+  {
+    loop{index i = 0; while; do:
+      if(`targetsOfHit[i] == id) ret true;
+      i++;
+    while i < #`targetsOfHit:}
     ret false;
   }
   public void removeTarget(int id)
   {
     loop{index i = 0; while; do:
       if(`targets[i] == id){
-        `targets[i] = -1;
+        %int temp .= `targets[0 .. i] .= `targets[i + 1 .. -1];
+        `targets = temp;
         break, break;
       }
       i++;
-    while i < #`targets:
-    }
+    while i < #`targets:}
   }
   public void byBindClear()
   {
@@ -3014,7 +3014,7 @@ public &Char
     if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
     branch{
     cond `stVal.hitdefContact != 0:
-      `stVal.hit.invalidate(`stVal.typ);
+      if(`stVal.hit.hitonce != 0) `stVal.hit.invalidate(`stVal.typ);
       `stVal.hitdefContact = 0;
     cond `stVal.hit.lhit:
       `stVal.hit.attr &= !63;
@@ -3577,7 +3577,7 @@ public &Char
     ^`self c = .players.get(`sysivar[.iBINDTOID]);
     branch{
     cond #c > 0:
-      if(c~isTarget(`id)){
+      if(c~hasTarget(`id)){
         if(c~ls(.lsDESTROY)){
           `trSelfState(5050, -1, -1);
           break, break, else;
@@ -3876,6 +3876,7 @@ public &Char
   }
   void setHitdefDefault(&.Hitdef h=, bool proj)
   {
+    `targetsOfHit.new(0);
     if((h.attr & !63) == 0) h.attr = 0;
     if(
       h.hitonce < 0
@@ -5138,8 +5139,7 @@ public &Char
         c~stVal.hb.dropByid(`id);
       }
       i++;
-    while i < #`targets:
-    }
+    while i < #`targets:}
     branch{
     cond (keepone || id < 0) && #tmp > 0:
       `targets.new(0);
@@ -5158,8 +5158,7 @@ public &Char
           }
         }
         i++;
-      while i < #tmp:
-      }
+      while i < #tmp:}
     else:
       `targets = tmp;
     }
@@ -5236,7 +5235,7 @@ public &Char
     ^`self c;
     tar:<-[void(t){
       c = .players.get(t);
-      if(#c > 0) c~addPower(pw);
+      if(#c > 0 && c~player) c~addPower(pw);
     }];
   }
   public void trHitAdd(int h)
@@ -6121,6 +6120,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       if(!hbset) break;
       `pyr.p1facing = 0;
       if(`pyr.ho >= 0) break;
+      if(hit.hitonce > 0) by.trTargetDrop(-1, false);
       by.addTarget(`pyr.id);
       `pyr.stVal.hb.addByid(by.id, by.sysivar[.iAIRJUGGLE]);
       if(`pyr.hittmp < 2){
@@ -6258,7 +6258,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       pyr.inguarddist = true;
     }
     if(
-      p~c~stVal.hit.hitonce >= 0
+      p~c~stVal.hit.hitonce >= 0 && !p~c~hasTargetOfHit(pyr.id)
       && (
         pyr.hittmp < 2
         || p~c~ls(.lsNOJUGGLECHECK)
@@ -6267,7 +6267,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       && pyr.hittable(
         p~c~stVal.hit=, p~c<>=, p~c~stVal.typ, [bool(&.Hitdef h=){
           ret
-            (p~c~atktmp >= 0 || !pyr.isTarget(p~c~id))
+            (p~c~atktmp >= 0 || !pyr.hasTarget(p~c~id))
             && p~c~attrCheck(h=, pyr.id, pyr.stVal.typ)&&p~c~hitCheck(pyr=);
         }]))
     {
