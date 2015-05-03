@@ -3876,7 +3876,7 @@ public &Char
   }
   void setHitdefDefault(&.Hitdef h=, bool proj)
   {
-    `targetsOfHit.new(0);
+    if(!proj) `targetsOfHit.new(0);
     if((h.attr & !63) == 0) h.attr = 0;
     if(
       h.hitonce < 0
@@ -6120,7 +6120,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       if(!hbset) break;
       `pyr.p1facing = 0;
       if(`pyr.ho >= 0) break;
-      if(hit.hitonce > 0) by.trTargetDrop(-1, false);
+      if(pro == 0 && hit.hitonce > 0) by.trTargetDrop(-1, false);
       by.addTarget(`pyr.id);
       `pyr.stVal.hb.addByid(by.id, by.sysivar[.iAIRJUGGLE]);
       if(`pyr.hittmp < 2){
@@ -6433,7 +6433,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         }
         if(
           !(pyr.cs1tmp && (pyr.ls(.lsGETHIT) || pyr.acttmp > 0))
-          && proj.hit.hitonce >= 0
           && (
             .chars[i]<>~ls(.lsNOJUGGLECHECK)
             || pyr.stVal.hb.getJuggle(
@@ -6478,7 +6477,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
                 .cgi[i].pcid = proj.id;
                 proj.hitpause = .m.max!int?(0, proj.hit.guard_pausetime);
               }
-              if(proj.hit.hitonce > 0) proj.hit.hitonce = -1;
             }
           }
         break:
