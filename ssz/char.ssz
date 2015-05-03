@@ -2397,7 +2397,6 @@ public &Char
   public void addTarget(int id)
   {
     if(!`hasTarget(id)) `targets .= id;
-    `targetsOfHit .= id;
   }
   /bool hasTarget(int id)
   {
@@ -6119,6 +6118,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
     comm:
       if(!hbset) break;
       `pyr.p1facing = 0;
+      by.targetsOfHit .= `pyr.id;
       if(`pyr.ho >= 0) break;
       if(pro == 0 && hit.hitonce > 0) by.trTargetDrop(-1, false);
       by.addTarget(`pyr.id);
