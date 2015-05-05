@@ -3487,14 +3487,9 @@ public &Char
           `trChangeState(5120, -1, -1);
         }
         loop{while; do:
-          branch{
-          cond `stVal.typ == .StTy::L && `mver0() != 1:
-            `state(::);
-          else:
-            `trChangeState(
-              (int)(`stVal.typ == .StTy::C)*11
-              + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
-          }
+          `trChangeState(
+            (int)(`stVal.typ == .StTy::C)*11
+            + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
         while
           `stVal.no == 140 && `stVal.time >= (
             `animpno >= 0 && #`ani > 0 && #`ani~ani.frames > 0
