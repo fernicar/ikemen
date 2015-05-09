@@ -6253,6 +6253,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
     }
     if(
       p~c~stVal.hit.hitonce >= 0 && !p~c~hasTargetOfHit(pyr.id)
+      && (p~c~stVal.hit.reversal_attr <= 0 || !pyr.hasTargetOfHit(p~c~id))
       && (
         pyr.hittmp < 2
         || p~c~ls(.lsNOJUGGLECHECK)
