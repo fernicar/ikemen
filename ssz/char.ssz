@@ -5976,6 +5976,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         }
       }
     }
+    by.targetsOfHit .= `pyr.id;
     bool hbset = !`pyr.cs1tmp || p2s || !`pyr.ls(.lsGETHIT);
     if(hbset){
       if(pro == 0) by.sprpriority = hit.p1sprpriority;
@@ -6022,8 +6023,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       bool kill = hitting == 1 ? hit.kill : hit.guard_kill;
       `pyr.stVal.hb.damage +=
         `pyr.getDamage(
-          (double)absdamage*(double)hits,
-          kill, false, by.attackmul);
+          (double)absdamage * (double)hits, kill, false, by.attackmul);
       if(hbset && `pyr.stVal.hb.damage >= `pyr.sysivar[.iLIFE]) branch{
       cond kill || !live:
         `pyr.stVal.hb.fallf = true;
@@ -6113,7 +6113,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
     comm:
       if(!hbset) break;
       `pyr.p1facing = 0;
-      by.targetsOfHit .= `pyr.id;
       if(`pyr.ho >= 0) break;
       if(pro == 0 && hit.hitonce > 0) by.trTargetDrop(-1, false);
       by.addTarget(`pyr.id);
@@ -6286,6 +6285,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
             pyr.stVal.mctyp = .MoveContact::Reversed;
             pyr.stVal.mctime = -1;
             pyr.stVal.hitdefContact = 1;
+            pyr.targetsOfHit .= p~c~id;
             if(pyr.hittmp == 0) pyr.hittmp = -1;
             if(!pyr.ls(.lsGETHIT)){
               pyr.sysivar[.iHITPAUSETIME] =
