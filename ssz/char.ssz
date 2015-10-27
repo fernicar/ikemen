@@ -5219,8 +5219,7 @@ public &Char
     tar:<-[void(t){
       if(#(c = .players.get(t)) > 0){
         c~addLife(
-          -(double)c~getDamage(
-            -(double)va, kill, absolute, `attackmul), true, true);
+          -(double)c~getDamage(-(double)va, kill, absolute, 1.0), true, true);
       }
     }];
   }
