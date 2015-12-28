@@ -1,5 +1,6 @@
 EXPORTS
         Init
+        Exit
         NewState
         Close
         RunFile

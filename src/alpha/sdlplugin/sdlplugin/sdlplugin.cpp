@@ -1032,11 +1032,15 @@ TUserFunc(bool, PlayBGM, Reference fn, Reference pldir)
 
 TUserFunc(void, PauseBGM, bool pause)
 {
-	if(pause != om_paused && in_mod != nullptr){
-		if(pause){
-			in_mod->Pause();
+	if(pause != om_paused){
+		if(in_mod != nullptr){
+			if(pause){
+				in_mod->Pause();
+			}else{
+				in_mod->UnPause();
+			}
 		}else{
-			in_mod->UnPause();
+			om_paused = pause;
 		}
 	}
 }

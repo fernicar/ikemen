@@ -1,4 +1,4 @@
-﻿
+
 public &OggVorbis
 {
   index ptr = 0;
@@ -22,7 +22,7 @@ public &OggVorbis
     plugin void OggVorbisClear(:index:) = "dll/ogg.dll";
     OggVorbisClear(:`ptr:);
   }
-  public int pcmTotal()
+  public long pcmTotal()
   {
     plugin int OggVorbisPcmTotal(:index:) = "dll/ogg.dll";
     ret OggVorbisPcmTotal(:`ptr:);

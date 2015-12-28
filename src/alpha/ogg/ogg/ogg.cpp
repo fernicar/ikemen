@@ -53,7 +53,7 @@ public:
 		ov_clear(&_vf);
 		fileClose();
 	}
-	int32_t pcmTotal()
+	int64_t pcmTotal()
 	{
 		return ov_pcm_total(&_vf, -1);
 	}
@@ -101,7 +101,7 @@ TUserFunc(void, OggVorbisClear, OggVorbis* ov)
 	ov->clear();
 }
 
-TUserFunc(int32_t, OggVorbisPcmTotal, OggVorbis* ov)
+TUserFunc(int64_t, OggVorbisPcmTotal, OggVorbis* ov)
 {
 	return ov->pcmTotal();
 }

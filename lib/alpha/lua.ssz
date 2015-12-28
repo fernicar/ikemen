@@ -1,4 +1,4 @@
-﻿
+
 lib ssz = <ssz.ssz>;
 
 void refSetNull(ref o=)

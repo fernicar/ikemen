@@ -1,4 +1,4 @@
-﻿
+
 plugin bool YesNo(:^/char:) = "dll/mesdialog.dll";
 plugin bool GetClipboardStr(:^char=:) = "dll/mesdialog.dll";
 plugin void GetInifileString(:^/char, ^/char, ^/char, ^/char, ^char=:) =
