@@ -848,7 +848,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public float maxdisty;
   public float snapx;
   public float snapy;
-  public float snapz;
   public int snapt;
   public &.Fall fall;
   public bool kill;
@@ -951,9 +950,8 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `maxdistx = 0.0/0.0;
     `mindisty = 0.0/0.0;
     `maxdisty = 0.0/0.0;
-    `snapx = 0.0;
+    `snapx = 0.0/0.0;
     `snapy = 0.0/0.0;
-    `snapz = 0.0;
     `snapt = 0;
     `fall.setDefault();
     `kill = true;
@@ -1010,8 +1008,10 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public float maxdisty;
   public float snapx;
   public float snapy;
-  public float snapz;
   public int snapt;
+  public short snapf;
+  public bool snapfx;
+  public bool snapfy;
   public &.Fall fall;
   public int player;
   public bool fallf;
@@ -1046,9 +1046,11 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `maxdistx = 0.0/0.0;
     `mindisty = 0.0/0.0;
     `maxdisty = 0.0/0.0;
-    `snapx = 0.0;
+    `snapx = 0.0/0.0;
     `snapy = 0.0/0.0;
-    `snapz = 0.0;
+    `snapf = 1;
+    `snapfx = false;
+    `snapfy = false;
     `snapt = 0;
     `fall.clear();
     `player = -1;
@@ -1220,7 +1222,6 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `hb.maxdisty = hit.maxdisty;
     `hb.snapx = hit.snapx;
     `hb.snapy = hit.snapy;
-    `hb.snapz = hit.snapz;
     `hb.snapt = hit.snapt;
     if(hit.forcenofall) fall = false;
     `hb.groundtype = (int)hit.ground_type;
@@ -1863,12 +1864,14 @@ public &Projectile
             }
           }
         cond
-          (
-            `x < .com.xmin-(float)`edgebound
-            || .com.xmax+(float)`edgebound < `x)
+          `x < .com.xmin-(float)`edgebound
+          || `x > .com.xmax+(float)`edgebound
           || (
-            `x < .com.scrxmin-(float)`stagebound
-            || .com.scrxmax+(float)`stagebound < `x)
+            `velocityx*(float)`facing < 0.0
+            && `x < .com.scrxmin-(float)`stagebound)
+          || (
+            `velocityx*(float)`facing > 0.0
+            && `x > .com.scrxmax+(float)`stagebound)
           || (`velocityy > 0.0 && `y > (float)`heightboundb)
           || (`velocityy < 0.0 && `y < (float)`heightboundt)
           || `removetime == 0
@@ -3034,45 +3037,46 @@ public &Char
       ^`self c;
       if(#`stVal.hb.by > 0 && #(c = .players.get(`stVal.hb.by[-1].id)) > 0){
         if(!.m.isnan(`stVal.hb.mindistx)) branch{
-        cond c~facing < 0:
+        cond `stVal.hb.snapf < 0:
           `setPosX(
             .m.min!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] - `stVal.hb.mindistx));
+            (`stVal.hb.snapx - `stVal.hb.mindistx));
         else:
           `setPosX(
             .m.max!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] + `stVal.hb.mindistx));
+            (`stVal.hb.snapx + `stVal.hb.mindistx));
         }
         if(!.m.isnan(`stVal.hb.maxdistx)) branch{
-        cond c~facing < 0:
+        cond `stVal.hb.snapf < 0:
           `setPosX(
             .m.max!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] - `stVal.hb.maxdistx));
+            (`stVal.hb.snapx - `stVal.hb.maxdistx));
         else:
           `setPosX(
             .m.min!float?(`sysfvar[.fX])<,
-            (c~sysfvar[.fX] + `stVal.hb.maxdistx));
+            (`stVal.hb.snapx + `stVal.hb.maxdistx));
         }
         if(!`stVal.hb.guarded || `stVal.typ == .StTy::A){
           if(!.m.isnan(`stVal.hb.mindisty)){
             `setPosY(
               .m.max!float?(`sysfvar[.fY])<,
-              (c~sysfvar[.fY] + `stVal.hb.mindisty));
+              (`stVal.hb.snapy + `stVal.hb.mindisty));
           }
           if(!.m.isnan(`stVal.hb.maxdisty)){
             `setPosY(
               .m.min!float?(`sysfvar[.fY])<,
-              (c~sysfvar[.fY] + `stVal.hb.maxdisty));
+              (`stVal.hb.snapy + `stVal.hb.maxdisty));
           }
         }
         if(`stVal.hb.snapt != 0){
           `setBindToId(c<>=);
           `setBindTime(`stVal.hb.snapt);
           `sysivar[.iBINDFACING] = 0;
-          `sysfvar[.fBINDPOSX] = `stVal.hb.snapx;
+          `sysfvar[.fBINDPOSX] =
+            `stVal.hb.snapfx ? `stVal.hb.mindistx : 0.0/0.0;
           `sysfvar[.fBINDPOSY] =
-            !`stVal.hb.guarded || `stVal.typ == .StTy::A
-            ? `stVal.hb.snapy : 0.0/0.0;
+            `stVal.hb.snapfy && (!`stVal.hb.guarded || `stVal.typ == .StTy::A)
+            ? `stVal.hb.mindisty : 0.0/0.0;
         }
       }
       if(`ho >= 0 && `stVal.ho[`ho].forceair != 0) `stVal.typ = .StTy::A;
@@ -3938,6 +3942,8 @@ public &Char
       h.guardgivepower =
         (int)(.cfg.GetHit_LifeToPowerMul*(float)(h.hitdamage)*0.5);
     }
+    if(!.m.isnan(h.snapx)) h.maxdistx = h.mindistx = h.snapx;
+    if(!.m.isnan(h.snapy)) h.maxdisty = h.mindisty = h.snapy;
   }
   void playSound(
     bool f, bool lw, bool lp, int g, int s, int ch,
@@ -6002,6 +6008,11 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         `pyr.stVal.setHb(
           hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT),
           absdamage=);
+        if(!.m.isnan(hit.snapx)) `pyr.stVal.hb.snapfx = true;
+        if(!.m.isnan(hit.snapy)) `pyr.stVal.hb.snapfy = true;
+        `pyr.stVal.hb.snapx = by.sysfvar[.fX] + (float)(pro != 0) * x;
+        `pyr.stVal.hb.snapf = pro != 0 ? pro : by.facing;
+        `pyr.stVal.hb.snapy = by.sysfvar[.fY] + (float)(pro != 0) * y;
       else:
         absdamage = hitting == 1 ? hit.hitdamage : hit.guarddamage;
       }
