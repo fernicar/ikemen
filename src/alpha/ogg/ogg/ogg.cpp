@@ -21,61 +21,61 @@ class OggVorbis
 {
 	OggVorbis_File _vf;
 	FILE* _fh;
-	void fileClose()
+	MEMBER void fileClose()
 	{
-		if(_fh) fclose(_fh);
+		if (_fh) fclose(_fh);
 		_fh = nullptr;
 	}
 public:
-	OggVorbis()
+	MEMBER OggVorbis()
 	{
 		memset(&_vf, 0, sizeof(_vf));
 		_fh = nullptr;
 	}
-	~OggVorbis()
+	MEMBER ~OggVorbis()
 	{
 		clear();
 	}
-	bool open(std::wstring file)
+	MEMBER bool open(std::WSTR file)
 	{
-		fileClose();
-		_wfopen_s(&_fh, file.c_str(), L"rb");
-		if(!_fh) return false;
-		if(ov_open(_fh, &_vf, nullptr, 0) < 0){
+		clear();
+		_wfopen_s(&_fh, file.c_str(), L("rb"));
+		if (!_fh) return false;
+		if (ov_open(_fh, &_vf, nullptr, 0) < 0) {
 			fileClose();
 			return false;
 		}
 		return true;
 	}
-	void clear()
+	MEMBER void clear()
 	{
-		if(!_fh) return;
+		if (!_fh) return;
 		ov_clear(&_vf);
-		fileClose();
+		_fh = nullptr;
 	}
-	int64_t pcmTotal()
+	MEMBER int64_t pcmTotal()
 	{
 		return ov_pcm_total(&_vf, -1);
 	}
-	int32_t channels()
+	MEMBER int32_t channels()
 	{
 		auto nc = ov_info(&_vf, -1);
 		return nc ? nc->channels : -1;
 	}
-	int32_t rate()
+	MEMBER int32_t rate()
 	{
 		auto nc = ov_info(&_vf, -1);
 		return nc ? nc->rate : -1;
 	}
-	intptr_t read(int16_t* buffer, intptr_t length)
+	MEMBER intptr_t read(int16_t* buffer, intptr_t length)
 	{
 		int current_section;
 		auto rlen =
-			ov_read(&_vf, (char*)buffer, length*2, 0, 2, 1, &current_section);
-		if(rlen > 0) rlen /= 2;
+			ov_read(&_vf, (char*)buffer, length * 2, 0, 2, 1, &current_section);
+		if (rlen > 0) rlen /= 2;
 		return rlen;
 	}
-	int32_t seek(double time)
+	MEMBER int32_t seek(double time)
 	{
 		return ov_time_seek(&_vf, time);
 	}

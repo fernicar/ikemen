@@ -189,7 +189,7 @@ void main()
   }
 /?/*.cfg.OpenGL:
   if(!.sdl.InitMugenGl(::)){
-    .error!.self?("OpenGL 3.1 の初期設定に失敗");
+    .error!.self?("OpenGL の初期設定に失敗");
     ret;
   }
 /*?*/

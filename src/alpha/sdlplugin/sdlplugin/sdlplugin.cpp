@@ -394,7 +394,13 @@ Joystick g_js;
 GLhandleARB g_mugenshader = 0;
 GLhandleARB g_mugenshaderFc = 0;
 GLhandleARB g_mugenshaderFcS = 0;
-GLuint g_glpalette = 0;
+static GLint g_uniformPal = 0;
+static GLint g_uniformMsk = 0;
+static GLint g_uniformNeg = 0;
+static GLint g_uniformGray = 0;
+static GLint g_uniformAdd = 0;
+static GLint g_uniformMul = 0;
+static GLint g_uniformColor = 0;
 
 
 void sndjoyinit()
@@ -2781,51 +2787,48 @@ TUserFunc(bool, InitMugenGl)
 			"gl_Position = ftransform();"
 		"}";
 	const GLchar* fragShader =
-		"#version 140\n"
+		"uniform float a;"
 		"uniform sampler2D tex;"
-		"uniform samplerBuffer pal;"
+		"uniform sampler1D pal;"
 		"uniform int msk;"
-		"uniform float alp;"
 		"void main(void){"
-			"int i = int(round(255.0*texture(tex, gl_TexCoord[0].st).r));"
-			"vec4 c;"
-			"gl_FragColor ="
-				"i == msk ? vec4(0.0)"
-				": (c = texelFetchBuffer(pal, i), vec4(c.b, c.g, c.r, alp));"
+		"float r = texture2D(tex, gl_TexCoord[0].st).r;"
+		"vec4 c;"
+		"gl_FragColor ="
+		"int(255.0*r) == msk ? vec4(0.0)"
+		": (c = texture1D(pal, r*0.9961), vec4(c.b, c.g, c.r, a));"
 		"}";
 	const GLchar* fragShaderFc =
-		"#version 140\n"
+		"uniform float a;"
 		"uniform sampler2D tex;"
 		"uniform bool neg;"
 		"uniform float gray;"
 		"uniform vec3 add;"
 		"uniform vec3 mul;"
-		"uniform float alp;"
 		"void main(void){"
-			"vec4 c = texture(tex, gl_TexCoord[0].st);"
-			"if(neg) c.rgb = vec3(1.0) - c.rgb;"
-			"float gcol = (c.r + c.g + c.b) / 3.0;"
-			"c.r += (gcol - c.r) * gray + add.r;"
-			"c.g += (gcol - c.g) * gray + add.g;"
-			"c.b += (gcol - c.b) * gray + add.b;"
-			"c.rgb *= mul;"
-			"c.a *= alp;"
-			"gl_FragColor = c;"
+		"vec4 c = texture2D(tex, gl_TexCoord[0].st);"
+		"if(neg) c.rgb = vec3(1.0) - c.rgb;"
+		"float gcol = (c.r + c.g + c.b) / 3.0;"
+		"c.r += (gcol - c.r) * gray + add.r;"
+		"c.g += (gcol - c.g) * gray + add.g;"
+		"c.b += (gcol - c.b) * gray + add.b;"
+		"c.rgb *= mul;"
+		"c.a *= a;"
+		"gl_FragColor = c;"
 		"}";
 	const GLchar* fragShaderFcS =
-		"#version 140\n"
+		"uniform float a;"
 		"uniform sampler2D tex;"
 		"uniform vec3 color;"
-		"uniform float alp;"
 		"void main(void){"
-			"vec4 c = texture(tex, gl_TexCoord[0].st);"
-			"c.rgb = color * c.a;"
-			"c.a *= alp;"
-			"gl_FragColor = c;"
+		"vec4 c = texture2D(tex, gl_TexCoord[0].st);"
+		"c.rgb = color * c.a;"
+		"c.a *= a;"
+		"gl_FragColor = c;"
 		"}";
 	if(
-		!GLEW_VERSION_3_1
-		|| !GLEW_ARB_vertex_shader || !GLEW_ARB_fragment_shader
+		!GLEW_ARB_shader_objects || !GLEW_ARB_vertex_shader
+		|| !GLEW_ARB_fragment_shader
 		|| g_mugenshader != 0 || g_mugenshaderFc != 0 || g_mugenshaderFcS != 0)
 	{
 		return false;
@@ -2841,61 +2844,67 @@ TUserFunc(bool, InitMugenGl)
 	int linked = 0;
 	GLint length;
 	length = strlen((char*)vertShader);
-	glShaderSource(
+	glShaderSourceARB(
 		hVertShaderObject, 1, (const GLchar**)&vertShader, &length);
-	glCompileShader(hVertShaderObject);
+	glCompileShaderARB(hVertShaderObject);
 	glGetObjectParameterivARB(
 		hVertShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &vert_compiled);
 	if(vert_compiled == 0) goto fail;
-	glGenBuffers(1, &g_glpalette);
 
 	length = strlen((char*)fragShader);
-	glShaderSource(
+	glShaderSourceARB(
 		hFragShaderObject, 1, (const GLchar**)&fragShader, &length);
-	glCompileShader(hFragShaderObject);
+	glCompileShaderARB(hFragShaderObject);
 	glGetObjectParameterivARB(
 		hFragShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &frag_compiled);
 	if(frag_compiled == 0) goto fail;
 	glAttachObjectARB(g_mugenshader, hVertShaderObject);
 	glAttachObjectARB(g_mugenshader, hFragShaderObject);
-	glLinkProgram(g_mugenshader);
+	glLinkProgramARB(g_mugenshader);
 	glGetObjectParameterivARB(
 		g_mugenshader, GL_OBJECT_LINK_STATUS_ARB, &linked);
 	if(linked == 0) goto fail;
+	g_uniformPal = glGetUniformLocationARB(g_mugenshader, "pal");
+	g_uniformMsk = glGetUniformLocationARB(g_mugenshader, "msk");
 
 	glDeleteObjectARB(hFragShaderObject);
 	hFragShaderObject =
 		glCreateShaderObjectARB(GL_FRAGMENT_SHADER);
 	length = strlen((char*)fragShaderFc);
-	glShaderSource(
+	glShaderSourceARB(
 		hFragShaderObject, 1, (const GLchar**)&fragShaderFc, &length);
-	glCompileShader(hFragShaderObject);
+	glCompileShaderARB(hFragShaderObject);
 	glGetObjectParameterivARB(
 		hFragShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &frag_compiled);
 	if(frag_compiled == 0) goto fail;
 	glAttachObjectARB(g_mugenshaderFc, hVertShaderObject);
 	glAttachObjectARB(g_mugenshaderFc, hFragShaderObject);
-	glLinkProgram(g_mugenshaderFc);
+	glLinkProgramARB(g_mugenshaderFc);
 	glGetObjectParameterivARB(
 		g_mugenshaderFc, GL_OBJECT_LINK_STATUS_ARB, &linked);
 	if(linked == 0) goto fail;
+	g_uniformNeg = glGetUniformLocationARB(g_mugenshaderFc, "neg");
+	g_uniformGray = glGetUniformLocationARB(g_mugenshaderFc, "gray");
+	g_uniformAdd = glGetUniformLocationARB(g_mugenshaderFc, "add");
+	g_uniformMul = glGetUniformLocationARB(g_mugenshaderFc, "mul");
 
 	glDeleteObjectARB(hFragShaderObject);
 	hFragShaderObject =
 		glCreateShaderObjectARB(GL_FRAGMENT_SHADER);
 	length = strlen((char*)fragShaderFcS);
-	glShaderSource(
+	glShaderSourceARB(
 		hFragShaderObject, 1, (const GLchar**)&fragShaderFcS, &length);
-	glCompileShader(hFragShaderObject);
+	glCompileShaderARB(hFragShaderObject);
 	glGetObjectParameterivARB(
 		hFragShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &frag_compiled);
 	if(frag_compiled == 0) goto fail;
 	glAttachObjectARB(g_mugenshaderFcS, hVertShaderObject);
 	glAttachObjectARB(g_mugenshaderFcS, hFragShaderObject);
-	glLinkProgram(g_mugenshaderFcS);
+	glLinkProgramARB(g_mugenshaderFcS);
 	glGetObjectParameterivARB(
 		g_mugenshaderFcS, GL_OBJECT_LINK_STATUS_ARB, &linked);
 	if(linked == 0) goto fail;
+	g_uniformColor = glGetUniformLocationARB(g_mugenshaderFcS, "color");
 
 	glDeleteObjectARB(hVertShaderObject);
 	glDeleteObjectARB(hFragShaderObject);
@@ -3103,28 +3112,28 @@ void renderMugenGl(
 	glPushMatrix();
 	glTranslated(0, g_h, 0);
 	if(alpha == -1){
-		glUniform1f(glGetUniformLocation(shader, "alp"), 1.0);
+		glUniform1fARB(glGetUniformLocation(shader, "a"), 1.0);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		drawTile(
 			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, 1);
 	}else if(alpha == -2){
-		glUniform1f(glGetUniformLocation(shader, "alp"), 1.0);
+		glUniform1fARB(glGetUniformLocation(shader, "a"), 1.0);
 		glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 		drawTile(
 			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, 1);
 	}else if(alpha <= 0){
 	}else if(alpha < 255){
-		glUniform1f(
-			glGetUniformLocation(shader, "alp"),
+		glUniform1fARB(
+			glGetUniformLocation(shader, "a"),
 			(GLfloat)alpha / 255.0f);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		drawTile(
 			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
 			angle, rcx, rcy, 1, 1, 1, (GLfloat)alpha / 255.0f);
 	}else if(alpha < 512){
-		glUniform1f(glGetUniformLocation(shader, "alp"), 1.0);
+		glUniform1fARB(glGetUniformLocation(shader, "a"), 1.0);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		drawTile(
 			r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
@@ -3133,8 +3142,8 @@ void renderMugenGl(
 		int src = alpha & 0xff;
 		int dst = (alpha & 0x3fc00) >> 10;
 		if(dst < 255){
-			glUniform1f(
-				glGetUniformLocation(shader, "alp"),
+			glUniform1fARB(
+				glGetUniformLocation(shader, "a"),
 				1.0f - (GLfloat)dst / 255.0f);
 			glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
 			drawTile(
@@ -3142,8 +3151,8 @@ void renderMugenGl(
 				angle, rcx, rcy, 1, 1, 1, 1.0f - (GLfloat)dst / 255.0f);
 		}
 		if(src > 0){
-			glUniform1f(
-				glGetUniformLocation(shader, "alp"), (GLfloat)src / 255.0f);
+			glUniform1fARB(
+				glGetUniformLocation(shader, "a"), (GLfloat)src / 255.0f);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 			drawTile(
 				r.w, r.h, x, y, tl, xtopscl, xbotscl, yscl, vscl, rasterxadd,
@@ -3183,25 +3192,36 @@ TUserFunc(
 	rcy = -rcy;
 	if(yscl < 0) y = -y;
 	y += rcy;
-	glBindBuffer(GL_TEXTURE_BUFFER, g_glpalette);
-	glBufferData(GL_TEXTURE_BUFFER, 4*256, ppal, GL_STATIC_DRAW);
-	glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA8, g_glpalette);
-	glUniform1i(glGetUniformLocation(g_mugenshader, "pal"), 1);
-	glUseProgram(g_mugenshader);
-	glUniform1i(glGetUniformLocation(g_mugenshader, "msk"), mask);
+	glUseProgramObjectARB(g_mugenshader);
+	glUniform1iARB(g_uniformPal, 1);
+	glUniform1iARB(g_uniformMsk, mask);
+	glEnable(GL_TEXTURE_1D);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texid);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
 	glScissor(dstr->x, g_h - (dstr->y+dstr->h), dstr->w, dstr->h);
 	//
+	glActiveTexture(GL_TEXTURE1);
+	uint32_t paltex;
+	glGenTextures(1, &paltex);
+	glBindTexture(GL_TEXTURE_1D, paltex);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage1D(
+		GL_TEXTURE_1D, 0, GL_RGBA, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, ppal);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texid);
 	renderMugenGl(
 		rcy, rcx, alpha, angle, rasterxadd, vscl, yscl, xbotscl, xtopscl,
 		tl, y, x, r, g_mugenshader);
+	glDeleteTextures(1, &paltex);
 	//
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_TEXTURE_2D);
-	glUseProgram(0);
+	glDisable(GL_TEXTURE_1D);
+	glUseProgramObjectARB(0);
 	return true;
 }
 
@@ -3235,20 +3255,16 @@ TUserFunc(
 	rcy = -rcy;
 	if(yscl < 0) y = -y;
 	y += rcy;
-	glUseProgram(g_mugenshaderFc);
-	glUniform1i(glGetUniformLocation(g_mugenshaderFc, "neg"), neg);
-	glUniform1f(glGetUniformLocation(g_mugenshaderFc, "gray"), 1 - color);
-	glUniform3f(
-		glGetUniformLocation(g_mugenshaderFc, "add"), addr, addg, addb);
-	glUniform3f(
-		glGetUniformLocation(g_mugenshaderFc, "mul"), mulr, mulg, mulb);
+	glUniform1iARB(g_uniformNeg, neg);
+	glUniform1fARB(g_uniformGray, 1 - color);
+	glUniform3fARB(g_uniformAdd, addr, addg, addb);
+	glUniform3fARB(g_uniformMul, mulr, mulg, mulb);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texid);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
 	glScissor(dstr->x, g_h - (dstr->y+dstr->h), dstr->w, dstr->h);
 	//
-	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glOrtho(0, g_w, 0, g_h, -1, 1);
 	glPopMatrix();
@@ -3258,7 +3274,7 @@ TUserFunc(
 	//
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_TEXTURE_2D);
-	glUseProgram(0);
+	glUseProgramObjectARB(0);
 	return true;
 }
 
@@ -3291,11 +3307,10 @@ TUserFunc(
 	rcy = -rcy;
 	if(yscl < 0) y = -y;
 	y += rcy;
-	glUseProgram(g_mugenshaderFcS);
-	glUniform3f(
-		glGetUniformLocation(g_mugenshaderFcS, "color"),
-		(float)(color>>16&0xff)/255, (float)(color>>8&0xff)/255,
-		(float)(color&0xff)/255);
+	glUseProgramObjectARB(g_mugenshaderFcS);
+	glUniform3fARB(
+		g_uniformColor, (float)(color >> 16 & 0xff) / 255, (float)(color >> 8 & 0xff) / 255,
+		(float)(color & 0xff) / 255);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texid);
 	glDisable(GL_DEPTH_TEST);
@@ -3308,7 +3323,7 @@ TUserFunc(
 	//
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_TEXTURE_2D);
-	glUseProgram(0);
+	glUseProgramObjectARB(0);
 	return true;
 }
 

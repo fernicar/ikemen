@@ -158,7 +158,7 @@ public &Sound
   public bool loop_ = false, lowpriority = false;
   public float freqmul = 1.0;
   public float fidx = 0.0;
-  const float frametime = 1.0 / 44100.0;
+  const float frametime = 1.0 / (float).sdl.SNDFREQ;
   public void setVol(int v)
   {
     branch{

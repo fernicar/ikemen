@@ -7829,7 +7829,7 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::Explod;
         cond .s.equ(s, "gamemakeanim"):
           `state.ctrlList[-1].typ = .CtrlTy::GameMakeAnim;
-       cond .s.equ(s, "modifyexplod"):
+        cond .s.equ(s, "modifyexplod"):
           `state.ctrlList[-1].typ = .CtrlTy::ModifyExplod;
         cond .s.equ(s, "explodbindtime"):
           `state.ctrlList[-1].typ = .CtrlTy::ExplodBindTime;
@@ -7851,7 +7851,7 @@ public &StateBuilder
           `state.ctrlList[-1].typ = .CtrlTy::AngleSet;
         cond .s.equ(s, "palfx"):
           `state.ctrlList[-1].typ = .CtrlTy::PalFX;
-       cond .s.equ(s, "allpalfx"):
+        cond .s.equ(s, "allpalfx"):
           `state.ctrlList[-1].typ = .CtrlTy::AllPalFX;
         cond .s.equ(s, "bgpalfx"):
           `state.ctrlList[-1].typ = .CtrlTy::BGPalFX;
@@ -7983,7 +7983,6 @@ public &StateBuilder
           ? "" : .com.FileReadError;
       }] > 0)
     {
-      if(.cfg.IgnoreMostErrors) ret "";
       ret def + ":"\r\n + error;
     }
     ^/char fn = st;
