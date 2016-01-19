@@ -3529,7 +3529,7 @@ public &Char
       }
     }
     `xScreenBound();
-    if(`isActive()) `targets:<-[void(t=){
+    if(!p) `targets:<-[void(t=){
       ^`self c = .players.get(t);
       if(#c > 0 && c~sysivar[.iBINDTOID] == `id) c~bind();
     }];
