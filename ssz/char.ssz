@@ -1054,14 +1054,17 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `snapfx = false;
     `snapfy = false;
     `snapt = 0;
-    `xoff = 0.0;
-    `yoff = 0.0;
     `fall.clear();
     `player = -1;
     `fallf = false;
     `guarded = false;
     `p2getp1state = false;
     `forcestand = false;
+  }
+  public void clearOff()
+  {
+    `xoff = 0.0;
+    `yoff = 0.0;
   }
   /float getYaccel()
   {
@@ -1191,6 +1194,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `mov = .MovTy::I;
     `hit.clear();
     `hb.clear();
+    `hb.clearOff();
     loop{index i=0;do:`ho[i].clear();while ++i<#`ho:}
     `mctyp = .MoveContact::Hit;
     `mctime = 0;
@@ -3038,61 +3042,55 @@ public &Char
       `stVal.mov = .MovTy::H;
       if(`sysivar[.iHITPAUSETIME] > 0) `stVal.clearWw();
       `sysivar[.iHITPAUSETIME] = 0;
-      if(#`stVal.hb.by > 0){
-        ^`self c;
-        double snapx = 0.0/0.0;
-        double snapy = 0.0/0.0;
-        if(#(c = .players.get(`stVal.hb.by[-1].id)) > 0){
-          int snapf =
-            `stVal.hb.snapf * (c~facing * c~p1facing < 0 ? (int)-1 : 1);
-          if(!.m.isnan(`stVal.hb.mindistx)) branch{
-          cond snapf < 0:
-            if(`sysfvar[.fX] > (`stVal.hb.snapx - `stVal.hb.mindistx)){
-              snapx = `stVal.hb.snapx - `stVal.hb.mindistx;
-            }
-          else:
-            if(`sysfvar[.fX] < (`stVal.hb.snapx + `stVal.hb.mindistx)){
-              snapx = `stVal.hb.snapx + `stVal.hb.mindistx;
-            }
-          }
-          if(!.m.isnan(`stVal.hb.maxdistx)) branch{
-          cond snapf < 0:
-            if(`sysfvar[.fX] < (`stVal.hb.snapx - `stVal.hb.maxdistx)){
-              snapx = `stVal.hb.snapx - `stVal.hb.maxdistx;
-            }
-          else:
-            if(`sysfvar[.fX] > (`stVal.hb.snapx + `stVal.hb.maxdistx)){
-              snapx = `stVal.hb.snapx + `stVal.hb.maxdistx;
-            }
-          }
-          if(!`stVal.hb.guarded || `stVal.typ == .StTy::A){
-            if(
-              !.m.isnan(`stVal.hb.mindisty)
-              && `sysfvar[.fY] < (`stVal.hb.snapy + `stVal.hb.mindisty))
-            {
-              snapy = `stVal.hb.snapy + `stVal.hb.mindisty;
-            }
-            if(
-              !.m.isnan(`stVal.hb.maxdisty)
-              && `sysfvar[.fY] > (`stVal.hb.snapy + `stVal.hb.maxdisty))
-            {
-              snapy = `stVal.hb.snapy + `stVal.hb.maxdisty;
-            }
-          }
-          if(`stVal.hb.snapt != 0){
-            `setBindToId(c<>=);
-            `setBindTime(`stVal.hb.snapt);
-            `sysivar[.iBINDFACING] = 0;
-            `sysfvar[.fBINDPOSX] =
-              `stVal.hb.snapfx ? `stVal.hb.mindistx : 0.0/0.0;
-            `sysfvar[.fBINDPOSY] =
-              `stVal.hb.snapfy ? `stVal.hb.mindisty : 0.0/0.0;
-          }
+      double snapx = 0.0/0.0;
+      double snapy = 0.0/0.0;
+      if(!.m.isnan(`stVal.hb.mindistx)) branch{
+      cond `stVal.hb.snapf < 0:
+        if(`sysfvar[.fX] > (`stVal.hb.snapx - `stVal.hb.mindistx)){
+          snapx = `stVal.hb.snapx - `stVal.hb.mindistx;
         }
-        `stVal.hb.snapx = snapx;
-        `stVal.hb.snapy = snapy;
-        `stVal.hb.xoff = !.m.isnan(snapx) ? snapx - `sysfvar[.fX] : 0.0;
-        `stVal.hb.yoff = !.m.isnan(snapy) ? snapy - `sysfvar[.fY] : 0.0;
+      else:
+        if(`sysfvar[.fX] < (`stVal.hb.snapx + `stVal.hb.mindistx)){
+          snapx = `stVal.hb.snapx + `stVal.hb.mindistx;
+        }
+      }
+      if(!.m.isnan(`stVal.hb.maxdistx)) branch{
+      cond `stVal.hb.snapf < 0:
+        if(`sysfvar[.fX] < (`stVal.hb.snapx - `stVal.hb.maxdistx)){
+          snapx = `stVal.hb.snapx - `stVal.hb.maxdistx;
+        }
+      else:
+        if(`sysfvar[.fX] > (`stVal.hb.snapx + `stVal.hb.maxdistx)){
+          snapx = `stVal.hb.snapx + `stVal.hb.maxdistx;
+        }
+      }
+      if(!`stVal.hb.guarded || `stVal.typ == .StTy::A){
+        if(
+          !.m.isnan(`stVal.hb.mindisty)
+          && `sysfvar[.fY] < (`stVal.hb.snapy + `stVal.hb.mindisty))
+        {
+          snapy = `stVal.hb.snapy + `stVal.hb.mindisty;
+        }
+        if(
+          !.m.isnan(`stVal.hb.maxdisty)
+          && `sysfvar[.fY] > (`stVal.hb.snapy + `stVal.hb.maxdisty))
+        {
+          snapy = `stVal.hb.snapy + `stVal.hb.maxdisty;
+        }
+      }
+      if(!.m.isnan(snapx)) `stVal.hb.xoff = snapx - `sysfvar[.fX];
+      if(!.m.isnan(snapy)) `stVal.hb.yoff = snapy - `sysfvar[.fY];
+      ^`self c;
+      if(#`stVal.hb.by > 0 && #(c = .players.get(`stVal.hb.by[-1].id)) > 0){
+        if(`stVal.hb.snapt != 0){
+          `setBindToId(c<>=);
+          `setBindTime(`stVal.hb.snapt);
+          `sysivar[.iBINDFACING] = 0;
+          `sysfvar[.fBINDPOSX] =
+            `stVal.hb.snapfx ? `stVal.hb.mindistx : 0.0/0.0;
+          `sysfvar[.fBINDPOSY] =
+            `stVal.hb.snapfy ? `stVal.hb.mindisty : 0.0/0.0;
+        }
       }
       if(`ho >= 0 && `stVal.ho[`ho].forceair != 0) `stVal.typ = .StTy::A;
       branch{
@@ -3611,11 +3609,13 @@ public &Char
       `drawX += c~drawX - c~sysfvar[.fX];
       `ticOldX += c~ticOldX - c~sysfvar[.fX];
       `pushed |= c~pushed;
+      `stVal.hb.xoff = 0.0;
     }
     if(!.m.isnan(`sysfvar[.fBINDPOSY])){
       `setY(c~sysfvar[.fY] + `sysfvar[.fBINDPOSY]);
       `drawY += c~drawY - c~sysfvar[.fY];
       `ticOldY += c~ticOldY - c~sysfvar[.fY];
+      `stVal.hb.yoff = 0.0;
     }
     if(#`sysivar[.iBINDFACING] == 1) branch{
     cond `sysivar[.iBINDFACING] > 0: `setFacing(c~facing);
@@ -3652,6 +3652,16 @@ public &Char
       if(`acttmp > 0){
         if(#`ani > 0) `ani~ani.updateSprite();
         if(!`isBound()) `bind();
+        if(`stVal.mov == .MovTy::H){
+          if(`stVal.hb.xoff != 0.0){
+            `setPosX(`sysfvar[.fX] + `stVal.hb.xoff);
+            `stVal.hb.xoff = 0.0;
+          }
+          if(`stVal.hb.yoff != 0.0){
+            `setPosY(`sysfvar[.fY] + `stVal.hb.yoff);
+            `stVal.hb.yoff = 0.0;
+          }
+        }
       }
       if(`stVal.mov == .MovTy::H){
         if(.super <= 0 && .pause <= 0){
@@ -6246,6 +6256,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           `pyr.stVal.hb.airtype -= `pyr.stVal.hb.airtype*2 - 3;
         }
       }
+      if(pro == 0 && by.facing * by.p1facing < 0) `pyr.stVal.hb.snapf *= -1;
     }
     ret true;
   }
@@ -6688,29 +6699,12 @@ void commandUpdate()
           r.cmd[i].step(r.facing, r.key < 0, hp, buftime + (int)hp);
           i++;
         while i < #r.cmd:}
-        index cc =
-          r.key < 0 && r.roundState() == 2 && .m.rand(0, .com.com[i]+16) > 16
-          ? .m.rand(0, #r.cmd[r.stVal.playerno].commands-1) : -1;
-        p:<-:<-[void(c=){
-          if(c.helperindex < 0) ret;
-          if(r.key < 0) c.cpucmd = cc;
-          if(act){
-            branch{
-            cond .m.isnan(c.stVal.hb.snapx):
-              c.stVal.hb.xoff = 0.0;
-            else:
-              c.setPosX(c.stVal.hb.snapx);
-              c.stVal.hb.snapx = 0.0/0.0;
-            }
-            branch{
-            cond .m.isnan(c.stVal.hb.snapy):
-              c.stVal.hb.yoff = 0.0;
-            else:
-              c.setPosY(c.stVal.hb.snapy);
-              c.stVal.hb.snapy = 0.0/0.0;
-            }
-          }
-        }];
+        if(r.key < 0){
+          index cc =
+            r.roundState() == 2 && .m.rand(0, .com.com[i]+16) > 16
+            ? .m.rand(0, #r.cmd[r.stVal.playerno].commands-1) : -1;
+          p:<-:<-[void(c=){if(c.helperindex >= 0) c.cpucmd = cc;}];
+        }
       }];
     }];
   continue:
