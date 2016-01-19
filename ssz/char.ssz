@@ -1012,6 +1012,8 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
   public short snapf;
   public bool snapfx;
   public bool snapfy;
+  public float xoff;
+  public float yoff;
   public &.Fall fall;
   public int player;
   public bool fallf;
@@ -1052,6 +1054,8 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `snapfx = false;
     `snapfy = false;
     `snapt = 0;
+    `xoff = 0.0;
+    `yoff = 0.0;
     `fall.clear();
     `player = -1;
     `fallf = false;
@@ -3034,50 +3038,61 @@ public &Char
       `stVal.mov = .MovTy::H;
       if(`sysivar[.iHITPAUSETIME] > 0) `stVal.clearWw();
       `sysivar[.iHITPAUSETIME] = 0;
-      ^`self c;
-      if(#`stVal.hb.by > 0 && #(c = .players.get(`stVal.hb.by[-1].id)) > 0){
-        if(!.m.isnan(`stVal.hb.mindistx)) branch{
-        cond `stVal.hb.snapf < 0:
-          `setPosX(
-            .m.min!float?(`sysfvar[.fX])<,
-            (`stVal.hb.snapx - `stVal.hb.mindistx));
-        else:
-          `setPosX(
-            .m.max!float?(`sysfvar[.fX])<,
-            (`stVal.hb.snapx + `stVal.hb.mindistx));
-        }
-        if(!.m.isnan(`stVal.hb.maxdistx)) branch{
-        cond `stVal.hb.snapf < 0:
-          `setPosX(
-            .m.max!float?(`sysfvar[.fX])<,
-            (`stVal.hb.snapx - `stVal.hb.maxdistx));
-        else:
-          `setPosX(
-            .m.min!float?(`sysfvar[.fX])<,
-            (`stVal.hb.snapx + `stVal.hb.maxdistx));
-        }
-        if(!`stVal.hb.guarded || `stVal.typ == .StTy::A){
-          if(!.m.isnan(`stVal.hb.mindisty)){
-            `setPosY(
-              .m.max!float?(`sysfvar[.fY])<,
-              (`stVal.hb.snapy + `stVal.hb.mindisty));
+      if(#`stVal.hb.by > 0){
+        ^`self c;
+        double snapx = 0.0/0.0;
+        double snapy = 0.0/0.0;
+        if(#(c = .players.get(`stVal.hb.by[-1].id)) > 0){
+          int snapf =
+            `stVal.hb.snapf * (c~facing * c~p1facing < 0 ? (int)-1 : 1);
+          if(!.m.isnan(`stVal.hb.mindistx)) branch{
+          cond snapf < 0:
+            if(`sysfvar[.fX] > (`stVal.hb.snapx - `stVal.hb.mindistx)){
+              snapx = `stVal.hb.snapx - `stVal.hb.mindistx;
+            }
+          else:
+            if(`sysfvar[.fX] < (`stVal.hb.snapx + `stVal.hb.mindistx)){
+              snapx = `stVal.hb.snapx + `stVal.hb.mindistx;
+            }
           }
-          if(!.m.isnan(`stVal.hb.maxdisty)){
-            `setPosY(
-              .m.min!float?(`sysfvar[.fY])<,
-              (`stVal.hb.snapy + `stVal.hb.maxdisty));
+          if(!.m.isnan(`stVal.hb.maxdistx)) branch{
+          cond snapf < 0:
+            if(`sysfvar[.fX] < (`stVal.hb.snapx - `stVal.hb.maxdistx)){
+              snapx = `stVal.hb.snapx - `stVal.hb.maxdistx;
+            }
+          else:
+            if(`sysfvar[.fX] > (`stVal.hb.snapx + `stVal.hb.maxdistx)){
+              snapx = `stVal.hb.snapx + `stVal.hb.maxdistx;
+            }
+          }
+          if(!`stVal.hb.guarded || `stVal.typ == .StTy::A){
+            if(
+              !.m.isnan(`stVal.hb.mindisty)
+              && `sysfvar[.fY] < (`stVal.hb.snapy + `stVal.hb.mindisty))
+            {
+              snapy = `stVal.hb.snapy + `stVal.hb.mindisty;
+            }
+            if(
+              !.m.isnan(`stVal.hb.maxdisty)
+              && `sysfvar[.fY] > (`stVal.hb.snapy + `stVal.hb.maxdisty))
+            {
+              snapy = `stVal.hb.snapy + `stVal.hb.maxdisty;
+            }
+          }
+          if(`stVal.hb.snapt != 0){
+            `setBindToId(c<>=);
+            `setBindTime(`stVal.hb.snapt);
+            `sysivar[.iBINDFACING] = 0;
+            `sysfvar[.fBINDPOSX] =
+              `stVal.hb.snapfx ? `stVal.hb.mindistx : 0.0/0.0;
+            `sysfvar[.fBINDPOSY] =
+              `stVal.hb.snapfy ? `stVal.hb.mindisty : 0.0/0.0;
           }
         }
-        if(`stVal.hb.snapt != 0){
-          `setBindToId(c<>=);
-          `setBindTime(`stVal.hb.snapt);
-          `sysivar[.iBINDFACING] = 0;
-          `sysfvar[.fBINDPOSX] =
-            `stVal.hb.snapfx ? `stVal.hb.mindistx : 0.0/0.0;
-          `sysfvar[.fBINDPOSY] =
-            `stVal.hb.snapfy && (!`stVal.hb.guarded || `stVal.typ == .StTy::A)
-            ? `stVal.hb.mindisty : 0.0/0.0;
-        }
+        `stVal.hb.snapx = snapx;
+        `stVal.hb.snapy = snapy;
+        `stVal.hb.xoff = !.m.isnan(snapx) ? snapx - `sysfvar[.fX] : 0.0;
+        `stVal.hb.yoff = !.m.isnan(snapy) ? snapy - `sysfvar[.fY] : 0.0;
       }
       if(`ho >= 0 && `stVal.ho[`ho].forceair != 0) `stVal.typ = .StTy::A;
       branch{
@@ -3120,8 +3135,7 @@ public &Char
     if(!`isPaused()){
       {
         if(`sysivar[.iHITPAUSETIME] > 0){
-          `sysivar[.iHITPAUSETIME]--;
-          if(`sysivar[.iHITPAUSETIME] > 0) break, break;
+          if(--`sysivar[.iHITPAUSETIME] > 0) break, break;
           `stVal.clearWw();
         }
         if(
@@ -3342,7 +3356,7 @@ public &Char
   {
     if(`ctrl && `helperindex == 0){
       ^`self e = .players.enemyNear(`=, 0, true);
-      if((int)`facing*(int)`distX(e) >= 0) break;
+      if((int)`facing*(int)`distX(e<>=) >= 0) break;
       branch{
       cond `stVal.typ == .StTy::S:
         `trChangeAnim(5);
@@ -3515,7 +3529,7 @@ public &Char
       }
     }
     `xScreenBound();
-    if(!p) `targets:<-[void(t=){
+    if(`isActive()) `targets:<-[void(t=){
       ^`self c = .players.get(t);
       if(#c > 0 && c~sysivar[.iBINDTOID] == `id) c~bind();
     }];
@@ -4732,7 +4746,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    float dist = (float)`facing * `distX(e);
+    float dist = (float)`facing * `distX(e<>=);
     .v.setF(`stMver0() == 1 ? dist : (float)(int)dist);
   }
   public void trP2DistY()
@@ -4751,11 +4765,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    float dist = `distX(e);
-    bool bar = dist == 0.0 || (dist < 0.0) ^ (e~facing < 0);
-    dist =
-      (float)`facing*(dist + (float)e~facing * (bar ? e~frontw : -e~backw))
-      - `frontw;
+    float dist = (float)`facing * `bodyDistX(e<>=);
     .v.setF(`stMver0() == 1 ? dist : (float)(int)dist);
   }
   public void trRootDistX()
@@ -4764,7 +4774,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    float dist = (float)`facing * `distX(.chars[`playerno]<>);
+    float dist = (float)`facing * `distX(.chars[`playerno]<><>=);
     .v.setF(`stMver0() == 1 ? dist : (float)(int)dist);
   }
   public void trRootDistY()
@@ -4782,7 +4792,7 @@ public &Char
       .v.setSF();
       ret;
     }
-    float dist = (float)`facing * `distX(.c);
+    float dist = (float)`facing * `distX(.c<>=);
     .v.setF(`stMver0() == 1 ? dist : (float)(int)dist);
   }
   public void trParentDistY()
@@ -4829,9 +4839,17 @@ public &Char
     }
     .v.setB(mt == e~stVal.mov);
   }
-  public float distX(^`self c)
+  public float distX(`self c=)
   {
-    ret c~sysfvar[.fX] - `sysfvar[.fX];
+    ret c.sysfvar[.fX] - `sysfvar[.fX];
+  }
+  public float bodyDistX(`self c=)
+  {
+    float dist = `distX(c=);
+    bool bar = dist == 0.0 || (dist < 0.0) ^ (c.facing < 0);
+    ret
+      (dist + (float)c.facing * (bar ? c.frontw : -c.backw))
+      - (float)`facing * `frontw;
   }
   public bool trPName(int no, ^/char name)
   {:<-
@@ -4842,7 +4860,7 @@ public &Char
         if(
           (!.chars[c]<>~isHouchied() && .chars[sorted[i]]<>~isHouchied()) || (
             .chars[c]<>~isHouchied() == .chars[sorted[i]]<>~isHouchied()
-            && #`distX(.chars[c]<>) < #`distX(.chars[sorted[i]]<>)))
+            && #`distX(.chars[c]<><>=) < #`distX(.chars[sorted[i]]<><>=)))
         {
           .insIL(sorted=, i, c);
           ret;
@@ -5110,7 +5128,7 @@ public &Char
     if(!.m.isnan(bx)) `setX(c~sysfvar[.fX] + (float)c~facing*bx);
     if(!.m.isnan(by)) `setY(c~sysfvar[.fY] + by);
     `trTargetBind(
-      tar[0..1], time, (float)`facing*`distX(c),
+      tar[0..1], time, (float)`facing*`distX(c<>=),
       c~sysfvar[.fY] - `sysfvar[.fY]);
   }
   public void setBindFacing(int f)
@@ -5778,7 +5796,7 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n, bool p2)
       if(
         (`p2 && !e~isHouchied() && `en[i]~isHouchied()) || (
           (!`p2 || e~isHouchied() == `en[i]~isHouchied())
-          && #`pyr.distX(e) < #`pyr.distX(`en[i])))
+          && #`pyr.distX(e<>=) < #`pyr.distX(`en[i]<>=)))
       {
         self(`en[i], i+1);
         `en[i] = e;
@@ -6009,7 +6027,12 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           hit=, guard, `pyr.stVal.mov == .MovTy::H || `pyr.ls(.lsGETHIT),
           absdamage=);
         if(!.m.isnan(hit.snapx)) `pyr.stVal.hb.snapfx = true;
-        if(!.m.isnan(hit.snapy)) `pyr.stVal.hb.snapfy = true;
+        if(
+          !.m.isnan(hit.snapy)
+          && (!`pyr.stVal.hb.guarded || `pyr.stVal.typ == .StTy::A))
+        {
+          `pyr.stVal.hb.snapfy = true;
+        }
         `pyr.stVal.hb.snapx = by.sysfvar[.fX] + (float)(pro != 0) * x;
         `pyr.stVal.hb.snapf = pro != 0 ? pro : by.facing;
         `pyr.stVal.hb.snapy = by.sysfvar[.fY] + (float)(pro != 0) * y;
@@ -6137,7 +6160,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         byf = by.facing;
         branch{
         cond hit.p1getp2facing != 0:
-          byf = `pyr.facing*(hit.p1getp2facing < 0 ? -1 : 1);
+          byf = `pyr.facing*(hit.p1getp2facing < 0 ? (int)-1 : 1);
           if(by.facing != byf) by.p1facing = byf;
         cond hit.p1facing < 0:
           byf *= -1;
@@ -6146,7 +6169,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       else:
         byf = pro;
       comm:
-        `pyr.p1facing = byf * -hit.p2facing;
+        `pyr.p1facing =
+          byf * (
+            hit.p2facing == 0 ? (int)0
+            : hit.p2facing < 0 ? (int)1 : -1);
         if(`pyr.p1facing == `pyr.facing) `pyr.p1facing = 0;
       }
       if(hit.p1stateno >= 0 && by.changeState1(hit.player, hit.p1stateno)){
@@ -6257,7 +6283,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         != (p~c~stVal.hit.affectteam > 0))) continue;
     if(
       p~c~stVal.mov == .MovTy::A && .m.inRange!float?(
-        0.0, p~c~attackdist, -pyr.distX(p~c)*(float)p~c~facing))
+        0.0, p~c~attackdist, -pyr.distX(p~c<>=)*(float)p~c~facing))
     {
       pyr.inguarddist = true;
     }
@@ -6279,7 +6305,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       if(
         p~c~stVal.mov == .MovTy::A && .m.inRange!float?(
           0.0, (float)p~c~stVal.hit.guard_dist,
-          -pyr.distX(p~c)*(float)p~c~facing))
+          -pyr.distX(p~c<>=)*(float)p~c~facing))
       {
         pyr.inguarddist = true;
       }
@@ -6351,7 +6377,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         pyr.pushed = p~c~pushed = true;
         const float foo = 0.5;
         branch{
-          float tmp = -pyr.distX(p~c);
+          float tmp = -pyr.distX(p~c<>=);
         cond tmp < 0.0:
           pyr.sysfvar[.fX] -= (pr - el) * foo;
           p~c~sysfvar[.fX] += (pr - el) * foo;
@@ -6454,7 +6480,7 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           if(
             .m.inRange!float?(
               0.0, (float)proj.hit.guard_dist,
-              -pyr.distX(.chars[i]<>) * (float).chars[i]<>~facing))
+              -pyr.distX(.chars[i]<><>=) * (float).chars[i]<>~facing))
           {
             pyr.inguarddist = true;
           }
@@ -6627,52 +6653,65 @@ void commandUpdate()
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
     .chars[i].[void(p){
-      if(
-        (
-          .super > 0 ? p<>~sysivar[.iSUPERMOVETIME] != 0
-          : .pause <= 0 || p<>~sysivar[.iPAUSEMOVETIME] != 0)
-        && !p<>~ls(.lsNOAUTOTURN)
-        && (p<>~stVal.no == 0 || p<>~stVal.no == 11 || p<>~stVal.no == 20))
-      {
-        p<>~furimuki();
-      }
-      if(p<>~cmd~input(p<>~key, p<>~facing)) loop{
-        index i = 0;
-        bool hp = p<>~isHitPaused();
-        int buftime = (int)(hp && p<>~mver0() != 1);
-        branch{
-        cond .super > 0:
-          if(
-            p<>~sysivar[.iSUPERMOVETIME] == 0
-            && .super <= .superendcmdbuftime)
-          {
-            hp = true;
-          }
-        cond .pause > 0:
-          if(
-            p<>~sysivar[.iPAUSEMOVETIME] == 0
-            && .pause <= .pauseendcmdbuftime)
-          {
-            hp = true;
-          }
+      p<>~[void(r=){
+        bool act =
+          .super > 0 ? r.sysivar[.iSUPERMOVETIME] != 0
+          : .pause <= 0 || r.sysivar[.iPAUSEMOVETIME] != 0;
+        if(
+          act && !r.ls(.lsNOAUTOTURN)
+          && (r.stVal.no == 0 || r.stVal.no == 11 || r.stVal.no == 20))
+        {
+          r.furimuki();
         }
-        while;
-      do:
-        p<>~cmd[i].step(p<>~facing, p<>~key < 0, hp, buftime + (int)hp);
-        i++;
-      while i < #p<>~cmd:}
-      if(p<>~key < 0) loop{
-        index j = 0;
+        if(r.cmd~input(r.key, r.facing)) loop{
+          index i = 0;
+          bool hp = r.isHitPaused();
+          int buftime = (int)(hp && r.mver0() != 1);
+          branch{
+          cond .super > 0:
+            if(
+              r.sysivar[.iSUPERMOVETIME] == 0
+              && .super <= .superendcmdbuftime)
+            {
+              hp = true;
+            }
+          cond .pause > 0:
+            if(
+              r.sysivar[.iPAUSEMOVETIME] == 0
+              && .pause <= .pauseendcmdbuftime)
+            {
+              hp = true;
+            }
+          }
+          while;
+        do:
+          r.cmd[i].step(r.facing, r.key < 0, hp, buftime + (int)hp);
+          i++;
+        while i < #r.cmd:}
         index cc =
-          p[j]~roundState() == 2 && #p[j]~keyctrl
-          && .m.rand(0, .com.com[i]+16) > 16
-          ? .m.rand(0, #p[j]~cmd[p[j]~stVal.playerno].commands-1) : -1;
-        while;
-      do:
-        if(p[j]~helperindex >= 0) p[j]~cpucmd = cc;
-        j++;
-      while j < #p:
-      }
+          r.key < 0 && r.roundState() == 2 && .m.rand(0, .com.com[i]+16) > 16
+          ? .m.rand(0, #r.cmd[r.stVal.playerno].commands-1) : -1;
+        p:<-:<-[void(c=){
+          if(c.helperindex < 0) ret;
+          if(r.key < 0) c.cpucmd = cc;
+          if(act){
+            branch{
+            cond .m.isnan(c.stVal.hb.snapx):
+              c.stVal.hb.xoff = 0.0;
+            else:
+              c.setPosX(c.stVal.hb.snapx);
+              c.stVal.hb.snapx = 0.0/0.0;
+            }
+            branch{
+            cond .m.isnan(c.stVal.hb.snapy):
+              c.stVal.hb.yoff = 0.0;
+            else:
+              c.setPosY(c.stVal.hb.snapy);
+              c.stVal.hb.snapy = 0.0/0.0;
+            }
+          }
+        }];
+      }];
     }];
   continue:
     i++;

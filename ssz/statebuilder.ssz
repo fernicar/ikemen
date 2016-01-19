@@ -1927,13 +1927,13 @@ public &StateBuilder
         out .= obj .= "sysivar[.iRECOVERTIME]";
         typ = 2;
       cond .s.equ("xoff", token):
-        out .= obj .= "stVal.hb.snapx";
+        out .= obj .= "stVal.hb.xoff";
         typ = 1;
       cond .s.equ("yoff", token):
-        out .= obj .= "stVal.hb.snapy";
+        out .= obj .= "stVal.hb.yoff";
         typ = 1;
       cond .s.equ("zoff", token):
-        out .= obj .= "stVal.hb.snapz";
+        out .= "0.0";
         typ = 1;
       cond .s.equ("xvel", token):
         out .= obj .= "trHitXvel()";
