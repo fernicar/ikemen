@@ -6006,8 +6006,8 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
             }
           }
           if(!.m.isnan(snapx)) `pyr.stVal.hb.xoff += snapx - `pyr.sysfvar[.fX];
-          if(!.m.isnan(snapy)) `pyr.stVal.hb.yoff = snapy - `pyr.sysfvar[.fY];
-          if(hit.snapt != 0){
+          if(!.m.isnan(snapy)) `pyr.stVal.hb.yoff += snapy - `pyr.sysfvar[.fY];
+          if(hit.snapt != 0 && `pyr.ho < 0){
             `pyr.setBindToId(by=);
             `pyr.setBindTime(hit.snapt + (int)!by.isPaused());
             `pyr.sysivar[.iBINDFACING] = 0;
