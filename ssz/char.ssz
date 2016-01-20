@@ -1186,7 +1186,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
       (guard && ((int)`typ&hit.guardflag) != 0 ? 2 : 1) * (
         (int)(`typ == .StTy::A ? hit.air_type : hit.ground_type) == 0
         || hit.reversal_attr > 0
-        ? -1 : 1);
+        ? (int)-1 : 1);
   }
   public int setHb(&.Hitdef hit=, bool guard, bool combo, int absdamage=)
   {
@@ -1227,7 +1227,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
       }
       absdamage = hit.guarddamage;
       `hb.hitcount = hc;
-      ret 2 * (`hb.typ == 0 || hit.reversal_attr > 0 ? -1 : 1);
+      ret 2 * (`hb.typ == 0 || hit.reversal_attr > 0 ? (int)-1 : 1);
     }
     `hb.hitshaketime = .m.max!int?(0, hit.shaketime);
     `hb.slidetime = hit.ground_slidetime;
@@ -1259,7 +1259,7 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
     `hb.hitcount = cmb ? hc+1 : 1;
     `hb.fallcount = fc;
     `hb.fallf |= fall;
-    ret 1 * (`hb.typ == 0 || hit.reversal_attr > 0 ? -1 : 1);
+    ret 1 * (`hb.typ == 0 || hit.reversal_attr > 0 ? (int)-1 : 1);
   }
 }
 const index iLIFE              = 10;
@@ -5067,7 +5067,7 @@ public &Char
   public void setBindFacing(int f)
   {
     if(f== 0) ret;
-    `sysivar[.iBINDFACING] = f < 0 ? -1 : 1;
+    `sysivar[.iBINDFACING] = f < 0 ? (int)-1 : 1;
   }
   public void trTargetDrop(int id, bool keepone)
   {
@@ -5585,7 +5585,7 @@ public void Explod::update(bool oVer, int playerNo)
       .addAnimList(
         a=, `ani, `sprpriority, `x, `y, screen,
         (float)`facing*`scalex*scl, (float)`vfacing*`scaley*scl,
-        0.0, false, oVer, 1.0, 1.0, `alphas < 0 ? -1 : `alphas,
+        0.0, false, oVer, 1.0, 1.0, `alphas < 0 ? (int)-1 : `alphas,
         `alphad, playerNo == .superplayer,
         pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
         `alphas < 0 ? 256 : `alphas, 0.0);
@@ -5967,10 +5967,6 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           cond hit.p1facing < 0:
             byf *= -1;
           }
-          bool snapfx = !.m.isnan(hit.snapx);
-          bool snapfy =
-            !.m.isnan(hit.snapy)
-            && (!`pyr.stVal.hb.guarded || `pyr.stVal.typ == .StTy::A);
           float byx = by.sysfvar[.fX] + (float)(pro != 0) * x;
           float byy = by.sysfvar[.fY] + (float)(pro != 0) * y;
           float snapx = 0.0/0.0;
@@ -6013,10 +6009,14 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
           if(!.m.isnan(snapy)) `pyr.stVal.hb.yoff = snapy - `pyr.sysfvar[.fY];
           if(hit.snapt != 0){
             `pyr.setBindToId(by=);
-            `pyr.setBindTime(hit.snapt);
+            `pyr.setBindTime(hit.snapt + (int)!by.isPaused());
             `pyr.sysivar[.iBINDFACING] = 0;
-            `pyr.sysfvar[.fBINDPOSX] = snapfx ? hit.mindistx : 0.0/0.0;
-            `pyr.sysfvar[.fBINDPOSY] = snapfy ? hit.mindisty : 0.0/0.0;
+            `pyr.sysfvar[.fBINDPOSX] =
+              !.m.isnan(hit.snapx) ? hit.mindistx : 0.0/0.0;
+            `pyr.sysfvar[.fBINDPOSY] =
+              !.m.isnan(hit.snapy)
+              && (hitting == 1 || `pyr.stVal.typ == .StTy::A)
+              ? hit.mindisty : 0.0/0.0;
           }
         }
       else:
