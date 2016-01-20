@@ -533,9 +533,9 @@ void gethitvar(&.lua.State L=, int re=)
   cond .s.equ("recovertime", ghv):
     n = (double).cwc~sysivar[.chr.iRECOVERTIME];
   cond .s.equ("xoff", ghv):
-    n = (double).cwc~stVal.hb.snapx;
+    n = (double).cwc~stVal.hb.xoff;
   cond .s.equ("yoff", ghv):
-    n = (double).cwc~stVal.hb.snapy;
+    n = (double).cwc~stVal.hb.yoff;
   cond .s.equ("xvel", ghv):
     n = .cwc~trHitXvel();
   cond .s.equ("yvel", ghv):
