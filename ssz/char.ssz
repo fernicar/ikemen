@@ -5521,55 +5521,36 @@ public void Explod::update(bool oVer, int playerNo)
       ret;
     }
   }
-  float scl = 1.0;
   bool screen = false;
-  if(`bindtime != 0) branch{
-  cond `postype >= 4:
-    screen = true;
-    `x =
-      `offsetx + (
-        `postype == 4
-        ? -(float).com.GameWidth/2.0 : (float).com.GameWidth/2.0);
-    `y = `offsety;
+  branch{
+  cond `bindtime != 0:
+    branch{
+    cond `postype >= 4:
+      screen = true;
+      `x =
+        `offsetx + (
+          `postype == 4
+          ? -(float).com.GameWidth/2.0 : (float).com.GameWidth/2.0);
+      `y = `offsety;
+    else:
+      {
+        ^&.Char bc = .players.get(`bindid);
+        if(#bc == 0){
+          `bindtime = 0;
+          break, break;
+        }
+        if(!.m.isnan(`offsetx)) `x = bc~drawX+bc~offsetX() + `offsetx;
+        if(!.m.isnan(`offsety)) `y = bc~drawY+bc~offsetY() + `offsety;
+      }
+    }
   else:
     {
-      ^&.Char bc = .players.get(`bindid);
-      if(#bc == 0){
-        `bindtime = 0;
-        break, break;
-      }
-      if(!.m.isnan(`offsetx)) `setX(bc~drawX+bc~offsetX() + `offsetx);
-      if(!.m.isnan(`offsety)) `setY(bc~drawY+bc~offsetY() + `offsety);
+      float sp = .com.tickInterpola();
+      `x = `ticNewX - (`ticNewX - `ticOldX) * (1.0 - sp);
+      `y = `ticNewY - (`ticNewY - `ticOldY) * (1.0 - sp);
     }
   }
   if(.com.tickFrame() && act) `ani~ani.updateSprite();
-  if(act && `bindtime == 0){
-    if(.com.tickFrame()){
-      `ticOldX = `x;
-      `ticNewX = `x + `velocityx*(float)(`facing*`relativef);
-      `ticOldY = `y;
-      `ticNewY = `y + `velocityy;
-    }
-    float sp = .com.tickInterpola();
-    `x = `ticNewX - (`ticNewX - `ticOldX) * (1.0 - sp);
-    `y = `ticNewY - (`ticNewY - `ticOldY) * (1.0 - sp);
-  }
-  if(.com.tickNextFrame()){
-    if(`bindtime > 0){
-      `bindtime--;
-      if(act && `bindtime == 0){
-        `x += `velocityx*(float)(`facing*`relativef);
-        `y += `velocityy;
-      }
-    }
-    if(!act) break;
-    if(`bindtime == 0){
-      `velocityx += `accelx;
-      `velocityy += `accely;
-    }
-    `ani~ani.action();
-    `time++;
-  }
   branch{
     type _t = $void(.anims.self=);
     ~_t aal = [_t(a=){
@@ -5584,7 +5565,7 @@ public void Explod::update(bool oVer, int playerNo)
       }
       .addAnimList(
         a=, `ani, `sprpriority, `x, `y, screen,
-        (float)`facing*`scalex*scl, (float)`vfacing*`scaley*scl,
+        (float)`facing*`scalex, (float)`vfacing*`scaley,
         0.0, false, oVer, 1.0, 1.0, `alphas < 0 ? (int)-1 : `alphas,
         `alphad, playerNo == .superplayer,
         pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
@@ -5595,19 +5576,33 @@ public void Explod::update(bool oVer, int playerNo)
   else:
     aal(:.anims=:);
   }
-  if(screen && `bindtime == 0 && .com.tickNextFrame()){
-    switch(`postype){
-    case 4://left
-      `setX(.com.screenx + `offsetx/.com.scale);
-      `setY(.com.screeny + `offsety/.com.scale);
-    case 5://right
-      `setX(.com.screenx + ((float).com.GameWidth + `offsetx)/.com.scale);
-      `setY(.com.screeny + `offsety/.com.scale);
+  if(.com.tickNextFrame()){
+    if(`bindtime > 0) `bindtime--;
+    if(screen && `bindtime == 0){
+      switch(`postype){
+      case 4://left
+        `x = .com.screenx + `offsetx / .com.scale;
+        `y = .com.screeny + `offsety / .com.scale;
+      case 5://right
+        `x = .com.screenx + ((float).com.GameWidth + `offsetx) / .com.scale;
+        `y = .com.screeny + `offsety / .com.scale;
+      }
     }
-    if(act){
-      `x += `velocityx*(float)(`facing*`relativef);
-      `y += `velocityy;
+    if(!act){
+      `setX(`x);
+      `setY(`y);
+      break, break;
     }
+    if(`bindtime == 0){
+      `ticOldX = `x;
+      `ticNewX = `x + `velocityx * (float)(`facing * `relativef);
+      `ticOldY = `y;
+      `ticNewY = `y + `velocityy;
+      `velocityx += `accelx;
+      `velocityy += `accely;
+    }
+    `ani~ani.action();
+    `time++;
   }
 }
 public void Explod::setPos(&.Char c=)
