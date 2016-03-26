@@ -3444,6 +3444,18 @@ public &Char
         if(`stVal.mctime > 0) `stVal.mctime++;
         `setFacing(`p1facing);
         `p1facing = 0;
+        branch{
+        cond #`ani > 0:
+          `curFrame = `ani~ani.currentFrame();
+        else:
+          `curFrame.new(0);
+        }
+      }
+      if(`stVal.hb.damage != 0){
+        if(`stVal.mov == .MovTy::H){
+          `addLife(-(double)`stVal.hb.damage, true, true);
+        }
+        `stVal.hb.damage = 0;
       }
       if(`helperindex == 0 && .cgi[`playerno].pctime >= 0){
         .cgi[`playerno].pctime++;
@@ -3456,23 +3468,12 @@ public &Char
     }];
     `minus = 1;
     `acttmp += (int)`isActive() - (int)`isHitPaused();
-    if(`acttmp > 0) branch{
-    cond #`ani > 0:
-      `curFrame = `ani~ani.currentFrame();
-    else:
-      `curFrame.new(0);
-    }
     if(!`isHitPaused()){
       if(!`ls(.lsFRONTWCHANGE)) `frontw = `defFW();
       if(!`ls(.lsBACKWCHANGE)) `backw = `defBW();
       if(!`ls(.lsFEDGECHANGE)) `fedge = 0.0;
       if(!`ls(.lsBEDGECHANGE)) `bedge = 0.0;
     }
-    if(`stVal.mov == .MovTy::H && `stVal.hb.damage != 0){
-      if(`stVal.hb.guarded) `getcombo = 0;
-      `addLife(-(double)`stVal.hb.damage, true, true);
-    }
-    `stVal.hb.damage = 0;
   }
   public void posUpdate()
   {
@@ -3612,7 +3613,10 @@ public &Char
       `ho = -1;
       if(`acttmp > 0){
         if(`inGuardState()) `sysivar[.iSYSFLAG] |= .sfGUARD;
-        if(`stVal.mov != .MovTy::H){
+        branch{
+        cond `stVal.mov == .MovTy::H:
+          if(`stVal.hb.guarded) `getcombo = 0;
+        else:
           if(`hittmp > 0) `hittmp = 0;
           `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
           `stVal.hb.hittime = -1;
