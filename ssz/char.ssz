@@ -3134,7 +3134,7 @@ public &Char
         `angleset = false;
       }
     cond !`ls(.lsINVISIBLE):
-      if(`ls(.lsANGLEDRAW) && !`ls(.lsTRANS)){
+      if(`mver0() != 1 && `ls(.lsANGLEDRAW) && !`ls(.lsTRANS)){
         `sysivar[.iSPECIALFLAG] |= .lsTRANS;
         `sysivar[.iALPHAS] = 255;
         `sysivar[.iALPHAD] = 0;
