@@ -74,7 +74,7 @@ public &Snd
           if(!`f.read!ushort?(fmtID=)) ret .com.FileReadError;
           if(fmtID != 0x1) ret "リニアPCMじゃない";
           if(!`f.read!ushort?(wav.channels=)) ret .com.FileReadError;
-          if(wav.channels-0x1 >= 0x1) ret "チャンネル数が不正";
+          if(wav.channels-0x1 >= 0x2) ret "チャンネル数が不正";
           if(!`f.read!uint?(wav.samplesPerSec=)) ret .com.FileReadError;
           if(wav.samplesPerSec-0x1 >= 0x100000){
             ret "周波数が不正 " + ''(int)wav.samplesPerSec;
