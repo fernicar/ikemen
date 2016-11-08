@@ -514,6 +514,7 @@ public &Sprite
       `palidx = -1;
       ret "";
     }
+    if(`rle == -12) ret "";
     loop{
       uint ip;
       indexOfPrevious = (uint)`palidx;
