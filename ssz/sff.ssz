@@ -1,4 +1,4 @@
-
+﻿
 lib file = <file.ssz>;
 lib s = <string.ssz>;
 lib sdl = <alpha/sdlplugin.ssz>;
@@ -218,14 +218,14 @@ public &Sprite
   }
   public ^/char read(
     &.file.File f=, &.SffHeader sh=, long offset, uint loh, uint nsh,
-    ^`self prev, bool palletSame=, &.PalleteList pl=, bool c00)
+    ^`self prev, &.PalleteList pl=, bool c00)
   {
     ^/char error;
     uint lenghtOfSubheader = loh;
     if(nsh > (uint)offset) lenghtOfSubheader = nsh - (uint)offset;//lohを無視
     byte ps;
     if(!f.read!byte?(ps=)) ret .com.FileReadError;
-    palletSame = ps != 0;
+    bool palletSame = ps != 0;
     if(#prev == 0) palletSame = false;
     if(#`readPcxHeader(f=, offset)=>error > 0) ret error;
     f.seek(offset + 128, .file.Seek::SET);
@@ -263,7 +263,7 @@ public &Sprite
     ^ubyte px;
     if(`rle < 0) switch(-`rle){
       if(-`rle <= 4){
-        px.new((index)dsz);
+        px.new((index)dsz-4);
         f.readAry!ubyte?(px);
       }
     case 2:
@@ -455,7 +455,6 @@ public &Sprite
     loop{
       index i = 0;
       %uint newSubHeaderOffset .= shofs;
-      bool palletSame;
       ~$bool() foo = [bool(){
         switch(h.ver0){
         case 0d1:
@@ -495,7 +494,7 @@ public &Sprite
         if(
           #`read(
             f=, h=, (long)(shofs + 0d32), size,
-            misc, dummy, palletSame=, pl=, false)=>error
+            misc, dummy, pl=, false)=>error
           > 0) ret error;
       case 0d2:
         if(#`readV2(f=, (long)misc, size)=>error > 0) ret error;
@@ -737,14 +736,13 @@ public &Sff
         }
       }
       branch{
-        bool ps;
       cond size != 0d0:
         switch(`head.ver0){
         case 0d1:
           if(
             #spriteList[i].read(
               f=, `head=, (long)(shofs + 0d32),
-              size, misc, spriteList[prev..prev+1], ps=, `palList=,
+              size, misc, spriteList[prev..prev+1], `palList=,
               chr && (
                 (
                   spriteList[i].imageGroup == 0
