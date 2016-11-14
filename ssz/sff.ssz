@@ -823,6 +823,7 @@ public &FrameMethods<_t>
     `x = ary[2];
     `y = ary[3];
     `time = ary[4];
+    `ex.new(0);
     ^^/char spl = @s.split(",", line);
     if(#spl < 6) ret;
     loop{index i = 0; while; do:
@@ -839,13 +840,16 @@ public &FrameMethods<_t>
     if(`v < 0) `y *= -1;
     if(#spl < 7) ret;
     ^/char a;
-    loop{index i = 6; while; do:
+    index i = 6;
+    loop{while; do:
       if(#(a = @s.trim(spl[i])) > 0){
         a = a[.s.cFind("asAS", a) .. -1];
         if(#a > 0) break, break;
       }
       i++;
-    while i < #spl:}
+    while i < #spl:
+      i = 6;
+    }
     a = @s.toLower(a);
     branch{
     cond @s.equ(a, "a1"):
@@ -868,6 +872,14 @@ public &FrameMethods<_t>
       `salpha = 0d255;
       `dalpha = 0d255;
     }
+    if(#spl <= ++i) ret;
+    spl[i] = @s.trim(spl[i]);
+    `ex = `ex + ?(#spl[i] > 0 ? @com.aton!float?(spl[i]) : 1.0); // x-scale
+    if(#spl <= ++i) ret;
+    spl[i] = @s.trim(spl[i]);
+    `ex = `ex + ?(#spl[i] > 0 ? @com.aton!float?(spl[i]) : 1.0); // y-scale
+    if(#spl <= ++i) ret;
+    `ex = `ex + ?(@com.aton!float?(spl[i]) * @m.PI / 180.0); // angle
   }
 }
 
@@ -1042,11 +1054,9 @@ public &Anim<frame_t>
     else:
       loop{
         index i = `current;
-        t -= .m.max!int?(0, `frames[i].time) - `time;
-        continue;
+        t += `time;
       do:
         t -= .m.max!int?(0, `frames[i].time);
-      continue:
         if(t <= 0 || (i == #`frames-1 && `frames[i].time == -1)) ret i + 1;
         i++;
         if(i >= #`frames){
@@ -1079,8 +1089,8 @@ public &Anim<frame_t>
   {
     loop{
       bool foo = true;
-      continue;
     do:
+      `current = .m.max!index?(0, elem);
       loop{while; do:
         if(`current == #`frames-1 && `frames[`current].time == -1) break;
         `current++;
@@ -1090,10 +1100,7 @@ public &Anim<frame_t>
         `current = #`frames-1;
         break, break;
       }
-    continue:
-      `current = .m.max!index?(0, elem);
-    while true:
-    }
+    while true:}
     .m.limRange!index?(`current=, 0, #`frames-1);
   }
   public void updateSprite()
@@ -1190,14 +1197,32 @@ public &Anim<frame_t>
     }
     ret pal;
   }
+  void exParam(`frame_t f=, float h=, float v=, float agl=)
+  {
+    switch(#f.ex){
+    default:
+      agl += f.ex[2];
+    case 2:<-
+      v *= f.ex[1];
+    case 1:<-
+      h *= f.ex[0];
+    case 0:
+    }
+  }
   public void draw(
     &.sdl.Rect rect=, float x, float y, float cscalex, float cscaley,
     float xtscale, float xbscale, float yscale, float rasterxadd,
     float rx, ^&.com.PalFX fx, bool oVer)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
-    int h = `frames[`drawidx].h, v = `frames[`drawidx].v;
-    float xs = (float)h*cscalex*xtscale, ys = (float)v*cscaley*yscale;
+    float h = (float)`frames[`drawidx].h, v = (float)`frames[`drawidx].v;
+    float agl = 0.0;
+    `exParam(`frames[`drawidx]=, h=, v=, agl=);
+    if(agl != 0.0){
+      `angleDraw(
+        x, y, cscalex*xtscale, cscaley*yscale, 0.0, true, 1.0, 1.0, fx, false);
+    }
+    float xs = h*cscalex*xtscale, ys = v*cscaley*yscale;
     float bs = xbscale;
   /?/*!.cfg.OpenGL:
     .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
@@ -1230,7 +1255,7 @@ public &Anim<frame_t>
   /?/*.cfg.OpenGL:
     `spr~glDraw(
       `palFoo(fx), `mask, (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,
-      `tile=, xs*.com.WidthScale, cscalex*bs*(float)h*.com.WidthScale,
+      `tile=, xs*.com.WidthScale, cscalex*bs*h*.com.WidthScale,
       ys*.com.HeightScale,
       cscalex*rasterxadd*(.com.WidthScale/.com.HeightScale),
       0.0, `alphaFoo(), rect=, rx*.com.WidthScale, 0.0, fx);
@@ -1239,7 +1264,7 @@ public &Anim<frame_t>
       rect=, rx*.com.WidthScale, 0.0, `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
       (rx-x2)*.com.WidthScale, -y2*.com.HeightScale,
       `tile=, xs*.com.WidthScale,
-      cscalex*bs*(float)h*.com.WidthScale, ys*.com.HeightScale,
+      cscalex*bs*h*.com.WidthScale, ys*.com.HeightScale,
       cscalex*rasterxadd*(.com.WidthScale/.com.HeightScale),
       0x0, `alphaFoo(), `spr~rle, `spr~pluginbuf=);
   /*?*/
@@ -1249,44 +1274,45 @@ public &Anim<frame_t>
     float axscl, float ayscl, ^&.com.PalFX fx, bool oVer)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
-    int h = `frames[`drawidx].h;
-    int v = `frames[`drawidx].v;
+    float h = (float)`frames[`drawidx].h, v = (float)`frames[`drawidx].v;
     float xs = xscale * axscl, ys = yscale * ayscl;
-    float rx = x+xs*(float)(h*`frames[`drawidx].x)+(float).com.GameWidth/2.0;
-    float agl = angle*(float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
-    if(!angleset){
+    float agl = angle;
+    `exParam(`frames[`drawidx]=, h=, v=, agl=);
+    float rx = x+xs*h*(float)`frames[`drawidx].x+(float).com.GameWidth/2.0;
+    if(!angleset && agl == angle){
       `draw(
         .com.scrrect=,
         x, y, 1.0, 1.0, xs, xs, ys, 0.0, (float).com.GameWidth/2.0, fx, oVer);
       ret;
     }
   /?/*.cfg.OpenGL:
+    agl *= (float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
     `spr~glDraw(
-      `palFoo(fx), `mask, #xs*(float)`spr~rct.x*.com.WidthScale,
-      #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
-      xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
-      ys*(float)v*.com.HeightScale, 0.0, agl, `alphaFoo(),
+      `palFoo(fx), `mask, #(xs*h)*(float)`spr~rct.x*.com.WidthScale,
+      #(ys*v)*(float)`spr~rct.y*.com.HeightScale, `tile=,
+      xs*h*.com.WidthScale, xs*h*.com.WidthScale,
+      ys*v*.com.HeightScale, 0.0, agl, `alphaFoo(),
       .com.scrrect=, rx*.com.WidthScale,
-      (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale, fx);
+      (y+ys*v*(float)`frames[`drawidx].y)*.com.HeightScale, fx);
   /*true:
     uint uagl = (uint)((512.0/.m.PI)*agl + 0.5) & 0x3ff;
-    if(uagl == 0x0){
+    if(uagl == 0x0 && agl == angle){
       `draw(
-        .com.scrrect=, x - xs*(float)(h*`frames[`drawidx].x), y,
+        .com.scrrect=, x - xs*h*(float)`frames[`drawidx].x, y,
         1.0, 1.0, xs, xs, ys, 0.0, (float).com.GameWidth/2.0, fx, false);
         ret;
     }
+    agl *= (float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
     .m.limRange!float?(xs=, -16000.0/.com.WidthScale, 16000.0/.com.WidthScale);
     .m.limRange!float?(
       ys=, -16000.0/.com.HeightScale, 16000.0/.com.HeightScale);
     .sdl.renderMugenZoom(
       .com.scrrect=, rx*.com.WidthScale,
-      (y+ys*(float)(v*`frames[`drawidx].y))*.com.HeightScale,
+      (y+ys*v*(float)`frames[`drawidx].y)*.com.HeightScale,
       `spr~pxl, `palFoo(fx), `mask, `spr~rct=,
-      #xs*(float)`spr~rct.x*.com.WidthScale,
-      #ys*(float)`spr~rct.y*.com.HeightScale,
-      `tile=, xs*(float)h*.com.WidthScale,
-      xs*(float)h*.com.WidthScale, ys*(float)v*.com.HeightScale,
+      #(xs*h)*(float)`spr~rct.x*.com.WidthScale,
+      #(ys*v)*(float)`spr~rct.y*.com.HeightScale, `tile=,
+      xs*h*.com.WidthScale, xs*h*.com.WidthScale, ys*v*.com.HeightScale,
       0.0, uagl, `alphaFoo(), `spr~rle, `spr~pluginbuf=);
   /*?*/
   }
@@ -1296,16 +1322,18 @@ public &Anim<frame_t>
     uint color, int alpha)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
-    int h = `frames[`drawidx].h;
-    int v = `frames[`drawidx].v;
+    float h = (float)`frames[`drawidx].h, v = (float)`frames[`drawidx].v;
     float xs = xscale * axscl, ys = yscale * ayscl;
-    float x2 = x + xs*(float)(h*`frames[`drawidx].x);
-    float y2 = y + ys*vscale*(float)(v*`frames[`drawidx].y);
-    float agl = angle*(float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
-    if(!angleset){
+    float agl = angle;
+    `exParam(`frames[`drawidx]=, h=, v=, agl=);
+    float x2 = x + xs*h*(float)`frames[`drawidx].x;
+    float y2 = y + ys*vscale*v*(float)`frames[`drawidx].y;
+    if(!angleset && agl == angle){
+      agl = 0.0;
       if(xs < 0.0 && oVer) x2 -= xs;
       if(ys*vscale < 0.0 && oVer) y2 -= ys*vscale;
     }
+    agl *= (float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
   /?/*.cfg.OpenGL:
     if(color != 0x0 && `spr~rle != -12) loop{index i = 0; do:
       .com.tmppl[i] = color;
@@ -1314,20 +1342,20 @@ public &Anim<frame_t>
       `spr~rle == -12 ? [void(int alp){
         .sdl.RenderMugenGlFcS(:
           `spr~pxl<>, `spr~rct=,
-          #xs*(float)`spr~rct.x*.com.WidthScale,
-          #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
-          xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
-          ys*(float)v*.com.HeightScale, vscale, 0.0, agl,
+          #(xs*h)*(float)`spr~rct.x*.com.WidthScale,
+          #(ys*v)*(float)`spr~rct.y*.com.HeightScale, `tile=,
+          xs*h*.com.WidthScale, xs*h*.com.WidthScale,
+          ys*v*.com.HeightScale, vscale, 0.0, agl,
           alp, .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
           y2*.com.HeightScale, color:);
       }]
       : [void(int alp){
         .sdl.RenderMugenGl(:
           `spr~pxl<>, .com.tmppl<>=, `mask, `spr~rct=,
-          #xs*(float)`spr~rct.x*.com.WidthScale,
-          #ys*(float)`spr~rct.y*.com.HeightScale, `tile=,
-          xs*(float)h*.com.WidthScale, xs*(float)h*.com.WidthScale,
-          ys*(float)v*.com.HeightScale, vscale, 0.0, agl,
+          #(xs*h)*(float)`spr~rct.x*.com.WidthScale,
+          #(ys*v)*(float)`spr~rct.y*.com.HeightScale, `tile=,
+          xs*h*.com.WidthScale, xs*h*.com.WidthScale,
+          ys*v*.com.HeightScale, vscale, 0.0, agl,
           alp, .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
           y2*.com.HeightScale:);
       }];
@@ -1341,9 +1369,9 @@ public &Anim<frame_t>
     .sdl.renderMugenShadow(
       .com.scrrect=, (x2+(float).com.GameWidth/2.0)*.com.WidthScale,
       y2*.com.HeightScale, `spr~pxl, color, `spr~rct=,
-      #xs*(float)`spr~rct.x*.com.WidthScale,
-      #ys*(float)`spr~rct.y*.com.HeightScale,
-      xs*(float)h*.com.WidthScale, ys*(float)v*.com.HeightScale, vscale,
+      #(xs*h)*(float)`spr~rct.x*.com.WidthScale,
+      #(ys*v)*(float)`spr~rct.y*.com.HeightScale,
+      xs*h*.com.WidthScale, ys*v*.com.HeightScale, vscale,
       uagl, alpha, `spr~rle, `spr~pluginbuf=);
   /*?*/
   }

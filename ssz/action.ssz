@@ -11,7 +11,8 @@ public &Rect
 }
 public &Frame
 {
-  public ^&.Rect clsn1, clsn2;
+  public ^^&.Rect clsn;
+  public ^float ex;
   public int time = -1;
   public short group = -1, number = 0;
   public short x = 0, y = 0;
@@ -19,6 +20,18 @@ public &Frame
   public byte h = 1, v = 1;
   type anim_t = &.sff.Anim!self?;
   &.sff.FrameMethods!self? fam;
+  public ^&.Rect clsn1()
+  {
+    if(#`clsn > 0) ret `clsn[0];
+    ^&.Rect null;
+    ret null;
+  }
+  public ^&.Rect clsn2()
+  {
+    if(#`clsn > 1) ret `clsn[1];
+    ^&.Rect null;
+    ret null;
+  }
 }
 
 public &Action
@@ -62,8 +75,11 @@ public &Action
         `ani.frames.new[-1].readData(ary, line);
         if(defaul1) clsn1 = clsn1d;
         if(defaul2) clsn2 = clsn2d;
-        `ani.frames[-1].clsn1 = clsn1;
-        `ani.frames[-1].clsn2 = clsn2;
+        if(#clsn1 > 0 || #clsn2 > 0){
+          `ani.frames[-1].clsn.new(2);
+          `ani.frames[-1].clsn[0] = clsn1;
+          `ani.frames[-1].clsn[1] = clsn2;
+        }
         defaul1 = defaul2 = true;
       cond .s.equ("loopstart", line[0..9]):
         `ani.loopstart = #`ani.frames;

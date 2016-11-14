@@ -1899,8 +1899,8 @@ public &Projectile
     if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
     if(#`ani == 0 || #`ani~ani.frames == 0) ret false;
     ^&.act.Frame frm;
-    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn2;
-    ^&.act.Rect clsn2 = `ani~ani.currentFrame()=>frm$frm~clsn2;
+    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn2();
+    ^&.act.Rect clsn2 = `ani~ani.currentFrame()=>frm$frm~clsn2();
     &.ClsnHantei ch.set(
       pr.clsnscalex, pr.clsnscaley, pr.x, pr.y,
       pr.facing > 0 ? .pLrSet : .mLrSet,
@@ -2002,12 +2002,12 @@ public &Projectile
     if(.com.clsndraw && #`ani > 0){
       ^&.act.Frame frm = `ani~ani.drawFrame();
       if(#frm == 0) break;
-      ^&.act.Rect clsn = frm~clsn1;
+      ^&.act.Rect clsn = frm~clsn1();
       if(#clsn > 0){
         .drawc1.new[-1].set(
           clsn, `x, `y, (float)`facing*`clsnscalex, `clsnscaley);
       }
-      clsn = frm~clsn2;
+      clsn = frm~clsn2();
       if(#clsn > 0){
         .drawc2.new[-1].set(
           clsn, `x, `y, (float)`facing*`clsnscalex, `clsnscaley);
@@ -2911,8 +2911,8 @@ public &Char
   {
     if(#atk.ani == 0 || #atk.curFrame == 0) ret false;
     if(#`ani == 0 || #`curFrame == 0) ret false;
-    ^&.act.Rect clsn1 = c1atk ? atk.curFrame~clsn1 : atk.curFrame~clsn2;
-    ^&.act.Rect clsn2 = c1slf ? `curFrame~clsn1 : `curFrame~clsn2;
+    ^&.act.Rect clsn1 = c1atk ? atk.curFrame~clsn1() : atk.curFrame~clsn2();
+    ^&.act.Rect clsn2 = c1slf ? `curFrame~clsn1() : `curFrame~clsn2();
     &.ClsnHantei ch.set(
       atk.sysfvar[.fCLSNXSCALE], atk.sysfvar[.fCLSNYSCALE],
       atk.sysfvar[.fX] + atk.offsetX(), atk.sysfvar[.fY] + atk.offsetY(),
@@ -2938,8 +2938,8 @@ public &Char
     if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
     if(#`ani == 0 || #`curFrame == 0) ret false;
     ^&.act.Frame frm;
-    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn1;
-    ^&.act.Rect clsn2 = `curFrame~clsn2;
+    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn1();
+    ^&.act.Rect clsn2 = `curFrame~clsn2();
     &.ClsnHantei ch.set(
       pr.clsnscalex, pr.clsnscaley, pr.x, pr.y,
       pr.facing > 0 ? .pLrSet : .mLrSet,
@@ -2961,8 +2961,8 @@ public &Char
       #pr.ani == 0 || #pr.ani~ani.frames == 0 || `stVal.hit.reversal_attr > 0
       || #`ani == 0 || #`curFrame == 0) ret false;
     ^&.act.Frame frm;
-    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn2;
-    ^&.act.Rect clsn2 = `curFrame~clsn1;
+    ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn2();
+    ^&.act.Rect clsn2 = `curFrame~clsn1();
     &.ClsnHantei ch.set(
       pr.clsnscalex, pr.clsnscaley, pr.x, pr.y,
       pr.facing > 0 ? .pLrSet : .mLrSet,
@@ -3098,9 +3098,9 @@ public &Char
       float xs = (float)`facing * `sysfvar[.fCLSNXSCALE];
       float ys = `sysfvar[.fCLSNYSCALE];
       ^&.act.Frame frm = `curFrame;
-      ^&.act.Rect clsn = frm~clsn1;
+      ^&.act.Rect clsn = frm~clsn1();
       if(#clsn > 0 && `atktmp != 0) .drawc1.new[-1].set(clsn, x, y, xs, ys);
-      clsn = frm~clsn2;
+      clsn = frm~clsn2();
       if(#clsn > 0) branch{
       cond `stVal.hb.hitt1 != 0 || `stVal.hb.hitt2 != 0:
         .drawc2sp.new[-1].set(clsn, x, y, xs, ys);
