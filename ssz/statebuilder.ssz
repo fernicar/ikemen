@@ -6599,6 +6599,27 @@ public &StateBuilder
           !anim && `state.ctrlList[-1].typ == .CtrlTy::GameMakeAnim
           && !`stateParam(param=, "value", aniset)) ret false;
       }
+      if(`state.ctrlList[-1].typ != .CtrlTy::GameMakeAnim){
+        if(!`stateParam(param=, "angle", [`paraF_t(data=){
+          `state.ctrlList[-1].task .= exp;
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=, ".angle=", ";", 1)) ret false;
+          ret true;
+        }])) ret false;
+        if(!`stateParam(param=, "yangle", [`paraF_t(data=){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=, "", ";", 1)) ret false;
+          ret true;
+        }])) ret false;
+        if(!`stateParam(param=, "xangle", [`paraF_t(data=){
+          if(
+            !`fullExpression(
+              `state.ctrlList[-1].task=, data=, "", ";", 1)) ret false;
+          ret true;
+        }])) ret false;
+      }
       switch(`state.ctrlList[-1].typ){
       case .CtrlTy::Explod, .CtrlTy::GameMakeAnim:
         if(`state.ctrlList[-1].typ == .CtrlTy::GameMakeAnim){

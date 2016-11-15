@@ -1572,6 +1572,7 @@ int envcol_b = 255;
   public int alphad;
   public int supermovetime;
   public int pausemovetime;
+  public float angle;
   new()
   {
     `clear();
@@ -1605,6 +1606,7 @@ int envcol_b = 255;
     `alphad = .com.IERR;
     `supermovetime = .com.IERR;
     `pausemovetime = .com.IERR;
+    `angle = 0.0/0.0;
   }
   public void setX(float x)
   {
@@ -1650,6 +1652,7 @@ public &Explod
   public int player;
   public int bindid;
   public int ignorehitpause;
+  public float angle;
   public float ticOldX, ticNewX;
   public float ticOldY, ticNewY;
   public ^&.com.PalFX palfx;
@@ -1692,6 +1695,7 @@ public &Explod
     `player = -1;
     `bindid = -1;
     `ignorehitpause = 1;
+    `angle = 0.0;
     `ticOldX = `ticNewX = `x;
     `ticOldY = `ticNewY = `y;
     `palfx.new(0);
@@ -5570,7 +5574,8 @@ public void Explod::update(bool oVer, int playerNo)
       .addAnimList(
         a=, `ani, `sprpriority, `x, `y, screen,
         (float)`facing*`scalex, (float)`vfacing*`scaley,
-        0.0, false, oVer, 1.0, 1.0, `alphas < 0 ? (int)-1 : `alphas,
+        `scalex < 0.0 == `scaley < 0.0 ? `angle : -`angle, `angle != 0.0,
+        oVer, 1.0, 1.0, `alphas < 0 ? (int)-1 : `alphas,
         `alphad, playerNo == .superplayer,
         pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
         `alphas < 0 ? 256 : `alphas, 0.0);
@@ -5684,6 +5689,7 @@ public void Explod::modify(
     `setPos(c=);
   }
   if(`ontop != 0) `sprpriority = 0;
+  if(!.m.isnan(mod.angle)) `angle = mod.angle;
 }
 
 
