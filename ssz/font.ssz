@@ -176,7 +176,7 @@ public &Font
     void copyCharRect(^ubyte dst, int dw, ^/ubyte src, int x, int w, int h)
     {
       loop{index i = 0; while; do:
-        .s.copy!ubyte?(dst[dw*i..w*i+dw], src[w*i+x..w*i+x+dw]);
+        .s.copy!ubyte?(dst[dw*i..dw*(i+1)], src[w*i+x..w*i+x+dw]);
         i++;
       while i < h:}
     }
@@ -188,7 +188,7 @@ public &Font
         cond j == 0:
           `mpl[i].img[j].shareCopy(`img=);
           `mpl[i].img[j].rct.w = `mpl[i].w;
-         px2.new(`mpl[i].w * (int)`img.rct.h);
+          px2.new(`mpl[i].w * (int)`img.rct.h);
           copyCharRect(
             px2, `mpl[i].w, px, `mpl[i].ofs, (int)`img.rct.w, (int)`img.rct.h);
           `mpl[i].img[j].setPxl(px2);

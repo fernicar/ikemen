@@ -954,7 +954,7 @@ public &Command
     if(!ai && `cmd[`cmdidx].slash){
       if(`cmdidx > 0) branch{
       cond notHeld == 1:
-        if(#`cmd[`cmdidx - 1].key > 1) ret false;
+        if(#`cmd[`cmdidx - 1].key != 1) ret false;
         if(
           `cmd[`cmdidx - 1].key<> >= .Key::a
           && `cmd[`cmdidx - 1].key<> <= .Key::s
