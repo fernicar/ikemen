@@ -531,10 +531,6 @@ public void readAnim(&.sff.Anim!&.bg.Frame? a=, &.ActionList al=, ^/char data)
       .com.readPairOF!int?(
         `teammate_spacingx=, `teammate_spacingy=, data);
     }
-    if(#(data = sc.benri(p, "teammate.spacing")) > 0){
-      .com.readPairOF!int?(
-        `teammate_spacingx=, `teammate_spacingy=, data);
-    }
     if(#(data = sc.benri(p, "teammate.bg.spr")) > 0){
       .readSpr(`teammate_bg=, data);
     }
