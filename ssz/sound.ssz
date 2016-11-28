@@ -100,7 +100,7 @@ public &Snd
         && ofs < (long)`subHeaderOffset + (long)riffSize + 16
         :
       }
-      if(fmtSize == 0x0) ret "fmt がない";
+      if(fmtSize == 0x0 && dataSize > 0x0) ret "fmt がない";
       ret "";
     }
     ubyte ub;
