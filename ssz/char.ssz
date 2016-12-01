@@ -7428,7 +7428,7 @@ public void nextRound()
       c.rangeSetIVar(0, c.sysivar[.iINTPERSISTINDEX]-1, 0);
       c.rangeSetFVar(0, c.sysivar[.iFLOATPERSISTINDEX]-1, 0.0);
       loop{index j = 0; while; do:
-        c.cmd[j].bufReset(c.key);
+        c.cmd[j].bufReset();
         j++;
       while j < #.chars:}
       if(.com.rexisted[c.playerno&1] == 0){

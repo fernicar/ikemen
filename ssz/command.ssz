@@ -1165,7 +1165,7 @@ public &CommandList
   {
     `commands:<-:<-[void(c=){c.step(`buffer, ai, hitpause, buftime);}];
   }
-  public void bufReset(int in)
+  public void bufReset()
   {
     if(#`buffer == 0) ret;
     `buffer~reset();

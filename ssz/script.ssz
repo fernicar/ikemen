@@ -198,9 +198,9 @@ public &Command
     c.time = time;
     `cmd~add(c=);
   }
-  public void bufReset(int pn)
+  public void bufReset()
   {
-    `cmd~bufReset(pn-1);
+    `cmd~bufReset();
   }
 }
 void commandNew(&.lua.State L=, int re=)
@@ -243,8 +243,7 @@ void commandBufReset(&.lua.State L=, int re=)
   int argc = 0, nret = 0;
   ^&.Command command = .refArg!&.Command?(L=, re=, argc=, nret);
   if(re < 0) ret;
-  int pn = (int).numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  command~bufReset(pn);
+  command~bufReset();
 }
 
 
