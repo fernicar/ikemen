@@ -9,24 +9,6 @@ lib sff = "sff.ssz";
 lib cfg = "config.ssz";
 
 
-void limit(int n=, int maxcnt, bool wrap)
-{
-  branch{
-  cond wrap:
-    branch{
-    cond n < 0: n = n%maxcnt + maxcnt;
-    cond n >= maxcnt: n %= maxcnt;
-    }
-  else:
-    branch{
-    cond n < 0: n = 0;
-    cond n >= maxcnt: n = maxcnt-1;
-    }
-  }
-}
-
-
-
 public &Select
 {
   public &Char
@@ -153,7 +135,8 @@ public &Select
       section(:lines, i=:);
       i++;
     while i < #lines:}
-    .com.loadFile(`charlist[-1].def, `charlist[-1].sprite=)<,
+    ^/char spr = `charlist[-1].sprite;
+    .com.loadFile(`charlist[-1].def, spr=)<,
     [^/char(^/char f){
       ^&.sff.Sprite s;
       s.new(1);

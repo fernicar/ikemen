@@ -477,7 +477,7 @@ void setTeamMode(&.lua.State L=, int re=)
   int argc = 0, nret = 0;
   int pn = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   if(!.m.inRange!int?(1, 2, pn)){
-    L.pushString("プレイヤー番号が不正です。");
+    L.pushString("チーム番号が不正です。");
     re = -1;
     ret;
   }
@@ -523,7 +523,7 @@ void selectChar(&.lua.State L=, int re=)
   int argc = 0, nret = 1;
   int pn = (int).sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
   if(!.m.inRange!int?(1, 2, pn)){
-    L.pushString("プレイヤー番号が不正です。");
+    L.pushString("チーム番号が不正です。");
     re = -1;
     ret;
   }
