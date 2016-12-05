@@ -8531,7 +8531,7 @@ public &StateBuilder
       if(#(data = sc.get("air.gethit.groundrecover.ground.threshold")) > 0){
         `c.m.air_gethit_groundrecover_ground_threshold = .com.atof(data);
       }
-      if(#(data = sc.get("air.air.gethit.groundrecover.groundlevel")) > 0){
+      if(#(data = sc.get("air.gethit.groundrecover.groundlevel")) > 0){
         `c.m.air_gethit_groundrecover_groundlevel = .com.atof(data);
       }
       if(#(data = sc.get("air.gethit.airrecover.threshold")) > 0){
