@@ -2438,13 +2438,13 @@ public &StateBuilder
       if(!.cfg.IgnoreMostErrors || `valCnt > 0 || #`maeOp > 0) else;
       branch{
         ^/char oldin = in;
-        ^/char old = token;
         num = `number(`tokenizer(in=), typ=);
       cond #num > 0:
         out .= num;
-        in = old + in;
+        in = token + in;
       else:
         `maeOp = token;
+        in = oldin;
         if(`expValue(out=, in=)=>typ < 0) ret -1;
       }
     else:
