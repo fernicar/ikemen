@@ -258,7 +258,22 @@ public double atof(^/char str)
     }
     i++;
   while i < #s:}
-  if(p > 0) f *= 10.0**-(double)(i - p);
+  double e = 0.0;
+  if(s[i] == 'e' || s[i] == 'E') loop{
+    index j = i + 1;
+    bool emi = s[j] == '-';
+    if(emi || s[j] == '+') j++;
+    while;
+  do:
+    e = e * 10.0 + (double)(s[j] - '0');
+    j++;
+  while j < #s && s[j] >= '0' && s[j] <= '9':
+    if(e != 0.0){
+      if(emi) e = -e;
+      if(p == 0) p == i;
+    }
+  }
+  if(p > 0) f *= 10.0**(-(double)(i - p) + e);
   if(mi) f = -f;
   ret f;
 }

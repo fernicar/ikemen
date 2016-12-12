@@ -514,27 +514,21 @@ public &StateBuilder
       text = text[1..-1];
       ret \";
     }
-    index i = 1;
-    loop{while; do:
-      if(.s.cMatch!char?(.kuuhaktokigou, text[i])) break;
+    index i = 0;
+    bool ten = false;
+    loop{do:
+      if((text[i] < '0' || text[i] > '9') && (ten || text[i] != '.')) break;
+      ten |= text[i] == '.';
       i++;
     while i < #text:}
-    if((text[i-1] == 'e' || text[i-1] == 'E') && text[i]=='-') loop{
-      index j = 0;
-      bool ten = false;
+    if(i > 0 && (text[i] == 'e' || text[i] == 'E')) loop{
+      index j = i + 1;
+      while;
     do:
-      branch{
-      cond text[j] == '.':
-        if(ten) break, break;
-        ten = true;
-      cond text[j] < '0' || text[j] > '9':
-        break, break;
-      }
-    while ++j < i - 1:
-      loop{while; do:
-        if(text[i] < '0' || text[i] > '9') break;
-      while ++i < #text:}
-    }
+      if((text[i] < '0' || text[i] > '9')
+        && (i != j || (text[i] != '-' && text[i] != '+'))) break;
+    while ++i < #text:}
+    if(i == 0) i = .s.cFind(.kuuhaktokigou, text);
     ^/char tok = .s.toLower(text[0..i]);
     text = text[i..-1];
     ret tok;
@@ -2442,30 +2436,16 @@ public &StateBuilder
       || .s.equ("/", token) || .s.equ("%", token)
       :
       if(!.cfg.IgnoreMostErrors || `valCnt > 0 || #`maeOp > 0) else;
-      {
+      branch{
         ^/char oldin = in;
         ^/char old = token;
-        token = `tokenizer(in=);
-        index i = 0;
-        loop{
-          bool ten = false;
-        while;
-          do:
-          if((token[i] < '0' || token[i] > '9') && (ten || token[i] != '.')){
-            break, break;
-          }
-          ten |= token[i] == '.';
-          i++;
-        while i < #token:}
-        branch{
-        cond i > 0 && i < #token:
-          out .= `number(token[0..i], typ=);
-          in = old + token[i..-1] + in;
-        else:
-          `maeOp = old;
-          in = oldin;
-          if(`expValue(out=, in=)=>typ < 0) ret -1;
-        }
+        num = `number(`tokenizer(in=), typ=);
+      cond #num > 0:
+        out .= num;
+        in = old + in;
+      else:
+        `maeOp = token;
+        if(`expValue(out=, in=)=>typ < 0) ret -1;
       }
     else:
       `lasterror = token + "が不正です";
