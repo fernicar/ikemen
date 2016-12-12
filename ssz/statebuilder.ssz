@@ -519,6 +519,22 @@ public &StateBuilder
       if(.s.cMatch!char?(.kuuhaktokigou, text[i])) break;
       i++;
     while i < #text:}
+    if((text[i-1] == 'e' || text[i-1] == 'E') && text[i]=='-') loop{
+      index j = 0;
+      bool ten = false;
+    do:
+      branch{
+      cond text[j] == '.':
+        if(ten) break, break;
+        ten = true;
+      cond text[j] < '0' || text[j] > '9':
+        break, break;
+      }
+    while ++j < i - 1:
+      loop{while; do:
+        if(text[i] < '0' || text[i] > '9') break;
+      while ++i < #text:}
+    }
     ^/char tok = .s.toLower(text[0..i]);
     text = text[i..-1];
     ret tok;
@@ -651,8 +667,16 @@ public &StateBuilder
     double d;
     %char rtn;
     branch{
-    cond .s.find(".", token) >= 0:
-      if(!.s.sToNumber!d.self?(d=, token)) ret "";
+      ^/char t = token;
+      index i = .s.find(".", t);
+    cond i >= 0:
+      {
+        index ei = .s.cFind("Ee", t);
+        if(ei == i + 1){
+          t = t[0 .. ei] + "0" + t[ei .. -1];
+        }
+      }
+      if(!.s.sToNumber!d.self?(d=, t)) ret "";
       branch{
       cond .m.isnan(d):
         rtn .= ".v.setSF()";
@@ -668,7 +692,7 @@ public &StateBuilder
         typ = 1;
       }
     else:
-      if(!.s.sToNumber!d.self?(d=, token + ".0")) ret "";
+      if(!.s.sToNumber!d.self?(d=, t + ".0")) ret "";
       branch{
       cond .m.isnan(d):
         rtn .= ".v.setSF()";
