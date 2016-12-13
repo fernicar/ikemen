@@ -550,14 +550,11 @@ public &StateBuilder
     if(.s.equ("**", token)) ret 11;
     ret 0;
   }
-  bool operator(^/char op=, ^/char in=)
+  bool operator(^/char op=, ^/char in=, ^/char oldin=)
   {
-    if(#`maeOp == 0){
-      op = `tokenizer(in=);
-      ret true;
-    }
-    ^/char oldin = in;
+    oldin = in;
     op = `tokenizer(in=);
+    if(#`maeOp == 0) ret true;
     int ope = `isOperator(op);
     if(ope <= `isOperator(`maeOp)){
       if(
@@ -568,6 +565,7 @@ public &StateBuilder
         ret false;
       }
       in = oldin;
+      oldin = `maeOp + oldin;
       op = `maeOp;
       `maeOp = "";
     }
@@ -2436,17 +2434,8 @@ public &StateBuilder
       || .s.equ("/", token) || .s.equ("%", token)
       :
       if(!.cfg.IgnoreMostErrors || `valCnt > 0 || #`maeOp > 0) else;
-      branch{
-        ^/char oldin = in;
-        num = `number(`tokenizer(in=), typ=);
-      cond #num > 0:
-        out .= num;
-        in = token + in;
-      else:
-        `maeOp = token;
-        in = oldin;
-        if(`expValue(out=, in=)=>typ < 0) ret -1;
-      }
+      `maeOp = token;
+      if(`expValue(out=, in=)=>typ < 0) ret -1;
     else:
       `lasterror = token + "が不正です";
       ret -1;
@@ -2510,8 +2499,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         %char buf2, tmp;
         int typ2, t;
@@ -2545,8 +2533,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         %char buf2, tmp;
         int typ2, t;
@@ -2590,8 +2577,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         %char buf2, tmp;
         int typ2, t;
@@ -2636,8 +2622,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         %char buf2, tmp;
         int typ2, t;
@@ -2792,8 +2777,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         bool not;
       cond .s.equ("=", token):
@@ -2819,8 +2803,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         %char buf2, tmp;
         int typ2;
@@ -2846,8 +2829,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         %char buf2, tmp;
         int typ2;
@@ -2873,8 +2855,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         %char buf2, tmp;
         int typ2;
@@ -2900,8 +2881,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         %char buf2, tmp;
         int typ2;
@@ -2927,8 +2907,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         %char buf2, tmp;
         int typ2;
@@ -2958,8 +2937,7 @@ public &StateBuilder
       ^/char oldin;
       ^/char token;
     do:
-      oldin = in;
-      if(!`operator(token=, in=)) ret -1;
+      if(!`operator(token=, in=, oldin=)) ret -1;
       branch{
         %char buf2, tmp;
         int typ2;
