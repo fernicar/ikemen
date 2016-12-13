@@ -381,7 +381,7 @@ public &StateBuilder
   ^/char maeOp, this = "`";
   type paraF_t = $bool(^/char=);
   ^bool t;
-  bool usiroOp = true;
+  bool usiroOp = true, norange = false;
   new()
   {
     `t.new(1);
@@ -559,7 +559,8 @@ public &StateBuilder
     if(ope <= `isOperator(`maeOp)){
       if(
         ope > 0 || #op == 0 || (
-          (op<> < 'A' || op<> > 'Z') && (op<> < 'a' || op<> > 'z')))
+          op<> != '('
+          && (op<> < 'A' || op<> > 'Z') && (op<> < 'a' || op<> > 'z')))
       {
         `lasterror = op + "が不正です";
         ret false;
@@ -568,6 +569,7 @@ public &StateBuilder
       oldin = `maeOp + oldin;
       op = `maeOp;
       `maeOp = "";
+      `norange = true;
     }
     ret true;
   }
@@ -1054,6 +1056,7 @@ public &StateBuilder
       ret true;
     }
     `usiroOp = true;
+    `norange = false;
     int typ = 0;
     %char temp;
     ^/char num = `number(name, typ=);
@@ -2756,6 +2759,7 @@ public &StateBuilder
       bool openkaku = false;
       ^/char oldin = in;
       ^/char token = `tokenizer(in=);
+      if(`norange) else;
     cond .s.equ("[", token):
       openkaku = true;
     cond .s.equ("(", token):
