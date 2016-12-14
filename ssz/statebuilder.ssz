@@ -10,7 +10,8 @@ lib cmd = chr.cmd;
 lib com = "common.ssz";
 lib cfg = "config.ssz";
 
-const ^/char kuuhaktokigou = " !=<>()|&+-*/%,[]^|:"\"\t\r\n;
+const ^/char enzansiMoji = "=<>|&+*/%^|";
+const ^/char kuuhaktokigou = " !()-,[]:"\"\t\r\n + enzansiMoji;
 
 ^/char errmes(^/char fn, ^/char line, index ln, ^/char mess)
 {
@@ -377,7 +378,6 @@ public &StateBuilder
   public int playerno = 0;
   public short mver0 = 0, mver1 = 0;
   ^&.cmd.CommandList cmdl;
-  int valCnt = 0;
   ^/char maeOp, this = "`";
   type paraF_t = $bool(^/char=);
   ^bool t;
@@ -535,6 +535,9 @@ public &StateBuilder
   }
   int isOperator(^/char token)
   {
+    if(#token == 0 || token<> == ',' || token<> == ')' || token<> == ']'){
+      ret -1;
+    }
     if(.s.equ("||", token)) ret 1;
     if(.s.equ("^^", token)) ret 2;
     if(.s.equ("&&", token)) ret 3;
@@ -558,15 +561,15 @@ public &StateBuilder
     int ope = `isOperator(op);
     if(ope <= `isOperator(`maeOp)){
       if(
-        ope > 0 || #op == 0 || (
-          op<> != '('
+        ope < 0 || (
+          (`usiroOp && op<> != '(')
           && (op<> < 'A' || op<> > 'Z') && (op<> < 'a' || op<> > 'z')))
       {
-        `lasterror = op + "が不正です";
+        `lasterror = `maeOp + "が不正です";
         ret false;
       }
       in = oldin;
-      oldin = `maeOp + oldin;
+      oldin = `maeOp + " " + oldin;
       op = `maeOp;
       `maeOp = "";
       `norange = true;
@@ -2436,19 +2439,28 @@ public &StateBuilder
       || .s.equ("*", token) || .s.equ("**", token)
       || .s.equ("/", token) || .s.equ("%", token)
       :
-      if(!.cfg.IgnoreMostErrors || `valCnt > 0 || #`maeOp > 0) else;
+      if(!.cfg.IgnoreMostErrors || #`maeOp > 0) else;
       `maeOp = token;
       if(`expValue(out=, in=)=>typ < 0) ret -1;
     else:
       `lasterror = token + "が不正です";
       ret -1;
+    break:
+      if(!.cfg.IgnoreMostErrors) `usiroOp = false;
     }
-    `valCnt++;
     ret typ;
   }
   int expValue(%char out=, ^/char in=)
   {
     ret `expRedirectable(`this, `tokenizer(in=), out=, in=);
+  }
+  bool renzikuEnzansihaError(^/char in=){
+    in = .s.trim(in);
+    if(#in > 0 && .s.cMatch!char?(.enzansiMoji, in<>)){
+      `lasterror = `tokenizer(in=) + "が不正です";
+      ret false;
+    }
+    ret true;
   }
   int expPostNot(%char out=, ^/char in=)
   {
@@ -2473,22 +2485,26 @@ public &StateBuilder
       in = oldin;
       out .= ')';
     }
-    if(#`maeOp == 0 && `usiroOp) branch{
+    if(`usiroOp && #`maeOp == 0) branch{
       ^/char oldin = in;
-    cond .s.equ(`tokenizer(in=), "("):
+      int opp = `isOperator(`tokenizer(in=));
+    cond opp == 0:
       {
         ^/char tmp = in = oldin;
         %char dummy;
         if(!`typeExp!`expValue?(dummy=, in=, typ)) ret -1;
+        if(!`usiroOp) break, else;
         oldin = in;
         ^/char token = `tokenizer(in=);
         if(`isOperator(token) <= 0){
-          "演算子がありません";
+          `lasterror = "演算子がありません";
           ret -1;
         }
+        if(!`renzikuEnzansihaError(in=)) ret -1;
         in = token + tmp[0 .. #tmp - #oldin] + in;
       }
     else:
+      if(opp > 0 && !`renzikuEnzansihaError(in=)) ret -1;
       in = oldin;
     }
     ret typ;
@@ -2523,9 +2539,8 @@ public &StateBuilder
         in = oldin;
         ret typ;
       }
-    while true:
-    }
-    ret typ;
+    while true:}
+    ret -1;
   }
   int expMldv(%char out=, ^/char in=)
   {
@@ -2569,7 +2584,7 @@ public &StateBuilder
         typ = t;
       }
     while true:}
-    ret typ;
+    ret -1;
   }
   int expAdsb(%char out=, ^/char in=)
   {
@@ -2614,7 +2629,7 @@ public &StateBuilder
         typ = t;
       }
     while true:}
-    ret typ;
+    ret -1;
   }
   int expGrls(%char out=, ^/char in=)
   {
@@ -2681,7 +2696,7 @@ public &StateBuilder
         typ = 3;
       }
     while true:}
-    ret typ;
+    ret -1;
   }
   bool eNeSub(%char buf=, ^/char in=, bool not, int typ=)
   {
@@ -2796,7 +2811,7 @@ public &StateBuilder
         if(!`expEquSub(buf=, in=, not, typ=)) ret -1;
       }
     while true:}
-    ret typ;
+    ret -1;
   }
   int expAnd(%char out=, ^/char in=)
   {
@@ -2822,7 +2837,7 @@ public &StateBuilder
         ret typ;
       }
     while true:}
-    ret typ;
+    ret -1;
   }
   int expXor(%char out=, ^/char in=)
   {
@@ -2848,7 +2863,7 @@ public &StateBuilder
         ret typ;
       }
     while true:}
-    ret typ;
+    ret -1;
   }
   int expOr(%char out=, ^/char in=)
   {
@@ -2874,7 +2889,7 @@ public &StateBuilder
         ret typ;
       }
     while true:}
-    ret typ;
+    ret -1;
   }
   int expBoolAnd(%char out=, ^/char in=)
   {
@@ -2900,7 +2915,7 @@ public &StateBuilder
         ret typ;
       }
     while true:}
-    ret typ;
+    ret -1;
   }
   int expBoolXor(%char out=, ^/char in=)
   {
@@ -2926,13 +2941,11 @@ public &StateBuilder
         ret typ;
       }
     while true:}
-    ret typ;
+    ret -1;
   }
   int expBoolOr(%char out=, ^/char in=)
   {
     ^/char oldMaeOp = `maeOp;
-    int oldValCnt = `valCnt;
-    `valCnt = 0;
     `maeOp = "";
     %char buf;
     int typ;
@@ -2953,7 +2966,7 @@ public &StateBuilder
       else:
         out .= buf;
         in = oldin;
-        ret typ;
+        break, break;
       }
     while true:}
     if(#`maeOp > 0){
@@ -2961,7 +2974,6 @@ public &StateBuilder
       ret -1;
     }
     `maeOp = oldMaeOp;
-    `valCnt = oldValCnt;
     ret typ;
   }
   void nikouSub(
