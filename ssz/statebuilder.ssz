@@ -563,7 +563,7 @@ public &StateBuilder
     if(ope <= `isOperator(`maeOp)){
       if(
         ope < 0 || (
-          (`usiroOp && op<> != '(')
+          (!`usiroOp || op<> != '(')
           && (op<> < 'A' || op<> > 'Z') && (op<> < 'a' || op<> > 'z')))
       {
         `lasterror = `maeOp + "が不正です";
