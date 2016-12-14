@@ -525,7 +525,8 @@ public &StateBuilder
       index j = i + 1;
       while;
     do:
-      if((text[i] < '0' || text[i] > '9')
+      if(
+        (text[i] < '0' || text[i] > '9')
         && (i != j || (text[i] != '-' && text[i] != '+'))) break;
     while ++i < #text:}
     if(i == 0) i = .s.cFind(.kuuhaktokigou, text);
@@ -2456,7 +2457,9 @@ public &StateBuilder
   }
   bool renzikuEnzansihaError(^/char in=){
     in = .s.trim(in);
-    if(#in > 0 && .s.cMatch!char?(.enzansiMoji, in<>)){
+    if(
+      #in > 0 && .s.cMatch!char?(.enzansiMoji, in<>)
+      || #in > 1 && in<> == '!' && in[1] == '='){
       `lasterror = `tokenizer(in=) + "が不正です";
       ret false;
     }
@@ -2485,17 +2488,22 @@ public &StateBuilder
       in = oldin;
       out .= ')';
     }
-    if(`usiroOp && #`maeOp == 0) branch{
+    if(#`maeOp == 0) branch{
       ^/char oldin = in;
-      int opp = `isOperator(`tokenizer(in=));
+      ^/char token = `tokenizer(in=);
+      int opp = `isOperator(token);
     cond opp == 0:
+      if(!`usiroOp && .s.equ(token, "(")){
+        `lasterror = "演算子がありません";
+        ret -1;
+      }
       {
         ^/char tmp = in = oldin;
         %char dummy;
         if(!`typeExp!`expValue?(dummy=, in=, typ)) ret -1;
         if(!`usiroOp) break, else;
         oldin = in;
-        ^/char token = `tokenizer(in=);
+        token = `tokenizer(in=);
         if(`isOperator(token) <= 0){
           `lasterror = "演算子がありません";
           ret -1;
