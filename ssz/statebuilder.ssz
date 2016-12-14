@@ -10,7 +10,7 @@ lib cmd = chr.cmd;
 lib com = "common.ssz";
 lib cfg = "config.ssz";
 
-const ^/char enzansiMoji = "=<>|&+*/%^|";
+const ^/char enzansiMoji = "=<>|&+*/%^";
 const ^/char kuuhaktokigou = " !()-,[]:"\"\t\r\n + enzansiMoji;
 
 ^/char errmes(^/char fn, ^/char line, index ln, ^/char mess)
