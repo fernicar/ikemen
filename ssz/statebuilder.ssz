@@ -847,20 +847,6 @@ public &StateBuilder
     while #in > 0 && in<> == ',':}
     ret true;
   }
-  bool tojikakko(^/char in=)
-  {
-    loop{
-      ^/char token;
-      continue;
-    do:
-      `lasterror = "括弧が閉じていません";
-      ret false;
-    continue:
-      token = `tokenizer(in=);
-    while #token > 0 && !.s.equ(")", token) && !.s.equ("]", token):}
-    `usiroOp = false;
-    ret true;
-  }
   bool kakkotojiru(^/char in=)
   {
     `usiroOp = true;
@@ -2768,9 +2754,12 @@ public &StateBuilder
         ret false;
       }
       typ = 3;
+    cond openkaku:
+      `lasterror = ",がありません";
+      ret false;
     else:
       in = oldin;
-      if(!`tojikakko(in=)) ret false;
+      if(!`kakkotojiru(in=)) ret false;
       in = oldoldin;
       if(!`eNeSub(buf=, in=, not, typ=)) ret false;
     }
