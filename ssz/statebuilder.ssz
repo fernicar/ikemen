@@ -6044,13 +6044,11 @@ public &StateBuilder
       }])) ret false;
       if(!`stateParam(param=, "name", [`paraF_t(data=){
         branch{
-        cond #data > 0 && data[0] == '"':
-          data = data[1...s.find(\", data[1..-1])+1];
+        cond #data >= 2 && data[0] == '"' && data[-1] == '"':
+          data = .s.join(\"\\\"\", .s.split(\", data[1 .. #data - 1]));
         else:
-          if(.s.find(\", data) >= 0){
-            `lasterror = \""が含まれています";
-            ret false;
-          }
+          `lasterror = \""で囲まれていません";
+          ret false;
         }
         `state.ctrlList[-1].task .=
           "h~name=.s.clone!char?("\" .= data .= \"");";
