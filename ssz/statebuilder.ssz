@@ -584,37 +584,37 @@ public &StateBuilder
     }
     ret ''f;
   }
-  bool integer(int val=, ^/char token, ^/char in=)
-  {
-    ^/char istr = token;
-    bool minus = false;
-    loop{while; do:
-      minus = minus || .s.equ("-", istr);
-      istr = `tokenizer(in=);
-    while .s.equ("-", istr) || .s.equ("+", istr):}
-    if(#istr == 0 || istr<> < '0' || '9' < istr<>){
-      `lasterror = "数字の読み込みエラーです";
-      ret false;
-    }
-    val = .com.atoi(istr) * (minus ? -1 : 1);
-    ret true;
-  }
   bool intRange(
     int min=, bool minequ=, int max=, bool maxequ=, ^/char token, ^/char in=)
-  {
+  {:<-
+    bool integer(int val=, ^/char token, ^/char in=)
+    {
+      ^/char istr = token;
+      bool minus = false;
+      loop{while; do:
+        minus = minus || .s.equ("-", istr);
+        istr = `tokenizer(in=);
+      while .s.equ("-", istr) || .s.equ("+", istr):}
+      if(#istr == 0 || istr<> < '0' || '9' < istr<>){
+        `lasterror = "数字の読み込みエラーです";
+        ret false;
+      }
+      val = .com.atoi(istr) * (minus ? -1 : 1);
+      ret true;
+    }
     minequ = .s.equ("[", token);
     if(!minequ && !.s.equ("(", token)){
-      `lasterror = "エラーです";
+      `lasterror = "'['か'('がありません";
       ret false;
     }
-    if(!`integer(min=, `tokenizer(in=), in=)) ret false;
+    if(!integer(min=, `tokenizer(in=), in=)) ret false;
     index findi = .s.find(",", in);
     if(findi < 0){
       `lasterror = "','がありません";
       ret false;
     }
     in = in[findi+1 .. -1];
-    if(!`integer(max=, `tokenizer(in=), in=)) ret false;
+    if(!integer(max=, `tokenizer(in=), in=)) ret false;
     findi = .s.cFind("])", in);
     if(findi < 0){
       `lasterror = "']'か')'がありません";
@@ -860,9 +860,8 @@ public &StateBuilder
   {
     not = false;
     loop{
-      ^/char oldin, token;
+      ^/char token;
     do:
-      oldin = in;
       token = `tokenizer(in=);
       branch{
       cond .s.equ("!=", token):
@@ -954,7 +953,7 @@ public &StateBuilder
       if(!`integer2(val=, token, in=)){
         `lasterror = "数字がありません";
         ret false;
-     }
+      }
       out .= ''val;
     }
     typ = 3;
@@ -3973,8 +3972,7 @@ public &StateBuilder
           case '+':      flg |= (int).chr.MovTy::H;
           }
           i++;
-        while i < #data:
-        }
+        while i < #data:}
         `state.ctrlList[-1].task .=
           obj .= (name[0] == 'h' ? ".hitflag=" : ".guardflag=")
           .= ''flg .= ';';
@@ -8063,8 +8061,7 @@ public &StateBuilder
             buf .= .s.join(''`playerno)<, .s.split("@@", tmp) .= \r\n;
           }
           i++;
-        while (#lines[i] <= 0 || lines[i][0] != '[') && i < #lines:
-        }
+        while (#lines[i] <= 0 || lines[i][0] != '[') && i < #lines:}
         break, while;
       }
       if(!`parse!`stateBulid:<-statedef?(lines, i=, "")){
@@ -8279,8 +8276,7 @@ public &StateBuilder
       }
     continue:
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
     ret "";
   }
   public ^/char build(int no, ^/char def, ^/char code=)
@@ -8691,8 +8687,7 @@ public &StateBuilder
     loop{index i = 0; while; do:
       cns(:lines, i=:);
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
     if(
       #.com.loadFile(def, `cmd=)=>error <, [^/char(^/char f){
         ret
@@ -8710,19 +8705,16 @@ public &StateBuilder
     loop{index i = 1; while; do:
       .chr.chars[no]<>~cmd[i].buffer = .chr.chars[no]<>~cmd~buffer;
       i++;
-    while i < #.chr.chars[no]<>~cmd:
-    }
+    while i < #.chr.chars[no]<>~cmd:}
     `cmdl = .chr.chars[no]<>~cmd[`playerno..`playerno+1];
     loop{index i = 0; while; do:
       commandlist(:lines, i=:);
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
     loop{index i = 0; while; do:
       command(:lines, i=:);
       i++;
-    while i < #lines:
-    }
+    while i < #lines:}
     `stnoList.new(0);
     `stnoTable.clear();
     .chr.wakewakaLength[no] = 0;
