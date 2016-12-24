@@ -4332,13 +4332,13 @@ public &StateBuilder
         if(
           !`argExpression(
             `state.ctrlList[-1].task=, data=,
-            ".hitgetpower=.m.max!int?(.com.IERR,", ");", 2)) ret false;
+            ".hitgetpower=.m.max!int?(.com.IERR+1,", ");", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".guardgetpower=.m.max!int?(.com.IERR,", ");", 2)) ret false;
+              ".guardgetpower=.m.max!int?(.com.IERR+1,", ");", 2)) ret false;
         }
         ret true;
       }])) ret false;
@@ -4362,13 +4362,13 @@ public &StateBuilder
         if(
           !`argExpression(
             `state.ctrlList[-1].task=, data=,
-            ".hitgivepower=.m.max!int?(.com.IERR,", ");", 2)) ret false;
+            ".hitgivepower=.m.max!int?(.com.IERR+1,", ");", 2)) ret false;
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
             !`fullExpression(
               `state.ctrlList[-1].task=, data=,
-              ".guardgivepower=.m.max!int?(.com.IERR,", ");", 2)) ret false;
+              ".guardgivepower=.m.max!int?(.com.IERR+1,", ");", 2)) ret false;
         }
         ret true;
       }])) ret false;
