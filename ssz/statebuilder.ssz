@@ -4653,8 +4653,6 @@ public &StateBuilder
         if(
           !`argExpression(
             `state.ctrlList[-1].task=, data=, ".snapx=", ";", 1)) ret false;
-        `state.ctrlList[-1].task .=
-          "if(" .= obj .= ".p2facing==.com.IERR)" .= obj .= ".p2facing=1;";
         if(.s.equ(",")<, `tokenizer(data=)){
           `state.ctrlList[-1].task .= obj;
           if(
