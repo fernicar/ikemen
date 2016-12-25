@@ -866,11 +866,14 @@ public &FrameMethods<_t>
         `salpha = (tmp > 0d255 ? 0d255 : tmp);
         tmp = .com.aton!ushort?(a[di+1..-1]);
         `dalpha = (tmp > 0d255 ? 0d255 : tmp);
-        if(`salpha == 0d1 && `dalpha == 0d255) `salpha = 0d0;
+        branch{
+        cond `salpha == 0d1 && `dalpha == 0d255: `salpha = 0d0;
+        cond `salpha == 0d255 && `dalpha == 0d1: `dalpha = 0d0;
+        }
       }
     cond @s.equ(a[0..1], "a"):
       `salpha = 0d255;
-      `dalpha = 0d255;
+      `dalpha = 0d1;
     }
     if(#spl <= ++i) ret;
     spl[i] = @s.trim(spl[i]);
@@ -1148,10 +1151,16 @@ public &Anim<frame_t>
     branch{
     cond `salpha >= 0:
       sa = (ubyte)`salpha;
-      da = (ubyte)`dalpha;
+      branch{
+      cond `dalpha < 0:
+        da = ((uint)!`dalpha + `frames[`drawidx].dalpha) >> 0x1;
+      else:
+        da = (ubyte)`dalpha;
+      }
     else:
       sa = `frames[`drawidx].salpha;
       da = `frames[`drawidx].dalpha;
+      if(sa == 0d255 && da == 0d1) da = 0d255;
     }
     branch{
     cond sa == 0d1 && da == 0d255:

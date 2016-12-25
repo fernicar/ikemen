@@ -283,7 +283,9 @@ public void drawReflection(float x, float y, float scl)
       }
       int refl = .stg~reflection*ss.alpha >> 8;
       ss.as~anim~ani.salpha = (int)((float)ss.as~salpha*(float)refl / 255.0);
-      ss.as~anim~ani.dalpha = .m.min!int?(255, ss.as~dalpha + (255-refl));
+      ss.as~anim~ani.dalpha =
+        .m.min!int?(
+          255, (ss.as~dalpha >= 0 ? ss.as~dalpha : 128) + (255-refl));
       if(ss.as~anim~ani.salpha == 1 && ss.as~anim~ani.dalpha == 255){
         ss.as~anim~ani.salpha = 0;
       }
@@ -4076,7 +4078,12 @@ public &Char
       else:
         salpha = 255;
       }
-      dalpha = 128;
+      branch{
+      cond dalpha != .com.IERR:
+        dalpha = !.m.max!int?(0)<, .m.min!int?(255)<, dalpha;
+      else:
+        dalpha = !255;
+      }
     case 5://sub
       salpha = 1;
       dalpha = 255;

@@ -6689,7 +6689,7 @@ public &StateBuilder
         `state.ctrlList[-1].task .= obj .= "aimg.alphas=-1;";
       cond .s.equ(text, "add1"):
         `state.ctrlList[-1].task .=
-          obj .= "aimg.alphas=255;" .= obj .= "aimg.alphad=128;";
+          obj .= "aimg.alphas=255;" .= obj .= "aimg.alphad=!255;";
       cond .s.equ(text[0..3], "add"):
         `state.ctrlList[-1].task .=
           obj .= "aimg.alphas=255;" .= obj .= "aimg.alphad=255;";
@@ -7110,7 +7110,8 @@ public &StateBuilder
             addalphaNone = true;
         cond .s.equ(text, "add1"):
           `state.ctrlList[-1].task .=
-            "t=4;`sysivar[.iSPECIALFLAG]|=.lsTRANS;`sysivar[.iALPHAS]=255;";
+            "t=4;`sysivar[.iSPECIALFLAG]|=.lsTRANS;"
+            "`sysivar[.iALPHAS]=`sysivar[.iALPHAD]=255;";
         cond .s.equ(text, "sub"):
           `state.ctrlList[-1].task .=
             "t=5;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
