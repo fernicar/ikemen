@@ -4053,7 +4053,13 @@ public &Char
       salpha = 255;
       dalpha = 0;
     case 2://add
-      salpha = 255;
+      branch{
+      cond salpha != .com.IERR:
+        salpha = .m.max!int?(0)<, .m.min!int?(255)<, salpha;
+        if(salpha == 1) salpha = 0;
+      else:
+        salpha = 255;
+      }
       dalpha = 255;
     case 3://addalpha
       if(salpha != .com.IERR){
@@ -4064,7 +4070,12 @@ public &Char
       }
       if(salpha == 1 && dalpha == 255) salpha = 0;
     case 4://add1
-      salpha = 255;
+      branch{
+      cond salpha != .com.IERR:
+        salpha = .m.max!int?(0)<, .m.min!int?(255)<, salpha;
+      else:
+        salpha = 255;
+      }
       dalpha = 128;
     case 5://sub
       salpha = 1;

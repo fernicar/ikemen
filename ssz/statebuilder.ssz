@@ -6524,7 +6524,7 @@ public &StateBuilder
         }])) ret false;
         if(!`stateParam(param=, "alpha", [`paraF_t(data=){
           addalphaNone = false;
-          `state.ctrlList[-1].task .= "if(t==3||t==4){" .= exp;
+          `state.ctrlList[-1].task .= exp;
           if(
             !`argExpression(
               `state.ctrlList[-1].task=, data=, ".alphas=", ";", 2)) ret false;
@@ -6536,9 +6536,8 @@ public &StateBuilder
                 `state.ctrlList[-1].task=, data=,
                 ".alphad=", ";", 2)) ret false;
           else:
-            `state.ctrlList[-1].task .= ".alphad=t==4?128:255;";
+            `state.ctrlList[-1].task .= ".alphad=255;";
           }
-          `state.ctrlList[-1].task .= "if(t==4)t=3;}";
           ret true;
         }])) ret false;
         if(addalphaNone) `state.ctrlList[-1].task .= "t=0;";
@@ -7104,14 +7103,14 @@ public &StateBuilder
             "t=1;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
         cond .s.equ(text, "add"):
           `state.ctrlList[-1].task .=
-            "t=2;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
+            "t=2;`sysivar[.iSPECIALFLAG]|=.lsTRANS;`sysivar[.iALPHAS]=255;";
         cond .s.equ(text, "addalpha") || .s.equ(text, "alpha"):
           `state.ctrlList[-1].task .=
             "t=3;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
             addalphaNone = true;
         cond .s.equ(text, "add1"):
           `state.ctrlList[-1].task .=
-            "t=4;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
+            "t=4;`sysivar[.iSPECIALFLAG]|=.lsTRANS;`sysivar[.iALPHAS]=255;";
         cond .s.equ(text, "sub"):
           `state.ctrlList[-1].task .=
             "t=5;`sysivar[.iSPECIALFLAG]|=.lsTRANS;";
@@ -7126,7 +7125,7 @@ public &StateBuilder
         if(
           !`argExpression(
             `state.ctrlList[-1].task=, data=,
-            "if(t==3||t==4){`sysivar[.iALPHAS]=", ";", 2)) ret false;
+            "`sysivar[.iALPHAS]=", ";", 2)) ret false;
         branch{
         cond .s.equ(",")<, `tokenizer(data=):
           if(
@@ -7134,9 +7133,8 @@ public &StateBuilder
               `state.ctrlList[-1].task=, data=,
               "`sysivar[.iALPHAD]=", ";", 2)) ret false;
         else:
-          `state.ctrlList[-1].task .= "`sysivar[.iALPHAD]=t==4?128:255;";
+          `state.ctrlList[-1].task .= "`sysivar[.iALPHAD]=255;";
         }
-        `state.ctrlList[-1].task .= "if(t==4)t=3;}";
         ret true;
       }])) ret false;
       if(addalphaNone) `state.ctrlList[-1].task .= "t=0;";
