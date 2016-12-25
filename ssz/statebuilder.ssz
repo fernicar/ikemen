@@ -4866,7 +4866,7 @@ public &StateBuilder
       if(!`stateParam(param=, "ground.velocity", [`paraF_t(data=){
         ^/char oldin = data, tmp;
         branch{
-        cond .s.equ(.s.toLower(`tokenizer(data=)), "n"):
+        cond .s.equ(`tokenizer(data=), "n"):
           oldin = data;
           tmp = `tokenizer(data=);
           if(#tmp > 0 && !.s.equ(tmp, ",")){
@@ -4885,7 +4885,7 @@ public &StateBuilder
         if(.s.equ(",")<, `tokenizer(data=)){
           ^/char oldin = data, tmp;
           branch{
-          cond .s.equ(.s.toLower(`tokenizer(data=)), "n"):
+          cond .s.equ(`tokenizer(data=), "n"):
             tmp = `tokenizer(data=);
             if(#tmp > 0){
               `lasterror = "nがエラーです";
