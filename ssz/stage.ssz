@@ -128,20 +128,23 @@ public &Stage
   {:<-
     public void info(&.com.Section sc=)
     {
-      ^/char data;
+      ^/char data, err;
+      err = sc.getText("name", data=);
       branch{
-      cond #(data = sc.getText("name")) > 0:
+      cond #err == 0 && #data > 0:
         `name = data;
       else:
         `name = `def;
       }
+      err = sc.getText("displayname", data=);
       branch{
-      cond #(data = sc.getText("displayname")) > 0:
+      cond #err == 0 && #data > 0:
         `displayname = data;
       else:
         `displayname = `name;
       }
-      if(#(data = sc.getText("author")) > 0) `author = data;
+      err = sc.getText("author", data=);
+      if(#err == 0 && #data > 0) `author = data;
     }
     public void camera(&.com.Section sc=)
     {

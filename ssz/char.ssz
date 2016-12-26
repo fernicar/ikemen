@@ -2490,15 +2490,18 @@ public &Char
   {:<-
     void info(&.com.Section sc=)
     {
-      ^/char data;
-      if(#(data = sc.getText("name")) > 0) `name = data;
+      ^/char data, err;
+      err = sc.getText("name", data=);
+      if(#err == 0 && #data > 0) `name = data;
+      err = sc.getText("displayname", data=);
       branch{
-      cond #(data = sc.getText("displayname")) > 0:
+      cond #err == 0 && #data > 0:
         .cgi[`playerno].displayname = data;
       else:
         .cgi[`playerno].displayname = `name;
       }
-      if(#(data = sc.getText("author")) > 0) .cgi[`playerno].author = data;
+      err = sc.getText("author", data=);
+      if(#err == 0 && #data > 0) .cgi[`playerno].author = data;
     }
     void files(&.com.Section sc=, bool unicode)
     {
@@ -3677,24 +3680,14 @@ public &Char
   }
   void nikou<if_t, ff_t>(&.Var rtn=, &.Var var1, &.Var var2)
   {
-    &.Var v1 = var1, v2 = var2;
-    if(v1.isSF()) v1.setB(false);
-    if(v2.isSF()) v2.setB(false);
     branch{
-    cond v1.typ == v2.typ:
-      branch{
-      cond v1.typ == .VarTy::Int:
-        if_t(rtn=, v1.i, v2.i);
-      else:
-        ff_t(rtn=, v1.f, v2.f);
-      }
+    cond
+      ((int)var1.typ - (int).VarTy::Float)
+      * ((int)var2.typ - (int).VarTy::Float) == 0
+      :
+      ff_t(rtn=, var1.toF(), var2.toF());
     else:
-      branch{
-      cond v1.typ == .VarTy::Int:
-        ff_t(rtn=, (float)v1.i, v2.f);
-      else:
-        ff_t(rtn=, v1.f, (float)v2.i);
-      }
+      if_t(rtn=, var1.toI(), var2.toI());
     }
   }
   public void setLife(int l)
@@ -4337,20 +4330,14 @@ public &Char
     `nikou!i, f?(.v=, v1, v2);
   }
   public void trMod(&.Var v1, &.Var v2)
-  {:<-
-    public void i(&.Var r=, int   i1, int   i2)
-    {
-      branch{
-      cond i2 == 0:
-        r.setSF();
-      else:
-        r.setI(i1 % i2);
-      }
+  {
+    int i2 = v2.toI();
+    branch{
+    cond i2 == 0:
+      .v.setSF();
+    else:
+      .v.setI(v1.toI() % i2);
     }
-    void f(&.Var r=, float f1, float f2){
-      `trMod:<-i(r=, (int)f1, (int)f2);
-    }
-    `nikou!i, f?(.v=, v1, v2);
   }
   public void trAdd(&.Var v1, &.Var v2)
   {:<-

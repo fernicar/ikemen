@@ -769,11 +769,15 @@ public &Section
   {
     ret `params.get(name);
   }
-  public ^/char getText(^/char name)
+  public ^/char getText(^/char name, ^/char text=)
   {
-    ^/char data = `params.get(name);
-    if(#data > 0 && data[0] == '"') data = data[1...s.find(\", data[1..-1])+1];
-    ret data;
+    text = `params.get(name);
+    if(#text == 0) ret "";
+    if(#text < 2 || text[0] != '"' ||  text[-1] != '"'){
+      ret \""で囲まれていません";
+    }
+    text = text[1 .. #text - 1];
+    ret "";
   }
   public ^/char benri(^/char head, ^/char name)
   {
