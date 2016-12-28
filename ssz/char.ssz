@@ -6817,8 +6817,8 @@ public float action(
   rightest -= x;
   branch{
     float tension =
-      ((float).com.GameWidth/2.0 - (float).stg~cam.tension*.stg~localscl)
-      / .com.scale;
+       (float).com.GameWidth / (.com.scale * 2.0)
+       - (float).stg~cam.tension * .stg~localscl;
     float tmp = (leftest + rightest) / 2.0;
     float cvx = cvmin + cvmax;
     if(cvx == 0.0 || (cvx < 0.0) == (tmp < 0.0)){
@@ -6841,13 +6841,12 @@ public float action(
   if(lowest >= highest) branch{
     float ftension =  (float).stg~cam.floortension*.stg~localscl;
     if(ftension > 0.0){
-      ftension += 240.0 - (float).stg~localh*.stg~localscl;
+      ftension +=
+        240.0 * 2.0 - (float).stg~localh*.stg~localscl - 240.0 * .com.scale;
       if(ftension < 0.0) ftension = 0.0;
     }
-  cond highest < -ftension / .com.scale:
-    y =
-      (highest + ftension / .com.scale)
-      * .com.scale * .stg~cam.verticalfollow;
+  cond highest < -ftension:
+    y = (highest + ftension) * .stg~cam.verticalfollow;
   else:
     y = 0.0;
   }
