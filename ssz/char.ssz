@@ -6846,7 +6846,9 @@ public float action(
       if(ftension < 0.0) ftension = 0.0;
     }
   cond highest < -ftension:
-    y = (highest + ftension) * .stg~cam.verticalfollow;
+    y =
+      (highest + ftension)
+      * .stg~cam.verticalfollow**.m.min!float?(1.0, 1.0 / .com.scale**4.0);
   else:
     y = 0.0;
   }
