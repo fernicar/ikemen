@@ -6713,7 +6713,8 @@ public float action(
   .resetDrawnClsnList();
   .gSetNormal(scl, x, y);
   float cvmin = 0.0, cvmax = 0.0;
-  float highest = 0.0, lowest = .com.screeny;
+  float highest = 0.0;
+  float lowest = .stg~cam.verticalfollow > 0.0 ? .com.screeny : 0.0;
   rightest = leftest = x;
   int rs4t = -(.fight~ro.over_hittime + .fight~ro.over_waittime);
   bool introSkip = false;
