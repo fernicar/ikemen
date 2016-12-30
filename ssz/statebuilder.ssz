@@ -606,21 +606,50 @@ public &StateBuilder
       `lasterror = "'['か'('がありません";
       ret false;
     }
-    if(!integer(min=, `tokenizer(in=), in=)) ret false;
-    index findi = .s.find(",", in);
-    if(findi < 0){
+    branch{
+    cond .cfg.IgnoreMostErrors:
+      if(!integer(min=, `tokenizer(in=), in=)) ret false;
+    else:
+      if(!`integer2(min=, `tokenizer(in=), in=)) ret false;
+    }
+    ^/char tkn;
+    branch{
+    cond .cfg.IgnoreMostErrors:
+      {
+        index findi = .s.find(",", in);
+        if(findi < 0) break;
+        tkn = in[findi .. findi+1];
+        in = in[findi+1 .. -1];
+      }
+    else:
+      tkn = `tokenizer(in=);
+    }
+    if(!.s.equ(",", tkn)){
       `lasterror = "','がありません";
       ret false;
     }
-    in = in[findi+1 .. -1];
-    if(!integer(max=, `tokenizer(in=), in=)) ret false;
-    findi = .s.cFind("])", in);
-    if(findi < 0){
+    branch{
+    cond .cfg.IgnoreMostErrors:
+      if(!integer(max=, `tokenizer(in=), in=)) ret false;
+    else:
+      if(!`integer2(max=, `tokenizer(in=), in=)) ret false;
+    }
+    branch{
+    cond .cfg.IgnoreMostErrors:
+      {
+        index findi = .s.cFind("])", in);
+        if(findi < 0) break;
+        tkn = in[findi .. findi+1];
+        in = in[findi+1 .. -1];
+      }
+    else:
+      tkn = `tokenizer(in=);
+    }
+    maxequ = .s.equ("]", tkn);
+    if(!maxequ && !.s.equ(")", tkn)){
       `lasterror = "']'か')'がありません";
       ret false;
     }
-    maxequ = in[findi] == '[';
-    in = in[findi+1 .. -1];
     ret true;
   }
   bool integer2(int val=, ^/char token, ^/char in=)
@@ -645,7 +674,7 @@ public &StateBuilder
   }
   void kyuushikiThroughNeo(bool range, ^/char in=)
   {
-    loop{index i = 0; while; do:
+    if(.cfg.IgnoreMostErrors) loop{index i = 0; while; do:
       if(
         ('0' <= in[i] && in[i] <= '9') || in[i] == '-'
         || (range && (in[i] == '[' || in[i] == '('))) break;
@@ -862,17 +891,19 @@ public &StateBuilder
       ^/char token;
     do:
       token = `tokenizer(in=);
-      branch{
+      if(#token > 0) branch{
       cond .s.equ("!=", token):
         not = true;
         break, break;
-      cond #token > 0 && token[-1] == '=':
+      cond .s.equ("=", token):
         break, break;
+      cond .cfg.IgnoreMostErrors:
+        if(token[-1] == '=') break, break;
+        break, while;
       }
-    while #token > 0:
       `lasterror = "'='か'!='がありません";
       ret false;
-    }
+    while #token > 0:}
     ret true;
   }
   bool kyuushikiSuperDX(%char out=, ^/char in=, int typ=, bool hissu)
