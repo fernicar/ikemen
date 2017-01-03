@@ -2477,8 +2477,6 @@ public &StateBuilder
     else:
       `lasterror = token + "が不正です";
       ret -1;
-    break:
-      if(!.cfg.IgnoreMostErrors) `usiroOp = false;
     }
     ret typ;
   }
@@ -2501,7 +2499,7 @@ public &StateBuilder
     %char temp;
     int typ;
     if(`expValue(temp=, in=)=>typ < 0) ret -1;
-    loop{
+    if(.cfg.IgnoreMostErrors) loop{
       ^/char oldin = in;
       if(!.s.equ(`tokenizer(in=), "!")){
         in = oldin;
@@ -2524,7 +2522,7 @@ public &StateBuilder
       ^/char token = `tokenizer(in=);
       int opp = `isOperator(token);
     cond opp == 0:
-      if(!`usiroOp && .s.equ(token, "(")){
+      if(!.cfg.IgnoreMostErrors || !`usiroOp && .s.equ(token, "(")){
         `lasterror = "演算子がありません";
         ret -1;
       }
