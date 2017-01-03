@@ -1296,6 +1296,10 @@ public &StateBuilder
       {
         bool not;
         if(!`kyuushiki(not=, in=)) ret -1;
+        if(not && !.cfg.IgnoreMostErrors){
+          `lasterror = "animelemに != は使えません";
+          ret -1;
+        }
         token = `tokenizer(in=);
         if(.s.equ("-", token)){
           `lasterror = "マイナスが付くとエラーです";
@@ -1330,6 +1334,10 @@ public &StateBuilder
       {
         bool not;
         if(!`kyuushiki(not=, in=)) ret -1;
+        if(not && !.cfg.IgnoreMostErrors){
+          `lasterror = "timemodに != は使えません";
+          ret -1;
+        }
         token = `tokenizer(in=);
         if(.s.equ("-", token)){
           `lasterror = "マイナスが付くとエラーです";
@@ -2054,6 +2062,10 @@ public &StateBuilder
             typ = 2;
             break, break;
           }
+          if(not && !.cfg.IgnoreMostErrors){
+            `lasterror = "旧バージョンのためhitdefattrに != は使えません";
+            ret -1;
+          }
           if(!f(::)) ret -1;
           typ = 3;
         }
@@ -2149,6 +2161,10 @@ public &StateBuilder
         int id = .com.atonOF!int?(token[(h?7:11)..-1]);
         bool not;
         if(!`kyuushiki(not=, in=)) ret -1;
+        if(not && !.cfg.IgnoreMostErrors){
+          `lasterror = "!= は使えません";
+          ret -1;
+        }
         token = `tokenizer(in=);
         if(.s.equ("-", token)){
           `lasterror = "マイナスが付くとエラーです";
