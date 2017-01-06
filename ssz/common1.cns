@@ -2046,7 +2046,11 @@ void c.Char::s##_@@P()
       `stVal.hb.hitf1 = -8;
       `stVal.hb.hitt1 = 15;
     case 4:
-      if(`mver0() != 1){
+      branch{
+      cond `mver0() == 1:
+        `mulXV(`sysfvar[.fAIR_GETHIT_AIRRECOVER_MULX]);
+        `mulYV(`sysfvar[.fAIR_GETHIT_AIRRECOVER_MULY]);
+      else:
         `mulXV(0.8);
         `mulYV(0.8);
       }
