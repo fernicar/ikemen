@@ -789,9 +789,9 @@ public &Section
 public ^/char sectionName(^/char sec=)
 {
   if(#sec == 0 || sec[0] != '[') ret "";
-  sec = .s.trim(sec[0.. .s.find(";", sec)]);
+  sec = .s.trim(sec[0 .. .s.find(";", sec)]);
   if(sec[-1] != ']') ret "";
-  sec = sec[1..#sec-1];
+  sec = sec[1 .. .s.find("]", sec)];
   index fnd = .s.cFind(" ", sec);
   if(fnd < 0) fnd = -2;
   ^/char name = .s.toLower(sec[0..fnd+1]);

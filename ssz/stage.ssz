@@ -403,8 +403,9 @@ public &Stage
         if(bgdefflg) bgdef(sc=, unicode);
         bgdefflg = false;
       else:
-        if(secname[-1] == ' ') secname = secname[0 .. #secname-1];
-        if(.s.equ(secname, "bg")) bg(sc=, link=);
+        if(.s.equ(secname[0 .. .s.cFind(" \t", secname)], "bg")){
+          bg(sc=, link=);
+        }
       }
     }];
     ~$void(^^/char, index=) ctrlSec = [void(^^/char lines, index i=){
