@@ -258,7 +258,7 @@ public &BackGround
         `anim.salpha = 255;
         `anim.dalpha = !255;
         if(#(data = sc.get("alpha")) > 0){
-          int src = `anim.salpha, dst = `anim.dalpha;
+          int src = `anim.salpha, dst = 255;
           .readPair!int?(src=, dst=, data);
           if(src > 255) src = 255;
           `anim.salpha = src;
