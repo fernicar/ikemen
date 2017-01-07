@@ -256,15 +256,13 @@ public &BackGround
       cond .s.equ(d, "add1"):
         `anim.mask = 0;
         `anim.salpha = 255;
-        `anim.dalpha = 128;
+        `anim.dalpha = !255;
         if(#(data = sc.get("alpha")) > 0){
           int src = `anim.salpha, dst = `anim.dalpha;
           .readPair!int?(src=, dst=, data);
           if(src > 255) src = 255;
           `anim.salpha = src;
-          if(dst > 255) dst = 255;
-          `anim.dalpha = dst;
-          if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
+          `anim.dalpha = !.m.max!int?(0, .m.min!int?(255, dst));
         }
       cond .s.equ(d, "addalpha"):
         `anim.mask = 0;
@@ -273,7 +271,7 @@ public &BackGround
           .readPair!int?(src=, dst=, data);
           if(src > 255) src = 255;
           `anim.salpha = src;
-          if(dst > 255) dst = 255;
+          .m.limRange!int?(dst=, 0, 255);
           `anim.dalpha = dst;
           if(`anim.salpha == 1 && `anim.dalpha == 255) `anim.salpha = 0;
         }
