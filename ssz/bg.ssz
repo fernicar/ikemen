@@ -650,7 +650,7 @@ public &BGCTimeLine
       bgc~endtime = bgc~looptime;
     }
     if(
-      #bgc == 0 || bgc~starttime < 0 || bgc~starttime > bgc~endtime
+      bgc~starttime < 0 || bgc~starttime > bgc~endtime
       || (bgc~looptime >= 0 && bgc~starttime >= bgc~looptime)) ret;
     int wtime = 0;
     if(bgc~currenttime != 0){
