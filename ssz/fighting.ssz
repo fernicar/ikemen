@@ -243,7 +243,6 @@ void game()
         .s.copy!int?(.chr.chars[i][0]~ivar, `var[i]);
         .s.copy!float?(.chr.chars[i][0]~fvar, `fvar[i]);
       }
-    continue:
       i++;
     while i < #.chr.chars:}
     .com.resetFrameTime();
@@ -425,8 +424,7 @@ void game()
     loop{int i = 0; while; do:
       .chr.stg~action();
       i++;
-    while i < stagetime:
-    }
+    while i < stagetime:}
     if(.com.round == 1) .snd.bgm~play(.chr.stg~bgmusic);
     bl =
       (float)(.chr.stg~cam.boundleft - .chr.stg~cam.startx)
@@ -447,7 +445,7 @@ void game()
       .com.boundhigh += (float).chr.stg~cam.boundhigh * .chr.stg~localscl;
     }
     float xminscl =
-      (float).com.GameWidth / ((float).com.GameWidth+(float)(-bl + br));
+      (float).com.GameWidth / ((float).com.GameWidth - bl + br);
     float yminscl =
       (float).com.GameHeight / (240.0-.m.min!float?(0.0, .com.boundhigh));
     float minscl =
@@ -485,8 +483,7 @@ void game()
       loop{index i = 0; while; do:
         .com.rexisted[i]++;
         i++;
-      while i < #.com.tmode:
-      }
+      while i < #.com.tmode:}
     cond
       !.com.matchOver()
       && (
@@ -539,8 +536,7 @@ void game()
           .chr.chars[i][0]~sysivar[.chr.iLIFE] = 0;
         }
         i++;
-      while i < #.com.tmode:
-      }
+      while i < #.com.tmode:}
       break, break;
     }
     if(.com.turbo < 1.0) sclmul **= .com.turbo;

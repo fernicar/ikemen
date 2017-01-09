@@ -4843,7 +4843,7 @@ public &Char
     ret
       (int)(
         (`facing > 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
-        - `getEdge(`fedge, `stMver0() != 1));
+        - `getEdge(`fedge, false));
   }
   public float trFrontEdge()
   {
@@ -4860,7 +4860,7 @@ public &Char
     ret
       (int)(
         (`facing < 0 ? .com.xmax - `sysfvar[.fX] : `sysfvar[.fX] - .com.xmin)
-        - `getEdge(`bedge, `stMver0() != 1));
+        - `getEdge(`bedge, false));
   }
   public float trBackEdge()
   {
