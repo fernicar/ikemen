@@ -2632,12 +2632,11 @@ public &Char
   }
   public bool loadPallet(^/char def, int no)
   {
-    index tmp = 0;
     .cgi[`playerno].palExist.new(.sff.NumCharPalletes);
     branch{
     cond .cgi[`playerno].sf~head.ver0 == 0d1:
       loop{
-        index i = 0;
+        index i = 0, tmp = 0;
         ubyte r, g, b;
         ^uint pl;
         .cgi[`playerno].sf~palList.resetRemap();
@@ -2692,7 +2691,6 @@ public &Char
         }
       }
     else:
-      tmp = 1;
       loop{int i = 0; while; do:
         .cgi[`playerno].palExist[i] =
           #.cgi[`playerno].sf~palList.palTable.get(

@@ -328,12 +328,12 @@ void game()
       i++;
     while i < #.chr.chars:}
     branch{
-    cond minlv > 0 && maxlv > 0:
+    cond minlv > 0:
       loop{index i = 0; while; do:
         level[i] -= minlv;
         i++;
       while i < #.chr.chars:}
-    cond minlv < 0 && maxlv < 0:
+    cond maxlv < 0:
       loop{index i = 0; while; do:
         level[i] -= maxlv;
         i++;
