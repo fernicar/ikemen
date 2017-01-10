@@ -135,7 +135,7 @@ const double lvmul = 2.0**(1.0/12.0);
 
 void game()
 {
-  void put(float x, float y=, ^/char txt)
+  void put(float y=, ^/char txt)
   {
     int tmp = .sff.allPalFX~time;
     .sff.allPalFX~time = 0;
@@ -151,7 +151,7 @@ void game()
       while i < #t:}
       if(i == 0) i = 1;
       .fnt.debugFont~drawText(
-        x - (float)(.com.GameWidth-320)/2.0,
+        -(float)(.com.GameWidth-320)/2.0,
         y += (float).fnt.debugFont~sizey/.com.HeightScale,
         1.0/.com.WidthScale,  1.0/.com.HeightScale, 0, 1, t[0..i]);
       t = t[i..-1];
@@ -171,25 +171,24 @@ void game()
         ^/char status;
         if(.dscri.L.isString(-1)) status = .dscri.L.toString(-1);
         .dscri.L.pop(1);
-        if(#status > 0) `put(0.0, y=, status);
+        if(#status > 0) `put(y=, status);
       }
       i++;
     while i < #.chr.chars:}
     y = .m.max!float?(y, 48.0 - (float)(.com.GameHeight-240));
     loop{index i = 0; while; do:
-      if(#.chr.chars[i] > 0) `put(0.0, y=, .chr.cgi[i].def + \n);
+      if(#.chr.chars[i] > 0) `put(y=, .chr.cgi[i].def);
       i++;
     while i < #.chr.chars:}
-    `put(0.0, y=, .chr.stg~def);
+    `put(y=, .chr.stg~def);
     `put(
-      0.0, y=,
-      (
+      y=, (
         #.tscri.cwc > 0
         ? "P"+''(.tscri.cwc~playerno+1)+":" + .tscri.cwc~name : "")
       + "> " + `line);
     loop{index i = 0; while; do:
       if(#.chr.chars[i] > 0) loop{index j = 0; while; do:
-        `put(0.0, y=, .com.clipboardText[i][j]);
+        `put(y=, .com.clipboardText[i][j]);
         j++;
       while j < #.com.clipboardText[i]:}
       y += (float).fnt.debugFont~sizey/.com.HeightScale;
@@ -483,7 +482,7 @@ void game()
       loop{index i = 0; while; do:
         .com.rexisted[i]++;
         i++;
-      while i < #.com.tmode:}
+      while i < #.com.rexisted:}
     cond
       !.com.matchOver()
       && (
@@ -524,11 +523,10 @@ void game()
           loop{index j = i; while; do:
             if(#.chr.chars[j] > 0){
               .chr.chars[j][0]~sysivar[.chr.iLIFE] =
-                .m.max!int?(1)<, (int).m.ceil(
+                .m.max!int?(1, .chr.chars[j][0]~isWin() ? (int).m.ceil(
                   .lvmul**(double)level[j] * (float)(
-                    .chr.chars[j][0]~isWin()
-                    ? .chr.chars[j][0]~sysivar[.chr.iLIFE]
-                    : .chr.chars[j][0]~sysivar[.chr.iLIFEMAX]));
+                    .chr.chars[j][0]~sysivar[.chr.iLIFE]))
+                : .chr.chars[j][0]~sysivar[.chr.iLIFEMAX2]);
             }
             j += 2;
           while j < #.chr.chars:}
@@ -547,11 +545,12 @@ void game()
     else:
       scl = .m.max!float?(minscl)<, .m.min!float?(.com.zoomMax)<, scl;
     }
-    tmp =
-      #((l + r) - (newx - x)*2.0) < ((float).com.GameWidth/4.0)/scl
-      ? ((float).com.GameWidth/2.0)/scl
-      : .m.max!float?(0.0)<, .m.min!float?(((float).com.GameWidth/2.0)/scl)<,
-      .m.max!float?(-(l-(newx-x)), r-(newx-x));
+    tmp = ((float).com.GameWidth/2.0) / scl;
+    if(#((l + r) - (newx - x)*2.0) >= tmp / 2.0){
+      tmp =
+        .m.max!float?(0.0)<, .m.min!float?(tmp)<,
+        .m.max!float?((newx-x)-l, r-(newx-x));
+    }
     x =
       xbound(scl)<,
       .m.min!float?(x + l + tmp)<, .m.max!float?(x + r - tmp)<, newx;

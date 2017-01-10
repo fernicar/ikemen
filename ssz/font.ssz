@@ -232,11 +232,24 @@ public &Font
     if(#spr == 0 || #spr~pxl == 0) ret 0.0;
     &.sdl.Rect tile.set(0, 0, 0, 0);
   /?/*.cfg.OpenGL:
-    .sdl.RenderMugenGl(:
-      spr~pxl<>, pal<>=, 0, spr~rct=, -x*.com.WidthScale,
-      -y*.com.HeightScale, tile=, xscl*.com.WidthScale,
-      xscl*.com.WidthScale, yscl*.com.HeightScale, 1.0,
-      0.0, 0.0, .com.brightness*255>>8 | 1<<9, .com.scrrect=, 0.0, 0.0:);
+    plugin bool RenderMugenGl(:
+      &.sdl.GlTexture, index, int, &.sdl.Rect=, float, float, &.sdl.Rect=,
+      float, float, float, float, float, float, int, &.sdl.Rect=, float,
+      float:) = <alpha/dll/sdlplugin.dll>;
+    branch{
+    cond #pal > 0:
+      .sdl.RenderMugenGl(:
+        spr~pxl<>, pal<>=, 0, spr~rct=, -x*.com.WidthScale,
+        -y*.com.HeightScale, tile=, xscl*.com.WidthScale,
+        xscl*.com.WidthScale, yscl*.com.HeightScale, 1.0,
+        0.0, 0.0, .com.brightness*255>>8 | 1<<9, .com.scrrect=, 0.0, 0.0:);
+    else:
+      RenderMugenGl(:
+        spr~pxl<>, 0, 0, spr~rct=, -x*.com.WidthScale,
+        -y*.com.HeightScale, tile=, xscl*.com.WidthScale,
+        xscl*.com.WidthScale, yscl*.com.HeightScale, 1.0,
+        0.0, 0.0, .com.brightness*255>>8 | 1<<9, .com.scrrect=, 0.0, 0.0:);
+    }
   /*true:
     .sdl.renderMugenZoom(
       .com.scrrect=, 0.0, 0.0, spr~pxl, pal, 0, spr~rct=,
@@ -264,6 +277,7 @@ public &Font
     txt:<-[void(c){
       dx +=
         `drawChar(dx, dy, xscl, yscl, bank, c, pal) + (float)`spacingx*xscl;
+      pal.new(0);
     }];
   }
 }

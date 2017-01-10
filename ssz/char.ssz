@@ -5416,11 +5416,11 @@ public &Char
   }
   public bool isWin()
   {
-    ret .com.win >= 0 && (`playerno&1) == .com.win;
+    ret (`playerno&1) == .com.win;
   }
   public bool isLose()
   {
-    ret .com.win >= 0 && (!`playerno&1) == .com.win;
+    ret (!`playerno&1) == .com.win;
   }
   public bool isOver()
   {

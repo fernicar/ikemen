@@ -235,9 +235,7 @@ public &Buffer
   }
   /bool anybutton()
   {
-    ret
-      (`stat&`A) != 0 || (`stat&`B) != 0 || (`stat&`C) != 0
-      || (`stat&`X) != 0 || (`stat&`Y) != 0 || (`stat&`Z) != 0;
+    ret (`stat & (`A|`B|`C|`X|`Y|`Z)) != 0;
   }
 }
 

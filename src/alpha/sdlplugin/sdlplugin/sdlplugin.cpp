@@ -401,6 +401,7 @@ static GLint g_uniformGray = 0;
 static GLint g_uniformAdd = 0;
 static GLint g_uniformMul = 0;
 static GLint g_uniformColor = 0;
+static GLuint g_paltex = 0;
 
 
 void sndjoyinit()
@@ -3203,20 +3204,24 @@ TUserFunc(
 	glScissor(dstr->x, g_h - (dstr->y+dstr->h), dstr->w, dstr->h);
 	//
 	glActiveTexture(GL_TEXTURE1);
-	uint32_t paltex;
-	glGenTextures(1, &paltex);
-	glBindTexture(GL_TEXTURE_1D, paltex);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage1D(
-		GL_TEXTURE_1D, 0, GL_RGBA, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, ppal);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	if (ppal) {
+		if(g_paltex) glDeleteTextures(1, &g_paltex);
+		glGenTextures(1, &g_paltex);
+		glBindTexture(GL_TEXTURE_1D, g_paltex);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage1D(
+			GL_TEXTURE_1D, 0, GL_RGBA, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, ppal);
+		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	}
+	else {
+		glBindTexture(GL_TEXTURE_1D, g_paltex);
+	}
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texid);
 	renderMugenGl(
 		rcy, rcx, alpha, angle, rasterxadd, vscl, yscl, xbotscl, xtopscl,
 		tl, y, x, r, g_mugenshader);
-	glDeleteTextures(1, &paltex);
 	//
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_TEXTURE_2D);
