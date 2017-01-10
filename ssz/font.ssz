@@ -224,8 +224,8 @@ public &Font
     if(#m == 0) ret .consts.null!&.sff.Sprite?();
     ret m~img[bank..bank+1];
   }
-  public float drawChar(
-    float x, float y, float xscl, float yscl, int bank, char ch, ^uint pal)
+  float drawChar(
+    float x, float y, float xscl, float yscl, int bank, char ch, ^uint pal=)
   {
     if(ch == ' ') ret (float)`sizex * xscl;
     ^&.sff.Sprite spr = `getCharSpr(bank, ch);
@@ -243,6 +243,7 @@ public &Font
         -y*.com.HeightScale, tile=, xscl*.com.WidthScale,
         xscl*.com.WidthScale, yscl*.com.HeightScale, 1.0,
         0.0, 0.0, .com.brightness*255>>8 | 1<<9, .com.scrrect=, 0.0, 0.0:);
+      pal.new(0);
     else:
       RenderMugenGl(:
         spr~pxl<>, 0, 0, spr~rct=, -x*.com.WidthScale,
@@ -276,8 +277,7 @@ public &Font
     if(.sff.allPalFX~time != 0) pal = .sff.allPalFX~getFxPal(pal, false);
     txt:<-[void(c){
       dx +=
-        `drawChar(dx, dy, xscl, yscl, bank, c, pal) + (float)`spacingx*xscl;
-      pal.new(0);
+        `drawChar(dx, dy, xscl, yscl, bank, c, pal=) + (float)`spacingx*xscl;
     }];
   }
 }
