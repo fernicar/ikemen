@@ -5739,6 +5739,7 @@ public ^&Char PlayerList!&Char?::enemyNear(&.Char pyr=, int n, bool p2)
   enen.new[-1].n = n;
   enen[-1].pn = en[-1]~playerno;
   enen[-1].hi = en[-1]~helperindex;
+  pyr.enemyn[(int)p2] = enen;
   ret en[-1];
 }
 public void PlayerList!&Char?::add(^&.Char c)
