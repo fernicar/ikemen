@@ -49,16 +49,6 @@ bgPalFX.new(1);
 }
 public &EnvShake envShake;
 
-&Camera
-{
-  public int startx = 0;
-  public int boundleft = 0, boundright = 0;
-  public int boundhigh = 0;
-  public float verticalfollow = 0.2;
-  public int tension = 50, floortension = 0;
-  public int overdrawlow = 0;
-}
-
 &Player
 {
   public int startx = -70, starty = 0;
@@ -86,24 +76,21 @@ public &Stage
   public &.bg.BGCTimeLine bgctl;
   /&.bg.BGCtrl bgcdef;
   /&.bg.BGAction bga;
-  /&.Camera cam;
   /&.Shadow sdw;
   /&.Player p1, p2;
   /float leftbound = 0.0/0.0, rightbound = 0.0/0.0;
   /int screenleft = 15, screenright = 15;
-  /int zoffset = 0;
   /int zoffsetlink = -1;
-  /float ztopscale = 1.0;
   /int reflection = 0;
   /bool hires = false, resetbg = true, debugbg = false, reflect = true;
-  /int localw = 320, localh = 240;
-  /float localscl, xscale = 1.0, yscale = 1.0, drawOffsetY = 0.0;
+  /float localscl, xscale = 1.0, yscale = 1.0;
   type action_t = &.bg.Action;
   &.sff.AirFileMethods!self? airFileMethods;
   new()
   {
     `p2.startx *= -1;
-    `localscl = (float).com.GameWidth / (float)`localw;
+    .com.cam.stg.clear();
+    `localscl = .com.cam.stg.localscl;
   }
   ^&.bg.Action getAction(int no)
   {
@@ -150,28 +137,33 @@ public &Stage
     {
       ^/char data;
       if(#(data = sc.get("startx")) > 0){
-        `cam.startx = .com.atonOF!`cam.startx.self?(data);
+        .com.cam.stg.startx = .com.atonOF!.com.cam.stg.startx.self?(data);
       }
       if(#(data = sc.get("boundleft")) > 0){
-        `cam.boundleft = .com.atonOF!`cam.boundleft.self?(data);
+        .com.cam.stg.boundleft =
+          .com.atonOF!.com.cam.stg.boundleft.self?(data);
       }
       if(#(data = sc.get("boundright")) > 0){
-        `cam.boundright = .com.atonOF!`cam.boundright.self?(data);
+        .com.cam.stg.boundright =
+          .com.atonOF!.com.cam.stg.boundright.self?(data);
       }
       if(#(data = sc.get("boundhigh")) > 0){
-        `cam.boundhigh = .com.atonOF!`cam.boundhigh.self?(data);
+        .com.cam.stg.boundhigh =
+          .com.atonOF!.com.cam.stg.boundhigh.self?(data);
       }
       if(#(data = sc.get("verticalfollow")) > 0){
-        `cam.verticalfollow = .com.atof(data);
+        .com.cam.stg.verticalfollow = .com.atof(data);
       }
       if(#(data = sc.get("tension")) > 0){
-        `cam.tension = .com.atonOF!`cam.tension.self?(data);
+        .com.cam.stg.tension = .com.atonOF!.com.cam.stg.tension.self?(data);
       }
       if(#(data = sc.get("floortension")) > 0){
-        `cam.floortension = .com.atonOF!`cam.floortension.self?(data);
+        .com.cam.stg.floortension =
+          .com.atonOF!.com.cam.stg.floortension.self?(data);
       }
       if(#(data = sc.get("overdrawlow")) > 0){
-        `cam.overdrawlow = .com.atonOF!`cam.overdrawlow.self?(data);
+        .com.cam.stg.overdrawlow =
+          .com.atonOF!.com.cam.stg.overdrawlow.self?(data);
       }
     }
     public void playerinfo(&.com.Section sc=)
@@ -199,7 +191,9 @@ public &Stage
     public void scaling(&.com.Section sc=)
     {
       ^/char data;
-      if(#(data = sc.get("topscale")) > 0) `ztopscale = .com.atof(data);
+      if(#(data = sc.get("topscale")) > 0){
+        .com.cam.stg.ztopscale = .com.atof(data);
+      }
     }
     public void bound(&.com.Section sc=)
     {
@@ -215,7 +209,7 @@ public &Stage
     {
       ^/char data;
       if(#(data = sc.get("zoffset")) > 0){
-        `zoffset = .com.atonOF!`zoffset.self?(data);
+        .com.cam.stg.zoffset = .com.atonOF!.com.cam.stg.zoffset.self?(data);
       }
       if(#(data = sc.get("zoffsetlink")) > 0){
         `zoffsetlink = .com.atonOF!`zoffsetlink.self?(data);
@@ -227,7 +221,7 @@ public &Stage
         `resetbg = .com.atonOF!int?(data) != 0;
       }
       if(#(data = sc.get("localcoord")) > 0){
-        .bg.readPair!int?(`localw=, `localh=, data);
+        .bg.readPair!int?(.com.cam.stg.localw=, .com.cam.stg.localh=, data);
       }
       if(#(data = sc.get("xscale")) > 0){
         `xscale = .com.atonOF!`xscale.self?(data);
@@ -449,7 +443,8 @@ public &Stage
     {
       ret def + ":"\r\n + error;
     }
-    `localscl = (float).com.GameWidth / (float)`localw;
+    `localscl = (float).com.GameWidth / (float).com.cam.stg.localw;
+    .com.cam.stg.localscl = `localscl;
     if(!.m.isfinite(`leftbound)) `leftbound = 1000.0/`localscl;
     `leftbound *= `localscl;
     if(!.m.isfinite(`rightbound)) `rightbound = 1000.0/`localscl;
@@ -459,7 +454,7 @@ public &Stage
       while;
     do:
       `bg[i].setup(
-        `sf, (float)`cam.startx,
+        `sf, (float).com.cam.stg.startx,
         [void(^&.bg.Action act=, int n){act = `getAction(n);}]);
       branch{
       cond `bg[i].positionlink && i > 0:
@@ -473,15 +468,17 @@ public &Stage
       }
       i++;
     while i < #`bg:
-      if(zlink >= 0) `zoffset += (int)(`bg[zlink].starty*`yscale);
+      if(zlink >= 0) .com.cam.stg.zoffset += (int)(`bg[zlink].starty*`yscale);
     }
-    `drawOffsetY =
-      (float)`localw/(float)`localh > (float).com.GameWidth/240.0
+    .com.cam.stg.drawOffsetY =
+      (float).com.cam.stg.localw/(float).com.cam.stg.localh
+      > (float).com.GameWidth/240.0
       ? .m.min!float?(
-        (float)`localh * `localscl * 0.5 * (
-          ((float)`localw/(float)`localh) / ((float).com.GameWidth/240.0)
+        (float).com.cam.stg.localh * `localscl * 0.5 * (
+          ((float).com.cam.stg.localw/(float).com.cam.stg.localh)
+          / ((float).com.GameWidth/240.0)
           - 1.0),
-        (float).m.max!int?(0, `cam.overdrawlow))
+        (float).m.max!int?(0, .com.cam.stg.overdrawlow))
       : 0.0;
     ret "";
   }
@@ -619,21 +616,21 @@ public &Stage
     float posx = x, posy = y;
     float scl2 = `localscl * scl;
     branch{
-      float bhtmp = (float).m.max!int?(0, `cam.boundhigh);
+      float bhtmp = (float).m.max!int?(0, .com.cam.stg.boundhigh);
     cond posy > bhtmp:
       yofs += (posy - bhtmp) * scl2;
       posy = bhtmp;
-    cond posy < (float)`cam.boundhigh:
-      yofs += (posy - (float)`cam.boundhigh) * scl2;
-      posy = (float)`cam.boundhigh;
+    cond posy < (float).com.cam.stg.boundhigh:
+      yofs += (posy - (float).com.cam.stg.boundhigh) * scl2;
+      posy = (float).com.cam.stg.boundhigh;
     }
-    if(`cam.verticalfollow > 0.0) branch{
+    if(.com.cam.stg.verticalfollow > 0.0) branch{
     cond yofs < 0.0:
       branch{
         float temp =
-          ((float)`cam.boundhigh - posy) * scl2
+          ((float).com.cam.stg.boundhigh - posy) * scl2
           + (
-            scl > 1.0 ? (.com.screenZoffset + (float)(.com.GameHeight - 240))
+            scl > 1.0 ? (.com.cam.screenZoff + (float)(.com.GameHeight - 240))
             : (float).com.GameHeight)
           * (1.0/scl - 1.0);
         if(temp >= 0.0) break;
@@ -654,16 +651,18 @@ public &Stage
         yofs = 0.0;
       }
     }
-    if(!.com.zoom){
+    if(!.com.cam.zoom){
       posx = .m.ceil(posx - 0.5);
       posy = .m.ceil(posy - 0.5);
     }
     yofs +=
-      (`drawOffsetY + (float)(`localh - 240)*`localscl)
+      (.com.cam.stg.drawOffsetY + (float)(.com.cam.stg.localh - 240)*`localscl)
       * scl**(
         (
-          (360.0 * (float)`localw + 160.0 * (float)`localh) / (float)`localw
-          + `drawOffsetY)
+          (
+            360.0 * (float).com.cam.stg.localw
+            + 160.0 * (float).com.cam.stg.localh)
+          / (float).com.cam.stg.localw + .com.cam.stg.drawOffsetY)
         / 480.0);
     loop{index i = 0; while; do:
       if(`bg[i].visible && `bg[i].toplayer == t && #`bg[i].anim.spr > 0){

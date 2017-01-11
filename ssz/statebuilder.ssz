@@ -1400,7 +1400,7 @@ public &StateBuilder
       token = `tokenizer(in=);
       branch{
       cond .s.equ("x", token):
-        out .= '(' .= obj .= "sysfvar[.fX]-.com.camerax)";
+        out .= '(' .= obj .= "sysfvar[.fX]-.com.cam.x)";
       cond .s.equ("y", token):
         out .= obj .= "sysfvar[.fY]";
       cond .s.equ("z", token):///////////////
@@ -1413,9 +1413,9 @@ public &StateBuilder
       token = `tokenizer(in=);
       branch{
       cond .s.equ("x", token):
-        out .= "((" .= obj .= "sysfvar[.fX]-.com.screenx)*.com.scale)";
+        out .= "((" .= obj .= "sysfvar[.fX]-.com.cam.screenX)*.com.cam.scale)";
       cond .s.equ("y", token):
-        out .= "((" .= obj .= "sysfvar[.fY]-.com.screeny)*.com.scale)";
+        out .= "((" .= obj .= "sysfvar[.fY]-.com.cam.screenY)*.com.cam.scale)";
       else:
         break, else;
       }
@@ -3626,7 +3626,7 @@ public &StateBuilder
         if(
           !`fullExpression(
             `state.ctrlList[-1].task=, data=,
-            `state.ctrlList[-1].typ == .CtrlTy::PosSet ? ".com.camerax+" : "",
+            `state.ctrlList[-1].typ == .CtrlTy::PosSet ? ".com.cam.x+" : "",
             ");", 1))
         {
           ret false;
@@ -7734,7 +7734,7 @@ public &StateBuilder
   bool zoom(&.tbl.NameTable!^/char? param=)
   {
     ret `stateSec(param=,[bool(){
-      `state.ctrlList[-1].task .= ".com.drawscale=.com.scale;";
+      `state.ctrlList[-1].task .= ".com.drawscale=.com.cam.scale;";
       if(!`stateParam(param=, "pos", [`paraF_t(data=){
         if(
           !`argExpression(

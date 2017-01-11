@@ -37,6 +37,7 @@ public &Share
   public float zoomSpeed;
   public ^int numSimul;
   public ^index wakewakaLength;
+  public &.com.Camera::Stage camstg;
   public void copy()
   {
     `c = .chr.chars;
@@ -71,12 +72,13 @@ public &Share
     `life = .com.life;
     `team1VS2Life = .com.team1VS2Life;
     `turnsRecoveryRate = .com.turnsRecoveryRate;
-    `zoom = .com.zoom;
-    `zoomMin = .com.zoomMin;
-    `zoomMax = .com.zoomMax;
-    `zoomSpeed = .com.zoomSpeed;
+    `zoom = .com.cam.zoom;
+    `zoomMin = .com.cam.zoomMin;
+    `zoomMax = .com.cam.zoomMax;
+    `zoomSpeed = .com.cam.zoomSpeed;
     `numSimul = .com.numSimul;
     `wakewakaLength = .chr.wakewakaLength;
+    `camstg = .com.cam.stg;
   }
   public void push()
   {
@@ -112,12 +114,13 @@ public &Share
     .com.life = `life;
     .com.team1VS2Life = `team1VS2Life;
     .com.turnsRecoveryRate = `turnsRecoveryRate;
-    .com.zoom = `zoom;
-    .com.zoomMin = `zoomMin;
-    .com.zoomMax = `zoomMax;
-    .com.zoomSpeed = `zoomSpeed;
+    .com.cam.zoom = `zoom;
+    .com.cam.zoomMin = `zoomMin;
+    .com.cam.zoomMax = `zoomMax;
+    .com.cam.zoomSpeed = `zoomSpeed;
     .com.numSimul = `numSimul;
     .chr.wakewakaLength = `wakewakaLength;
+    .com.cam.stg = `camstg;
   }
 }
 

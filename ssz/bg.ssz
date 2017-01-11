@@ -428,7 +428,7 @@ public &BackGround
       * localscl;
     float x2 = `startx + `xofs - (x/xscale+`camstartx)*`deltax + `bga.xoffset;
     float y2 = `starty - (y/yscale)*`deltay + `bga.yoffset;
-    if(!.com.zoom){
+    if(!.com.cam.zoom){
       if(
         `rasterxbspeed == `rasterxtspeed
         && `bga.sinxlooptime <= 0 && `bga.sinxoffset == 0.0)

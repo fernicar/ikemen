@@ -250,32 +250,11 @@ void game()
     `y = `newy = 0.0;
     `l = `r = 0.0;
     `scl = `sclmul = 1.0;
-    .com.scale = .chr.stg~ztopscale;
+    .com.cam.update!.chr.stg<>.self?(`scl, `x, `y, .chr.stg<>=);
     .com.screenleft = (float).chr.stg~screenleft * .chr.stg~localscl;
     .com.screenright = (float).chr.stg~screenright * .chr.stg~localscl;
-    .com.xmin = -((float).com.GameWidth/2.0)/.com.scale + .com.screenleft;
-    .com.xmax = ((float).com.GameWidth/2.0)/.com.scale - .com.screenright;
-  }
-  float xbound(float scl, float x)
-  {
-    ret
-      .m.max!float?(
-        `bl-(float).com.GameWidth/2.0 + ((float).com.GameWidth/2.0)/scl)<,
-      .m.min!float?(
-        `br+(float).com.GameWidth/2.0 - ((float).com.GameWidth/2.0)/scl, x);
-  }
-  float ybound(float scl, float y)
-  {
-    if(.chr.stg~cam.verticalfollow <= 0.0) ret 0.0;
-    float tmp = .m.max!float?(0.0, 240.0 - .com.screenZoffset);
-    ret
-      .m.max!float?(0.0, .com.boundhigh)
-      + .m.min!float?(0.0)<, 
-      .m.min!float?(tmp*(1.0/scl - 1.0))<,
-      .m.max!float?(
-        .com.boundhigh-240.0 + .m.max!float?(
-          (float).com.GameHeight/scl, tmp + .com.screenZoffset/scl),
-        y + 240.0*(1.0 - .m.min!float?(1.0, scl)));
+    .com.xmin = -((float).com.GameWidth/2.0)/.com.cam.scale + .com.screenleft;
+    .com.xmax = ((float).com.GameWidth/2.0)/.com.cam.scale - .com.screenright;
   }
   loop{
     int stagetime;
@@ -425,35 +404,7 @@ void game()
       i++;
     while i < stagetime:}
     if(.com.round == 1) .snd.bgm~play(.chr.stg~bgmusic);
-    bl =
-      (float)(.chr.stg~cam.boundleft - .chr.stg~cam.startx)
-      * .chr.stg~localscl;
-    br =
-      (float)(.chr.stg~cam.boundright - .chr.stg~cam.startx)
-      * .chr.stg~localscl;
-    .com.boundhigh =
-      .chr.stg~cam.verticalfollow > 0.0
-      ? .m.min!float?(
-        0.0,
-        (float).chr.stg~cam.boundhigh * .chr.stg~localscl
-        + (float).com.GameHeight - .chr.stg~drawOffsetY
-        - (float).com.GameWidth*(float).chr.stg~localh
-        / (float).chr.stg~localw)
-      : 0.0;
-    if(.chr.stg~cam.boundhigh > 0){
-      .com.boundhigh += (float).chr.stg~cam.boundhigh * .chr.stg~localscl;
-    }
-    float xminscl =
-      (float).com.GameWidth / ((float).com.GameWidth - bl + br);
-    float yminscl =
-      (float).com.GameHeight / (240.0-.m.min!float?(0.0, .com.boundhigh));
-    float minscl =
-      .m.max!float?(.com.zoomMin)<, .m.min!float?(.com.zoomMax)<,
-      .m.max!float?(xminscl, yminscl);
-    .com.screenZoffset =
-      (float).chr.stg~zoffset * .chr.stg~localscl
-      - .chr.stg~drawOffsetY + 240.0
-      - (float).com.GameWidth*(float).chr.stg~localh / (float).chr.stg~localw;
+    .com.cam.init();
     float tmp;
     oldp1wins = .com.p1wins;
     oldp2wins = .com.p2wins;
@@ -538,13 +489,7 @@ void game()
       break, break;
     }
     if(.com.turbo < 1.0) sclmul **= .com.turbo;
-    scl *= sclmul;
-    branch{
-    cond !.com.zoom:
-      scl = 1.0;
-    else:
-      scl = .m.max!float?(minscl)<, .m.min!float?(.com.zoomMax)<, scl;
-    }
+    scl = .com.cam.scaleBound(scl * sclmul);
     tmp = ((float).com.GameWidth/2.0) / scl;
     if(#((l + r) - (newx - x)*2.0) >= tmp / 2.0){
       tmp =
@@ -552,10 +497,10 @@ void game()
         .m.max!float?((newx-x)-l, r-(newx-x));
     }
     x =
-      xbound(scl)<,
+      .com.cam.xBound(scl)<,
       .m.min!float?(x + l + tmp)<, .m.max!float?(x + r - tmp)<, newx;
-    if(!.com.zoom) x = .m.ceil(x*4.0 - 0.5)/4.0;
-    y = ybound(scl, newy);
+    if(!.com.cam.zoom) x = .m.ceil(x*4.0 - 0.5)/4.0;
+    y = .com.cam.yBound(scl, newy);
     if(
       .com.tickFrame() && (.chr.super <= 0 || .chr.superpausebg == 0)
       && (.chr.pause <= 0 || .chr.pausebg == 0)) 
@@ -578,8 +523,10 @@ void game()
         !.m.isnan(.com.drawscale)
         && !.m.isnan(.com.zoomposx)&& !.m.isnan(.com.zoomposy))
       {
-        dscl = .m.max!float?(minscl, .com.drawscale/.chr.stg~ztopscale);
-        dx = xbound(dscl, x + .com.zoomposx * (dscl - scl) / dscl);
+        dscl =
+          .m.max!float?(
+            .com.cam.minScale, .com.drawscale / .com.cam.baseScale());
+        dx = .com.cam.xBound(dscl, x + .com.zoomposx * (dscl - scl) / dscl);
         dy = y + .com.zoomposy;
       }
       .chr.draw(dx, dy, dscl);

@@ -829,7 +829,7 @@ void physics(&.lua.State L=, int re=)
 void posX(&.lua.State L=, int re=)
 {
   re = 1;
-  L.pushNumber(#.cwc > 0 ? .cwc~sysfvar[.chr.fX]-.com.camerax : 0.0);
+  L.pushNumber(#.cwc > 0 ? .cwc~sysfvar[.chr.fX]-.com.cam.x : 0.0);
 }
 
 void posY(&.lua.State L=, int re=)
@@ -933,14 +933,14 @@ void screenposX(&.lua.State L=, int re=)
 {
   re = 1;
   L.pushNumber(
-    #.cwc > 0 ? (.cwc~sysfvar[.chr.fX]-.com.screenx)*.com.scale : 0.0);
+    #.cwc > 0 ? (.cwc~sysfvar[.chr.fX]-.com.cam.screenX)*.com.cam.scale : 0.0);
 }
 
 void screenposY(&.lua.State L=, int re=)
 {
   re = 1;
   L.pushNumber(
-    #.cwc > 0 ? (.cwc~sysfvar[.chr.fY]-.com.screeny)*.com.scale : 0.0);
+    #.cwc > 0 ? (.cwc~sysfvar[.chr.fY]-.com.cam.screenY)*.com.cam.scale : 0.0);
 }
 
 void screenwidth(&.lua.State L=, int re=)

@@ -158,10 +158,10 @@ public &DrawnClsn
   public void set(^/&.Rect cl, float x, float y, float xs, float ys)
   {
     `clsn = cl;
-    `x = (x - .com.camerax) * .com.scale;
-    `y = (y - .com.cameray) * .com.scale + .com.zoffset;
-    `xscale = xs * .com.scale;
-    `yscale = ys * .com.scale;
+    `x = (x - .com.cam.x) * .com.cam.scale;
+    `y = (y - .com.cam.y) * .com.cam.scale + .com.cam.groundLevel();
+    `xscale = xs * .com.cam.scale;
+    `yscale = ys * .com.cam.scale;
   }
   /void draw(&.sff.Sprite spr=, int alpha)
   {

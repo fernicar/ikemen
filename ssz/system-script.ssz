@@ -679,28 +679,28 @@ void setZoom(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 0;
   bool z = .sc.blArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .com.zoom = z;
+  .com.cam.zoom = z;
 }
 
 void setZoomMin(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 0;
   float zmi = .sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .com.zoomMin = zmi;
+  .com.cam.zoomMin = zmi;
 }
 
 void setZoomMax(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 0;
   float zma = .sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .com.zoomMax = zma;
+  .com.cam.zoomMax = zma;
 }
 
 void setZoomSpeed(&.lua.State L=, int re=)
 {
   int argc = 0, nret = 0;
   float zs = .sc.numArg(L=, re=, argc=, nret); if(re < 0) ret;
-  .com.zoomSpeed = 12.0 - zs;
+  .com.cam.zoomSpeed = 12.0 - zs;
 }
 
 void resetRemapInput(&.lua.State L=, int re=)
