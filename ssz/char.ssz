@@ -4571,12 +4571,11 @@ public &Char
       .al.alert!self?(buf);
       ret false;
     }
-    if(n < 0) ret false;
     `stVal.prevno = `stVal.no;
     if(`stVal.playerno != `playerno && p != `stVal.playerno){
       `enemyExplodsRemove(`stVal.playerno);
     }
-    `stVal.no = n;
+    `stVal.no = .m.max!int?(0, n);
     `stVal.playerno = p;
     `stVal.time = 0;
     ^&`State st = .states[`stVal.playerno].get(`stVal.no);
@@ -4584,10 +4583,6 @@ public &Char
     `state = #st > 0 ? st~state : `dummy;
     `cs1tmp = true;
     ret true;
-  }
-  public bool changeState1kai(int p, int no)
-  {
-    ret `changeState1(p, .m.max!int?(0, no));
   }
   public void changeState2()
   {
@@ -4603,7 +4598,7 @@ public &Char
     }
     if(anim >= 0) `trChangeAnim(anim);
     if(ctrl >= 0) `setCtrl(ctrl != 0);
-    if(`changeState1kai(p, n) && `minus == 0 && `id >= 0){
+    if(`changeState1(p, n) && `minus == 0 && `id >= 0){
       `changeState2();
       .changeStateNest++;
       `state(::);
@@ -5129,7 +5124,7 @@ public &Char
       c = .players.get(t);
       if(#c > 0){
         c~setCtrl(false);
-        c~changeState1kai(pno, state);
+        c~changeState1(pno, state);
       }
     }];
   }
