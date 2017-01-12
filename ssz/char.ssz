@@ -6567,12 +6567,6 @@ public ^&Char create(int no)
   .players.add(c);
   ret c;
 }
-void gSetNormal(float scl, float x, float y)
-{
-  .com.cam.update!.stg<>.self?(scl, x, y, .stg<>=);
-  .com.screenleft = (float).stg~screenleft * .stg~localscl;
-  .com.screenright = (float).stg~screenright * .stg~localscl;
-}
 
 ^&.fgt.LifePower getLifePower()
 {
@@ -6694,7 +6688,7 @@ public float action(
   .topanims.new(0);
   .shadows.new(0);
   .resetDrawnClsnList();
-  .gSetNormal(scl, x, y);
+  .com.cam.update!.stg<>.self?(scl, x, y, .stg<>=);
   float cvmin = 0.0, cvmax = 0.0;
   float highest = 0.0;
   float lowest = .com.cam.stg.verticalfollow > 0.0 ? .com.cam.screenY : 0.0;
@@ -7313,7 +7307,7 @@ public void nextRound()
   .com.time = .com.roundTime;
   .id = .cfg.HelperMax;
   if(.stg~resetbg) .stg~reset();
-  .gSetNormal(1.0, 0.0, 0.0);
+  .com.cam.update!.stg<>.self?(1.0, 0.0, 0.0, .stg<>=);
   loop{index i = 0; while; do:
     if(#.chars[i] == 0) continue;
     .chars[i][0]~[void(c=){

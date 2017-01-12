@@ -251,8 +251,6 @@ void game()
     `l = `r = 0.0;
     `scl = `sclmul = 1.0;
     .com.cam.update!.chr.stg<>.self?(`scl, `x, `y, .chr.stg<>=);
-    .com.screenleft = (float).chr.stg~screenleft * .chr.stg~localscl;
-    .com.screenright = (float).chr.stg~screenright * .chr.stg~localscl;
     .com.xmin = -((float).com.GameWidth/2.0)/.com.cam.scale + .com.screenleft;
     .com.xmax = ((float).com.GameWidth/2.0)/.com.cam.scale - .com.screenright;
   }
@@ -405,6 +403,8 @@ void game()
     while i < stagetime:}
     if(.com.round == 1) .snd.bgm~play(.chr.stg~bgmusic);
     .com.cam.init();
+    .com.screenleft = (float).chr.stg~screenleft * .chr.stg~localscl;
+    .com.screenright = (float).chr.stg~screenright * .chr.stg~localscl;
     float tmp;
     oldp1wins = .com.p1wins;
     oldp2wins = .com.p2wins;
