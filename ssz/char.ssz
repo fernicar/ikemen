@@ -3669,12 +3669,14 @@ public &Char
       lowest = .m.min!float?(0.0)<, .m.max!float?(`drawY, lowest);
     }
   }
-  public void posReset(float p1x, float p2x)
+  public void posReset()
   {
     `facing = (`playerno&1) == 0 ? 1 : -1;
     `setX(
-      ((`playerno&1) == 0 ? p1x : p2x)
-      + (float)(`playerno*-`facing / 2) * .com.P1P3Dist);
+      (float)(
+        ((`playerno&1) == 0 ? .stg~p1.startx : .stg~p2.startx)
+        - .com.cam.stg.startx)
+      * .stg~localscl + (float)(`playerno*-`facing / 2) * .com.P1P3Dist);
     `setY(0.0);
     `setXV(0.0);
     `setYV(0.0);
@@ -6881,11 +6883,7 @@ public float action(
   void posreset()
   {
     loop{index i = 0; while; do:
-      if(#.chars[i] > 0){
-        .chars[i][0]~posReset(
-          (float)(.stg~p1.startx - .com.cam.stg.startx) * .stg~localscl,
-          (float)(.stg~p2.startx - .com.cam.stg.startx) * .stg~localscl);
-      }
+      if(#.chars[i] > 0) .chars[i][0]~posReset();
       i++;
     while i < #.chars:}
   }
@@ -7313,9 +7311,7 @@ public void nextRound()
     .chars[i][0]~[void(c=){
       .id = .m.max!int?(.id, c.id + 1);
       .charClear(i);
-      c.posReset(
-        (float)(.stg~p1.startx - .com.cam.stg.startx) * .stg~localscl,
-        (float)(.stg~p2.startx - .com.cam.stg.startx) * .stg~localscl);
+      c.posReset();
       c.setCtrl(false);
       c.stVal.clear();
       c.clearSpSysVar();
