@@ -5811,8 +5811,6 @@ public void PlayerList!&Char?::action(
     p = p~next;
   while #p > 0:}
   .update(cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
-  .com.gametime++;
-  .rootAction();
 }
 public void PlayerList!&Char?::update(
   float cvmin=, float cvmax=,
@@ -6503,6 +6501,7 @@ public void PlayerList!&Char?::getHit(bool pro)
 }
 public void PlayerList!&Char?::tick()
 {
+  .com.gametime++;
   loop{
     *`top.self p = `top;
     while;
@@ -6591,6 +6590,19 @@ void update(
     .projs[i]:<-[void(p=){if(p.id >= 0) p.update(i);}];
     i++;
   while i < #.projs:}
+  if(.com.tickNextFrame()){
+    loop{index i = 0; while; do:
+      .projs[i]:<-[void(p=){if(p.id >= 0) p.projClsn(i);}];
+      i++;
+    while i < #.projs:}
+    .players.getHit(false);
+    .players.getHit(true);
+    loop{index i = 0; while; do:
+      .projs[i]:<-[void(p=){if(p.id != .com.IERR) p.tick(i);}];
+      i++;
+    while i < #.projs:}
+    .players.tick();
+  }
 }
 
 void commandUpdate()
@@ -6634,23 +6646,6 @@ void commandUpdate()
   continue:
     i++;
   while i < #.chars:}
-}
-
-void rootAction()
-{
-  if(.com.tickNextFrame()){
-    loop{index i = 0; while; do:
-      .projs[i]:<-[void(p=){if(p.id >= 0) p.projClsn(i);}];
-      i++;
-    while i < #.projs:}
-    .players.getHit(false);
-    .players.getHit(true);
-    loop{index i = 0; while; do:
-      .projs[i]:<-[void(p=){if(p.id != .com.IERR) p.tick(i);}];
-      i++;
-    while i < #.projs:}
-    .players.tick();
-  }
 }
 
 void anim()
@@ -6722,7 +6717,6 @@ public float action(
     .players.action(x, cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
   else:
     .update(cvmin=, cvmax=, highest=, lowest=, leftest=, rightest=);
-    .rootAction();
   }
   %bool hbuf;
   .chars:<-[void(c){
