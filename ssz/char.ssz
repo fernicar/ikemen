@@ -2163,6 +2163,7 @@ public &Char
     `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
     `enemynClear();
     `targets.new(0);
+    `cpucmd = -1;
   }
   public void clearVal()
   {
@@ -6613,19 +6614,9 @@ void commandUpdate()
           int buftime = (int)(hp && r.mver0() != 1);
           branch{
           cond .super > 0:
-            if(
-              r.sysivar[.iSUPERMOVETIME] == 0
-              && .super <= .superendcmdbuftime)
-            {
-              hp = true;
-            }
+            if(!act && .super <= .superendcmdbuftime) hp = true;
           cond .pause > 0:
-            if(
-              r.sysivar[.iPAUSEMOVETIME] == 0
-              && .pause <= .pauseendcmdbuftime)
-            {
-              hp = true;
-            }
+            if(!act && .pause <= .pauseendcmdbuftime) hp = true;
           }
           while;
         do:
