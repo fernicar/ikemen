@@ -20,7 +20,6 @@ lib se = <alpha/sdlevent.ssz>;
 
 
 int changeStateNest = 0;
-float curx = 0.0, cury = 0.0;
 int waitdown = 0, shuttertime = 0;
 bool winskipped = false;
 void none;
@@ -4900,11 +4899,11 @@ public &Char
   }
   public float trCameraPosX()
   {
-    ret .curx;
+    ret .com.cam.x;
   }
   public float trCameraPosY()
   {
-    ret .cury;
+    ret .com.cam.y;
   }
   public float trCameraZoom()
   {
@@ -6694,8 +6693,6 @@ public float action(
   bool introSkip = false;
   branch{
   cond .com.tickFrame():
-    .curx = x;
-    .cury = y;
     .com.xmin = .com.cam.screenX + .com.cam.xOffset + .com.screenleft;
     .com.xmax =
       .com.cam.screenX + .com.cam.xOffset
