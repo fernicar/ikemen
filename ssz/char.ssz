@@ -2406,7 +2406,7 @@ public &Char
   }
   public void byBindClear()
   {
-    if(`stVal.hb.byidMatch(`sysivar[.iBINDTOID])) `setBindTime(0);
+    if(`isBound()) `setBindTime(0);
   }
   void enemyExplodsRemove(int enemy)
   {
@@ -3196,11 +3196,7 @@ public &Char
   }
   /bool isBound()
   {
-    loop{index i = 0; while; do:
-      if(`sysivar[.iBINDTOID] == `stVal.hb.by[i].id) ret true;
-      i++;
-    while i < #`stVal.hb.by:}
-    ret false;
+    ret `stVal.hb.byidMatch(`sysivar[.iBINDTOID]);
   }
   /bool isFall()
   {
