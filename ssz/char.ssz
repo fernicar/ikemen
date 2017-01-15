@@ -1415,7 +1415,7 @@ const int lsDESTROY       = 0b00000000010000000000000000000000;
 
 const int lasMask =
   lsNOAUTOTURN | lsNOWALK | lsNOSTANDGUARD | lsNOCROUCHGUARD | lsNOAIRGUARD
-  | lsNOSHADOW | lsINVISIBLE | lsUNGUARDABLE | lsNOJUGGLECHECK | lsANGLEDRAW;
+  | lsNOSHADOW | lsINVISIBLE | lsUNGUARDABLE | lsNOJUGGLECHECK;
 
 public uint specialFlag;
 const uint gsINTRO          = 0b00000000000000000000000000000001;
@@ -2100,8 +2100,8 @@ public &Char
   }
   void copyParent(`self c=)
   {
-    %char buf;
-    `name = (buf .= c.name .= "'s helper");
+    `parentindex = c.helperindex;
+    `name = c.name + "'s helper";
     `key = c.key;
     `state_1 = c.state_1;
     `state_2 = c.state_2;
@@ -2987,7 +2987,9 @@ public &Char
     if(#`cmd == 0) `cmd = .chars[`playerno][0]~cmd;
     branch{
     cond `stVal.hitdefContact != 0:
-      if(`stVal.hit.hitonce != 0) `stVal.hit.invalidate(`stVal.typ);
+      if(`stVal.hit.hitonce != 0 || `trMoveReversed() != 0){
+        `stVal.hit.invalidate(`stVal.typ);
+      }
       `stVal.hitdefContact = 0;
     cond `stVal.hit.lhit:
       `stVal.hit.attr &= !63;
@@ -3254,7 +3256,7 @@ public &Char
   /bool landCondition()
   {
     ret
-      `stVal.phy == .StTy::A && `isActive() && `sysfvar[.fVY] > 0.0
+      `stVal.phy == .StTy::A && `sysfvar[.fVY] > 0.0
       && `sysfvar[.fY] >= 0.0 && `stVal.no != 105;
   }
   /bool inGuardState()
@@ -3379,9 +3381,8 @@ public &Char
               ? 0 : .lsSCREENBOUND | .lsMOVECAMERAX | .lsMOVECAMERAY))
           : 0;
         `sysfvar[.fANGLESCALEX] = `sysfvar[.fANGLESCALEY] = 1.0;
+        `offsetx = `offsety = 0.0;
         `attackdist = (float)`sysivar[.iATTACK_DIST];
-        `offsetx = 0.0;
-        `offsety = 0.0;
         if(`stVal.hb.hitt1 > 0) `stVal.hb.hitt1--;
         if(`stVal.hb.hitt2 > 0) `stVal.hb.hitt2--;
         loop{index i = 0; while; do:
@@ -3389,18 +3390,17 @@ public &Char
           i++;
         while i < #`stVal.ho:}
         branch{
-        cond .super > 0 && `sysivar[.iSUPERMOVETIME] > 0:
-          `sysivar[.iSUPERMOVETIME]--;
+        cond .super > 0:
+          if(`sysivar[.iSUPERMOVETIME] > 0) `sysivar[.iSUPERMOVETIME]--;
         cond .pause > 0 && `sysivar[.iPAUSEMOVETIME] > 0:
           `sysivar[.iPAUSEMOVETIME]--;
         }
       }
       `sysivar[.iSPECIALFLAG] &= !.lsNOAUTOTURN;
       if(`mver0() == 1){
-        `sysivar[.iSPECIALFLAG] &= !.lasMask;
+        `sysivar[.iSPECIALFLAG] &= !(.lasMask | .lsANGLEDRAW);
         `sysfvar[.fANGLESCALEX] = `sysfvar[.fANGLESCALEY] = 1.0;
-        `offsetx = 0.0;
-        `offsety = 0.0;
+        `offsetx = `offsety = 0.0;
       }
       `minus = -3;
       if(`stVal.playerno == `playerno && `player) `state_3(::);
@@ -3421,8 +3421,7 @@ public &Char
             + (int)(`stVal.typ == .StTy::A)*51, -1, -1);
         while
           `stVal.no == 140 && `stVal.time >= (
-            `animpno >= 0 && #`ani > 0 && #`ani~ani.frames > 0
-            ? `ani~ani.totaltime : 0)
+            #`ani > 0 && #`ani~ani.frames > 0 ? `ani~ani.totaltime : 0)
           :
         }
         loop{continue; do:
@@ -4122,9 +4121,9 @@ public &Char
     }
     .c = .chars[n*2 + (!`playerno&1)]<>;
   }
-  public void trEnemyNear(int id)
+  public void trEnemyNear(int n)
   {
-    .c = .players.enemyNear(`=, id, false);
+    .c = .players.enemyNear(`=, n, false);
   }
   public void trRoot()
   {
@@ -4423,7 +4422,7 @@ public &Char
   }
   public int trAnimTime()
   {
-    if(`animpno < 0 || #`ani == 0 || #`ani~ani.frames == 0) ret 0;
+    if(#`ani == 0 || #`ani~ani.frames == 0) ret 0;
     ret `ani~ani.animTime();
   }
   public void trAnimElemTime(int e)
@@ -4928,7 +4927,6 @@ public &Char
     c~helperid = 0;
     c~copyParent(`=);
     `addChild(c~helperindex);
-    c~parentindex = `helperindex;
   }
   void helproSetPos<_t>(_t obj=, int pt, float x, float y, int facing)
   {
@@ -4961,8 +4959,7 @@ public &Char
     `self h=, int st, int pt, float x, float y, int facing, int ownpal)
   {
     `helproSetPos!h.self?(h=, pt, x, y, facing);
-    h.sysfvar[.fVX] = 0.0;
-    h.sysfvar[.fVY] = 0.0;
+    h.sysfvar[.fVX] = h.sysfvar[.fVY] = 0.0;
     if(ownpal != 0){
       h.palfx.new(1);
       h.palfx~remap = .chars[`playerno][h.parentindex]~getPalMap() + (index)[];
