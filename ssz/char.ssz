@@ -2899,8 +2899,7 @@ public &Char
   }
   public bool clsnCheck(`self atk=, bool c1atk, bool c1slf)
   {
-    if(#atk.ani == 0 || #atk.curFrame == 0) ret false;
-    if(#`ani == 0 || #`curFrame == 0) ret false;
+    if(#atk.curFrame == 0 || #`curFrame == 0) ret false;
     ^&.act.Rect clsn1 = c1atk ? atk.curFrame~clsn1() : atk.curFrame~clsn2();
     ^&.act.Rect clsn2 = c1slf ? `curFrame~clsn1() : `curFrame~clsn2();
     &.ClsnHantei ch.set(
@@ -2925,8 +2924,7 @@ public &Char
   }
   public bool projHitCheck(&.Projectile pr=)
   {
-    if(#pr.ani == 0 || #pr.ani~ani.frames == 0) ret false;
-    if(#`ani == 0 || #`curFrame == 0) ret false;
+    if(#pr.ani == 0 || #pr.ani~ani.frames == 0 || #`curFrame == 0) ret false;
     ^&.act.Frame frm;
     ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn1();
     ^&.act.Rect clsn2 = `curFrame~clsn2();
@@ -2949,7 +2947,7 @@ public &Char
   {
     if(
       #pr.ani == 0 || #pr.ani~ani.frames == 0 || `stVal.hit.reversal_attr > 0
-      || #`ani == 0 || #`curFrame == 0) ret false;
+      || #`curFrame == 0) ret false;
     ^&.act.Frame frm;
     ^&.act.Rect clsn1 = pr.ani~ani.currentFrame()=>frm$frm~clsn2();
     ^&.act.Rect clsn2 = `curFrame~clsn1();
@@ -3574,8 +3572,7 @@ public &Char
       }
       if(`stVal.mov == .MovTy::H){
         if(.super <= 0 && .pause <= 0){
-          `sysivar[.iPAUSEMOVETIME] = 0;
-          `sysivar[.iSUPERMOVETIME] = 0;
+          `sysivar[.iSUPERMOVETIME] = `sysivar[.iPAUSEMOVETIME] = 0;
         }
         `hittmp = (int)`isFall() + 1;
         if(
@@ -3601,6 +3598,11 @@ public &Char
         branch{
         cond `stVal.mov == .MovTy::H:
           if(`stVal.hb.guarded) `getcombo = 0;
+          if(`stVal.hb.hitshaketime > 0) `stVal.hb.hitshaketime--;
+          if(`stVal.hb.hitshaketime <= 0 && `stVal.hb.hittime >= 0){
+            `stVal.hb.hittime--;
+          }
+          if(`isFall()) `stVal.fallTime++;
         else:
           if(`hittmp > 0) `hittmp = 0;
           `defencemul = (float)`sysivar[.iDEFENCE] / 100.0;
@@ -3611,11 +3613,6 @@ public &Char
           `stVal.hb.hitid = -1;
           `getcombo = 0;
         }
-        if(`stVal.hb.hitshaketime > 0) `stVal.hb.hitshaketime--;
-        if(`stVal.hb.hitshaketime <= 0 && `stVal.hb.hittime >= 0){
-          `stVal.hb.hittime--;
-        }
-        if(`isFall()) `stVal.fallTime++;
         if(
           (`stVal.mov == .MovTy::H || `stVal.no == 52) && `sysfvar[.fY] == 0.0
           && #(`sysfvar[.fX]-`ticOldX) >= 1.0 && `stVal.time % 3 == 0)
@@ -6233,10 +6230,10 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
       pl = pyr.sysfvar[.fX] - pyr.frontw;
       pr = pyr.sysfvar[.fX] + pyr.backw;
     }
+    pyr.enemynClear();
     while;
   do:
     if(p~c~id < 0) continue;
-    p~c~enemynClear();
     contact = 0;
     if(
       p~c~atktmp == 0 || p~c~id == pyr.id || (
@@ -6337,39 +6334,26 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
         && (contact > 0 || pyr.clsnCheck(p~c<>=, false, false)))
       {
         pyr.pushed = p~c~pushed = true;
-        const float foo = 0.5;
         branch{
-          float tmp = -pyr.distX(p~c<>=);
-        cond tmp < 0.0:
-          pyr.sysfvar[.fX] -= (pr - el) * foo;
-          p~c~sysfvar[.fX] += (pr - el) * foo;
+          float tmp = pyr.distX(p~c<>=);
+          if(tmp == 0.0){
+            tmp =
+              (float)(
+                pyr.sysfvar[.fY] > -p~c~sysfvar[.fY]
+                ? pyr.facing : -p~c~facing);
+          }
         cond tmp > 0.0:
-          pyr.sysfvar[.fX] += (er - pl) * foo;
-          p~c~sysfvar[.fX] -= (er - pl) * foo;
-        cond pyr.sysfvar[.fY] > p~c~sysfvar[.fY]:
-          branch{
-          cond pyr.facing > 0:
-            pyr.sysfvar[.fX] -= (pr - el) * foo;
-            p~c~sysfvar[.fX] += (pr - el) * foo;
-          else:
-            pyr.sysfvar[.fX] += (er - pl) * foo;
-            p~c~sysfvar[.fX] -= (er - pl) * foo;
-          }
+          pyr.sysfvar[.fX] -= (pr - el) * 0.5;
+          p~c~sysfvar[.fX] += (pr - el) * 0.5;
         else:
-          branch{
-          cond p~c~facing > 0:
-            pyr.sysfvar[.fX] += (er - pl) * foo;
-            p~c~sysfvar[.fX] -= (er - pl) * foo;
-          else:
-            pyr.sysfvar[.fX] -= (pr - el) * foo;
-            p~c~sysfvar[.fX] += (pr - el) * foo;
-          }
+          pyr.sysfvar[.fX] += (er - pl) * 0.5;
+          p~c~sysfvar[.fX] -= (er - pl) * 0.5;
         }
         if(pyr.ls(.lsSCREENBOUND)){
           .m.limRange!float?(pyr.sysfvar[.fX]=, pxmi, pxma);
         }
         if(p~c~ls(.lsSCREENBOUND)){
-          float l, r, x = p~c~sysfvar[.fX];
+          float l, r;
           branch{
           cond p~c~facing > 0:
             l = .com.xmin + p~c~getEdge(p~c~bedge, true);
@@ -6482,13 +6466,15 @@ public void PlayerList!&Char?::clsn(&.Char pyr=, bool pro)
     i++;
   while i < #.projs:}
 }
-public void PlayerList!&Char?::getHit(bool pro)
+public void PlayerList!&Char?::getHit()
 {
-  loop{
-    *`top.self p = `top;
-    while;
-  do:
-    if(p~c~id >= 0) .players.clsn(p~c<>=, pro);
+  *`top.self p;
+  loop{p = `top; while; do:
+    if(p~c~id >= 0) `clsn(p~c<>=, false);
+    p = p~next;
+  while #p > 0:}
+  loop{p = `top; while; do:
+    if(p~c~id >= 0) `clsn(p~c<>=, true);
     p = p~next;
   while #p > 0:}
 }
@@ -6588,8 +6574,7 @@ void update(
       .projs[i]:<-[void(p=){if(p.id >= 0) p.projClsn(i);}];
       i++;
     while i < #.projs:}
-    .players.getHit(false);
-    .players.getHit(true);
+    .players.getHit();
     loop{index i = 0; while; do:
       .projs[i]:<-[void(p=){if(p.id != .com.IERR) p.tick(i);}];
       i++;
