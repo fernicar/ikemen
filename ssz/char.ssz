@@ -3066,8 +3066,8 @@ public &Char
       }
       if(!`cs1tmp) branch{
       cond 
-        `helperid == 0 && (!`isKO() || `stVal.no == 0) && `sysivar[.iLIFE] <= 0
-        && `stVal.mov != .MovTy::H && !.gs(.gsNOKO)
+        `helperindex == 0 && (!`isKO() || `stVal.no == 0)
+        && `sysivar[.iLIFE] <= 0 && `stVal.mov != .MovTy::H && !.gs(.gsNOKO)
         :
         `stVal.hb.fallf = true;
         `trSelfState(5030, -1, -1);

@@ -2038,6 +2038,7 @@ public &Fight
     foo!`lb.self?(`lb);
     `pb[0].reset();
     `pb[1].reset();
+    foo!`fa.self?(`fa);
     foo!`nm.self?(`nm);
     `wi[0].reset();
     `wi[1].reset();
