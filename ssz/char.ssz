@@ -32,12 +32,13 @@ public ^index wakewakaLength;
 
 public ^&.stage.Stage stg;
 
-%&act.DrawnClsn drawc1, drawc2, drawc2sp, drawwh;
+%&act.DrawnClsn drawc1, drawc2, drawc2sp, drawc2mtk, drawwh;
 void resetDrawnClsnList()
 {
   .drawc1.new(0);
   .drawc2.new(0);
   .drawc2sp.new(0);
+  .drawc2mtk.new(0);
   .drawwh.new(0);
 }
 void drawClsn()
@@ -54,6 +55,8 @@ void drawClsn()
   .drawc2:<-[void(i=){i.draw(spr=, (int)0x3feff);}];
   spr.colorPallet<> = 0x00ff00;
   .drawc2sp:<-[void(i=){i.draw(spr=, (int)0x3feff);}];
+  spr.colorPallet<> = 0x002000;
+  .drawc2mtk:<-[void(i=){i.draw(spr=, (int)0x3feff);}];
   spr.colorPallet<> = 0x404040;
   .drawwh:<-[void(i=){i.draw(spr=, (int)0x3feff);}];
 }
@@ -691,12 +694,17 @@ void appendToClipboard(int p, ^/char formatText, ^&.Var vars)
 {
   S=0x1, C=0x2, A=0x4, L=0x8, N=0x10, U=0x20//L->D N->F U->P
 }
+const int SCA = (int)StTy::S | (int)StTy::C |(int)StTy::A;
 |AtTy
 {
   NA=   0x40, NT=   0x80, NP=  0x100,
   SA=  0x200, ST=  0x400, SP=  0x800,
   HA= 0x1000, HT= 0x2000, HP= 0x4000
 }
+const int ATP =
+  (int)AtTy::NA | (int)AtTy::NT |(int)AtTy::NP
+  | (int)AtTy::SA | (int)AtTy::ST |(int)AtTy::SP
+  | (int)AtTy::HA | (int)AtTy::HT |(int)AtTy::HP;
 |MovTy
 {
   I=0x8000, A, H=0x10000, U//I->- H->+
@@ -3087,32 +3095,36 @@ public &Char
       float y = `sysfvar[.fY]+`offsetY();
       float xs = (float)`facing * `sysfvar[.fCLSNXSCALE];
       float ys = `sysfvar[.fCLSNYSCALE];
-      ^&.act.Frame frm = `curFrame;
-      ^&.act.Rect clsn = frm~clsn1();
+      ^&.act.Rect clsn = `curFrame~clsn1();
       if(#clsn > 0 && `atktmp != 0) .drawc1.new[-1].set(clsn, x, y, xs, ys);
-      clsn = frm~clsn2();
+      clsn = `curFrame~clsn2();
       if(#clsn > 0) branch{
       cond `stVal.hb.hitt1 != 0 || `stVal.hb.hitt2 != 0:
+        if(
+          `stVal.hb.hitt1 != 0 && (
+            (`stVal.hb.hitf1 & .SCA) == 0 || (`stVal.hb.hitf1 & .ATP) == 0)
+          || `stVal.hb.hitt2 != 0 && (
+            (`stVal.hb.hitf2 & .SCA) == 0 || (`stVal.hb.hitf2 & .ATP) == 0)){
+          .drawc2mtk.new[-1].set(clsn, x, y, xs, ys);
+          break, break;
+        }
         .drawc2sp.new[-1].set(clsn, x, y, xs, ys);
       else:
         .drawc2.new[-1].set(clsn, x, y, xs, ys);
       }
       if(`ls(.lsPLAYERPUSH)){
         clsn.new(1);
-        clsn~l = (short)-`backw;
-        clsn~t = (short)-`getHeight();
-        clsn~r = (short)`frontw;
+        clsn~l = (int)-`backw;
+        clsn~t = (int)-`getHeight();
+        clsn~r = (int)`frontw;
         clsn~b = 0;
         .drawwh.new[-1].set(
-          clsn, x-`offsetX(), y-`offsetY(), (float)`facing, 1.0);
+          clsn, `sysfvar[.fX], `sysfvar[.fY], (float)`facing, 1.0);
       }
     }
-    float x = `drawX+`offsetX();
-    float y = `drawY+`offsetY();
-    float xs = (float)`facing * `sysfvar[.fXSCALE];
-    float ys = `sysfvar[.fYSCALE];
     if(#`ani > 0) branch{
-      int sp = `sprpriority;
+      float x = `drawX+`offsetX(), y = `drawY+`offsetY();
+      float xs = (float)`facing * `sysfvar[.fXSCALE], ys = `sysfvar[.fYSCALE];
       bool br = `playerno == .superplayer;
       float an;
       branch{
@@ -3130,7 +3142,7 @@ public &Char
         `sysivar[.iALPHAD] = 0;
       }
       .addAnimList(
-        .anims=, `ani, sp,
+        .anims=, `ani, `sprpriority,
         x - (float)(
           (int)(`stVal.hb.hitshaketime > 0 && (`stVal.time&1) != 0) * `facing),
         y, false, xs, ys, an, `angleset, `mver0() != 1,
@@ -3141,7 +3153,7 @@ public &Char
         `ls(.lsTRANS) ? `sysivar[.iALPHAS] : 256,
         (float)`sysivar[.iSHADOWOFFSET]);
       `aimg.recAndAddAL(
-        `ani<>=, sp, x, y, xs, ys, an, `angleset, `mver0() != 1,
+        `ani<>=, `sprpriority, x, y, xs, ys, an, `angleset, `mver0() != 1,
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
         .com.tickNextFrame() && `acttmp > 0, br, `getPalfx());
     cond .com.tickNextFrame() && `acttmp > 0:
