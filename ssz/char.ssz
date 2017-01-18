@@ -5487,6 +5487,7 @@ public &Char
 
 public void Explod::update(bool oVer, int playerNo)
 {
+  if(#`ani == 0) `id = .com.IERR;
   if(`id == .com.IERR) ret;
   ^&.Char c;
   if(`ignorehitpause == 0 || `removeongethit != 0) c = .players.get(`player);
@@ -5497,12 +5498,8 @@ public void Explod::update(bool oVer, int playerNo)
   cond .pause > 0:
     p = `pausemovetime >= 0 && `time >= `pausemovetime;
   }
-  bool act = !p && `ignorehitpause != 0;
-  if(!p && !act) act = #c == 0 || c~acttmp%2 != -1;
-  if(#`ani == 0){
-    `id = .com.IERR;
-    ret;
-  }
+  bool act = !p;
+  if(act && `ignorehitpause == 0) act = #c == 0 || c~acttmp%2 != -1;
   if(.com.tickFrame()){
     if(
       (#c > 0 && `removeongethit != 0 && c~stVal.mov == .MovTy::H)
