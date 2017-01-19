@@ -450,8 +450,8 @@ public &Camera
   {
     branch{
       float tension =
-         (float).GameWidth / (`scale * 2.0)
-         - (float)`stg.tension * `stg.localscl;
+        .m.max!float?(
+          0.0, `halfWidth / `scale - (float)`stg.tension * `stg.localscl);
       float tmp = (leftest + rightest) / 2.0;
       float cvx = cvmin + cvmax;
       if(cvx == 0.0 || (cvx < 0.0) == (tmp < 0.0)){
@@ -488,10 +488,10 @@ public &Camera
       - (float)(.GameWidth - 320);
     if(foobar < 0.0) foobar = 0.0;
     foobar =
-      .m.max!float?(220.0 / `scale)<, .m.sqrt(
-        foobar**2.0 + (lowest - highest)**2.0);
+      .m.max!float?(220.0 / `scale)<,
+      .m.sqrt(foobar**2.0 + (lowest - highest)**2.0);
     float sclmul =
-      (foobar * `scale) / .m.max!float?(`scale)<, (
+      foobar * `scale / .m.max!float?(`scale)<, (
         (400.0 - 80.0 * .m.max!float?(1.0, `scale))
         * 2.0**(`zoomSpeed - 2.0));
     branch{
@@ -506,7 +506,7 @@ public &Camera
     branch{
     cond pause:
       sclmul = 1.0;
-    cond sclmul > 0.0:
+    cond sclmul > 1.0:
       sclmul = (sclmul - 1.0) * `zoomdelay**8.0 + 1.0;
       if(foobar * sclmul > .xmax - .xmin){
         sclmul = (.xmax - .xmin) / foobar;
