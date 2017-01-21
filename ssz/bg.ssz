@@ -408,7 +408,7 @@ public &BackGround
     float x, float y, float scl, ^&.com.PalFX fx,
     float bgscl, float localscl, float xscale, float yscale, float shakeY)
   {
-    float xras = ((`rasterxbspeed-`rasterxtspeed) / `rasterxtspeed);
+    float xras = (`rasterxbspeed-`rasterxtspeed) / `rasterxtspeed;
     float xbs = `xbscale;
     float dx = .m.max!float?(0.0, `deltax*bgscl);
     float sclx = .m.max!float?(0.0, scl + (1.0 - scl)*(1.0 - dx));
@@ -417,7 +417,7 @@ public &BackGround
       float tmp = 1.0 / sclx;
       xbs *= 
         .m.max!float?(0.0, scl + (1.0 - scl)*(1.0 - dx*(xbs/`xtscale))) * tmp;
-      tmp = .m.max!float?(0.0, scl + (1.0 - scl)*(1.0 - dx*(xras+1.0))) * tmp;
+      tmp *= .m.max!float?(0.0, scl + (1.0 - scl)*(1.0 - dx*(xras+1.0)));
       xras -= tmp - 1.0;
       xbs *= tmp;
     }
@@ -441,11 +441,9 @@ public &BackGround
     }
     float ys = (100.0 - y * `yscaledelta) * bgscl /`yscalestart;
     x2 *= bgscl;
-    y2 *= bgscl;
-    y2 += (((float).com.GameHeight - shakeY) / scly - 240.0)/yscale;
+    y2 = y2*bgscl + (((float).com.GameHeight - shakeY) / scly - 240.0)/yscale;
     scly *= yscale;
-     &.sdl.Rect rect;
-    rect = `startrect;
+    &.sdl.Rect rect = `startrect;
     float wsclx =
       .m.max!float?(
         0.0, scl + (1.0 - scl)*(1.0 - .m.max!float?(0.0, `windowdeltax*bgscl)))

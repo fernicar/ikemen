@@ -1228,8 +1228,8 @@ public &Anim<frame_t>
     float agl = 0.0;
     `exParam(`frames[`drawidx]=, h=, v=, agl=);
     if(agl != 0.0){
-      `angleDraw(
-        x, y, cscalex*xtscale, cscaley*yscale, 0.0, true, 1.0, 1.0, fx, false);
+      `angleDraw(x, y, cscalex*xtscale, cscaley*yscale, 0.0, fx, false);
+      ret;
     }
     float xs = h*cscalex*xtscale, ys = v*cscaley*yscale;
     float bs = xbscale;
@@ -1279,21 +1279,15 @@ public &Anim<frame_t>
   /*?*/
   }
   public void angleDraw(
-    float x, float y, float xscale, float yscale, float angle, bool angleset,
-    float axscl, float ayscl, ^&.com.PalFX fx, bool oVer)
+    float x, float y, float xscale, float yscale, float angle,
+    ^&.com.PalFX fx, bool oVer)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
     float h = (float)`frames[`drawidx].h, v = (float)`frames[`drawidx].v;
-    float xs = xscale * axscl, ys = yscale * ayscl;
+    float xs = xscale, ys = yscale;
     float agl = angle;
     `exParam(`frames[`drawidx]=, h=, v=, agl=);
     float rx = x+xs*h*(float)`frames[`drawidx].x+(float).com.GameWidth/2.0;
-    if(!angleset && agl == angle){
-      `draw(
-        .com.scrrect=,
-        x, y, 1.0, 1.0, xs, xs, ys, 0.0, (float).com.GameWidth/2.0, fx, oVer);
-      ret;
-    }
   /?/*.cfg.OpenGL:
     agl *= (float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
     `spr~glDraw(
@@ -1327,21 +1321,14 @@ public &Anim<frame_t>
   }
   public void shadowDraw(
     float x, float y, float xscale, float yscale, float vscale, float angle,
-    bool angleset, float axscl, float ayscl, ^&.com.PalFX fx, bool oVer,
-    uint color, int alpha)
+    ^&.com.PalFX fx, bool oVer, uint color, int alpha)
   {
     if(#`spr == 0 || #`spr~pxl == 0) ret;
     float h = (float)`frames[`drawidx].h, v = (float)`frames[`drawidx].v;
-    float xs = xscale * axscl, ys = yscale * ayscl;
-    float agl = angle;
+    float xs = xscale, ys = yscale, agl = angle;
     `exParam(`frames[`drawidx]=, h=, v=, agl=);
     float x2 = x + xs*h*(float)`frames[`drawidx].x;
     float y2 = y + ys*vscale*v*(float)`frames[`drawidx].y;
-    if(!angleset && agl == angle){
-      agl = 0.0;
-      if(xs < 0.0 && oVer) x2 -= xs;
-      if(ys*vscale < 0.0 && oVer) y2 -= ys*vscale;
-    }
     agl *= (float)((xs < 0.0 ? -1: 1) * (ys < 0.0 ? -1: 1));
   /?/*.cfg.OpenGL:
     if(color != 0x0 && `spr~rle != -12) loop{index i = 0; do:

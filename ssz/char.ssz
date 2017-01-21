@@ -67,7 +67,7 @@ void drawClsn()
   public int priority = 0;
   public float x = 0.0, y = 0.0;
   public float xscl = 1.0, yscl = 1.0, angle = 0.0, axscl = 1.0, ayscl = 1.0;
-  public bool aset = false, oVer = false, screen = false, bright = false;
+  public bool padding, oVer = false, screen = false, bright = false;
   public int salpha = -1, dalpha = 0;
   public ^&.com.PalFX fx;
 }
@@ -84,9 +84,8 @@ void drawClsn()
 %^&ShadowSprite shadows;
 
 public void addAnimList(
-  %^&.AnimSprite al=, ^&.act.Action a, int p,
-  float x, float y, bool scr, float xs, float ys,
-  float an, bool as, bool oVer, float ax, float ay,
+  %^&.AnimSprite al=, ^&.act.Action a, int p, float x, float y, bool scr,
+  float xs, float ys, float an, bool oVer, float ax, float ay,
   int sa, int da, bool b, ^&.com.PalFX fx, int sc, int salp, float so)
 {
   ^&.AnimSprite newSprite()
@@ -101,7 +100,6 @@ public void addAnimList(
     as~xscl = `xs;
     as~yscl = `ys;
     as~angle = `an;
-    as~aset = `as;
     as~oVer = `oVer;
     as~bright = `b;
     as~axscl = `ax;
@@ -112,7 +110,7 @@ public void addAnimList(
     if(`sc != 0) .addShadowList(as, `sc, `so, `salp);
     ret as;
   }
-  if(.se.fskip) ret;
+  if(.se.fskip || #a == 0 || #a~ani.spr == 0) ret;
   loop{
     index i = 0, start = 0, length = #al;
     while;
@@ -139,7 +137,7 @@ public void addAnimList(
 public void drawAnimList(%^&.AnimSprite al=, float x, float y, float scl)
 {
   loop{index i = 0; while; do:
-    if(#al[i]~anim > 0) al[i]~[void(as=){
+    al[i]~[void(as=){
       as.anim~ani.salpha = as.salpha;
       as.anim~ani.dalpha = as.dalpha;
       branch{
@@ -158,8 +156,8 @@ public void drawAnimList(%^&.AnimSprite al=, float x, float y, float scl)
             - .stage.envShake.getOffset() - (y - as.y) * cs;
         }
         as.anim~ani.angleDraw(
-          px, py, cs*as.xscl, cs*as.yscl, as.angle*(.m.PI/180.0),
-          as.aset, as.axscl, as.ayscl, as.fx, as.oVer);
+          px, py, cs * as.xscl * as.axscl, cs * as.yscl * as.ayscl,
+          as.angle*(.m.PI/180.0), as.fx, as.oVer);
       else:
         branch{
         cond as.screen:
@@ -223,9 +221,6 @@ public void addShadowList(^&.AnimSprite as, int sc, float so, int alpha)
 public void drawShadowList(float x, float y, float scl)
 {
   loop{index i = 0; while; do:
-    if(#.shadows[i]~as~anim == 0 || #.shadows[i]~as~anim~ani.spr == 0){
-      break, continue;
-    }
     .shadows[i]~[void(ss=){
       int intensity = .stg~sdw.intensity;
       int color = ss.color;
@@ -250,18 +245,16 @@ public void drawShadowList(float x, float y, float scl)
         intensity = 0;
       comm:
         color =
-          (
-            ((color&255)*alpha>>8&255) | ((color&255<<8)*alpha>>8&255<<8)
-            | ((color&255<<16)*alpha>>8)&255<<16)
-          & (int)0xffffff;
+          (color & 255)*alpha>>8 & 255 | (color & 255<<8)*alpha>>8 & 255<<8
+          | (color & 255<<16)*alpha>>8 & 255<<16;
       }
       float syscl = .stg~sdw.yscale;
       ss.as~anim~ani.shadowDraw(
         .com.cam.xOffset - (x - ss.as~x) * scl,
         .com.cam.groundLevel() + .com.cam.yOffset - .stage.envShake.getOffset()
         - (y + ss.as~y * syscl - ss.offsety) * scl,
-        scl*ss.as~xscl, scl*-ss.as~yscl, syscl, ss.as~angle*(.m.PI/180.0),
-        ss.as~aset, ss.as~axscl, ss.as~ayscl, .stage.bgPalFX, ss.as~oVer,
+        scl * ss.as~xscl * ss.as~axscl, scl * -ss.as~yscl * ss.as~ayscl,
+        syscl, ss.as~angle*(.m.PI/180.0), .stage.bgPalFX, ss.as~oVer,
         (uint)color, intensity);
     }];
   continue:
@@ -272,20 +265,17 @@ public void drawShadowList(float x, float y, float scl)
 public void drawReflection(float x, float y, float scl)
 {
   loop{index i = 0; while; do:
-    if(#.shadows[i]~as~anim == 0 || #.shadows[i]~as~anim~ani.frames == 0){
-      break, continue;
-    }
     .shadows[i]~[void(ss=){
       if(ss.as~salpha < 0){
         ss.as~salpha =
-          (int)
-            ss.as~anim~ani.frames[ss.as~anim~ani.drawidx].salpha;
+          (int)ss.as~anim~ani.frames[ss.as~anim~ani.drawidx].salpha;
         ss.as~dalpha =
-          (int)
-            ss.as~anim~ani.frames[ss.as~anim~ani.drawidx].dalpha;
+          (int)ss.as~anim~ani.frames[ss.as~anim~ani.drawidx].dalpha;
+        if(ss.as~salpha == 255 && ss.as~dalpha == 1){
+          ss.as~dalpha = 255;
+        }
       }
       int refl = .stg~reflection*ss.alpha >> 8;
-      ss.as~anim~ani.salpha = (int)((float)ss.as~salpha*(float)refl / 255.0);
       ss.as~anim~ani.dalpha =
         .m.min!int?(
           255, (ss.as~dalpha >= 0 ? ss.as~dalpha : 128) + (255-refl));
@@ -298,8 +288,8 @@ public void drawReflection(float x, float y, float scl)
           .com.cam.xOffset - (x - ss.as~x) * scl,
           .com.cam.groundLevel() + .com.cam.yOffset
           - .stage.envShake.getOffset() - (y + ss.as~y - ss.offsety) * scl,
-          scl*ss.as~xscl, scl*-ss.as~yscl, ss.as~angle*(.m.PI/180.0),
-          ss.as~aset, ss.as~axscl, ss.as~ayscl, ss.as~fx, ss.as~oVer);
+          scl * ss.as~xscl * ss.as~axscl, scl * -ss.as~yscl * ss.as~ayscl,
+          ss.as~angle*(.m.PI/180.0), ss.as~fx, ss.as~oVer);
       else:
         ss.as~anim~ani.draw(
           .com.scrrect=, .com.cam.xOffset / scl - (x - ss.as~x),
@@ -324,7 +314,7 @@ public void drawReflection(float x, float y, float scl)
     public ^&.act.Action anim;
     public float x = 0.0, y = 0.0, xscl = 1.0, yscl = 1.0;
     public float angle = 0.0, axscl = 1.0, ayscl = 1.0;
-    public bool aset = false, oVer = false;
+    public bool oVer = false;
     new()
     {
       `anim.new(1);
@@ -449,7 +439,7 @@ public void drawReflection(float x, float y, float scl)
   }
   public void recAfterImg(
     &.act.Action a=, float x, float y, float xs, float ys,
-    float an, bool as, bool oVer, float ax, float ay, ^&.com.PalFX cfx)
+    float an, bool oVer, float ax, float ay, ^&.com.PalFX cfx)
   {
     if(`time == 0){
       `reccount = `timegap = 0;
@@ -471,7 +461,6 @@ public void drawReflection(float x, float y, float scl)
         i.xscl = xs;
         i.yscl = ys;
         i.angle = an;
-        i.aset = as;
         i.oVer = oVer;
         i.axscl = ax;
         i.ayscl = ay;
@@ -483,8 +472,7 @@ public void drawReflection(float x, float y, float scl)
     `restgap--;
   }
   public void recAndAddAL(
-    &.act.Action a=, int p,
-    float x, float y, float xs, float ys, float an, bool as,
+    &.act.Action a=, int p, float x, float y, float xs, float ys, float an,
     bool oVer, float ax, float ay, bool rec, bool br, ^&.com.PalFX cfx)
   {
     if(
@@ -506,14 +494,13 @@ public void drawReflection(float x, float y, float scl)
         .anims=, `imgs[`imgidx-i&63].anim, p-2,
         `imgs[`imgidx-i&63].x, `imgs[`imgidx-i&63].y, false,
         `imgs[`imgidx-i&63].xscl, `imgs[`imgidx-i&63].yscl,
-        `imgs[`imgidx-i&63].angle, `imgs[`imgidx-i&63].aset,
-        `imgs[`imgidx-i&63].oVer,
+        `imgs[`imgidx-i&63].angle, `imgs[`imgidx-i&63].oVer,
         `imgs[`imgidx-i&63].axscl, `imgs[`imgidx-i&63].ayscl,
         `alphas, `alphad, br, `palfx[pfxi .. pfxi + 1],
         0, 0, 0.0);
       i += `framegap;
     while i <= end:}
-    if(rec) `recAfterImg(a=, x, y, xs, ys, an, as, oVer, ax, ay, cfx);
+    if(rec) `recAfterImg(a=, x, y, xs, ys, an, oVer, ax, ay, cfx);
   }
 }
 
@@ -2032,13 +2019,12 @@ public &Projectile
     if(#`ani > 0 && #`ani~ani.spr > 0){
       bool br = playerNo == .superplayer;
       .addAnimList(
-        .anims=, `ani, `sprpriority, `x, `y, false,
-        (float)`facing*`scalex, `scaley, 0.0, false, oVer, 1.0, 1.0, -1, 0,
-        br, `palfx,
+        .anims=, `ani, `sprpriority, `x, `y, false, (float)`facing*`scalex,
+        `scaley, 0.0,  oVer, 1.0, 1.0, -1, 0, br, `palfx,
         `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255), 256, 0.0);
       `aimg.recAndAddAL(
         `ani<>=, `sprpriority, `x, `y, (float)`facing*`scalex, `scaley,
-        0.0, false, .cgi[playerNo].mver0 != 1, 1.0, 1.0,
+        0.0, .cgi[playerNo].mver0 != 1, 1.0, 1.0,
         .com.tickNextFrame() && notpause, br, `palfx);
     }
   }
@@ -2068,13 +2054,13 @@ public &Char
   public bool player;
   public bool inguarddist;
   public byte p1facing, animpno;
-  public bool cs1tmp, angleset;
+  public bool cs1tmp;
   public bool ctrl, standby;
   public byte hittmp, acttmp;
   public byte atktmp;
   public byte minus;
   public bool pushed;
-  public int ho;
+  public byte ho;
   public int sprpriority;
   public int animno;
   public int getcombo;
@@ -2199,7 +2185,6 @@ public &Char
     `pushed = false;
     `ho = -1;
     `cs1tmp = false;
-    `angleset = false;
     `stateDef = `dummy;
     `state = `dummy;
   }
@@ -3130,10 +3115,8 @@ public &Char
       branch{
       cond `ls(.lsANGLEDRAW):
         an = `sysfvar[.fANGLE] == 0.0 ? 360.0 : `sysfvar[.fANGLE];
-        `angleset |= `sysfvar[.fANGLE] != 0.0;
       else:
         an = 0.0;
-        `angleset = false;
       }
     cond !`ls(.lsINVISIBLE):
       if(`mver0() != 1 && `ls(.lsANGLEDRAW) && !`ls(.lsTRANS)){
@@ -3145,7 +3128,7 @@ public &Char
         .anims=, `ani, `sprpriority,
         x - (float)(
           (int)(`stVal.hb.hitshaketime > 0 && (`stVal.time&1) != 0) * `facing),
-        y, false, xs, ys, an, `angleset, `mver0() != 1,
+        y, false, xs, ys, an, `mver0() != 1,
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
         `ls(.lsTRANS) ? `sysivar[.iALPHAS] : -1,
         `sysivar[.iALPHAD], br, `getPalfx(),
@@ -3153,12 +3136,12 @@ public &Char
         `ls(.lsTRANS) ? `sysivar[.iALPHAS] : 256,
         (float)`sysivar[.iSHADOWOFFSET]);
       `aimg.recAndAddAL(
-        `ani<>=, `sprpriority, x, y, xs, ys, an, `angleset, `mver0() != 1,
+        `ani<>=, `sprpriority, x, y, xs, ys, an, `mver0() != 1,
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY],
         .com.tickNextFrame() && `acttmp > 0, br, `getPalfx());
     cond .com.tickNextFrame() && `acttmp > 0:
       `aimg.recAfterImg(
-        `ani<>=, x, y, xs, ys, an, `angleset, `mver0() != 1,
+        `ani<>=, x, y, xs, ys, an, `mver0() != 1,
         `sysfvar[.fANGLESCALEX], `sysfvar[.fANGLESCALEY], `getPalfx());
     }
     if(.com.tickNextFrame()){
@@ -3998,7 +3981,6 @@ public &Char
   public void setAngle(float a)
   {
     `sysfvar[.fANGLE] = a;
-    `angleset |= a != 0.0;
   }
   public void setPos<_t>(_t o=, int pt, float x, float y, int facing)
   {
@@ -5555,7 +5537,7 @@ public void Explod::update(bool oVer, int playerNo)
       .addAnimList(
         a=, `ani, `sprpriority, `x, `y, screen,
         (float)`facing*`scalex, (float)`vfacing*`scaley,
-        `scalex < 0.0 == `scaley < 0.0 ? `angle : -`angle, `angle != 0.0,
+        `scalex < 0.0 == `scaley < 0.0 ? `angle : -`angle,
         oVer, 1.0, 1.0, `alphas < 0 ? (int)-1 : `alphas,
         `alphad, playerNo == .superplayer,
         pfx, `shadowr<<16 | (`shadowg&255)<<8 | (`shadowb&255),
@@ -6729,9 +6711,8 @@ public float action(
     if(#.superanim > 0){
       .addAnimList(
         .topanims=, .superanim, 5, .superposx, .superposy, false,
-        (float).superfacing, 1.0, 0.0, false,
-        .cgi[.superplayer].mver0 != 1, 1.0, 1.0, -1, 0, true,
-        .superpmap, 0, 0, 0.0);
+        (float).superfacing, 1.0, 0.0, .cgi[.superplayer].mver0 != 1,
+        1.0, 1.0, -1, 0, true, .superpmap, 0, 0, 0.0);
       if(.superanim~ani.loopend) .superanim.new(0);
     }
     .anim();
@@ -6823,11 +6804,9 @@ public float action(
         .fgt.setPerfect(.winty[0]=);
       }
     }
-    branch{
-    cond .com.time == 0:
+    if(.com.time == 0){
       .com.intro = -.fight~ro.over_hittime;
-      if(p1 || p2) break;
-      .winty[0] = .winty[1] = .fgt.WinTy::T;
+      if(!(p1 || p2)) .winty[0] = .winty[1] = .fgt.WinTy::T;
     }
     if(.com.intro == -.fight~ro.over_hittime && (p1 || p2)){
       branch{
@@ -6853,38 +6832,37 @@ public float action(
   }
   if(.com.tickNextFrame()) branch{
   cond .fight~ro.cur < 1:
-    branch{
-    cond
-      .shuttertime > 0
-      || (.cmd.anybutton() && .com.intro > .fight~ro.ctrl_time)
-      :
-      if(++.shuttertime == 15){
-        .resetGblEffect();
-        .com.intro = .fight~ro.ctrl_time;
-        loop{index i = 0; while; do:
-          if(#.chars[i] > 0){
-            .charClear(i);
-            .chars[i][0]~trSelfState(0, -1, 0);
-          }
-          i++;
-        while i < #.chars:}
-        float ox = x;
-        x = 0.0;
-        leftest =
-          .m.max!float?(
-            (float).m.min!int?(.stg~p1.startx, .stg~p2.startx) * .stg~localscl,
-            -((float).com.GameWidth / 2.0) / .com.cam.baseScale()
-            + .com.screenleft)
-          - ox;
-        rightest =
-          .m.min!float?(
-            (float).m.max!int?(.stg~p1.startx, .stg~p2.startx) * .stg~localscl,
-            ((float).com.GameWidth / 2.0) / .com.cam.baseScale()
-            - .com.screenright)
-          - ox;
-        introSkip = true;
-        .fight~ro.callFight();
-      }
+    if(
+      (
+        .shuttertime > 0
+        || .cmd.anybutton() && .com.intro > .fight~ro.ctrl_time)
+      && ++.shuttertime == 15)
+    {
+      .resetGblEffect();
+      .com.intro = .fight~ro.ctrl_time;
+      loop{index i = 0; while; do:
+        if(#.chars[i] > 0){
+          .charClear(i);
+          .chars[i][0]~trSelfState(0, -1, 0);
+        }
+        i++;
+      while i < #.chars:}
+      float ox = x;
+      x = 0.0;
+      leftest =
+        .m.max!float?(
+          (float).m.min!int?(.stg~p1.startx, .stg~p2.startx) * .stg~localscl,
+          -((float).com.GameWidth / 2.0) / .com.cam.baseScale()
+          + .com.screenleft)
+        - ox;
+      rightest =
+        .m.min!float?(
+          (float).m.max!int?(.stg~p1.startx, .stg~p2.startx) * .stg~localscl,
+          ((float).com.GameWidth / 2.0) / .com.cam.baseScale()
+          - .com.screenright)
+        - ox;
+      introSkip = true;
+      .fight~ro.callFight();
     }
   else:
     if(.shuttertime > 0) .shuttertime--;
@@ -7030,8 +7008,8 @@ public float action(
         }
         .waitdown--;
       }
-    else:
-      if(.com.intro < 0) .com.intro = 0;
+    cond .com.intro < 0:
+      .com.intro = 0;
     }
   }
   if(.com.turbo == 0.0 || .com.tickNextFrame()) branch{
@@ -7050,10 +7028,8 @@ public float action(
   .sdl.pauseBGM(.gs(.gsNOMUSIC));
   .playSound();
   if(introSkip) tmp = 1.0 / scl;
-  leftest -= .com.screenleft;
-  leftest *= .com.cam.baseScale();
-  rightest += .com.screenright;
-  rightest *= .com.cam.baseScale();
+  leftest = (leftest - .com.screenleft) * .com.cam.baseScale();
+  rightest = (rightest + .com.screenright) * .com.cam.baseScale();
   ret tmp;
 }
 public void draw(float x, float y, float scl)
@@ -7061,7 +7037,7 @@ public void draw(float x, float y, float scl)
   ^&.fgt.LifePower lpl = .getLifePower();
   uint ecol =
     ((uint).envcol_b&0xff)
-    | ((uint).envcol_g<<0d8&0xff00) | ((uint).envcol_r<<0d16&0xff0000);
+    | ((uint).envcol_g&0xff)<<0d8 | ((uint).envcol_r&0xff)<<0d16;
   ^ubyte px;
   px.new(1);
   px<> = 0d0;
