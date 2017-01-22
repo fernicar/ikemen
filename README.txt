@@ -1,8 +1,9 @@
-# ikemen
-2D fighting game compatible with Mugen
+Description (English)
+2D fighting game (plus online feature) compatible with Mugen chararcters,
+cloned from https://osdn.net/users/supersuehiro/pf/ikemen/
 
-Requirements:
-S-Size (a Runtime Intepreter for .ssz files)
+Additional Requirements:
+S-Size - a Runtime Intepreter (for .ssz files)
 http://ssz.osdn.jp/
 
 
